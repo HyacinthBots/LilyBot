@@ -15,7 +15,7 @@ public class Ping extends SlashCommand {
         this.name = "ping";
         this.help = "Ping the bot to see if it is alive.";
         this.defaultEnabled = true;
-        this.guildOnly = true;
+        this.guildOnly = false;
     }
 
     @Override

@@ -17,8 +17,7 @@ public class RuleEight extends SlashCommand {
         this.name = "rule-8";
         this.help = "Reminds the user of Rule 8";
         this.defaultEnabled = false;
-        this.enabledRoles = new String[]{LilyBot.MODERATOR_ROLE, LilyBot.HELPER_ROLE};
-        this.guildOnly = true;
+        this.guildOnly = false;
         this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE};
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
     }
