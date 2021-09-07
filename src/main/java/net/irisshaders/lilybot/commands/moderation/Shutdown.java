@@ -25,8 +25,7 @@ public class Shutdown extends SlashCommand {
     public Shutdown(EventWaiter waiter) {
         this.name = "shutdown";
         this.help = "Shuts down the bot.";
-        this.defaultEnabled = false;
-        this.enabledRoles = new String[]{LilyBot.MODERATOR_ROLE};
+        this.ownerCommand = true;
         this.guildOnly = true;
         this.waiter = waiter;
     }
