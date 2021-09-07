@@ -18,8 +18,7 @@ public class Starline extends SlashCommand {
         this.name = "starline";
         this.help = "Informs the use of the lack of Starline support.";
         this.defaultEnabled = false;
-        this.enabledRoles = new String[]{LilyBot.MODERATOR_ROLE, LilyBot.HELPER_ROLE};
-        this.guildOnly = true;
+        this.guildOnly = false;
         this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE};
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
     }
