@@ -6,7 +6,6 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.irisshaders.lilybot.LilyBot;
 
 import java.awt.*;
 import java.time.Instant;
@@ -16,7 +15,7 @@ public class RuleFive extends SlashCommand {
     public RuleFive() {
         this.name = "rule-5";
         this.help = "Reminds the user of Rule 5";
-        this.defaultEnabled = false;
+        this.defaultEnabled = true;
         this.guildOnly = false;
         this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE};
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
