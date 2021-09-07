@@ -79,6 +79,8 @@ public class LilyBot {
         builder.addSlashCommand(new Mute(waiter));
         builder.addSlashCommand(new MuteList());
 
+        builder.addSlashCommand(new Shutdown(waiter));
+
         builder.addSlashCommand(new Sodium());
         builder.addSlashCommand(new Config());
         builder.addSlashCommand(new Logs());
