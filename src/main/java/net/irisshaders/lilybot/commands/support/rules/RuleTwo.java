@@ -16,7 +16,7 @@ public class RuleTwo extends SlashCommand {
         this.name = "rule-2";
         this.help = "Reminds the user of Rule 2";
         this.defaultEnabled = true;
-        this.guildOnly = true;
+        this.guildOnly = false;
         this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE};
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
     }

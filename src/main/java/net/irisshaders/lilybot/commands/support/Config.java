@@ -16,7 +16,7 @@ public class Config extends SlashCommand {
         this.name = "config";
         this.help = "Informs the user of Shader Config issues.";
         this.defaultEnabled = true;
-        this.guildOnly = true;
+        this.guildOnly = false;
         this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE};
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
     }

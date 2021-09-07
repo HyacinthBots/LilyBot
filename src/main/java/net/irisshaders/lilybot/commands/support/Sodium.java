@@ -16,7 +16,7 @@ public class Sodium extends SlashCommand {
         this.name = "sodium";
         this.help = "Informs the user of conflicts between mainstream Sodium and Iris.";
         this.defaultEnabled = true;
-        this.guildOnly = true;
+        this.guildOnly = false;
         this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE};
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
     }
