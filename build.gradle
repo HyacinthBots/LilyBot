@@ -14,8 +14,8 @@ repositories {
 }
 
 dependencies {
-    implementation('net.dv8tion:JDA:4.3.0_323')
-    implementation('pw.chew:jda-chewtils:1.21.0')
+    implementation('net.dv8tion:JDA:4.3.0_324')
+    implementation('pw.chew:jda-chewtils:1.22.0')
     implementation('ch.qos.logback:logback-classic:1.2.5')
     implementation('io.github.cdimascio:dotenv-java:2.2.0')
 }
