@@ -6,11 +6,13 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
+import net.irisshaders.lilybot.LilyBot;
 
 import java.awt.*;
 import java.time.Instant;
@@ -34,6 +36,7 @@ public class Shutdown extends SlashCommand {
 
         User user = event.getUser();
         JDA jda = event.getJDA();
+        TextChannel action_log = jda.getTextChannelById(LilyBot.ACTION_LOG);
 
         MessageEmbed shutdownEmbed = new EmbedBuilder()
                 .setTitle("Shut Down")
@@ -68,6 +71,7 @@ public class Shutdown extends SlashCommand {
                             .build();
 
                     buttonClickEvent.replyEmbeds(finalShutdownEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
+                    action_log.sendMessageEmbeds(finalShutdownEmbed).queue();
 
                     // Wait for it to send the embed and respond to any other commands. Can be reduced to a lower number if testing allows for it.
                     try { TimeUnit.SECONDS.sleep(10); } catch (InterruptedException e) { e.printStackTrace(); }
