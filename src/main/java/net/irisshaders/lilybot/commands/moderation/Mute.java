@@ -56,7 +56,7 @@ public class Mute extends SlashCommand {
         Guild guild = jda.getGuildById(GUILD_ID);
         String reason = event.getOption("reason") == null ? "No reason provided" : event.getOption("reason").getAsString();
         String duration = event.getOption("duration") == null ? "6h" : event.getOption("duration").getAsString();
-        Role mutedRole = guild.getRolesByName("muted", true).get(0);
+        Role mutedRole = guild.getRoleById(LilyBot.MUTED_ROLE);
 
         if (!target.getRoles().contains(mutedRole)) {
 

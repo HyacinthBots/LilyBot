@@ -27,7 +27,7 @@ public class LilyBot {
 
     // TODO Make sure the right values are set in the .env
     public static final String MODERATOR_ROLE = dotenv.get("MODERATOR_ROLE");
-    public static final String HELPER_ROLE = dotenv.get("HELPER_ROLE");
+    public static final String MUTED_ROLE = dotenv.get("MUTED_ROLE");
     public static final String GUILD_ID = dotenv.get("GUILD_ID");
     public static final String ACTION_LOG = dotenv.get("ACTION_LOG");
 

@@ -33,7 +33,7 @@ public class MuteList extends SlashCommand {
 
         JDA jda = event.getJDA();
         Guild guild = jda.getGuildById(GUILD_ID);
-        Role mutedRole = guild.getRolesByName("muted", true).get(0);
+        Role mutedRole = guild.getRoleById(LilyBot.MUTED_ROLE);
         User user = event.getUser();
         List<Member> guildMembers = guild.getMembers();
         List<String> mutedMembers = new ArrayList<>();
