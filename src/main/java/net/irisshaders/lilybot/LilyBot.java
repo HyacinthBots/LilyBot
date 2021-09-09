@@ -86,6 +86,7 @@ public class LilyBot {
         builder.addSlashCommand(new Logs());
         builder.addSlashCommand(new CrashReport());
         builder.addSlashCommand(new Starline());
+        builder.addSlashCommand(new Indium());
 
         builder.addSlashCommand(new RuleOne());
         builder.addSlashCommand(new RuleTwo());
