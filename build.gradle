@@ -9,13 +9,12 @@ version = '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
     maven { url 'https://m2.dv8tion.net/releases' }
-    maven { url 'https://m2.chew.pro/releases' }
     maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     implementation('net.dv8tion:JDA:4.3.0_324')
-    implementation('pw.chew:jda-chewtils:1.22.0')
+    implementation('com.github.chalkyjeans:JDA-Chewtils:master-SNAPSHOT')
     implementation('ch.qos.logback:logback-classic:1.2.5')
     implementation('io.github.cdimascio:dotenv-java:2.2.0')
 }

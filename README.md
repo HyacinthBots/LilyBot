@@ -28,7 +28,7 @@ OWNER= OWNERS_ID
 
 ### What was used to write this bot?
 * JDA: https://github.com/DV8FromTheWorld/JDA
-* JDA Chewtils: https://github.com/Chew/JDA-Chewtils
+* JDA Chewtils: https://github.com/Chew/JDA-Chewtils (well [chalkyjeans's fork](https://github.com/chalkyjeans/JDA-Chewtils) of it)
 * Logback: https://github.com/qos-ch/logback
 * dotenv: https://github.com/cdimascio/dotenv-java
 
