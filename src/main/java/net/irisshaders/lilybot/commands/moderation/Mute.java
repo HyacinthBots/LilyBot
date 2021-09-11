@@ -1,7 +1,6 @@
 package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
@@ -15,6 +14,7 @@ import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.objects.Memory;
 
 import java.awt.*;
 import java.time.Instant;
@@ -28,9 +28,7 @@ import static net.irisshaders.lilybot.LilyBot.GUILD_ID;
 @SuppressWarnings("ConstantConditions")
 public class Mute extends SlashCommand {
 
-    private final EventWaiter waiter;
-
-    public Mute(EventWaiter waiter) {
+    public Mute() {
         this.name = "mute";
         this.help = "Mutes a specified member for the given reason and duration. Defaults to 6h and no reason.";
         this.defaultEnabled = false;
@@ -43,7 +41,6 @@ public class Mute extends SlashCommand {
         optionData.add(new OptionData(OptionType.STRING, "duration", "The duration of the mute.").setRequired(false));
         optionData.add(new OptionData(OptionType.STRING, "reason", "The reason for the mute.").setRequired(false));
         this.options = optionData;
-        this.waiter = waiter;
     }
 
     @Override
@@ -125,7 +122,7 @@ public class Mute extends SlashCommand {
             event.replyEmbeds(alreadyMutedEmbed).addActionRow(
                     Button.of(ButtonStyle.PRIMARY, "mute:yes", "Yes", Emoji.fromUnicode("\u2705")),
                     Button.of(ButtonStyle.PRIMARY, "mute:no", "No", Emoji.fromUnicode("\u274C"))
-            ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
+            ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> Memory.getWaiter().waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
                 if (buttonClickEvent.getUser() != user) return false;
                 if (!equalsAny(buttonClickEvent.getButton().getId())) return false;
                 return !buttonClickEvent.isAcknowledged();

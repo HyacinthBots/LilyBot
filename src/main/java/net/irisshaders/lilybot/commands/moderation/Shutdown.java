@@ -1,7 +1,6 @@
 package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Emoji;
@@ -13,6 +12,8 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.objects.Memory;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.time.Instant;
@@ -21,14 +22,11 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("ConstantConditions")
 public class Shutdown extends SlashCommand {
 
-    private final EventWaiter waiter;
-
-    public Shutdown(EventWaiter waiter) {
+    public Shutdown() {
         this.name = "shutdown";
         this.help = "Shuts down the bot.";
         this.ownerCommand = true;
         this.guildOnly = true;
-        this.waiter = waiter;
     }
 
     @Override
@@ -49,7 +47,7 @@ public class Shutdown extends SlashCommand {
         event.replyEmbeds(shutdownEmbed).addActionRow(
                 Button.of(ButtonStyle.PRIMARY, "shutdown:yes", "Yes", Emoji.fromUnicode("\u2705")),
                 Button.of(ButtonStyle.PRIMARY, "shutdown:no", "No", Emoji.fromUnicode("\u274C"))
-        ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
+        ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> Memory.getWaiter().waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
             if (buttonClickEvent.getUser() != user) return false;
             if (!equalsAny(buttonClickEvent.getButton().getId())) return false;
             return !buttonClickEvent.isAcknowledged();
@@ -72,11 +70,12 @@ public class Shutdown extends SlashCommand {
 
                     buttonClickEvent.replyEmbeds(finalShutdownEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
                     action_log.sendMessageEmbeds(finalShutdownEmbed).queue();
+                    LoggerFactory.getLogger(Shutdown.class).info("Shutting down!");
 
                     // Wait for it to send the embed and respond to any other commands. Can be reduced to a lower number if testing allows for it.
                     try { TimeUnit.SECONDS.sleep(10); } catch (InterruptedException e) { e.printStackTrace(); }
 
-                    jda.shutdown();
+                    jda.shutdownNow();
 
                 }
                 case "shutdown:no" -> {
