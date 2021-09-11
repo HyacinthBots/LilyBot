@@ -25,7 +25,7 @@ public class LilyBot {
     static Dotenv dotenv = Dotenv.load();
     static EventWaiter waiter = new EventWaiter();
 
-    // TODO Make sure the right values are set in the .env
+    // Make sure the right values are set in the .env
     public static final String MODERATOR_ROLE = dotenv.get("MODERATOR_ROLE");
     public static final String MUTED_ROLE = dotenv.get("MUTED_ROLE");
     public static final String GUILD_ID = dotenv.get("GUILD_ID");
@@ -61,7 +61,7 @@ public class LilyBot {
                 .setHelpConsumer(null)
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("Iris 1.17.1"))
-                .setOwnerId(dotenv.get("OWNER")) // nocomment's id, this doesn't really matter because helpConsumer is null
+                .setOwnerId(dotenv.get("OWNER")) // owner's ID, this doesn't really matter because helpConsumer is null
                 .forceGuildOnly(GUILD_ID)
                 .build();
 
@@ -72,6 +72,7 @@ public class LilyBot {
         // add commands now
         builder.addSlashCommand(new Ping());
 
+        // Mod Commands
         builder.addSlashCommand(new Ban());
         builder.addSlashCommand(new Kick());
         builder.addSlashCommand(new Unban());
@@ -79,15 +80,19 @@ public class LilyBot {
         builder.addSlashCommand(new Mute(waiter));
         builder.addSlashCommand(new MuteList());
 
+        // Shutdown Command
         builder.addSlashCommand(new Shutdown(waiter));
 
+        // Support Commands
         builder.addSlashCommand(new Sodium());
         builder.addSlashCommand(new Config());
         builder.addSlashCommand(new Logs());
         builder.addSlashCommand(new CrashReport());
         builder.addSlashCommand(new Starline());
         builder.addSlashCommand(new Indium());
+        builder.addSlashCommand(new ETA());
 
+        // Rule Commands
         builder.addSlashCommand(new RuleOne());
         builder.addSlashCommand(new RuleTwo());
         builder.addSlashCommand(new RuleThree());
