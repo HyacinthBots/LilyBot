@@ -16,20 +16,24 @@ import net.irisshaders.lilybot.commands.moderation.*;
 import net.irisshaders.lilybot.commands.support.*;
 import net.irisshaders.lilybot.commands.support.rules.*;
 import net.irisshaders.lilybot.events.ReadyHandler;
+import net.irisshaders.lilybot.objects.Memory;
+import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GitHubBuilder;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
 
 @SuppressWarnings("ConstantConditions")
 public class LilyBot {
 
-    static Dotenv dotenv = Dotenv.load();
-    static EventWaiter waiter = new EventWaiter();
+    private static final Dotenv dotenv = Dotenv.load();
 
     // Make sure the right values are set in the .env
     public static final String MODERATOR_ROLE = dotenv.get("MODERATOR_ROLE");
     public static final String MUTED_ROLE = dotenv.get("MUTED_ROLE");
     public static final String GUILD_ID = dotenv.get("GUILD_ID");
     public static final String ACTION_LOG = dotenv.get("ACTION_LOG");
+    public static final String GITHUB_OAUTH = dotenv.get("GITHUB_OAUTH");
 
     public static void main(String[] args) {
 
@@ -56,6 +60,7 @@ public class LilyBot {
             e.printStackTrace();
         }
 
+        EventWaiter waiter = new EventWaiter();
         CommandClient builder = new CommandClientBuilder() // basically a command handler
                 .setPrefix("!")
                 .setHelpConsumer(null)
@@ -65,9 +70,21 @@ public class LilyBot {
                 .forceGuildOnly(GUILD_ID)
                 .build();
 
-            jda.addEventListener(builder, waiter); // registers the command handler and the eventwaiter
+        jda.addEventListener(builder, waiter); // registers the command handler and the eventwaiter
 
-            jda.addEventListener(new ReadyHandler());
+        jda.addEventListener(new ReadyHandler());
+
+        GitHub github = null;
+        try {
+            github = new GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build();
+            LoggerFactory.getLogger("GitHub").info("Logged into GitHub!");
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            LoggerFactory.getLogger("GitHub").error("Failed to log into GitHub!");
+            jda.shutdownNow();
+        }
+
+        Memory.remember(github, waiter);
 
         // add commands now
         builder.addSlashCommand(new Ping());
@@ -77,11 +94,11 @@ public class LilyBot {
         builder.addSlashCommand(new Kick());
         builder.addSlashCommand(new Unban());
         builder.addSlashCommand(new Clear());
-        builder.addSlashCommand(new Mute(waiter));
+        builder.addSlashCommand(new Mute());
         builder.addSlashCommand(new MuteList());
 
         // Shutdown Command
-        builder.addSlashCommand(new Shutdown(waiter));
+        builder.addSlashCommand(new Shutdown());
 
         // Support Commands
         builder.addSlashCommand(new Sodium());
@@ -101,6 +118,9 @@ public class LilyBot {
         builder.addSlashCommand(new RuleSix());
         builder.addSlashCommand(new RuleSeven());
         builder.addSlashCommand(new RuleEight());
+
+        // Services
+        builder.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
 
     }
 
