@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
@@ -22,7 +22,7 @@ public class Clear extends SlashCommand {
         this.name = "clear";
         this.help = "Clears messages. If no input is given, it clears 100 by default.";
         this.defaultEnabled = false;
-        this.enabledRoles = new String[]{LilyBot.MODERATOR_ROLE};
+        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
         this.guildOnly = true;
         this.botPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
         this.botMissingPermMessage = "The bot does not have the `MESSAGE MANAGE` permission.";
@@ -34,7 +34,7 @@ public class Clear extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
 
-        TextChannel action_log = event.getGuild().getTextChannelById(LilyBot.ACTION_LOG);
+        TextChannel action_log = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         int index = Integer.parseInt(event.getOption("messages") == null ? "100" : event.getOption("messages").getAsString());
         User user = event.getUser();
         MessageChannel channel = event.getChannel();

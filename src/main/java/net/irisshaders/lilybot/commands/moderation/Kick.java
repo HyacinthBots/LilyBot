@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
@@ -25,7 +25,7 @@ public class Kick extends SlashCommand {
         this.name = "kick";
         this.help = "Kicks a member! Goodbye!";
         this.defaultEnabled = false;
-        this.enabledRoles = new String[]{LilyBot.MODERATOR_ROLE};
+        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
         this.guildOnly = true;
         this.botPermissions = new Permission[]{Permission.KICK_MEMBERS};
         this.botMissingPermMessage = "The bot does not have the `KICK MEMBERS` permission.";
@@ -38,7 +38,7 @@ public class Kick extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
 
-        TextChannel action_log = event.getGuild().getTextChannelById(LilyBot.ACTION_LOG);
+        TextChannel action_log = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         Member member = event.getOption("member").getAsMember();
         String reason = event.getOption("reason") == null ? "No reason provided." : event.getOption("reason").getAsString();
         User user = event.getUser();

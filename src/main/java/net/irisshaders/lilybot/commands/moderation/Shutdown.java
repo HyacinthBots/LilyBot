@@ -11,8 +11,8 @@ import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
-import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.objects.Memory;
+import net.irisshaders.lilybot.utils.Constants;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
@@ -34,7 +34,7 @@ public class Shutdown extends SlashCommand {
 
         User user = event.getUser();
         JDA jda = event.getJDA();
-        TextChannel action_log = jda.getTextChannelById(LilyBot.ACTION_LOG);
+        TextChannel action_log = jda.getTextChannelById(Constants.ACTION_LOG);
 
         MessageEmbed shutdownEmbed = new EmbedBuilder()
                 .setTitle("Shut Down")

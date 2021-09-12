@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.utils.Constants;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ public class ReadyHandler extends ListenerAdapter {
 
         JDA jda = event.getJDA();
         String tag = jda.getSelfUser().getAsTag();
-        String channelId = LilyBot.ACTION_LOG;
+        String action_log = Constants.ACTION_LOG;
 
         LoggerFactory.getLogger(ReadyHandler.class).info(String.format("Logged in as \"%s\"", tag));
 
@@ -30,7 +30,7 @@ public class ReadyHandler extends ListenerAdapter {
                 .setTimestamp(Instant.now())
                 .build();
 
-        jda.getTextChannelById(channelId).sendMessageEmbeds(onlineEmbed).queue();
+        jda.getTextChannelById(action_log).sendMessageEmbeds(onlineEmbed).queue();
 
     }
 

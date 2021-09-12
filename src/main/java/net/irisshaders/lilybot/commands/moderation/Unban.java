@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
@@ -25,7 +25,7 @@ public class Unban extends SlashCommand {
         name = "unban";
         help = "Unbans a user. Hello again!";
         defaultEnabled = false;
-        enabledRoles = new String[]{LilyBot.MODERATOR_ROLE};
+        enabledRoles = new String[]{Constants.MODERATOR_ROLE};
         guildOnly = true;
         botPermissions = new Permission[]{Permission.BAN_MEMBERS};
         botMissingPermMessage = "The bot does not have the `BAN MEMBERS` permission.";
@@ -37,7 +37,7 @@ public class Unban extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
 
-        TextChannel action_log = event.getGuild().getTextChannelById(LilyBot.ACTION_LOG);
+        TextChannel action_log = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         Guild guild = event.getGuild();
         User userById = event.getOption("id").getAsUser();
         User user = event.getUser();

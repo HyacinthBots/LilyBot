@@ -6,14 +6,12 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.utils.Constants;
 
 import java.awt.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.irisshaders.lilybot.LilyBot.GUILD_ID;
 
 @SuppressWarnings("ConstantConditions")
 public class MuteList extends SlashCommand {
@@ -22,7 +20,7 @@ public class MuteList extends SlashCommand {
         this.name = "mute-list";
         this.help = "Lists all muted members.";
         this.defaultEnabled = false;
-        this.enabledRoles = new String[]{LilyBot.MODERATOR_ROLE};
+        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
         this.guildOnly = true;
         this.botPermissions = new Permission[]{Permission.MANAGE_ROLES};
         this.botMissingPermMessage = "The bot does not have the `MANAGE_ROLES` permission.";
@@ -32,8 +30,8 @@ public class MuteList extends SlashCommand {
     protected void execute(SlashCommandEvent event) {
 
         JDA jda = event.getJDA();
-        Guild guild = jda.getGuildById(GUILD_ID);
-        Role mutedRole = guild.getRoleById(LilyBot.MUTED_ROLE);
+        Guild guild = jda.getGuildById(Constants.GUILD_ID);
+        Role mutedRole = guild.getRoleById(Constants.MUTED_ROLE);
         User user = event.getUser();
         List<Member> guildMembers = guild.getMembers();
         List<String> mutedMembers = new ArrayList<>();

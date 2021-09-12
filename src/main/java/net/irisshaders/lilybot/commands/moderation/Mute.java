@@ -13,8 +13,8 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.dv8tion.jda.api.requests.ErrorResponse;
-import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.objects.Memory;
+import net.irisshaders.lilybot.utils.Constants;
 
 import java.awt.*;
 import java.time.Instant;
@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static net.irisshaders.lilybot.LilyBot.GUILD_ID;
-
 @SuppressWarnings("ConstantConditions")
 public class Mute extends SlashCommand {
 
@@ -32,7 +30,7 @@ public class Mute extends SlashCommand {
         this.name = "mute";
         this.help = "Mutes a specified member for the given reason and duration. Defaults to 6h and no reason.";
         this.defaultEnabled = false;
-        this.enabledRoles = new String[]{LilyBot.MODERATOR_ROLE};
+        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
         this.guildOnly = true;
         this.botPermissions = new Permission[]{Permission.MANAGE_ROLES};
         this.botMissingPermMessage = "The bot does not have the `MANAGE ROLES` permission.";
@@ -46,14 +44,14 @@ public class Mute extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
 
-        TextChannel action_log = event.getGuild().getTextChannelById(LilyBot.ACTION_LOG);
+        TextChannel action_log = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         Member target = event.getOption("member").getAsMember();
         User user = event.getUser();
         JDA jda = event.getJDA();
-        Guild guild = jda.getGuildById(GUILD_ID);
+        Guild guild = jda.getGuildById(Constants.GUILD_ID);
         String reason = event.getOption("reason") == null ? "No reason provided" : event.getOption("reason").getAsString();
         String duration = event.getOption("duration") == null ? "6h" : event.getOption("duration").getAsString();
-        Role mutedRole = guild.getRoleById(LilyBot.MUTED_ROLE);
+        Role mutedRole = guild.getRoleById(Constants.MUTED_ROLE);
 
         if (!target.getRoles().contains(mutedRole)) {
 
