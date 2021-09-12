@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
 import java.time.Instant;
@@ -54,7 +55,9 @@ public class Unban extends SlashCommand {
             event.replyEmbeds(unbanEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
             action_log.sendMessageEmbeds(unbanEmbed).queue();
 
-        });
+        }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to unban.", null))
+                .mentionRepliedUser(false).setEphemeral(true).queue()
+        );
 
     }
 

@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
 import java.time.Instant;
@@ -55,15 +56,9 @@ public class Clear extends SlashCommand {
 
         } catch (Exception exception) {
 
-            MessageEmbed clearFailureEmbed = new EmbedBuilder()
-                    .setTitle("Error while clearing " + index + " messages.")
-                    .setDescription("Invalid number of messages selected. Must be between 2 and 100.")
-                    .setColor(Color.RED)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
-            event.replyEmbeds(clearFailureEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
+            event.replyEmbeds(ResponseHelper.genFailureEmbed(user, String.format("Error while clearing %s messages.", index),
+                    "Invalid number of messages selected. Must be between 2 and 100."))
+                    .mentionRepliedUser(false).setEphemeral(true).queue();
 
         }
 

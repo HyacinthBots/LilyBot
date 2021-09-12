@@ -8,11 +8,10 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
 import java.time.Instant;
@@ -58,8 +57,9 @@ public class Kick extends SlashCommand {
             event.replyEmbeds(kickEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
             action_log.sendMessageEmbeds(kickEmbed).queue();
 
-
-        });
+        }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to kick.", null))
+                .mentionRepliedUser(false).setEphemeral(true).queue()
+        );
 
     }
 
