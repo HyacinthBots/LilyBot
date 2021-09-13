@@ -63,6 +63,13 @@ jobs:
     #    and modify them (or add more) to build your code if your project
     #    uses a compiled language
 
+    - name: Cache Gradle Packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.gradle/caches
+        key: ${{runner.os}}-gradle-${{hashFiles('**/*.gradle')}}
+        restore-keys: ${{runner.os}}-gradle
+
     - name: Set up JDK 16
       uses: actions/setup-java@v2
       with:
