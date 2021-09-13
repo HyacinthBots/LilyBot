@@ -14,7 +14,6 @@ import net.irisshaders.lilybot.commands.Ping;
 import net.irisshaders.lilybot.commands.moderation.Shutdown;
 import net.irisshaders.lilybot.commands.moderation.*;
 import net.irisshaders.lilybot.commands.support.*;
-import net.irisshaders.lilybot.commands.support.rules.*;
 import net.irisshaders.lilybot.events.ReadyHandler;
 import net.irisshaders.lilybot.objects.Memory;
 import net.irisshaders.lilybot.utils.Constants;
@@ -100,16 +99,7 @@ public class LilyBot {
         builder.addSlashCommand(new Starline());
         builder.addSlashCommand(new Indium());
         builder.addSlashCommand(new ETA());
-
-        // Rule Commands
-        builder.addSlashCommand(new RuleOne());
-        builder.addSlashCommand(new RuleTwo());
-        builder.addSlashCommand(new RuleThree());
-        builder.addSlashCommand(new RuleFour());
-        builder.addSlashCommand(new RuleFive());
-        builder.addSlashCommand(new RuleSix());
-        builder.addSlashCommand(new RuleSeven());
-        builder.addSlashCommand(new RuleEight());
+        builder.addSlashCommand(new Rule());
 
         // Services
         builder.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
