@@ -47,19 +47,8 @@ public class Rule extends SlashCommand {
 
             User user = event.getUser();
 
-            MessageEmbed ruleOneEmbed = new EmbedBuilder()
-                    .setTitle("Rule 1")
-                    .setDescription(
-                            "Be decent to one another. We're all human. Any and all forms of" +
-                            " bigotry, harassment, doxxing, exclusionary, or otherwise abusive behavior will not be tolerated." +
-                            " Excessive rudeness, impatience, and hostility are not welcome. Do not rage out or make personal attacks" +
-                            " against other people. Do not encourage users to brigade/raid other communities."
-                    ).setColor(Color.RED)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
-            event.replyEmbeds(ruleOneEmbed).mentionRepliedUser(false).setEphemeral(false).queue();
+            event.replyEmbeds(ruleUtils(user, "Rule 1", RuleDescriptions.DESC_1))
+                    .mentionRepliedUser(false).setEphemeral(false).queue();
 
         }
 
@@ -79,19 +68,8 @@ public class Rule extends SlashCommand {
 
             User user = event.getUser();
 
-            MessageEmbed ruleTwoEmbed = new EmbedBuilder()
-                    .setTitle("Rule Two")
-                    .setDescription(
-                            "Keep chat clean. Do not spam text, images, user mentions, emojis," +
-                            " reactions, or anything else. Do not post offensive, obscene, politically charged," +
-                            " or sexually explicit content. Avoid using vulgar language and excessive profanity." +
-                            " Use English at all times in public channels."
-                    ).setColor(Color.RED)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
-            event.replyEmbeds(ruleTwoEmbed).mentionRepliedUser(false).setEphemeral(false).queue();
+            event.replyEmbeds(ruleUtils(user, "Rule 2", RuleDescriptions.DESC_2))
+                    .mentionRepliedUser(false).setEphemeral(false).queue();
 
         }
 
@@ -111,17 +89,8 @@ public class Rule extends SlashCommand {
 
             User user = event.getUser();
 
-            MessageEmbed ruleThreeEmbed = new EmbedBuilder()
-                    .setTitle("Rule 3")
-                    .setDescription(
-                            "Keep discussion on-topic. This server is focused around Iris." +
-                            " General chatter unrelated to Iris is best kept to other Discord communities or to DMs."
-                    ).setColor(Color.RED)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
-            event.replyEmbeds(ruleThreeEmbed).mentionRepliedUser(false).setEphemeral(false).queue();
+            event.replyEmbeds(ruleUtils(user, "Rule 3", RuleDescriptions.DESC_3))
+                    .mentionRepliedUser(false).setEphemeral(false).queue();
 
         }
 
@@ -141,17 +110,8 @@ public class Rule extends SlashCommand {
 
             User user = event.getUser();
 
-            MessageEmbed ruleFourEmbed = new EmbedBuilder()
-                    .setTitle("Rule 4")
-                    .setDescription(
-                            "Understand that support is not guaranteed. Support will be provided" +
-                            " on a best-effort basis."
-                    ).setColor(Color.RED)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
-            event.replyEmbeds(ruleFourEmbed).mentionRepliedUser(false).setEphemeral(false).queue();
+            event.replyEmbeds(ruleUtils(user, "Rule 4", RuleDescriptions.DESC_4))
+                    .mentionRepliedUser(false).setEphemeral(false).queue();
 
         }
 
@@ -171,19 +131,8 @@ public class Rule extends SlashCommand {
 
             User user = event.getUser();
 
-            MessageEmbed ruleFiveEmbed = new EmbedBuilder()
-                    .setTitle("Rule 5")
-                    .setDescription(
-                            "Do not ask for support on compiling Iris, and refrain from providing this support." +
-                            " There is sufficient information for people who know what they're doing to compile the mod themselves" +
-                            " without help. The fact that compiled builds are only distributed to Patrons is intentional, and is" +
-                            " intended to keep the support burden manageable."
-                    ).setColor(Color.RED)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
-            event.replyEmbeds(ruleFiveEmbed).mentionRepliedUser(false).setEphemeral(false).queue();
+            event.replyEmbeds(ruleUtils(user, "Rule 5", RuleDescriptions.DESC_5))
+                    .mentionRepliedUser(false).setEphemeral(false).queue();
 
         }
 
@@ -203,17 +152,8 @@ public class Rule extends SlashCommand {
 
             User user = event.getUser();
 
-            MessageEmbed ruleSixEmbed = new EmbedBuilder()
-                    .setTitle("Rule 6")
-                    .setDescription(
-                            "No links to executable files or JAR files. Uploading or directly" +
-                            " linking to executable files is not allowed without prior approval."
-                    ).setColor(Color.RED)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
-            event.replyEmbeds(ruleSixEmbed).mentionRepliedUser(false).setEphemeral(false).queue();
+            event.replyEmbeds(ruleUtils(user, "Rule 6", RuleDescriptions.DESC_6))
+                    .mentionRepliedUser(false).setEphemeral(false).queue();
 
         }
 
@@ -233,18 +173,8 @@ public class Rule extends SlashCommand {
 
             User user = event.getUser();
 
-            MessageEmbed ruleSevenEmbed = new EmbedBuilder()
-                    .setTitle("Rule 7")
-                    .setDescription(
-                            "Refrain from sending unsolicited pings and direct messages. Pings" +
-                            " and DMs can be annoying to deal with, so please avoid using them unless they are necessary. Use pings in" +
-                            " replies with discretion as well. Unsolicited support requests made with pings and DMs are a big no."
-                    ).setColor(Color.RED)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
-            event.replyEmbeds(ruleSevenEmbed).mentionRepliedUser(false).setEphemeral(false).queue();
+            event.replyEmbeds(ruleUtils(user, "Rule 7", RuleDescriptions.DESC_7))
+                    .mentionRepliedUser(false).setEphemeral(false).queue();
 
         }
 
@@ -264,20 +194,58 @@ public class Rule extends SlashCommand {
 
             User user = event.getUser();
 
-            MessageEmbed ruleEightEmbed = new EmbedBuilder()
-                    .setTitle("Rule 8")
-                    .setDescription(
-                            "Adhere to the Discord Terms of Service. I'd like to avoid getting" +
-                            " this community banned. No piracy! Absolutely no support will be provided for people running cracked" +
-                            " versions of the game. Providing support for these people counts as a rule violation!"
-                    ).setColor(Color.RED)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
-            event.replyEmbeds(ruleEightEmbed).mentionRepliedUser(false).setEphemeral(false).queue();
+            event.replyEmbeds(ruleUtils(user, "Rule 8", RuleDescriptions.DESC_8))
+                    .mentionRepliedUser(false).setEphemeral(false).queue();
 
         }
+
+    }
+
+    private static MessageEmbed ruleUtils(User user, String title, String description) {
+
+        return new EmbedBuilder()
+                .setTitle(title)
+                .setDescription(description)
+                .setColor(Color.RED)
+                .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
+                .setTimestamp(Instant.now())
+                .build();
+
+    }
+
+    private interface RuleDescriptions {
+
+        String DESC_1 = "Be decent to one another. We're all human. Any and all forms of" +
+                " bigotry, harassment, doxxing, exclusionary, or otherwise abusive behavior will not be tolerated." +
+                " Excessive rudeness, impatience, and hostility are not welcome. Do not rage out or make personal attacks" +
+                " against other people. Do not encourage users to brigade/raid other communities.";
+
+        String DESC_2 = "Keep chat clean. Do not spam text, images, user mentions, emojis," +
+                " reactions, or anything else. Do not post offensive, obscene, politically charged," +
+                " or sexually explicit content. Avoid using vulgar language and excessive profanity." +
+                " Use English at all times in public channels.";
+
+        String DESC_3 = "Keep discussion on-topic. This server is focused around Iris." +
+                " General chatter unrelated to Iris is best kept to other Discord communities or to DMs.";
+
+        String DESC_4 = "Understand that support is not guaranteed. Support will be provided" +
+                " on a best-effort basis.";
+
+        String DESC_5 = "Do not ask for support on compiling Iris, and refrain from providing this support." +
+                " There is sufficient information for people who know what they're doing to compile the mod themselves" +
+                " without help. The fact that compiled builds are only distributed to Patrons is intentional, and is" +
+                " intended to keep the support burden manageable.";
+
+        String DESC_6 = "No links to executable files or JAR files. Uploading or directly" +
+                " linking to executable files is not allowed without prior approval.";
+
+        String DESC_7 = "Refrain from sending unsolicited pings and direct messages. Pings" +
+                " and DMs can be annoying to deal with, so please avoid using them unless they are necessary. Use pings in" +
+                " replies with discretion as well. Unsolicited support requests made with pings and DMs are a big no.";
+
+        String DESC_8 = "Adhere to the Discord Terms of Service. I'd like to avoid getting" +
+                " this community banned. No piracy! Absolutely no support will be provided for people running cracked" +
+                " versions of the game. Providing support for these people counts as a rule violation!";
 
     }
 
