@@ -64,6 +64,7 @@ public class LilyBot {
         jda.addEventListener(builder, waiter); // registers the command handler and the eventwaiter
 
         jda.addEventListener(new ReadyHandler());
+        // jda.addEventListener(new Report()); // TODO uncomment when threads are finished
 
         GitHub github = null;
         try {
@@ -103,6 +104,9 @@ public class LilyBot {
 
         // Services
         builder.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
+
+        // normal commands
+        // builder.addCommand(new Report()); // TODO uncomment when threads are finished
 
     }
 
