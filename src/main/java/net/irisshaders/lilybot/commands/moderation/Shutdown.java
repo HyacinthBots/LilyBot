@@ -54,11 +54,11 @@ public class Shutdown extends SlashCommand {
         }, buttonClickEvent -> {
 
             User buttonClickEventUser = buttonClickEvent.getUser();
-            String id = buttonClickEvent.getButton().getId();
+            String id = buttonClickEvent.getButton().getId().split(":")[1];
 
             switch (id) {
 
-                case "shutdown:yes" -> {
+                case "yes" -> {
 
                     MessageEmbed finalShutdownEmbed = new EmbedBuilder()
                             .setTitle("Shutting down...")
@@ -78,7 +78,7 @@ public class Shutdown extends SlashCommand {
                     jda.shutdownNow();
 
                 }
-                case "shutdown:no" -> {
+                case "no" -> {
 
                     MessageEmbed noShutdownEmbed = new EmbedBuilder()
                             .setTitle("I am not shutting down")

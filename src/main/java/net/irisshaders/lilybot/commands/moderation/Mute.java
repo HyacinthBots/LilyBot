@@ -127,11 +127,11 @@ public class Mute extends SlashCommand {
             }, buttonClickEvent -> {
 
                 User buttonClickEventUser = buttonClickEvent.getUser();
-                String id = buttonClickEvent.getButton().getId();
+                String id = buttonClickEvent.getButton().getId().split(":")[1];
 
                 switch (id) {
 
-                    case "mute:yes" -> {
+                    case "yes" -> {
 
                         MessageEmbed unmuteEmbed = new EmbedBuilder()
                                 .setTitle("Unmute")
@@ -145,7 +145,7 @@ public class Mute extends SlashCommand {
                         guild.removeRoleFromMember(target, mutedRole).queue();
 
                     }
-                    case "mute:no" -> {
+                    case "no" -> {
 
                         MessageEmbed stillMutedEmbed = new EmbedBuilder()
                                 .setTitle(String.format("%s is still muted", target.getUser().getAsTag()))
