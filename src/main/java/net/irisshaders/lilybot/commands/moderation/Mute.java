@@ -97,7 +97,7 @@ public class Mute extends SlashCommand {
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    event.getGuild().removeRoleFromMember(target, mutedRole).queue(
+                    guild.removeRoleFromMember(target, mutedRole).queue(
                             success -> action_log.sendMessageEmbeds(unmuteEmbed).queue(),
                             error -> event.replyFormat("Unable to mute %s: %s", target.getUser().getName(), error).mentionRepliedUser(false).setEphemeral(false).submit()
                     );
