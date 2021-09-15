@@ -88,11 +88,9 @@ public class Mute extends SlashCommand {
             // Send the embed as Interaction reply, in action log and to the user
             event.replyEmbeds(muteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
             action_log.sendMessageEmbeds(muteEmbed).queue();
-            target.getUser().openPrivateChannel().flatMap(
-                            privateChannel -> privateChannel.sendMessageEmbeds(userEmbed))
-                    .queue(null, new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER,
-                            (ex) -> System.out.println("Cannot send message to user")));
-
+            target.getUser().openPrivateChannel()
+                    .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(userEmbed))
+                    .queue(null, null);
 
             guild.addRoleToMember(target, mutedRole).queue();
 
