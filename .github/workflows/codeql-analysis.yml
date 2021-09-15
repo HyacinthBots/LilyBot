@@ -83,6 +83,7 @@ jobs:
       with:
         distribution: jdkfile
         java-version: 17
+        jdkFile: ${{ runner.temp }}/amazon-corretto-17-x64-linux-jdk.tar.gz
         cache: 'gradle'
     - run: |
        chmod +x gradlew
