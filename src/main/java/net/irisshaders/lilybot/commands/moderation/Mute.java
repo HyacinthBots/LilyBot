@@ -7,12 +7,10 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
-import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.irisshaders.lilybot.objects.Memory;
 import net.irisshaders.lilybot.utils.Constants;
 
@@ -90,7 +88,15 @@ public class Mute extends SlashCommand {
             action_log.sendMessageEmbeds(muteEmbed).queue();
             target.getUser().openPrivateChannel()
                     .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(userEmbed))
-                    .queue(null, null);
+                    .queue(null, throwable -> {
+                        MessageEmbed failedToDMEmbed = new EmbedBuilder()
+                                .setTitle("Failed to DM " + target.getUser().getAsTag() + " for mute.")
+                                .setColor(Color.CYAN)
+                                .setFooter("Mute was originally requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
+                                .setTimestamp(Instant.now())
+                                .build();
+                        action_log.sendMessageEmbeds(failedToDMEmbed).queue();
+                    });
 
             guild.addRoleToMember(target, mutedRole).queue();
 
