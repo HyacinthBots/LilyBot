@@ -80,14 +80,6 @@ public class Warn extends SlashCommand {
 
         try (PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement("SELECT points FROM warn WHERE id = (?)")) {
             statement.setString(1, targetId);
-            statement.execute();
-            statement.closeOnCompletion();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try (PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement("SELECT points FROM warn WHERE id = (?)")) {
-            statement.setString(1, targetId);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 String currentPoints = resultSet.getString("points");
