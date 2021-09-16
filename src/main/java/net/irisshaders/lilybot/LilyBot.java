@@ -14,6 +14,7 @@ import net.irisshaders.lilybot.commands.Ping;
 import net.irisshaders.lilybot.commands.moderation.Shutdown;
 import net.irisshaders.lilybot.commands.moderation.*;
 import net.irisshaders.lilybot.commands.support.*;
+import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.events.ReadyHandler;
 import net.irisshaders.lilybot.objects.Memory;
 import net.irisshaders.lilybot.utils.Constants;
@@ -22,6 +23,7 @@ import org.kohsuke.github.GitHubBuilder;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.sql.SQLException;
 
 @SuppressWarnings("ConstantConditions")
 public class LilyBot {
@@ -65,6 +67,12 @@ public class LilyBot {
 
         jda.addEventListener(new ReadyHandler());
         // jda.addEventListener(new Report()); // TODO uncomment when threads are finished
+
+        try {
+            SQLiteDataSource.getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         GitHub github = null;
         try {
