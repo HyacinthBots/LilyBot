@@ -72,7 +72,6 @@ public class Warn extends SlashCommand {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 
     public void insertUsers(Guild guild) throws SQLException {
@@ -90,7 +89,6 @@ public class Warn extends SlashCommand {
             }
             statement.closeOnCompletion();
         }
-
     }
 
     public void updatePoints(String points, String targetId) throws SQLException {
