@@ -49,14 +49,39 @@ public class Warn extends SlashCommand {
         String reason = event.getOption("reason") == null ? "No reason provided." : event.getOption("reason").getAsString();
         User user = event.getUser();
         Guild guild = event.getGuild();
-        List<Member> members = guild.getMembers();
         InteractionHook hook = event.getHook();
 
         event.deferReply().queue(); // deferred because it may take more than 3 seconds for the SQL below
 
-        try (PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement("INSERT OR IGNORE INTO warn(id, points) VALUES (?, ?)")) {
+        try {
+            insertUsers(guild);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            updatePoints(points, targetId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to warn " + target.getAsTag() + " with " + points + " points",
+                    "Stacktrace: " + Arrays.toString(e.getStackTrace()))).queue();
+        }
+
+        try {
+            readPoints(targetId, target, points, reason, hook);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void insertUsers(Guild guild) throws SQLException {
+        String insertString = "INSERT OR IGNORE INTO [warn](id, points) VALUES (?, ?)";
+        List<Member> members = guild.getMembers();
+        PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(insertString);
+        {
             LoggerFactory.getLogger(Warn.class).info("Writing all guild members to database!");
-            for (Member member: members) {
+            for (Member member : members) {
                 String memberId = member.getId();
                 statement.setString(1, memberId);
                 statement.setString(2, "0");
@@ -64,21 +89,26 @@ public class Warn extends SlashCommand {
                 statement.closeOnCompletion();
             }
             statement.closeOnCompletion();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
 
-        try (PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement("UPDATE warn SET points = points + (?) WHERE id IS (?)")) {
+    }
+
+    public void updatePoints(String points, String targetId) throws SQLException {
+        String updateString = "UPDATE warn SET points = points + (?) WHERE id IS (?)";
+        PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(updateString);
+        {
             statement.setString(1, points);
             statement.setString(2, targetId);
             statement.execute();
             statement.closeOnCompletion();
-        } catch (SQLException e) {
-            event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to warn " + target.getAsTag() + " with " + points + " points",
-                    "Stacktrace: " + Arrays.toString(e.getStackTrace()))).queue();
+            statement.closeOnCompletion();
         }
+    }
 
-        try (PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement("SELECT points FROM warn WHERE id = (?)")) {
+    public void readPoints(String targetId, User target, String points, String reason, InteractionHook hook) throws SQLException {
+        String selectString = "SELECT points FROM warn WHERE id = (?)";
+        PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(selectString);
+        {
             statement.setString(1, targetId);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -95,10 +125,6 @@ public class Warn extends SlashCommand {
             }
             resultSet.close();
             statement.closeOnCompletion();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-
     }
-
 }
