@@ -20,7 +20,7 @@ public class ReadyHandler extends ListenerAdapter {
 
         JDA jda = event.getJDA();
         String tag = jda.getSelfUser().getAsTag();
-        String action_log = Constants.ACTION_LOG;
+        String actionLog = Constants.ACTION_LOG;
 
         LoggerFactory.getLogger(ReadyHandler.class).info(String.format("Logged in as \"%s\"", tag));
 
@@ -30,7 +30,7 @@ public class ReadyHandler extends ListenerAdapter {
                 .setTimestamp(Instant.now())
                 .build();
 
-        jda.getTextChannelById(action_log).sendMessageEmbeds(onlineEmbed).queue();
+        jda.getTextChannelById(actionLog).sendMessageEmbeds(onlineEmbed).queue();
 
     }
 

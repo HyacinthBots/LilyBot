@@ -34,7 +34,7 @@ public class Shutdown extends SlashCommand {
 
         User user = event.getUser();
         JDA jda = event.getJDA();
-        TextChannel action_log = jda.getTextChannelById(Constants.ACTION_LOG);
+        TextChannel actionLog = jda.getTextChannelById(Constants.ACTION_LOG);
 
         MessageEmbed shutdownEmbed = new EmbedBuilder()
                 .setTitle("Shut Down")
@@ -69,7 +69,7 @@ public class Shutdown extends SlashCommand {
                             .build();
 
                     buttonClickEvent.replyEmbeds(finalShutdownEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
-                    action_log.sendMessageEmbeds(finalShutdownEmbed).queue();
+                    actionLog.sendMessageEmbeds(finalShutdownEmbed).queue();
                     LoggerFactory.getLogger(Shutdown.class).info("Shutting down!");
 
                     // Wait for it to send the embed and respond to any other commands. Can be reduced to a lower number if testing allows for it.

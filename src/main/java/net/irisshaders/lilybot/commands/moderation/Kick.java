@@ -38,7 +38,7 @@ public class Kick extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
 
-        TextChannel action_log = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
+        TextChannel actionLog = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         Member member = event.getOption("member").getAsMember();
         String reason = event.getOption("reason") == null ? "No reason provided." : event.getOption("reason").getAsString();
         User user = event.getUser();
@@ -55,7 +55,7 @@ public class Kick extends SlashCommand {
                     .build();
 
             event.replyEmbeds(kickEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
-            action_log.sendMessageEmbeds(kickEmbed).queue();
+            actionLog.sendMessageEmbeds(kickEmbed).queue();
 
         }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to kick.", null))
                 .mentionRepliedUser(false).setEphemeral(true).queue()

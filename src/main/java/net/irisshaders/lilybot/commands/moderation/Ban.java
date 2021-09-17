@@ -39,7 +39,7 @@ public class Ban extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
 
-        TextChannel action_log = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
+        TextChannel actionLog = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         Member member = event.getOption("member").getAsMember();
         int days = Integer.parseInt(event.getOption("days").getAsString());
         String reason = event.getOption("reason") == null ? "No reason provided." : event.getOption("reason").getAsString();
@@ -58,7 +58,7 @@ public class Ban extends SlashCommand {
                     .build();
 
             event.replyEmbeds(banEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
-            action_log.sendMessageEmbeds(banEmbed).queue();
+            actionLog.sendMessageEmbeds(banEmbed).queue();
 
         }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to ban.", null))
                             .mentionRepliedUser(false).setEphemeral(true).queue()

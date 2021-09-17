@@ -42,7 +42,7 @@ public class Mute extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
 
-        TextChannel action_log = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
+        TextChannel actionLog = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         Member target = event.getOption("member").getAsMember();
         User user = event.getUser();
         JDA jda = event.getJDA();
@@ -85,7 +85,7 @@ public class Mute extends SlashCommand {
 
             // Send the embed as Interaction reply, in action log and to the user
             event.replyEmbeds(muteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
-            action_log.sendMessageEmbeds(muteEmbed).queue();
+            actionLog.sendMessageEmbeds(muteEmbed).queue();
             target.getUser().openPrivateChannel()
                     .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(userEmbed))
                     .queue(null, throwable -> {
@@ -95,7 +95,7 @@ public class Mute extends SlashCommand {
                                 .setFooter("Mute was originally requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                                 .setTimestamp(Instant.now())
                                 .build();
-                        action_log.sendMessageEmbeds(failedToDMEmbed).queue();
+                        actionLog.sendMessageEmbeds(failedToDMEmbed).queue();
                     });
 
             guild.addRoleToMember(target, mutedRole).queue();
@@ -104,7 +104,7 @@ public class Mute extends SlashCommand {
                 @Override
                 public void run() {
                     guild.removeRoleFromMember(target, mutedRole).queue(
-                            success -> action_log.sendMessageEmbeds(unmuteEmbed).queue(),
+                            success -> actionLog.sendMessageEmbeds(unmuteEmbed).queue(),
                             error -> event.replyFormat("Unable to mute %s: %s", target.getUser().getName(), error).mentionRepliedUser(false).setEphemeral(false).submit()
                     );
                 }
