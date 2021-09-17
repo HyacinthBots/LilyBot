@@ -81,7 +81,7 @@ public class Mute extends SlashCommand {
                     .setTimestamp(Instant.now())
                     .build();
 
-            int duration_int = parseDuration(duration);
+            int durationInt = parseDuration(duration);
 
             // Send the embed as Interaction reply, in action log and to the user
             event.replyEmbeds(muteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
@@ -108,7 +108,7 @@ public class Mute extends SlashCommand {
                             error -> event.replyFormat("Unable to mute %s: %s", target.getUser().getName(), error).mentionRepliedUser(false).setEphemeral(false).submit()
                     );
                 }
-            }, duration_int);
+            }, durationInt);
 
         } else if (target.getRoles().contains(mutedRole)) {
 
@@ -170,7 +170,7 @@ public class Mute extends SlashCommand {
 
     }
 
-    public Integer parseDuration(String time) {
+    public static Integer parseDuration(String time) {
         int duration = Integer.parseInt(time.replaceAll("[^0-9]", ""));
         String unit = time.replaceAll("[^A-Za-z]+", "").trim();
         switch (unit) {
