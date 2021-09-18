@@ -18,6 +18,8 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.2.6'
     implementation 'io.github.cdimascio:dotenv-java:2.2.0'
     implementation 'org.kohsuke:github-api:1.133'
+    implementation 'com.zaxxer:HikariCP:5.0.0'
+    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
 }
 
 tasks.withType(JavaCompile) {
