@@ -73,27 +73,6 @@ public class Warn extends SlashCommand {
 
     }
 
-    private void consequences(Member target, String targetId, String reason, User user, Guild guild, Role mutedRole, TextChannel actionLog) throws SQLException {
-        @Language("SQL")
-        String queryString = "SELECT points FROM warn WHERE id = (?)";
-        PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(queryString);
-        statement.setString(1, targetId);
-        ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()) {
-            int currentPoints = resultSet.getInt("points");
-            if (currentPoints >= 25 && currentPoints < 50) { // 1 hr mute
-                mute(guild, target, mutedRole, "1h", user, actionLog);
-            } else if (currentPoints >= 50 && currentPoints < 100) { // 3 hr mute
-                mute(guild, target, mutedRole, "3h", user, actionLog);
-            } else if (currentPoints >= 100 && currentPoints < 150) { // 12 hr mute
-                mute(guild, target, mutedRole, "12h", user, actionLog);
-            } else if (currentPoints >= 150) { // ban
-                ban(target, user, actionLog, reason);
-            }
-        }
-        statement.closeOnCompletion();
-    }
-
     private void updatePoints(String points, String targetId) throws SQLException {
         @Language("SQL")
         String updateString = "UPDATE warn SET points = points + (?) WHERE id IS (?)";
@@ -129,6 +108,27 @@ public class Warn extends SlashCommand {
                 });
         }
         resultSet.close();
+        statement.closeOnCompletion();
+    }
+
+    private void consequences(Member target, String targetId, String reason, User user, Guild guild, Role mutedRole, TextChannel actionLog) throws SQLException {
+        @Language("SQL")
+        String queryString = "SELECT points FROM warn WHERE id = (?)";
+        PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(queryString);
+        statement.setString(1, targetId);
+        ResultSet resultSet = statement.executeQuery();
+        while (resultSet.next()) {
+            int currentPoints = resultSet.getInt("points");
+            if (currentPoints >= 25 && currentPoints < 50) { // 1 hr mute
+                mute(guild, target, mutedRole, "1h", user, actionLog);
+            } else if (currentPoints >= 50 && currentPoints < 100) { // 3 hr mute
+                mute(guild, target, mutedRole, "3h", user, actionLog);
+            } else if (currentPoints >= 100 && currentPoints < 150) { // 12 hr mute
+                mute(guild, target, mutedRole, "12h", user, actionLog);
+            } else if (currentPoints >= 150) { // ban
+                ban(target, user, actionLog, reason);
+            }
+        }
         statement.closeOnCompletion();
     }
 
