@@ -2,6 +2,9 @@ package net.irisshaders.lilybot.utils;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
+/**
+ * A convenience Interface to get Dotenv entries.
+ */
 public interface Constants {
 
     Dotenv dotenv = Dotenv.load();

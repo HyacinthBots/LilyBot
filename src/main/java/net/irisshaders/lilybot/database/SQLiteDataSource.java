@@ -12,6 +12,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Creates the database and the table.
+ */
 public class SQLiteDataSource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SQLiteDataSource.class);
@@ -51,6 +54,11 @@ public class SQLiteDataSource {
 
     }
 
+    /**
+     * A method to use wherever any SQL requests are made.
+     * @return The SQL connection.
+     * @throws SQLException if a database access error occurs.
+     */
     public static Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }

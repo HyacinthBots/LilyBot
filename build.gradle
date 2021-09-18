@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.30'
 }
 
 group = 'net.irisshaders.lilybot'
@@ -20,6 +21,7 @@ dependencies {
     implementation 'org.kohsuke:github-api:1.133'
     implementation 'com.zaxxer:HikariCP:5.0.0'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 tasks.withType(JavaCompile) {
@@ -36,5 +38,11 @@ tasks.withType(Jar) {
 tasks {
     build {
         dependsOn(shadowJar)
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }

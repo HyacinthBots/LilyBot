@@ -32,7 +32,7 @@ public class LilyBot {
 
         JDA jda = null;
         try {
-            jda = JDABuilder.createDefault(Constants.TOKEN) // jda
+            jda = JDABuilder.createDefault(Constants.TOKEN)
                     .setEnabledIntents(
                             GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_BANS,
                             GatewayIntent.GUILD_EMOJIS, GatewayIntent.GUILD_WEBHOOKS,
@@ -54,16 +54,16 @@ public class LilyBot {
         }
 
         EventWaiter waiter = new EventWaiter();
-        CommandClient builder = new CommandClientBuilder() // basically a command handler
+        CommandClient builder = new CommandClientBuilder()
                 .setPrefix("!")
                 .setHelpConsumer(null)
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("Iris 1.17.1"))
-                .setOwnerId(Constants.OWNER) // owner's ID, this doesn't really matter because helpConsumer is null
+                .setOwnerId(Constants.OWNER)
                 .forceGuildOnly(Constants.GUILD_ID)
                 .build();
 
-        jda.addEventListener(builder, waiter); // registers the command handler and the eventwaiter
+        jda.addEventListener(builder, waiter);
 
         jda.addEventListener(new ReadyHandler());
         // jda.addEventListener(new Report()); // TODO uncomment when threads are finished

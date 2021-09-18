@@ -60,7 +60,7 @@ public class Warn extends SlashCommand {
         }
 
         try {
-            readPoints(targetId, target, points, reason, hook, actionLog, guild);
+            readPoints(targetId, target, points, reason, hook, actionLog);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -73,6 +73,12 @@ public class Warn extends SlashCommand {
 
     }
 
+    /**
+     * A method to update points in the database.
+     * @param points The number of points to give. (String)
+     * @param targetId The ID of the target. (String)
+     * @throws SQLException if a database access error occurs.
+     */
     private void updatePoints(String points, String targetId) throws SQLException {
         @Language("SQL")
         String updateString = "UPDATE warn SET points = points + (?) WHERE id IS (?)";
@@ -83,7 +89,17 @@ public class Warn extends SlashCommand {
         statement.closeOnCompletion();
     }
 
-    private void readPoints(String targetId, Member target, String points, String reason, InteractionHook hook, TextChannel actionLog, Guild guild) throws SQLException {
+    /**
+     * A method for parsing the points that the target is awarded.
+     * @param targetId The ID of the target. (String)
+     * @param target The target. (Member)
+     * @param points The number of points to award. (String)
+     * @param reason The reason for the points to be given. (String)
+     * @param hook How the message is followed up. (InteractionHook)
+     * @param actionLog Where the moderation messages are sent. (TextChannel)
+     * @throws SQLException if a database access error occurs.
+     */
+    private void readPoints(String targetId, Member target, String points, String reason, InteractionHook hook, TextChannel actionLog) throws SQLException {
         @Language("SQL")
         String queryString = "SELECT points FROM warn WHERE id = (?)";
         PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(queryString);
@@ -104,13 +120,24 @@ public class Warn extends SlashCommand {
             target.getUser().openPrivateChannel()
                 .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(warnEmbed))
                 .queue(null, throwable -> {
-                    System.out.println(); // does nothing
+                    System.out.println();
                 });
         }
         resultSet.close();
         statement.closeOnCompletion();
     }
 
+    /**
+     * A method for deciding what consequence the target faces.
+     * @param target The target. (Member)
+     * @param targetId The ID of the target. (String).
+     * @param reason The reason for the points to be given. (String)
+     * @param user The user of the command. (User)
+     * @param guild The guild where this took place. (Guild)
+     * @param mutedRole The role to give for a mute. (Role)
+     * @param actionLog Where the moderation messages are sent. (TextChannel)
+     * @throws SQLException if a database access error occurs.
+     */
     private void consequences(Member target, String targetId, String reason, User user, Guild guild, Role mutedRole, TextChannel actionLog) throws SQLException {
         @Language("SQL")
         String queryString = "SELECT points FROM warn WHERE id = (?)";
@@ -132,6 +159,15 @@ public class Warn extends SlashCommand {
         statement.closeOnCompletion();
     }
 
+    /**
+     * A method for giving out mutes.
+     * @param guild The guild where this took place. (Guild)
+     * @param target The target. (Member)
+     * @param mutedRole The role to give for a mute. (Role)
+     * @param duration The length of the mute. (String)
+     * @param user The user of the command. (User)
+     * @param actionLog Where the moderation messages are sent. (TextChannel)
+     */
     private void mute(Guild guild, Member target, Role mutedRole, String duration, User user, TextChannel actionLog) {
         target.getUser().openPrivateChannel()
             .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(new EmbedBuilder()
@@ -165,6 +201,13 @@ public class Warn extends SlashCommand {
         }, Mute.parseDuration(duration));
     }
 
+    /**
+     * A method for banning.
+     * @param target The target. (Member)
+     * @param user The user of the command. (User)
+     * @param actionLog Where the moderation messages are sent. (TextChannel)
+     * @param reason The reason for the ban. (String)
+     */
     private void ban(Member target, User user, TextChannel actionLog, String reason) {
         MessageEmbed banEmbed = new EmbedBuilder()
                 .setTitle("Banned a member.")
