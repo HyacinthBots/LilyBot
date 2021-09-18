@@ -37,7 +37,7 @@ public class Unban extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
 
-        TextChannel action_log = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
+        TextChannel actionLog = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         Guild guild = event.getGuild();
         User userById = event.getOption("id").getAsUser();
         User user = event.getUser();
@@ -53,7 +53,7 @@ public class Unban extends SlashCommand {
                     .build();
 
             event.replyEmbeds(unbanEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
-            action_log.sendMessageEmbeds(unbanEmbed).queue();
+            actionLog.sendMessageEmbeds(unbanEmbed).queue();
 
         }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to unban.", null))
                 .mentionRepliedUser(false).setEphemeral(true).queue()

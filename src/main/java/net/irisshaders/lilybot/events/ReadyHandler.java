@@ -39,6 +39,7 @@ public class ReadyHandler extends ListenerAdapter {
 
         jda.getTextChannelById(actionLog).sendMessageEmbeds(onlineEmbed).queue();
 
+
     }
 
     @Override
@@ -62,6 +63,8 @@ public class ReadyHandler extends ListenerAdapter {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+
 
     }
 

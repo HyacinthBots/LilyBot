@@ -34,7 +34,7 @@ public class Clear extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
 
-        TextChannel action_log = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
+        TextChannel actionLog = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         int index = Integer.parseInt(event.getOption("messages") == null ? "100" : event.getOption("messages").getAsString());
         User user = event.getUser();
         MessageChannel channel = event.getChannel();
@@ -52,7 +52,7 @@ public class Clear extends SlashCommand {
                     .build();
 
             event.replyEmbeds(deletedMessagesEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
-            action_log.sendMessageEmbeds(deletedMessagesEmbed).queue();
+            actionLog.sendMessageEmbeds(deletedMessagesEmbed).queue();
 
         } catch (Exception exception) {
 
