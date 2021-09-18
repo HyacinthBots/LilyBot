@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
+import org.intellij.lang.annotations.Language;
 
 import java.awt.*;
 import java.sql.PreparedStatement;
@@ -48,7 +49,7 @@ public class Warn extends SlashCommand {
         Role mutedRole = guild.getRoleById(Constants.MUTED_ROLE);
         TextChannel actionLog = guild.getTextChannelById(Constants.ACTION_LOG);
 
-        event.deferReply().queue(); // deferred because it may take more than 3 seconds for the SQL below
+        event.deferReply(true).queue(); // deferred because it may take more than 3 seconds for the SQL below
 
         try {
             updatePoints(points, targetId);
@@ -73,6 +74,7 @@ public class Warn extends SlashCommand {
     }
 
     private void consequences(Member target, String targetId, String reason, User user, Guild guild, Role mutedRole, TextChannel actionLog) throws SQLException {
+        @Language("SQL")
         String queryString = "SELECT points FROM warn WHERE id = (?)";
         PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(queryString);
         statement.setString(1, targetId);
@@ -93,6 +95,7 @@ public class Warn extends SlashCommand {
     }
 
     private void updatePoints(String points, String targetId) throws SQLException {
+        @Language("SQL")
         String updateString = "UPDATE warn SET points = points + (?) WHERE id IS (?)";
         PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(updateString);
         statement.setString(1, points);
@@ -102,6 +105,7 @@ public class Warn extends SlashCommand {
     }
 
     private void readPoints(String targetId, Member target, String points, String reason, InteractionHook hook, TextChannel actionLog, Guild guild) throws SQLException {
+        @Language("SQL")
         String queryString = "SELECT points FROM warn WHERE id = (?)";
         PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(queryString);
         statement.setString(1, targetId);
@@ -122,7 +126,7 @@ public class Warn extends SlashCommand {
                 target.getUser().openPrivateChannel()
                     .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(warnEmbed))
                     .queue(null, throwable -> {
-                        System.out.println(""); // does nothing
+                        System.out.println(); // does nothing
                     });
         }
         resultSet.close();

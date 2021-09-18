@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.intellij.lang.annotations.Language;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +41,9 @@ public class SQLiteDataSource {
         dataSource = new HikariDataSource(config);
 
         try (Statement statement = getConnection().createStatement()) {
-            statement.execute("CREATE TABLE IF NOT EXISTS warn(" +
-                    "id INTEGER UNIQUE, points INTEGER);");
+            @Language("SQL")
+            String tableString = "CREATE TABLE IF NOT EXISTS warn(id INTEGER UNIQUE, points INTEGER)";
+            statement.execute(tableString);
             LOGGER.info("Table initialised!");
         } catch (SQLException e) {
             e.printStackTrace();
