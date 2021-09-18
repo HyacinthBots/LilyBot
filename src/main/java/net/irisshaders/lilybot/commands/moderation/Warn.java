@@ -122,12 +122,11 @@ public class Warn extends SlashCommand {
                     .build();
             hook.sendMessageEmbeds(warnEmbed).queue();
             actionLog.sendMessageEmbeds(warnEmbed).queue();
-            if (guild.getMembers().contains(target))
-                target.getUser().openPrivateChannel()
-                    .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(warnEmbed))
-                    .queue(null, throwable -> {
-                        System.out.println(); // does nothing
-                    });
+            target.getUser().openPrivateChannel()
+                .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(warnEmbed))
+                .queue(null, throwable -> {
+                    System.out.println(); // does nothing
+                });
         }
         resultSet.close();
         statement.closeOnCompletion();
