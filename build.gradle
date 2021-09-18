@@ -21,7 +21,7 @@ dependencies {
     implementation 'org.kohsuke:github-api:1.133'
     implementation 'com.zaxxer:HikariCP:5.0.0'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21'
 }
 
 tasks.withType(JavaCompile) {
