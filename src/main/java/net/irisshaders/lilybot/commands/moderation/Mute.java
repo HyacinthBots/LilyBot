@@ -58,7 +58,7 @@ public class Mute extends SlashCommand {
                     .addField(String.format("You are muted from %s for:", guild.getName()), duration, false)
                     .addField("Reason:", reason, false)
                     .setColor(Color.CYAN)
-                    .setFooter("Muted by by " + user.getAsTag(), user.getEffectiveAvatarUrl())
+                    .setFooter("Muted by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                     .setTimestamp(Instant.now())
                     .build();
 
