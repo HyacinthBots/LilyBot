@@ -10,15 +10,17 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
-import org.intellij.lang.annotations.Language;
 
 import java.awt.*;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @SuppressWarnings("ConstantConditions")
 public class Warn extends SlashCommand {
@@ -49,114 +51,106 @@ public class Warn extends SlashCommand {
         Role mutedRole = guild.getRoleById(Constants.MUTED_ROLE);
         TextChannel actionLog = guild.getTextChannelById(Constants.ACTION_LOG);
 
-        event.deferReply(true).queue(); // deferred because it may take more than 3 seconds for the SQL below
+        event.deferReply(true).queue();
 
-        try {
-            updatePoints(points, targetId);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to warn " + target.getUser().getAsTag() + " with " + points + " points",
-                    "Stacktrace: " + Arrays.toString(e.getStackTrace()))).queue();
-        }
-
-        try {
-            readPoints(targetId, target, points, reason, hook, actionLog);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            consequences(target, targetId, reason, user, guild, mutedRole, actionLog);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Insert target with default values if they are not in the DB, if they are already in the DB, do nothing
+        insertUsers(targetId);
+        // UPDATE Target's points with the given points
+        updateUsers(points, targetId);
+        // SELECT points from target, executes upon reaching a threshold
+        readPoints(target, points, hook, reason, user, actionLog, guild, mutedRole);
 
     }
 
     /**
-     * A method to update points in the database.
-     * @param points The number of points to give. (String)
-     * @param targetId The ID of the target. (String)
-     * @throws SQLException if a database access error occurs.
+     * A method for inserting the users into the database. If they are already in the database, they are ignored.
+     * @param targetId The id of the User to give the points to. (String)
      */
-    private void updatePoints(String points, String targetId) throws SQLException {
-        @Language("SQL")
-        String updateString = "UPDATE warn SET points = points + (?) WHERE id IS (?)";
-        PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(updateString);
-        statement.setString(1, points);
-        statement.setString(2, targetId);
-        statement.execute();
-        statement.closeOnCompletion();
+    private void insertUsers(String targetId) {
+        try (Connection connection = SQLiteDataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("INSERT OR IGNORE INTO warn(id, points) VALUES (?, ?)")) {
+            ps.setString(1, targetId);
+            ps.setInt(2, 0);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
-     * A method for parsing the points that the target is awarded.
-     * @param targetId The ID of the target. (String)
+     * A method for updating the users in the database.
+     * @param points The number of points to give. (String)
+     * @param targetId The id of the User to give the points to. (String)
+     */
+    private void updateUsers(String points, String targetId) {
+        try (Connection connection = SQLiteDataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("UPDATE warn SET points = points + (?) WHERE id = (?)")) {
+            ps.setString(1, points);
+            ps.setString(2, targetId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * A method for reading the current number of points in the database.
      * @param target The target. (Member)
      * @param points The number of points to award. (String)
-     * @param reason The reason for the points to be given. (String)
      * @param hook How the message is followed up. (InteractionHook)
+     * @param reason The reason for the points to be given. (String)
+     * @param user The user of the command. (User)
      * @param actionLog Where the moderation messages are sent. (TextChannel)
-     * @throws SQLException if a database access error occurs.
+     * @param guild The guild where this took place. (Guild)
+     * @param mutedRole The role to give for a mute. (Role)
      */
-    private void readPoints(String targetId, Member target, String points, String reason, InteractionHook hook, TextChannel actionLog) throws SQLException {
-        @Language("SQL")
-        String queryString = "SELECT points FROM warn WHERE id = (?)";
-        PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(queryString);
-        statement.setString(1, targetId);
-        ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()) {
-            String currentPoints = resultSet.getString("points");
+    private void readPoints(Member target, String points, InteractionHook hook, String reason, User user, TextChannel actionLog, Guild guild, Role mutedRole) {
+        try (Connection connection = SQLiteDataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT points FROM warn WHERE id = (?)")) {
+            ps.setString(1, target.getId());
+            ResultSet resultSet = ps.executeQuery();
+            int totalPoints = resultSet.getInt("points");
             MessageEmbed warnEmbed = new EmbedBuilder()
-                    .setTitle("Warned " + target.getUser().getAsTag() + " with " + points + " points!")
+                    .setTitle(target.getUser().getAsTag() + " was given " + points + " points!")
                     .setColor(Color.CYAN)
-                    .addField("Total Points:", currentPoints, false)
+                    .addField("Total Points:", String.valueOf(totalPoints), false)
                     .addField("Points added:", points, false)
                     .addField("Reason:", reason, false)
+                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                     .setTimestamp(Instant.now())
                     .build();
-            hook.sendMessageEmbeds(warnEmbed).queue();
+            hook.sendMessageEmbeds(warnEmbed).mentionRepliedUser(false).queue();
             actionLog.sendMessageEmbeds(warnEmbed).queue();
             target.getUser().openPrivateChannel()
-                .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(warnEmbed))
-                .queue(null, throwable -> {
-                    System.out.println();
-                });
+                    .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(warnEmbed))
+                    .queue(null, throwable -> System.out.println());
+            consequences(target, reason, user, actionLog, guild, mutedRole, totalPoints);
+            ps.executeQuery();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        resultSet.close();
-        statement.closeOnCompletion();
     }
 
     /**
-     * A method for deciding what consequence the target faces.
+     * A method for handling the consequences of earning points.
      * @param target The target. (Member)
-     * @param targetId The ID of the target. (String).
-     * @param reason The reason for the points to be given. (String)
+     * @param reason The reason for the mute / ban. (String)
      * @param user The user of the command. (User)
-     * @param guild The guild where this took place. (Guild)
-     * @param mutedRole The role to give for a mute. (Role)
      * @param actionLog Where the moderation messages are sent. (TextChannel)
-     * @throws SQLException if a database access error occurs.
+     * @param guild The guild where this took place. (Guild)
+     * @param mutedRole The role to give for a mute. (Guild)
+     * @param totalPoints The total number of points in the database. (int)
      */
-    private void consequences(Member target, String targetId, String reason, User user, Guild guild, Role mutedRole, TextChannel actionLog) throws SQLException {
-        @Language("SQL")
-        String queryString = "SELECT points FROM warn WHERE id = (?)";
-        PreparedStatement statement = SQLiteDataSource.getConnection().prepareStatement(queryString);
-        statement.setString(1, targetId);
-        ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()) {
-            int currentPoints = resultSet.getInt("points");
-            if (currentPoints >= 25 && currentPoints < 50) { // 1 hr mute
-                mute(guild, target, mutedRole, "1h", user, actionLog);
-            } else if (currentPoints >= 50 && currentPoints < 100) { // 3 hr mute
-                mute(guild, target, mutedRole, "3h", user, actionLog);
-            } else if (currentPoints >= 100 && currentPoints < 150) { // 12 hr mute
-                mute(guild, target, mutedRole, "12h", user, actionLog);
-            } else if (currentPoints >= 150) { // ban
-                ban(target, user, actionLog, reason);
-            }
+    private void consequences(Member target, String reason, User user, TextChannel actionLog, Guild guild, Role mutedRole, int totalPoints) {
+        if (totalPoints >= 50 && totalPoints < 50) { // 1 hr mute
+            mute(guild, target, mutedRole, "1h", user, actionLog);
+        } else if (totalPoints >= 50 && totalPoints < 100) { // 3 hr mute
+            mute(guild, target, mutedRole, "3h", user, actionLog);
+        } else if (totalPoints >= 100 && totalPoints < 150) { // 12 hr mute
+            mute(guild, target, mutedRole, "12h", user, actionLog);
+        } else if (totalPoints >= 150) { // ban
+            ban(target, user, actionLog, reason);
         }
-        statement.closeOnCompletion();
     }
 
     /**
@@ -177,13 +171,7 @@ public class Warn extends SlashCommand {
                 .setTimestamp(Instant.now())
                 .build()))
                 .queue(null, throwable -> {
-                    actionLog.sendMessageEmbeds(new EmbedBuilder()
-                            .setTitle("Failed to DM " + target.getUser().getAsTag() + " for mute.")
-                            .setColor(Color.CYAN)
-                            .setFooter("Mute was originally requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                            .setTimestamp(Instant.now())
-                            .build())
-                            .queue();
+                    actionLog.sendMessageEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to DM " + target.getUser().getAsTag() + " for mute.", null)).queue();
                 });
         actionLog.sendMessageEmbeds(new EmbedBuilder()
                 .setTitle(target.getUser().getAsTag() + " was muted for " + duration + " as a result of being warned.")
@@ -219,12 +207,7 @@ public class Warn extends SlashCommand {
                 .build();
         actionLog.sendMessageEmbeds(banEmbed).queue();
         target.ban(7, reason).queue(null, throwable -> {
-            actionLog.sendMessageEmbeds(new EmbedBuilder().setTitle("Failed to DM " + target.getUser().getAsTag() + " for ban.")
-                    .setColor(Color.CYAN)
-                    .setFooter("Ban was originally requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build())
-                    .queue();
+            actionLog.sendMessageEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to DM " + target.getUser().getAsTag() + " for ban.", null)).queue();
         });
     }
 
