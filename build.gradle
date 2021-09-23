@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.5.30'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
 }
 
 group = 'net.irisshaders.lilybot'
@@ -14,14 +14,14 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.dv8tion:JDA:4.3.0_324'
+    implementation 'net.dv8tion:JDA:4.3.0_330'
     implementation 'com.github.chalkyjeans:JDA-Chewtils:master-SNAPSHOT'
     implementation 'ch.qos.logback:logback-classic:1.2.6'
     implementation 'io.github.cdimascio:dotenv-java:2.2.0'
     implementation 'org.kohsuke:github-api:1.133'
     implementation 'com.zaxxer:HikariCP:5.0.0'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31'
 }
 
 tasks.withType(JavaCompile) {
