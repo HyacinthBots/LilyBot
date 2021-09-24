@@ -231,8 +231,8 @@ public class Rule extends SlashCommand {
         String DESC_4 = "Understand that support is not guaranteed. Support will be provided" +
                 " on a best-effort basis.";
 
-        String DESC_5 = "5. Do not ask for support on compiling Iris, and refrain from providing this support."
-            " There is sufficient information for people who know what they're doing to compile the mod themselves without help."
+        String DESC_5 = "Do not ask for support on compiling Iris, and refrain from providing this support." +
+            " There is sufficient information for people who know what they're doing to compile the mod themselves without help." +
             " If we would like you to use a given version of the mod, we will give you a compiled build of that version.";
 
         String DESC_6 = "No links to executable files or JAR files. Uploading or directly" +
