@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -44,6 +45,18 @@ public class Ban extends SlashCommand {
         int days = Integer.parseInt(event.getOption("days").getAsString());
         String reason = event.getOption("reason") == null ? "No reason provided." : event.getOption("reason").getAsString();
         User user = event.getUser();
+        JDA jda = event.getJDA();
+
+        if (member.getUser().getId().equals(user.getId())) {
+            event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "You can't ban yourself!",
+                    "What were you thinking!")).mentionRepliedUser(false).setEphemeral(true).queue();
+            return;
+        }
+
+        if (member.getUser().getId().equals(jda.getSelfUser().getId())) {
+            event.reply("bruh").mentionRepliedUser(false).setEphemeral(false).queue();
+            return;
+        }
 
         member.ban(days, reason).queue(unused -> {
 
