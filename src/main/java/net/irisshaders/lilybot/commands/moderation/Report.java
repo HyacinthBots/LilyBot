@@ -3,17 +3,18 @@ package net.irisshaders.lilybot.commands.moderation;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Emoji;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.commands.MessageContextCommandEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
+import net.irisshaders.lilybot.utils.Constants;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.time.Instant;
 
 @SuppressWarnings("ConstantConditions")
 public class Report extends Command implements EventListener {
@@ -55,8 +56,45 @@ public class Report extends Command implements EventListener {
                 // TODO THREADS
             }
 
+        } else if (genericEvent instanceof MessageContextCommandEvent event) {
+
+            String name = event.getName();
+
+            if (name.equals("Report message")) {
+
+                User user = event.getUser();
+                Message message = event.getTargetMessage();
+                User author = message.getAuthor();
+                String contentDisplay = message.getContentDisplay();
+                Guild guild = event.getGuild();
+                TextChannel actionLog = guild.getTextChannelById(Constants.ACTION_LOG);
+
+                if (contentDisplay.length() > 100) {
+                    contentDisplay = contentDisplay.substring(0, 99) + "...";
+                }
+
+                event.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay)).queue();
+                actionLog.sendMessage("<@&" + Constants.MODERATOR_ROLE + ">").queue();
+                actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay)).queue();
+
+            }
+
         }
 
+    }
+
+    private MessageEmbed reportMessage(User user, User author, String title, String contentDisplay) {
+        return new EmbedBuilder()
+                .setTitle(title)
+                .setDescription(String.format("""
+                                Original message: `%s`
+                                Original message author: `%s`
+                                """
+                , contentDisplay, author.getAsTag()))
+                .setColor(Color.CYAN)
+                .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
+                .setTimestamp(Instant.now())
+                .build();
     }
 
 }

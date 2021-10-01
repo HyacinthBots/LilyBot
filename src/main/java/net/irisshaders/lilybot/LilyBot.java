@@ -7,6 +7,8 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.interactions.commands.CommandType;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
@@ -66,7 +68,7 @@ public class LilyBot {
         jda.addEventListener(builder, waiter);
 
         jda.addEventListener(new ReadyHandler());
-        // jda.addEventListener(new Report()); // TODO uncomment when threads are finished
+        jda.addEventListener(new Report()); // TODO uncomment when threads are finished
 
         try {
             SQLiteDataSource.getConnection();
@@ -116,6 +118,8 @@ public class LilyBot {
 
         // normal commands
         // builder.addCommand(new Report()); // TODO uncomment when threads are finished
+
+        jda.getGuildById(Constants.GUILD_ID).upsertCommand(new CommandData(CommandType.MESSAGE_CONTEXT, "Report message")).queue();
 
     }
 
