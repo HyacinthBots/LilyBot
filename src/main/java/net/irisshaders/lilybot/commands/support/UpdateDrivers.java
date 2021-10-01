@@ -15,7 +15,7 @@ public class UpdateDrivers extends SlashCommand {
         this.name = "updatedrivers";
         this.help = "Informs the user on how to update drivers.";
         this.defaultEnabled = true;
-        this.guildOnly = true;
+        this.guildOnly = false;
         this.children = new SlashCommand[]{
                 new AMDDrivers(),
                 new NvidiaDrivers(),
