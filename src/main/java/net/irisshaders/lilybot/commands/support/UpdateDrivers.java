@@ -31,7 +31,7 @@ public class UpdateDrivers extends SlashCommand {
     public static class AMDDrivers extends SlashCommand {
 
         public AMDDrivers() {
-            this.name = "radeon";
+            this.name = "amd";
             this.help = "Informs the user that they should try to update their AMD Radeon drivers";
             this.defaultEnabled = true;
             this.guildOnly = false;
