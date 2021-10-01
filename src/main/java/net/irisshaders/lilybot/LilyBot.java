@@ -110,6 +110,7 @@ public class LilyBot {
         builder.addSlashCommand(new Indium());
         builder.addSlashCommand(new ETA());
         builder.addSlashCommand(new Rule());
+        builder.addSlashCommand(new UpdateDrivers());
 
         // Services
         builder.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
