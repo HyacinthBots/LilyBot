@@ -90,7 +90,7 @@ public class Report extends Command implements EventListener {
                 .setDescription(String.format("""
                                 Original message: `%s`
                                 Original message author: `%s`
-                                Message link: `%s`
+                                Message link: %s
                                 """
                 , contentDisplay, author.getAsTag(), messageUrl))
                 .setColor(Color.CYAN)
