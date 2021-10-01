@@ -11,8 +11,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
-import net.irisshaders.lilybot.objects.Memory;
 import net.irisshaders.lilybot.utils.Constants;
+import net.irisshaders.lilybot.utils.Memory;
 
 import java.awt.*;
 import java.time.Instant;

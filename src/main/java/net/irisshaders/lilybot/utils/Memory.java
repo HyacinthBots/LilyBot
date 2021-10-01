@@ -1,4 +1,4 @@
-package net.irisshaders.lilybot.objects;
+package net.irisshaders.lilybot.utils;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import org.kohsuke.github.GitHub;
