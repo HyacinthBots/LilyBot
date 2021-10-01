@@ -66,6 +66,7 @@ public class Report extends Command implements EventListener {
                 Message message = event.getTargetMessage();
                 User author = message.getAuthor();
                 String contentDisplay = message.getContentDisplay();
+                String messageUrl = message.getJumpUrl();
                 Guild guild = event.getGuild();
                 TextChannel actionLog = guild.getTextChannelById(Constants.ACTION_LOG);
 
@@ -73,9 +74,9 @@ public class Report extends Command implements EventListener {
                     contentDisplay = contentDisplay.substring(0, 99) + "...";
                 }
 
-                event.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay)).setEphemeral(true).queue();
+                event.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl)).setEphemeral(true).queue();
                 actionLog.sendMessage("<@&" + Constants.MODERATOR_ROLE + ">").queue();
-                actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay)).queue();
+                actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay, messageUrl)).queue();
 
             }
 
@@ -83,14 +84,15 @@ public class Report extends Command implements EventListener {
 
     }
 
-    private MessageEmbed reportMessage(User user, User author, String title, String contentDisplay) {
+    private MessageEmbed reportMessage(User user, User author, String title, String contentDisplay, String messageUrl) {
         return new EmbedBuilder()
                 .setTitle(title)
                 .setDescription(String.format("""
                                 Original message: `%s`
                                 Original message author: `%s`
+                                Message link: `%s`
                                 """
-                , contentDisplay, author.getAsTag()))
+                , contentDisplay, author.getAsTag(), messageUrl))
                 .setColor(Color.CYAN)
                 .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                 .setTimestamp(Instant.now())
