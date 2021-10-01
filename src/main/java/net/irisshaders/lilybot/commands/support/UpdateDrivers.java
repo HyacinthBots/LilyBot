@@ -12,10 +12,10 @@ import java.time.Instant;
 public class UpdateDrivers extends SlashCommand {
 
     public UpdateDrivers() {
-        this.name = "drivers";
+        this.name = "updatedrivers";
         this.help = "Informs the user on how to update drivers.";
         this.defaultEnabled = true;
-        this.guildOnly = false;
+        this.guildOnly = true;
         this.children = new SlashCommand[]{
                 new AMDDrivers(),
                 new NvidiaDrivers(),
@@ -97,7 +97,7 @@ public class UpdateDrivers extends SlashCommand {
 
         String AMDDrivers = "You can use AMD's Radeon Software to easily update your drivers, If you don't have it, " +
                 "download it here: https://www.amd.com/en/support";
-        String NvidiaDrivers = "You can use GeForce Experience to easily update drivers, If you don't have it, " +
+        String NvidiaDrivers = "You can use Nvidia GeForce Experience to easily update drivers, If you don't have it, " +
                 "download it here: https://www.nvidia.com/Download/index.aspx?lang=us";
         String IntelDrivers = "You can use Intel DSA to easily update your drivers, If you don't have it, download it " +
                 "here: https://www.intel.com/content/www/us/en/support/detect.html";
