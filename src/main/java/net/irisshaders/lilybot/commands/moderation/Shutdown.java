@@ -48,7 +48,7 @@ public class Shutdown extends SlashCommand {
                 Button.of(ButtonStyle.PRIMARY, "shutdown:yes", "Yes", Emoji.fromUnicode("\u2705")),
                 Button.of(ButtonStyle.PRIMARY, "shutdown:no", "No", Emoji.fromUnicode("\u274C"))
         ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> Memory.getWaiter().waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
-            if (buttonClickEvent.getUser() != user) return false;
+            if (!buttonClickEvent.getUser().equals(user)) return false;
             if (!equalsAny(buttonClickEvent.getButton().getId())) return false;
             return !buttonClickEvent.isAcknowledged();
         }, buttonClickEvent -> {
