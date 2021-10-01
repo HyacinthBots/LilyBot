@@ -76,6 +76,12 @@ public class Shutdown extends SlashCommand {
                     try { TimeUnit.SECONDS.sleep(10); } catch (InterruptedException e) { e.printStackTrace(); }
 
                     jda.shutdownNow();
+                    try {
+                        TimeUnit.SECONDS.sleep(3L);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.exit(0);
 
                 }
                 case "no" -> {
