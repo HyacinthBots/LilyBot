@@ -73,7 +73,7 @@ public class Report extends Command implements EventListener {
                     contentDisplay = contentDisplay.substring(0, 99) + "...";
                 }
 
-                event.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay)).queue();
+                event.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay)).setEphemeral(true).queue();
                 actionLog.sendMessage("<@&" + Constants.MODERATOR_ROLE + ">").queue();
                 actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay)).queue();
 
