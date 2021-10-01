@@ -22,7 +22,7 @@ public class Command extends SlashCommand {
     public Command() {
         this.name = "command"; // The name that will appear in the suggestion list. Must to be lower case
 
-        this.help = "Command help message." // The description of your command
+        this.help = "Command help message."; // The description of your command
 
         this.defaultEnabled = true; // Sets weather this command is enabled or disabled by default. If disabled you must specify a permission
 
@@ -33,7 +33,7 @@ public class Command extends SlashCommand {
 
         this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE}; // Set's the required permission for the command to work
 
-        this.botMissingPermMessage = "The bot can't write messages!" // The error message shown to the user if permission(s) above aren't full filled
+        this.botMissingPermMessage = "The bot can't write messages!"; // The error message shown to the user if permission(s) above aren't full filled
     }
 
     @Override
@@ -49,7 +49,7 @@ public class Command extends SlashCommand {
                 .setColor(Color.RED) // Java AWT Color is used here. It may not have to be, unknown
                 .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl()) // Get's the user's tag and their Profile picture and adds them to the footer
                 .setTimestamp(Instant.now()) // Get's the timer the command was sent. This will be lined up with any user's System time
-                .build() // Builds the embed
+                .build(); // Builds the embed
 
         /*
         Replies to the original message, without mentioning (pinging) the user. It is also not Ephemeral so anyone can see it
