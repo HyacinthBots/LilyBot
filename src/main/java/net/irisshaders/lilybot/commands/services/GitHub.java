@@ -183,7 +183,9 @@ public class GitHub extends SlashCommand {
                     assignees.add(assignee.getLogin());
                 }
                 if (assignees.size() > 0) e.addField("Assignees:", String.join(", ", assignees), false);
-            } catch (IOException ignored) {}
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
 
             e.setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl());
             e.setTimestamp(Instant.now());
