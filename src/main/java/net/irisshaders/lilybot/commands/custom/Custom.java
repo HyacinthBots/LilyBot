@@ -14,7 +14,7 @@ public class Custom extends SlashCommand {
     private final String desc;
     private final Color color;
 
-    public Custom(String name, String help, String title, String desc, Color color) {
+    public Custom(String name, String help, String title, String desc, SlashCommand[] children, Color color) {
         this.title = title;
         this.desc = desc;
         this.color = color;
@@ -24,20 +24,39 @@ public class Custom extends SlashCommand {
         this.guildOnly = false;
         this.botPermissions = new Permission[]{ Permission.MESSAGE_WRITE };
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
+        this.children = children;
     }
 
-    public static Custom parse(String name, Properties properties) {
+    private static SlashCommand parse(String key, String name, Properties properties) {
         var color = Color.RED;
-        if (properties.getProperty(name + ".color") != null) {
-            color = Color.decode(properties.getProperty(name + ".color"));
+        if (properties.getProperty(key + ".color") != null) {
+            color = Color.decode(properties.getProperty(key + ".color"));
         }
+
+        var children = new SlashCommand[0];
+        if (properties.getProperty(key + ".children") != null) {
+            var childNames = properties.getProperty(key + ".children").split(" ");
+            children = new SlashCommand[childNames.length];
+
+            String child;
+            for (int i = 0; i < childNames.length; i++) {
+                child = childNames[i];
+                children[i] = parse(key + ".child." + child, child, properties);
+            }
+        }
+
         return new Custom(
                 name,
-                properties.getProperty(name + ".help"),
-                properties.getProperty(name + ".title"),
-                properties.getProperty(name + ".desc"),
+                properties.getProperty(key + ".help", "A Lily bot command."),
+                properties.getProperty(key + ".title", name),
+                properties.getProperty(key + ".desc", ""),
+                children,
                 color
         );
+    }
+
+    public static SlashCommand parse(String name, Properties properties) {
+        return parse(name, name, properties);
     }
 
     @Override
