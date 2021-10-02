@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.irisshaders.lilybot.commands.Ping;
+import net.irisshaders.lilybot.commands.custom.Custom;
 import net.irisshaders.lilybot.commands.moderation.Shutdown;
 import net.irisshaders.lilybot.commands.moderation.*;
 import net.irisshaders.lilybot.commands.support.*;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -147,16 +149,12 @@ public class LilyBot {
     }
 
     public void addCustomCommands(CommandClient commands) {
-        // To be replaced with actual custom commands
-        commands.addSlashCommand(new Sodium());
-        commands.addSlashCommand(new Config());
-        commands.addSlashCommand(new Logs());
-        commands.addSlashCommand(new CrashReport());
-        commands.addSlashCommand(new Starline());
-        commands.addSlashCommand(new Indium());
-        commands.addSlashCommand(new ETA());
-        commands.addSlashCommand(new Rule());
-        commands.addSlashCommand(new UpdateDrivers());
+        var cmdNames = this.config.getProperty("commands").split(" ");
+        for (var cmd : cmdNames) {
+            LOG_LILY.info("Adding custom command '{}'", cmd);
+            commands.addSlashCommand(Custom.parse(cmd, this.config));
+        }
+        commands.addSlashCommand(new Custom("testb", "A hardcoded custom command", "You're", "youre mother", Color.BLUE));
     }
 
 }
