@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
     implementation 'net.dv8tion:JDA:4.3.0_330'
-    implementation 'com.github.chalkyjeans:JDA-Chewtils:master-SNAPSHOT'
+    implementation 'com.github.chalkyjeans:JDA-Chewtils:8b203c50c2'
     implementation 'ch.qos.logback:logback-classic:1.2.6'
     implementation 'io.github.cdimascio:dotenv-java:2.2.0'
     implementation 'org.kohsuke:github-api:1.133'
