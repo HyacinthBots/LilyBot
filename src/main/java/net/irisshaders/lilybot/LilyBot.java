@@ -154,7 +154,6 @@ public class LilyBot {
             LOG_LILY.info("Adding custom command '{}'", cmd);
             commands.addSlashCommand(Custom.parse(cmd, this.config));
         }
-        commands.addSlashCommand(new Custom("testb", "A hardcoded custom command", "You're", "youre mother", Color.BLUE));
     }
 
 }
