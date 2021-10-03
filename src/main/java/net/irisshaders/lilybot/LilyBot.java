@@ -113,11 +113,7 @@ public class LilyBot {
             jda.shutdownNow();
         }
 
-        if (args.length <= 0) {
-            throw new RuntimeException("Please specify the path to a .properties config file as a launch argument");
-        }
-
-        INSTANCE = new LilyBot(jda, github, waiter, Paths.get(args[0]));
+        INSTANCE = new LilyBot(jda, github, waiter, Paths.get(Constants.CONFIG_PATH));
 
         INSTANCE.addBuiltinCommands(builder);
         INSTANCE.addCustomCommands(builder);

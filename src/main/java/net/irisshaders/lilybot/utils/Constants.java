@@ -16,5 +16,6 @@ public interface Constants {
     String OWNER = dotenv.get("OWNER");
     String TOKEN = dotenv.get("TOKEN");
     String GITHUB_OAUTH = dotenv.get("GITHUB_OAUTH");
+    String CONFIG_PATH = dotenv.get("CONFIG_PATH");
 
 }
