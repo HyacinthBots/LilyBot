@@ -1,4 +1,4 @@
-// package <package>;
+//package
 
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -14,12 +14,12 @@ This Template class makes use of of JDA Chewtils to create the slash command. It
 use Chewtils for you bot's slash commands
  */
 
-public class Command extends SlashCommand {
+public class TestCommand extends SlashCommand {
 
     /*
     A method for defining all the settings and parameters of you slash command
      */
-    public Command() {
+    public TestCommand() {
         this.name = "command"; // The name that will appear in the suggestion list. Must to be lower case
 
         this.help = "Command help message."; // The description of your command
