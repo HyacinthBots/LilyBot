@@ -6,8 +6,9 @@ import org.intellij.lang.annotations.Language;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -23,13 +24,10 @@ public class SQLiteDataSource {
 
     static {
         try {
-            File database = new File("database.db");
-            if (!database.exists()) {
-                if (database.createNewFile()) {
-                    LOGGER.info("Created database file!");
-                } else {
-                    LOGGER.error("Could not create database file!");
-                }
+            Path database = Path.of("database.db");
+            if (Files.notExists(database)) {
+                Files.createFile(database);
+                LOGGER.info("Created database file!");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -47,7 +45,11 @@ public class SQLiteDataSource {
             @Language("SQL")
             String tableString = "CREATE TABLE IF NOT EXISTS warn(id INTEGER UNIQUE, points INTEGER)";
             statement.execute(tableString);
-            LOGGER.info("Table initialised!");
+            LOGGER.info("Warn table initialised!");
+            @Language("SQL")
+            String muteString = "CREATE TABLE IF NOT EXISTS mute(id INTEGER UNIQUE, expiry TIMESTAMP, requester INTEGER, reason TINYTEXT)";
+            statement.execute(muteString);
+            LOGGER.info("Mute table initialised!");
         } catch (SQLException e) {
             e.printStackTrace();
         }
