@@ -131,6 +131,7 @@ public class LilyBot {
         commands.addSlashCommand(new Mute());
         commands.addSlashCommand(new MuteList());
         commands.addSlashCommand(new Warn());
+        commands.addSlashCommand(new Say());
 
         // Services
         commands.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
