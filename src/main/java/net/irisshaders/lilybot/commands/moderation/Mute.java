@@ -140,12 +140,15 @@ public class Mute extends SlashCommand {
 
                         MessageEmbed unmuteEmbed = new EmbedBuilder()
                                 .setTitle("Unmute")
+                                .addField("Unmuted:", target.getUser().getAsMention(), false)
+                                .addField("Reason:", "Manual Unmuted by " + buttonClickEventUser.getAsTag(), false)
                                 .setColor(Color.CYAN)
                                 .setFooter("Requested by " + buttonClickEventUser.getAsTag(), buttonClickEventUser.getEffectiveAvatarUrl())
                                 .setTimestamp(Instant.now())
                                 .build();
 
                         buttonClickEvent.replyEmbeds(unmuteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
+                        actionLog.sendMessageEmbeds(unmuteEmbed).queue();
 
                         guild.removeRoleFromMember(target, mutedRole).queue();
 
