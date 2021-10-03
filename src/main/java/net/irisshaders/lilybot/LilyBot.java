@@ -14,7 +14,6 @@ import net.irisshaders.lilybot.commands.Ping;
 import net.irisshaders.lilybot.commands.custom.Custom;
 import net.irisshaders.lilybot.commands.moderation.Shutdown;
 import net.irisshaders.lilybot.commands.moderation.*;
-import net.irisshaders.lilybot.commands.support.*;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.events.ReadyHandler;
 import net.irisshaders.lilybot.utils.Constants;
@@ -24,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
