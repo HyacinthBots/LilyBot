@@ -117,6 +117,8 @@ public class LilyBot {
 
         INSTANCE.addBuiltinCommands(builder);
         INSTANCE.addCustomCommands(builder);
+
+        Mute.rescheculeMutes();
     }
 
     public void addBuiltinCommands(CommandClient commands) {

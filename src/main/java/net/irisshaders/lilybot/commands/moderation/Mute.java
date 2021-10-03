@@ -12,10 +12,16 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.utils.Constants;
-import net.irisshaders.lilybot.utils.Memory;
 
 import java.awt.*;
+import java.sql.Connection;
+import java.util.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,15 +79,6 @@ public class Mute extends SlashCommand {
                     .setTimestamp(Instant.now())
                     .build();
 
-            MessageEmbed unmuteEmbed = new EmbedBuilder()
-                    .setTitle("Unmute")
-                    .addField("Unmuted:", target.getUser().getAsMention(), false)
-                    .addField("Reason:", "The duration of the mute is over.", false)
-                    .setColor(Color.CYAN)
-                    .setFooter("Mute was originally requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
             int durationInt = parseDuration(duration);
 
             // Send the embed as Interaction reply, in action log and to the user
@@ -100,16 +97,16 @@ public class Mute extends SlashCommand {
                     });
 
             guild.addRoleToMember(target, mutedRole).queue();
+            Timestamp expiry = Timestamp.from(Instant.now().plusSeconds(durationInt));
+            MuteEntry mute = new MuteEntry(target, user, expiry);
+            insertMuteToDb(mute);
 
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    guild.removeRoleFromMember(target, mutedRole).queue(
-                            success -> actionLog.sendMessageEmbeds(unmuteEmbed).queue(),
-                            error -> event.replyFormat("Unable to mute %s: %s", target.getUser().getName(), error).mentionRepliedUser(false).setEphemeral(false).submit()
-                    );
+                    unmute(mute);
                 }
-            }, durationInt);
+            }, expiry);
 
         } else if (target.getRoles().contains(mutedRole)) {
 
@@ -174,23 +171,112 @@ public class Mute extends SlashCommand {
 
     }
 
-    public static Integer parseDuration(String time) {
+    public static int parseDuration(String time) {
         int duration = Integer.parseInt(time.replaceAll("[^0-9]", ""));
         String unit = time.replaceAll("[^A-Za-z]+", "").trim();
         switch (unit) {
             // I know this is cursed, but I do not care, it works
-            case "s" -> duration *= 1000;
-            case "m", "min" -> duration *= 60000;
-            case "h", "hour" -> duration *= 3600000;
-            case "d", "day" -> duration *= 86400000;
+            case "s" -> duration *= 1;
+            case "m", "min" -> duration *= 60;
+            case "h", "hour" -> duration *= 3600;
+            case "d", "day" -> duration *= 86400;
         }
         return duration;
     }
 
+    private static void unmute(MuteEntry mute) {
+        Guild guild = LilyBot.INSTANCE.jda.getGuildById(Constants.GUILD_ID);
+        TextChannel actionLog = LilyBot.INSTANCE.jda.getTextChannelById(Constants.ACTION_LOG);
+        
+        MessageEmbed unmuteEmbed = new EmbedBuilder()
+                .setTitle("Unmute")
+                .addField("Unmuted:", mute.target().getUser().getAsMention(), false)
+                .addField("Reason:", "The duration of the mute is over.", false)
+                .setColor(Color.CYAN)
+                .setFooter("Mute was originally requested by " + mute.requester().getAsTag(), mute.requester().getEffectiveAvatarUrl())
+                .setTimestamp(Instant.now())
+                .build();
+        
+        guild.removeRoleFromMember(mute.target(), LilyBot.INSTANCE.jda.getRoleById(Constants.MUTED_ROLE)).queue(
+                success -> actionLog.sendMessageEmbeds(unmuteEmbed).queue(),
+                error -> {
+                    actionLog.sendMessageEmbeds(new EmbedBuilder()
+                            .setTitle(String.format("Unable to unmute %s:", mute.target().getUser().getName()))
+                            .appendDescription(error.toString())
+                            .setColor(Color.RED)
+                            .build()).queue();
+                    error.printStackTrace();
+                }
+        );
+        removeUserFromDb(mute.target().getId());
+    }
+
+    private void insertMuteToDb(MuteEntry mute) {
+        try (Connection connection = SQLiteDataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("INSERT INTO mute(id, expiry, requester) VALUES (?, ?, ?)")) {
+            ps.setString(1, mute.target().getId());
+            ps.setTimestamp(2, mute.expiry());
+            ps.setString(3, mute.requester().getId());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void removeUserFromDb(String targetId) {
+        try (Connection connection = SQLiteDataSource.getConnection();
+                PreparedStatement ps = connection.prepareStatement("DELETE FROM mute WHERE id=?")) {
+               ps.setString(1, targetId);
+               ps.executeUpdate();
+           } catch (SQLException e) {
+               e.printStackTrace();
+           }
+    }
 
     private boolean equalsAny(String id) {
         return id.equals("mute:yes") ||
                 id.equals("mute:no");
     }
+
+    /**
+     * Re-schedules all saved mutes, and unmutes all expired mutes
+     */
+    public static void rescheculeMutes() {
+        for (MuteEntry mute : getMutes()) {
+            if (mute.expiry().before(Date.from(Instant.now()))) {
+                unmute(mute); // Already expired
+            } else {
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        unmute(mute);
+                    }
+                }, mute.expiry());
+            }
+        }
+    }
+
+    /**
+     * Gets a list of registered mutes, as a {@link List} of {@link MuteEntry}
+     */
+    public static List<MuteEntry> getMutes() {
+        Guild guild = LilyBot.INSTANCE.jda.getGuildById(Constants.GUILD_ID);
+        List<MuteEntry> mutes = new ArrayList<>();
+        try (Connection connection = SQLiteDataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT * FROM mute")) {
+            ResultSet queryResult = ps.executeQuery();
+            while (queryResult.next()) {
+                Member target = guild.getMemberById(queryResult.getString("id"));
+                User requester = LilyBot.INSTANCE.jda.getUserById(queryResult.getString("requester"));
+                Timestamp expiry = queryResult.getTimestamp("expiry");
+                mutes.add(new MuteEntry(target, requester, expiry));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return mutes;
+    }
+    
+    private static record MuteEntry(Member target, User requester, Timestamp expiry) {}
 
 }
