@@ -64,19 +64,22 @@ public class Report extends Command implements EventListener {
 
                 User user = event.getUser();
                 Message message = event.getTargetMessage();
+                String id = message.getChannel().getId();
                 User author = message.getAuthor();
                 String contentDisplay = message.getContentDisplay();
                 String messageUrl = message.getJumpUrl();
                 Guild guild = event.getGuild();
                 TextChannel actionLog = guild.getTextChannelById(Constants.ACTION_LOG);
+                String channel = String.format("<#%s>", id);
+                String mention = String.format("<@&%s>", Constants.MODERATOR_ROLE);
 
                 if (contentDisplay.length() > 100) {
                     contentDisplay = contentDisplay.substring(0, 99) + "...";
                 }
 
-                event.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl)).setEphemeral(true).queue();
-                actionLog.sendMessage("<@&" + Constants.MODERATOR_ROLE + ">").queue();
-                actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay, messageUrl)).queue();
+                event.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl, channel)).setEphemeral(true).queue();
+                actionLog.sendMessage(mention).queue();
+                actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay, messageUrl, channel)).queue();
 
             }
 
@@ -84,17 +87,15 @@ public class Report extends Command implements EventListener {
 
     }
 
-    private MessageEmbed reportMessage(User user, User author, String title, String contentDisplay, String messageUrl) {
+    private MessageEmbed reportMessage(User user, User author, String title, String contentDisplay, String messageUrl, String channel) {
         return new EmbedBuilder()
                 .setTitle(title)
-                .setDescription(String.format("""
-                                Original message: `%s`
-                                Original message author: `%s`
-                                Message link: %s
-                                """
-                , contentDisplay, author.getAsTag(), messageUrl))
+                .setDescription("A message was reported in " + channel)
+                .addField("Message Content:", contentDisplay, false)
+                .addField("Message Author:", author.getAsTag(), false)
+                .addField("Message Link:", messageUrl, false)
                 .setColor(Color.CYAN)
-                .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
+                .setFooter("Message reported by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                 .setTimestamp(Instant.now())
                 .build();
     }
