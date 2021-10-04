@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Properties;
 
+@SuppressWarnings("ConstantConditions")
 public class LilyBot {
 
     public static LilyBot INSTANCE;
@@ -44,7 +45,7 @@ public class LilyBot {
     public final Path configPath;
 
     public LilyBot(Path configPath) {
-        JDA jda;
+        JDA jda = null;
         this.configPath = configPath;
         var properties = new Properties();
         try {
@@ -56,7 +57,7 @@ public class LilyBot {
         
         EventWaiter waiter = new EventWaiter();
         CommandClient builder = new CommandClientBuilder()
-                .setPrefix("!")
+                .setPrefix(String.format("<@!%s> ", jda.getSelfUser().getId()))
                 .setHelpConsumer(null)
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("Iris 1.17.1"))
