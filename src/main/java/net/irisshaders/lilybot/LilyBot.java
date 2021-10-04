@@ -59,7 +59,6 @@ public class LilyBot {
 
         EventWaiter waiter = new EventWaiter();
         CommandClient builder = new CommandClientBuilder()
-                .setPrefix(String.format("<@!%s> ", jda.getSelfUser().getId()))
                 .setHelpConsumer(null)
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("Iris 1.17.1"))
