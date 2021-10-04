@@ -30,8 +30,8 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Properties;
 
-@SuppressWarnings("ConstantConditions")
 public class LilyBot {
+
     public static LilyBot INSTANCE;
 
     public static final Logger LOG_LILY = LoggerFactory.getLogger("Lily");
@@ -44,7 +44,7 @@ public class LilyBot {
     public final Path configPath;
 
     public LilyBot(Path configPath) {
-        JDA jda = null;
+        JDA jda;
         this.configPath = configPath;
         var properties = new Properties();
         try {
