@@ -12,9 +12,10 @@
 
 ### How can I use LilyBot in my own server!?
 
-1. Make sure you have a bot set up in the discord developer portal
-2. Download the Repo
-3. Create a `.env` file and fill it with something like this:
+1. Set up a bot using the discord developer portal (https://discord.com/developers/applications)
+2. Invite your bot to your discord server, while granting it the `applications.commands` scope located in the OAuth2 Settings tab	
+3. Download the Repo
+4. Create a `.env` file and fill it with this:
 ```
 TOKEN= TOKEN_YEEF
 MODERATOR_ROLE= ROLE ID
@@ -25,8 +26,9 @@ OWNER= OWNERS_ID
 GITHUB_OAUTH= GITHUB_OAUTH
 CONFIG_PATH= CONFIG_PATH
 ```
-4. Run the main class
-5. Profit
+5. Replace the information accordingly (You'd need to have `Developer Mode` enabled, located in `Settings/Advanced/Developer Mode`)
+6. Run the main class
+7. Profit
 
 ### What was used to write this bot?
 * JDA: https://github.com/DV8FromTheWorld/JDA

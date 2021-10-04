@@ -53,6 +53,7 @@ public class Ban extends SlashCommand {
             return;
         }
 
+        // Runs when user attempts to ban the bot.
         if (member.getUser().getId().equals(jda.getSelfUser().getId())) {
             event.reply("bruh").mentionRepliedUser(false).setEphemeral(false).queue();
             return;
