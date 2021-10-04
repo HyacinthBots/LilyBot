@@ -30,12 +30,12 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Properties;
 
-@SuppressWarnings("ConstantConditions")
 public class LilyBot {
+
     public static LilyBot INSTANCE;
 
-    public static Logger LOG_LILY = LoggerFactory.getLogger("Lily");
-    public static Logger LOG_GITHUB = LoggerFactory.getLogger("GitHub");
+    public static final Logger LOG_LILY = LoggerFactory.getLogger("Lily");
+    public static final Logger LOG_GITHUB = LoggerFactory.getLogger("GitHub");
 
     public final JDA jda;
     public final GitHub gitHub;
@@ -43,10 +43,8 @@ public class LilyBot {
     public final Properties config;
     public final Path configPath;
 
-    public LilyBot(JDA jda, GitHub gitHub, EventWaiter waiter, Path configPath) {
-        this.jda = jda;
-        this.gitHub = gitHub;
-        this.waiter = waiter;
+    public LilyBot(Path configPath) {
+        JDA jda;
         this.configPath = configPath;
         var properties = new Properties();
         try {
@@ -55,11 +53,26 @@ public class LilyBot {
             LOG_LILY.error("Error loading lily config file at "+configPath, e);
         }
         this.config = properties;
-    }
+        
+        EventWaiter waiter = new EventWaiter();
+        CommandClient builder = new CommandClientBuilder()
+                .setPrefix("!")
+                .setHelpConsumer(null)
+                .setStatus(OnlineStatus.ONLINE)
+                .setActivity(Activity.playing("Iris 1.17.1"))
+                .setOwnerId(Constants.OWNER)
+                .forceGuildOnly(Constants.GUILD_ID)
+                .build();
 
-    public static void main(String[] args) {
+        LilyBot.addBuiltinCommands(builder);
+        this.addCustomCommands(builder);
 
-        JDA jda = null;
+        try {
+            SQLiteDataSource.getConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        
         try {
             jda = JDABuilder.createDefault(Constants.TOKEN)
                     .setEnabledIntents(
@@ -77,31 +90,14 @@ public class LilyBot {
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.watching("Loading..."))
                     .setAutoReconnect(true)
+                    .addEventListeners(builder, waiter, new ReadyHandler())
                     .build();
         } catch (LoginException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
-        EventWaiter waiter = new EventWaiter();
-        CommandClient builder = new CommandClientBuilder()
-                .setPrefix("!")
-                .setHelpConsumer(null)
-                .setStatus(OnlineStatus.ONLINE)
-                .setActivity(Activity.playing("Iris 1.17.1"))
-                .setOwnerId(Constants.OWNER)
-                .forceGuildOnly(Constants.GUILD_ID)
-                .build();
+        // jda.addEventListener(new Report()); // TODO uncomment when threads are finished but in the builder if possible
 
-        jda.addEventListener(builder, waiter);
-
-        jda.addEventListener(new ReadyHandler());
-        // jda.addEventListener(new Report()); // TODO uncomment when threads are finished
-
-        try {
-            SQLiteDataSource.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
         GitHub github = null;
         try {
@@ -112,16 +108,19 @@ public class LilyBot {
             LOG_GITHUB.error("Failed to log into GitHub!");
             jda.shutdownNow();
         }
-
-        INSTANCE = new LilyBot(jda, github, waiter, Paths.get(Constants.CONFIG_PATH));
-
-        INSTANCE.addBuiltinCommands(builder);
-        INSTANCE.addCustomCommands(builder);
-
+        
+        this.jda = jda;
+        this.gitHub = github;
+        this.waiter = waiter;
+      
         Mute.rescheculeMutes();
     }
 
-    public void addBuiltinCommands(CommandClient commands) {
+    public static void main(String[] args) {
+        INSTANCE = new LilyBot(Paths.get(Constants.CONFIG_PATH));
+    }
+
+    public static void addBuiltinCommands(CommandClient commands) {
         // add commands now
         commands.addSlashCommand(new Ping());
 
@@ -133,6 +132,7 @@ public class LilyBot {
         commands.addSlashCommand(new Mute());
         commands.addSlashCommand(new MuteList());
         commands.addSlashCommand(new Warn());
+        commands.addSlashCommand(new Say());
 
         // Services
         commands.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
