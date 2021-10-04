@@ -61,7 +61,7 @@ public class LilyBot {
         CommandClient builder = new CommandClientBuilder()
                 .setHelpConsumer(null)
                 .setStatus(OnlineStatus.ONLINE)
-                .setActivity(Activity.playing("Iris 1.17.1"))
+                .setActivity(Activity.playing("Iris for Minecraft 1.17.1"))
                 .setOwnerId(Constants.OWNER)
                 .forceGuildOnly(Constants.GUILD_ID)
                 .build();
@@ -93,13 +93,11 @@ public class LilyBot {
                     .setActivity(Activity.watching("Loading..."))
                     .setAutoReconnect(true)
                     .addEventListeners(builder, waiter, new ReadyHandler())
-                    .addEventListeners(builder, waiter, new Report())
                     .build();
         } catch (LoginException e) {
             throw new RuntimeException(e);
         }
 
-        jda.getGuildById(Constants.GUILD_ID).upsertCommand(new CommandData(CommandType.MESSAGE_CONTEXT, "Report message")).queue();
 
         // jda.addEventListener(new Report()); // TODO uncomment when threads are finished but in the builder if possible
 
