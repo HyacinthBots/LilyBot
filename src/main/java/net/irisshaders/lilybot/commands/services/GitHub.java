@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.utils.Memory;
 import org.kohsuke.github.*;
 
@@ -91,9 +92,9 @@ public class GitHub extends SlashCommand {
 
             try {
                 issueNum = Integer.parseInt(term);
-                issue = Memory.getGithub().getRepository(repo).getIssue(issueNum);
+                issue = LilyBot.INSTANCE.gitHub.getRepository(repo).getIssue(issueNum);
             } catch (NumberFormatException e) {
-                PagedIterator<GHIssue> iterator = Memory.getGithub().searchIssues()
+                PagedIterator<GHIssue> iterator = LilyBot.INSTANCE.gitHub.searchIssues()
                         .q(term + " repo:" + repo)
                         .order(GHDirection.DESC)
                         .list()
@@ -104,7 +105,7 @@ public class GitHub extends SlashCommand {
                     throw new Exception("Could not find specified issue in repo `" + repo + "`!");
                 }
                 int num = issue.getNumber();
-                issue = Memory.getGithub().getRepository(repo).getIssue(num);
+                issue = LilyBot.INSTANCE.gitHub.getRepository(repo).getIssue(num);
                 return issue;
             }
             return issue;
@@ -233,7 +234,7 @@ public class GitHub extends SlashCommand {
             GHRepository repo;
 
             try {
-                repo = Memory.getGithub().getRepository(repoName);
+                repo = LilyBot.INSTANCE.gitHub.getRepository(repoName);
             } catch (IOException e) {
                 MessageEmbed noMatchesEmbed = new EmbedBuilder()
                         .setDescription("Invalid repository name. Make sure this repository exists!")
@@ -304,7 +305,7 @@ public class GitHub extends SlashCommand {
             String username = event.getOption("username").getAsString();
 
             try {
-                ghUser = Memory.getGithub().getUser(username);
+                ghUser = LilyBot.INSTANCE.gitHub.getUser(username);
             } catch (IOException e) {
                 MessageEmbed noMatchesEmbed = new EmbedBuilder()
                         .setDescription("Invalid username. Make sure this user exists.")
@@ -341,7 +342,7 @@ public class GitHub extends SlashCommand {
                     if (ghUser.getTwitterUsername() != null) e.addField("Twitter:",
                             "[@" + ghUser.getTwitterUsername() + "](https://twitter.com/" + ghUser.getTwitterUsername() + ")", false);
                 } else {
-                    GHOrganization org = Memory.getGithub().getOrganization(ghUser.getLogin());
+                    GHOrganization org = LilyBot.INSTANCE.gitHub.getOrganization(ghUser.getLogin());
                     e.setTitle("GitHub profile for " + ghUser.getLogin(), "https://github.com/" + ghUser.getLogin());
                     e.addField("Public Members:", String.valueOf(org.listMembers().toArray().length), false);
                 }

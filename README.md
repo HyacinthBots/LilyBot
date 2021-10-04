@@ -23,21 +23,22 @@ GUILD_ID= SERVER_ID
 ACTION_LOG= CHANNEL_ID
 OWNER= OWNERS_ID
 GITHUB_OAUTH= GITHUB_OAUTH
+CONFIG_PATH= CONFIG_PATH
 ```
 4. Run the main class
 5. Profit
 
 ### What was used to write this bot?
 * JDA: https://github.com/DV8FromTheWorld/JDA
-* JDA Chewtils: https://github.com/Chew/JDA-Chewtils (well [chalkyjeans's fork](https://github.com/chalkyjeans/JDA-Chewtils) of it)
+* JDA Chewtils: https://github.com/Chew/JDA-Chewtils (well [chalkyjeans' fork](https://github.com/chalkyjeans/JDA-Chewtils) of it)
 * Logback: https://github.com/qos-ch/logback
 * dotenv: https://github.com/cdimascio/dotenv-java
 * Github-API: https://github.com/hub4j/github-api
 #### What does each of those do?
-* JDA: The Java API for discord
+* JDA: The Java API for Discord
 * JDA Chewtils: A forked fork of JDA Utils for useful implementations
 * Logback: Removes some fake errors
 * dotenv: For accessing `.env` files that contain the bots sensitive data
-* Github-API: The API for github commands. Helps to produce the Github Repo, issue and profile embeds
+* Github-API: The API for GitHub commands. Helps to produce the GitHub Repo, Issue and Profile embeds
 
-#### This repo is open to contributions by the community. Please contribute as and where you feel required
+#### This repo is open to contributions by the community. Please contribute as and where you feel required.

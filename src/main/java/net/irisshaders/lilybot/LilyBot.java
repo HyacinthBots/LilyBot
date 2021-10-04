@@ -13,22 +13,51 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.irisshaders.lilybot.commands.Ping;
+import net.irisshaders.lilybot.commands.custom.Custom;
 import net.irisshaders.lilybot.commands.moderation.Shutdown;
 import net.irisshaders.lilybot.commands.moderation.*;
-import net.irisshaders.lilybot.commands.support.*;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.events.ReadyHandler;
 import net.irisshaders.lilybot.utils.Constants;
-import net.irisshaders.lilybot.utils.Memory;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.Properties;
 
 @SuppressWarnings("ConstantConditions")
 public class LilyBot {
+    public static LilyBot INSTANCE;
+
+    public static Logger LOG_LILY = LoggerFactory.getLogger("Lily");
+    public static Logger LOG_GITHUB = LoggerFactory.getLogger("GitHub");
+
+    public final JDA jda;
+    public final GitHub gitHub;
+    public final EventWaiter waiter;
+    public final Properties config;
+    public final Path configPath;
+
+    public LilyBot(JDA jda, GitHub gitHub, EventWaiter waiter, Path configPath) {
+        this.jda = jda;
+        this.gitHub = gitHub;
+        this.waiter = waiter;
+        this.configPath = configPath;
+        var properties = new Properties();
+        try {
+            properties.load(Files.newInputStream(configPath));
+        } catch (IOException e) {
+            LOG_LILY.error("Error loading lily config file at "+configPath, e);
+        }
+        this.config = properties;
+    }
 
     public static void main(String[] args) {
 
@@ -79,49 +108,51 @@ public class LilyBot {
         GitHub github = null;
         try {
             github = new GitHubBuilder().withOAuthToken(Constants.GITHUB_OAUTH).build();
-            LoggerFactory.getLogger("GitHub").info("Logged into GitHub!");
+            LOG_GITHUB.info("Logged into GitHub!");
         } catch (Exception exception) {
             exception.printStackTrace();
-            LoggerFactory.getLogger("GitHub").error("Failed to log into GitHub!");
+            LOG_GITHUB.error("Failed to log into GitHub!");
             jda.shutdownNow();
         }
 
-        Memory.remember(github, waiter);
+        INSTANCE = new LilyBot(jda, github, waiter, Paths.get(Constants.CONFIG_PATH));
 
+        INSTANCE.addBuiltinCommands(builder);
+        INSTANCE.addCustomCommands(builder);
+    }
+
+    public void addBuiltinCommands(CommandClient commands) {
         // add commands now
-        builder.addSlashCommand(new Ping());
+        commands.addSlashCommand(new Ping());
 
         // Mod Commands
-        builder.addSlashCommand(new Ban());
-        builder.addSlashCommand(new Kick());
-        builder.addSlashCommand(new Unban());
-        builder.addSlashCommand(new Clear());
-        builder.addSlashCommand(new Mute());
-        builder.addSlashCommand(new MuteList());
-        builder.addSlashCommand(new Warn());
-
-        // Shutdown Command
-        builder.addSlashCommand(new Shutdown());
-
-        // Support Commands
-        builder.addSlashCommand(new Sodium());
-        builder.addSlashCommand(new Config());
-        builder.addSlashCommand(new Logs());
-        builder.addSlashCommand(new CrashReport());
-        builder.addSlashCommand(new Starline());
-        builder.addSlashCommand(new Indium());
-        builder.addSlashCommand(new ETA());
-        builder.addSlashCommand(new Rule());
-        builder.addSlashCommand(new UpdateDrivers());
+        commands.addSlashCommand(new Ban());
+        commands.addSlashCommand(new Kick());
+        commands.addSlashCommand(new Unban());
+        commands.addSlashCommand(new Clear());
+        commands.addSlashCommand(new Mute());
+        commands.addSlashCommand(new MuteList());
+        commands.addSlashCommand(new Warn());
+        commands.addSlashCommand(new Say());
 
         // Services
-        builder.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
+        commands.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
 
         // normal commands
         // builder.addCommand(new Report()); // TODO uncomment when threads are finished
 
         jda.getGuildById(Constants.GUILD_ID).upsertCommand(new CommandData(CommandType.MESSAGE_CONTEXT, "Report message")).queue();
 
+        // Shutdown Command
+        commands.addSlashCommand(new Shutdown());
+    }
+
+    public void addCustomCommands(CommandClient commands) {
+        var cmdNames = this.config.getProperty("commands").split(" ");
+        for (var cmd : cmdNames) {
+            LOG_LILY.info("Adding custom command '{}'", cmd);
+            commands.addSlashCommand(Custom.parse(cmd, this.config));
+        }
     }
 
 }

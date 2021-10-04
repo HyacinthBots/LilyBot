@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
+import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.Memory;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public class Shutdown extends SlashCommand {
         event.replyEmbeds(shutdownEmbed).addActionRow(
                 Button.of(ButtonStyle.PRIMARY, "shutdown:yes", "Yes", Emoji.fromUnicode("\u2705")),
                 Button.of(ButtonStyle.PRIMARY, "shutdown:no", "No", Emoji.fromUnicode("\u274C"))
-        ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> Memory.getWaiter().waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
+        ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
             if (!buttonClickEvent.getUser().equals(user)) return false;
             if (!equalsAny(buttonClickEvent.getButton().getId())) return false;
             return !buttonClickEvent.isAcknowledged();

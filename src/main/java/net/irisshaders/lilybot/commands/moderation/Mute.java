@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
+import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.Memory;
 
@@ -124,7 +125,7 @@ public class Mute extends SlashCommand {
             event.replyEmbeds(alreadyMutedEmbed).addActionRow(
                     Button.of(ButtonStyle.PRIMARY, "mute:yes", "Yes", Emoji.fromUnicode("\u2705")),
                     Button.of(ButtonStyle.PRIMARY, "mute:no", "No", Emoji.fromUnicode("\u274C"))
-            ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> Memory.getWaiter().waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
+            ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
                 if (!buttonClickEvent.getUser().equals(user)) return false;
                 if (!equalsAny(buttonClickEvent.getButton().getId())) return false;
                 return !buttonClickEvent.isAcknowledged();
@@ -139,12 +140,15 @@ public class Mute extends SlashCommand {
 
                         MessageEmbed unmuteEmbed = new EmbedBuilder()
                                 .setTitle("Unmute")
+                                .addField("Unmuted:", target.getUser().getAsMention(), false)
+                                .addField("Reason:", "Manual Unmuted by " + buttonClickEventUser.getAsTag(), false)
                                 .setColor(Color.CYAN)
                                 .setFooter("Requested by " + buttonClickEventUser.getAsTag(), buttonClickEventUser.getEffectiveAvatarUrl())
                                 .setTimestamp(Instant.now())
                                 .build();
 
                         buttonClickEvent.replyEmbeds(unmuteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
+                        actionLog.sendMessageEmbeds(unmuteEmbed).queue();
 
                         guild.removeRoleFromMember(target, mutedRole).queue();
 
