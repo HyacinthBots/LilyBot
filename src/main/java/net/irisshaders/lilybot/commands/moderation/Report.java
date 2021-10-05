@@ -101,7 +101,7 @@ public class Report extends Command implements EventListener {
                                 contentDisplay = contentDisplay.substring(0, 99) + "...";
                             }
 
-                            event.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl, channel)).setEphemeral(true).queue();
+                            buttonClickEvent.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl, channel)).setEphemeral(true).queue();
                             actionLog.sendMessage(mention).queue();
                             actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay, messageUrl, channel)).queue();
 
