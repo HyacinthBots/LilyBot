@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.aasmart:JDA:feature~context-menus-SNAPSHOT'
+    implementation 'com.github.aasmart:JDA:dbce81721f'
     implementation 'com.github.chalkyjeans:JDA-Chewtils:feature~context-menus-SNAPSHOT'
     implementation 'ch.qos.logback:logback-classic:1.2.6'
     implementation 'io.github.cdimascio:dotenv-java:2.2.0'

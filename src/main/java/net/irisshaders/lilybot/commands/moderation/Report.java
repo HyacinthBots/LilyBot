@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.commands.MessageContextCommandEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.irisshaders.lilybot.LilyBot;
@@ -49,7 +50,7 @@ public class Report extends Command implements EventListener {
 
         if (genericEvent instanceof ButtonClickEvent event) {
 
-            String id = event.getButton().getId().split(":")[1];
+            String id = event.getComponentId().split(":")[1];
 
             if (id.equals("report")) {
                 event.reply("We are currently waiting for threads to be implemented in JDA." +
@@ -62,7 +63,6 @@ public class Report extends Command implements EventListener {
             String name = event.getName();
 
             if (name.equals("Report message")) {
-
 
                 User user = event.getUser();
                 String id = event.getChannel().getId();
@@ -85,6 +85,9 @@ public class Report extends Command implements EventListener {
                 }, buttonClickEvent -> {
                     User buttonClickEventUser = buttonClickEvent.getUser();
                     String buttonClicked = buttonClickEvent.getComponentId().split(":")[1];
+                    InteractionHook hook = buttonClickEvent.getHook();
+
+                    buttonClickEvent.deferEdit().queue();
 
                     switch (buttonClicked) {
                         case "yes" -> {
@@ -101,7 +104,7 @@ public class Report extends Command implements EventListener {
                                 contentDisplay = contentDisplay.substring(0, 99) + "...";
                             }
 
-                            buttonClickEvent.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl, channel)).setEphemeral(true).queue();
+                            hook.editOriginalEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl, channel)).queue();
                             actionLog.sendMessage(mention).queue();
                             actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay, messageUrl, channel)).queue();
 
@@ -114,7 +117,7 @@ public class Report extends Command implements EventListener {
                                     .setTimestamp(Instant.now())
                                     .build();
 
-                            buttonClickEvent.replyEmbeds(noReportEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
+                            hook.editOriginalEmbeds(noReportEmbed).queue();
                         }
                     }
                 }));
