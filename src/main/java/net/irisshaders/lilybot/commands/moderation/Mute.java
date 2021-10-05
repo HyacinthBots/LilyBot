@@ -2,23 +2,32 @@ package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.utils.Constants;
-import net.irisshaders.lilybot.utils.Memory;
+import net.irisshaders.lilybot.utils.DateHelper;
 
 import java.awt.*;
+import java.sql.Connection;
+import java.util.Date;
+import java.util.HashMap;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -43,80 +52,27 @@ public class Mute extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
 
-        TextChannel actionLog = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         Member target = event.getOption("member").getAsMember();
         User user = event.getUser();
-        JDA jda = event.getJDA();
-        Guild guild = jda.getGuildById(Constants.GUILD_ID);
         String reason = event.getOption("reason") == null ? "No reason provided" : event.getOption("reason").getAsString();
         String duration = event.getOption("duration") == null ? "6h" : event.getOption("duration").getAsString();
-        Role mutedRole = guild.getRoleById(Constants.MUTED_ROLE);
+        MuteEntry currentMute = getCurrentMutes().get(target);
 
-        if (!target.getRoles().contains(mutedRole)) {
+        if (currentMute == null) { // User is not muted
 
-            MessageEmbed userEmbed = new EmbedBuilder()
-                    .setTitle("You were muted")
-                    .addField(String.format("You are muted from %s for:", guild.getName()), duration, false)
-                    .addField("Reason:", reason, false)
-                    .setColor(Color.CYAN)
-                    .setFooter("Muted by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
+            Timestamp expiry = Timestamp.from(Instant.now().plusSeconds(parseDuration(duration)));
+            MuteEntry mute = new MuteEntry(target, user, expiry, reason);
+            mute(mute, event);
 
-            MessageEmbed muteEmbed = new EmbedBuilder()
-                    .setTitle("Mute")
-                    .addField("Muted:", target.getUser().getAsMention(), false)
-                    .addField("Muted for:", duration, false)
-                    .addField("Reason:", reason, false)
-                    .setColor(Color.CYAN)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
 
-            MessageEmbed unmuteEmbed = new EmbedBuilder()
-                    .setTitle("Unmute")
-                    .addField("Unmuted:", target.getUser().getAsMention(), false)
-                    .addField("Reason:", "The duration of the mute is over.", false)
-                    .setColor(Color.CYAN)
-                    .setFooter("Mute was originally requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
-
-            int durationInt = parseDuration(duration);
-
-            // Send the embed as Interaction reply, in action log and to the user
-            event.replyEmbeds(muteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
-            actionLog.sendMessageEmbeds(muteEmbed).queue();
-            target.getUser().openPrivateChannel()
-                    .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(userEmbed))
-                    .queue(null, throwable -> {
-                        MessageEmbed failedToDMEmbed = new EmbedBuilder()
-                                .setTitle("Failed to DM " + target.getUser().getAsTag() + " for mute.")
-                                .setColor(Color.CYAN)
-                                .setFooter("Mute was originally requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                                .setTimestamp(Instant.now())
-                                .build();
-                        actionLog.sendMessageEmbeds(failedToDMEmbed).queue();
-                    });
-
-            guild.addRoleToMember(target, mutedRole).queue();
-
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    guild.removeRoleFromMember(target, mutedRole).queue(
-                            success -> actionLog.sendMessageEmbeds(unmuteEmbed).queue(),
-                            error -> event.replyFormat("Unable to mute %s: %s", target.getUser().getName(), error).mentionRepliedUser(false).setEphemeral(false).submit()
-                    );
-                }
-            }, durationInt);
-
-        } else if (target.getRoles().contains(mutedRole)) {
-
+        } else { // User is muted, ask for unmuting
             MessageEmbed alreadyMutedEmbed = new EmbedBuilder()
                     .setTitle("Already muted")
                     .setDescription("Do you want to unmute? Respond with the buttons below.")
                     .addField("The following member is already muted:", target.getUser().getAsTag(), false)
+                    .addField("Mute reason:", currentMute.reason(), false)
+                    .addField("Muted by:", currentMute.requester().getAsTag(), false)
+                    .addField("Expires at", DateHelper.formatDateAndTime(currentMute.expiry()), false)
                     .setColor(Color.CYAN)
                     .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                     .setTimestamp(Instant.now())
@@ -137,20 +93,7 @@ public class Mute extends SlashCommand {
                 switch (id) {
 
                     case "yes" -> {
-
-                        MessageEmbed unmuteEmbed = new EmbedBuilder()
-                                .setTitle("Unmute")
-                                .addField("Unmuted:", target.getUser().getAsMention(), false)
-                                .addField("Reason:", "Manual Unmuted by " + buttonClickEventUser.getAsTag(), false)
-                                .setColor(Color.CYAN)
-                                .setFooter("Requested by " + buttonClickEventUser.getAsTag(), buttonClickEventUser.getEffectiveAvatarUrl())
-                                .setTimestamp(Instant.now())
-                                .build();
-
-                        buttonClickEvent.replyEmbeds(unmuteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
-                        actionLog.sendMessageEmbeds(unmuteEmbed).queue();
-
-                        guild.removeRoleFromMember(target, mutedRole).queue();
+                        unmute(currentMute, "Manually unmuted by " + buttonClickEventUser.getAsTag(), buttonClickEvent);
 
                     }
                     case "no" -> {
@@ -174,23 +117,199 @@ public class Mute extends SlashCommand {
 
     }
 
-    public static Integer parseDuration(String time) {
+    /**
+     * Mutes a member, messages them about it, prints to the action log and replies to the given interaction<p>
+     * This method is also called from {@link Warn}.<p>
+     * If the {@link Member} is already muted, the database will throw an exception
+     * @param mute The {@link MuteEntry} to get all the data from
+     * @param interaction The interaction to reply to, or {@code null} to not reply to any event
+     */
+    public static void mute(MuteEntry mute, Interaction interaction) {
+        Guild guild = LilyBot.INSTANCE.jda.getGuildById(Constants.GUILD_ID);
+        TextChannel actionLog = LilyBot.INSTANCE.jda.getTextChannelById(Constants.ACTION_LOG);
+        Role mutedRole = LilyBot.INSTANCE.jda.getRoleById(Constants.MUTED_ROLE);
+        
+        MessageEmbed muteEmbed = new EmbedBuilder()
+                .setTitle("Mute")
+                .addField("Muted:", mute.target().getUser().getAsMention(), false)
+                .addField("Muted until:", DateHelper.formatRelative(mute.expiry()), false)
+                .addField("Reason:", mute.reason(), false)
+                .setColor(Color.CYAN)
+                .setFooter("Requested by " + mute.requester().getAsTag(), mute.requester().getEffectiveAvatarUrl())
+                .setTimestamp(Instant.now())
+                .build();
+        MessageEmbed userEmbed = new EmbedBuilder()
+                .setTitle("You were muted")
+                .addField(String.format("You are muted from %s until:", guild.getName()), DateHelper.formatRelative(mute.expiry()), false)
+                .addField("Reason:", mute.reason(), false)
+                .setColor(Color.CYAN)
+                .setFooter("Muted by " + mute.requester().getAsTag(), mute.requester().getEffectiveAvatarUrl())
+                .setTimestamp(Instant.now())
+                .build();
+        
+        // Send the embed as Interaction reply, in action log and to the user
+        if (interaction != null) { // There may not be an event if this is a consequence of warn points
+            interaction.replyEmbeds(muteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
+        }
+        actionLog.sendMessageEmbeds(muteEmbed).queue();
+        
+        mute.target().getUser().openPrivateChannel()
+            .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(userEmbed))
+            .queue(null, throwable -> {
+                MessageEmbed failedToDMEmbed = new EmbedBuilder()
+                        .setTitle("Failed to DM " + mute.target().getUser().getAsTag() + " for mute.")
+                        .setColor(Color.CYAN)
+                        .setFooter("Mute was requested by " + mute.requester().getAsTag(), mute.requester().getEffectiveAvatarUrl())
+                        .setTimestamp(Instant.now())
+                        .build();
+            actionLog.sendMessageEmbeds(failedToDMEmbed).queue();
+        });
+
+        guild.addRoleToMember(mute.target(), mutedRole).queue();
+
+        insertMuteToDb(mute);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                unmute(mute, "The duration of the mute is over", null);
+            }
+        }, mute.expiry());
+    }
+
+    /**
+     * Converts a duration string to a duration in seconds.
+     * Also used in {@link Warn}
+     */
+    public static int parseDuration(String time) {
         int duration = Integer.parseInt(time.replaceAll("[^0-9]", ""));
         String unit = time.replaceAll("[^A-Za-z]+", "").trim();
         switch (unit) {
             // I know this is cursed, but I do not care, it works
-            case "s" -> duration *= 1000;
-            case "m", "min" -> duration *= 60000;
-            case "h", "hour" -> duration *= 3600000;
-            case "d", "day" -> duration *= 86400000;
+            case "s" -> duration *= 1;
+            case "m", "min" -> duration *= 60;
+            case "h", "hour" -> duration *= 3600;
+            case "d", "day" -> duration *= 86400;
         }
         return duration;
     }
 
+    /**
+     * Unmutes the user from the {@link MuteEntry} and logs it to the action log, and as an interaction response if interaction isn't {@code null}
+     * @param mute The {@link MuteEntry} to get the data from. Ignores everything but target and requester
+     * @param reason The reason of the unmute
+     * @param interaction The interaction to notify about the unmute, or {@code null} if there's none
+     */
+    private static void unmute(MuteEntry mute, String reason, Interaction interaction) {
+        Guild guild = LilyBot.INSTANCE.jda.getGuildById(Constants.GUILD_ID);
+        TextChannel actionLog = LilyBot.INSTANCE.jda.getTextChannelById(Constants.ACTION_LOG);
+        
+        MessageEmbed unmuteEmbed = new EmbedBuilder()
+                .setTitle("Unmute")
+                .addField("Unmuted:", mute.target().getUser().getAsMention(), false)
+                .addField("Reason:", reason, false)
+                .setColor(Color.CYAN)
+                .setFooter("Mute was originally requested by " + mute.requester().getAsTag(), mute.requester().getEffectiveAvatarUrl())
+                .setTimestamp(Instant.now())
+                .build();
+        
+        guild.removeRoleFromMember(mute.target(), LilyBot.INSTANCE.jda.getRoleById(Constants.MUTED_ROLE)).queue(
+                success -> {
+                    actionLog.sendMessageEmbeds(unmuteEmbed).queue();
+                    if (interaction != null) {
+                        interaction.replyEmbeds(unmuteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
+                    }
+                },
+                error -> {
+                    MessageEmbed errorEmbed = new EmbedBuilder()
+                            .setTitle(String.format("Unable to unmute %s:", mute.target().getUser().getName()))
+                            .appendDescription(error.toString())
+                            .setColor(Color.RED)
+                            .build();
+                    actionLog.sendMessageEmbeds(errorEmbed).submit();
+                    if (interaction != null) {
+                        interaction.replyEmbeds(unmuteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
+                    }
+                    error.printStackTrace();
+                }
+        );
+        removeUserFromDb(mute.target().getId());
+    }
+
+    private static void insertMuteToDb(MuteEntry mute) {
+        try (Connection connection = SQLiteDataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("INSERT INTO mute(id, expiry, requester, reason) VALUES (?, ?, ?, ?)")) {
+            ps.setString(1, mute.target().getId());
+            ps.setTimestamp(2, mute.expiry());
+            ps.setString(3, mute.requester().getId());
+            ps.setString(4, mute.reason());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void removeUserFromDb(String targetId) {
+        try (Connection connection = SQLiteDataSource.getConnection();
+                PreparedStatement ps = connection.prepareStatement("DELETE FROM mute WHERE id=?")) {
+               ps.setString(1, targetId);
+               ps.executeUpdate();
+           } catch (SQLException e) {
+               e.printStackTrace();
+           }
+    }
 
     private boolean equalsAny(String id) {
         return id.equals("mute:yes") ||
                 id.equals("mute:no");
     }
+
+    /**
+     * Re-schedules all saved mutes, and unmutes all expired mutes
+     */
+    public static void rescheduleMutes() {
+        for (MuteEntry mute : getCurrentMutes().values()) {
+            if (mute.expiry().before(Date.from(Instant.now()))) {
+                unmute(mute, "The duration of the mute was over while the bot wasn't running", null); // Already expired
+            } else {
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        unmute(mute, "The duration of the mute is over", null);
+                    }
+                }, mute.expiry());
+            }
+        }
+    }
+
+    /**
+     * Gets a {@link Map} mapping {@link Member} to their {@link MuteEntry}, for all active maps
+     */
+    public static Map<Member, MuteEntry> getCurrentMutes() {
+        Guild guild = LilyBot.INSTANCE.jda.getGuildById(Constants.GUILD_ID);
+        Map<Member, MuteEntry> mutes = new HashMap<>();
+
+        try (Connection connection = SQLiteDataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT * FROM mute")) {
+            ResultSet queryResult = ps.executeQuery();
+            while (queryResult.next()) {
+                Member target = guild.getMemberById(queryResult.getString("id"));
+                User requester = LilyBot.INSTANCE.jda.getUserById(queryResult.getString("requester"));
+                Timestamp expiry = queryResult.getTimestamp("expiry");
+                String reason = queryResult.getString("reason");
+                mutes.put(target, new MuteEntry(target, requester, expiry, reason));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return mutes;
+    }
+    
+    /**
+     * 
+     * @param target The target that was muted
+     * @param requester The requester of the mute, that may come from a warn
+     *
+     */
+    public static record MuteEntry(Member target, User requester, Timestamp expiry, String reason) {}
 
 }
