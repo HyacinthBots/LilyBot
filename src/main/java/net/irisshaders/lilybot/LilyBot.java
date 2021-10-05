@@ -32,7 +32,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Properties;
 
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings("UnusedAssignment")
 public class LilyBot {
 
     public static LilyBot INSTANCE;
@@ -115,6 +115,7 @@ public class LilyBot {
         this.jda = jda;
         this.gitHub = github;
         this.waiter = waiter;
+
     }
 
     public static void main(String[] args) {
