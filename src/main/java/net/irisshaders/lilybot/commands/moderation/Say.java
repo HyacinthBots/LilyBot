@@ -30,7 +30,7 @@ public class Say extends SlashCommand {
         this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS};
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
         List<OptionData> optionData = new ArrayList<>();
-        optionData.add(new OptionData(OptionType.STRING, "message", "What do you want to send in the channel.").setRequired(true));
+        optionData.add(new OptionData(OptionType.STRING, "message", "What you want to send in the channel.").setRequired(true));
         optionData.add(new OptionData(OptionType.CHANNEL, "channel", "The channel to send the message in.").setRequired(false));
         this.options = optionData;
     }
@@ -45,7 +45,7 @@ public class Say extends SlashCommand {
         User user = event.getUser();
 
         if (audio) {
-            event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "You cannot send messages in a VC", null))
+            event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "You cannot send messages in a voice channel!", null))
                     .mentionRepliedUser(false).setEphemeral(true).queue();
             return;
         }

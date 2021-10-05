@@ -71,7 +71,7 @@ public class Shutdown extends SlashCommand {
 
                     buttonClickEvent.replyEmbeds(finalShutdownEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
                     actionLog.sendMessageEmbeds(finalShutdownEmbed).queue();
-                    LoggerFactory.getLogger(Shutdown.class).info("Shutting down!");
+                    LoggerFactory.getLogger(Shutdown.class).info("Shutting down due to a request from " + buttonClickEventUser.getAsTag() + "!");
 
                     // Wait for it to send the embed and respond to any other commands. Can be reduced to a lower number if testing allows for it.
                     try { TimeUnit.SECONDS.sleep(10); } catch (InterruptedException e) { e.printStackTrace(); }
@@ -88,7 +88,7 @@ public class Shutdown extends SlashCommand {
                 case "no" -> {
 
                     MessageEmbed noShutdownEmbed = new EmbedBuilder()
-                            .setTitle("I am not shutting down")
+                            .setTitle("Shutdown canceled")
                             .setColor(Color.GREEN)
                             .setFooter("Requested by " + buttonClickEventUser.getAsTag(), buttonClickEventUser.getEffectiveAvatarUrl())
                             .setTimestamp(Instant.now())
