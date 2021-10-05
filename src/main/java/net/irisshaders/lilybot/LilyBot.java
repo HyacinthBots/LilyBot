@@ -112,8 +112,7 @@ public class LilyBot {
         this.jda = jda;
         this.gitHub = github;
         this.waiter = waiter;
-      
-        Mute.rescheduleMutes();
+
     }
 
     public static void main(String[] args) {
