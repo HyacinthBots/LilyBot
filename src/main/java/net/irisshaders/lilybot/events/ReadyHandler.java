@@ -6,6 +6,8 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.CommandType;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.irisshaders.lilybot.commands.moderation.Mute;
 import net.irisshaders.lilybot.utils.Constants;
 import org.slf4j.LoggerFactory;
