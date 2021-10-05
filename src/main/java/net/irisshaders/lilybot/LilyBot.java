@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.CommandType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -140,8 +141,8 @@ public class LilyBot {
 
         // normal commands
         // builder.addCommand(new Report()); // TODO uncomment when threads are finished
-
-        jda.getGuildById(Constants.GUILD_ID).upsertCommand(new CommandData(CommandType.MESSAGE_CONTEXT, "Report message")).queue();
+        String guildID = Constants.GUILD_ID;
+        jda.getGuildById(guildID).upsertCommand(new CommandData(CommandType.MESSAGE_CONTEXT, "Report message")).queue();
 
         // Shutdown Command
         commands.addSlashCommand(new Shutdown());
