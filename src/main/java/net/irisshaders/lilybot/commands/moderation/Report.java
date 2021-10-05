@@ -87,7 +87,7 @@ public class Report extends Command implements EventListener {
                     String buttonClicked = buttonClickEvent.getButton().getId().split(":")[1];
 
                     switch (buttonClicked) {
-                        case "yes": {
+                        case "yes" -> {
                             Message message = event.getTargetMessage();
                             User author = message.getAuthor();
                             String contentDisplay = message.getContentDisplay();
@@ -106,7 +106,7 @@ public class Report extends Command implements EventListener {
                             actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay, messageUrl, channel)).queue();
 
                         }
-                        case "no": {
+                        case "no" -> {
                             MessageEmbed noReportEmbed = new EmbedBuilder()
                                     .setTitle("Report canceled")
                                     .setColor(Color.GREEN)
