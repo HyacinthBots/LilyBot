@@ -266,7 +266,7 @@ public class Mute extends SlashCommand {
     /**
      * Re-schedules all saved mutes, and unmutes all expired mutes
      */
-    public static void rescheculeMutes() {
+    public static void rescheduleMutes() {
         for (MuteEntry mute : getCurrentMutes().values()) {
             if (mute.expiry().before(Date.from(Instant.now()))) {
                 unmute(mute, "The duration of the mute was over while the bot wasn't running", null); // Already expired
