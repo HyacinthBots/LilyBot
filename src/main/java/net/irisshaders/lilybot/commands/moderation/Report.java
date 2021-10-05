@@ -80,11 +80,11 @@ public class Report extends Command implements EventListener {
                         Button.of(ButtonStyle.PRIMARY, "report:no", "No", Emoji.fromUnicode("\u274C"))
                 ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
                     if (!buttonClickEvent.getUser().equals(user)) return false;
-                    if (!equalsAny(buttonClickEvent.getButton().getId())) return false;
+                    if (!equalsAny(buttonClickEvent.getComponentId())) return false;
                     return !buttonClickEvent.isAcknowledged();
                 }, buttonClickEvent -> {
                     User buttonClickEventUser = buttonClickEvent.getUser();
-                    String buttonClicked = buttonClickEvent.getButton().getId().split(":")[1];
+                    String buttonClicked = buttonClickEvent.getComponentId().split(":")[1];
 
                     switch (buttonClicked) {
                         case "yes" -> {
