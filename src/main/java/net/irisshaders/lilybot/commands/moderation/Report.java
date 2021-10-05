@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.interaction.commands.MessageContextCommandEven
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
+import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.utils.Constants;
 import org.jetbrains.annotations.NotNull;
 
@@ -62,29 +63,63 @@ public class Report extends Command implements EventListener {
 
             if (name.equals("Report message")) {
 
+
                 User user = event.getUser();
-                Message message = event.getTargetMessage();
-                String id = message.getChannel().getId();
-                User author = message.getAuthor();
-                String contentDisplay = message.getContentDisplay();
-                String messageUrl = message.getJumpUrl();
-                Guild guild = event.getGuild();
-                TextChannel actionLog = guild.getTextChannelById(Constants.ACTION_LOG);
-                String channel = String.format("<#%s>", id);
-                String mention = String.format("<@&%s>", Constants.MODERATOR_ROLE);
+                String id = event.getChannel().getId();
 
-                if (contentDisplay.length() > 100) {
-                    contentDisplay = contentDisplay.substring(0, 99) + "...";
-                }
+                MessageEmbed reportEmbed = new EmbedBuilder()
+                        .setTitle("Report")
+                        .setDescription("Would you like to report this message? This will ping moderators, and false reporting will be treated as spam and punished accordingly.")
+                        .setColor(Color.RED)
+                        .setFooter("Requested by " + event.getUser().getAsTag(), user.getEffectiveAvatarUrl())
+                        .setTimestamp(Instant.now())
+                        .build();
 
-                event.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl, channel)).setEphemeral(true).queue();
-                actionLog.sendMessage(mention).queue();
-                actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay, messageUrl, channel)).queue();
+                event.replyEmbeds(reportEmbed).addActionRow(
+                        Button.of(ButtonStyle.PRIMARY, "report:yes", "Yes", Emoji.fromUnicode("\u2705")),
+                        Button.of(ButtonStyle.PRIMARY, "report:no", "No", Emoji.fromUnicode("\u274C"))
+                ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
+                    if (!buttonClickEvent.getUser().equals(user)) return false;
+                    if (!equalsAny(buttonClickEvent.getButton().getId())) return false;
+                    return !buttonClickEvent.isAcknowledged();
+                }, buttonClickEvent -> {
+                    User buttonClickEventUser = buttonClickEvent.getUser();
+                    String buttonClicked = buttonClickEvent.getButton().getId().split(":")[1];
 
+                    switch (buttonClicked) {
+                        case "yes": {
+                            Message message = event.getTargetMessage();
+                            User author = message.getAuthor();
+                            String contentDisplay = message.getContentDisplay();
+                            String messageUrl = message.getJumpUrl();
+                            Guild guild = event.getGuild();
+                            TextChannel actionLog = guild.getTextChannelById(Constants.ACTION_LOG);
+                            String channel = String.format("<#%s>", id);
+                            String mention = String.format("<@&%s>", Constants.MODERATOR_ROLE);
+
+                            if (contentDisplay.length() > 100) {
+                                contentDisplay = contentDisplay.substring(0, 99) + "...";
+                            }
+
+                            event.replyEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl, channel)).setEphemeral(true).queue();
+                            actionLog.sendMessage(mention).queue();
+                            actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay, messageUrl, channel)).queue();
+
+                        }
+                        case "no": {
+                            MessageEmbed noReportEmbed = new EmbedBuilder()
+                                    .setTitle("Report canceled")
+                                    .setColor(Color.GREEN)
+                                    .setFooter("Requested by " + buttonClickEventUser.getAsTag(), buttonClickEventUser.getEffectiveAvatarUrl())
+                                    .setTimestamp(Instant.now())
+                                    .build();
+
+                            buttonClickEvent.replyEmbeds(noReportEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
+                        }
+                    }
+                }));
             }
-
         }
-
     }
 
     private MessageEmbed reportMessage(User user, User author, String title, String contentDisplay, String messageUrl, String channel) {
@@ -98,6 +133,11 @@ public class Report extends Command implements EventListener {
                 .setFooter("Message reported by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                 .setTimestamp(Instant.now())
                 .build();
+    }
+
+    private boolean equalsAny(String id) {
+        return id.equals("report:yes") ||
+                id.equals("report:no");
     }
 
 }
