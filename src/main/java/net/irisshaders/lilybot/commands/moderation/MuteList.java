@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -13,7 +14,6 @@ import java.awt.*;
 import java.time.Instant;
 import java.util.Collection;
 
-@SuppressWarnings("ConstantConditions")
 public class MuteList extends SlashCommand {
 
     public MuteList() {
@@ -29,7 +29,8 @@ public class MuteList extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
         User user = event.getUser();
-        Collection<MuteEntry> mutedMembers = Mute.getCurrentMutes().values();
+        JDA jda = event.getJDA();
+        Collection<MuteEntry> mutedMembers = Mute.getCurrentMutes(jda).values();
 
         if (mutedMembers.isEmpty()) {
 

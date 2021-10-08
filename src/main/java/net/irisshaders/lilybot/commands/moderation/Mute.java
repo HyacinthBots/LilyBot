@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
@@ -56,7 +57,8 @@ public class Mute extends SlashCommand {
         User user = event.getUser();
         String reason = event.getOption("reason") == null ? "No reason provided" : event.getOption("reason").getAsString();
         String duration = event.getOption("duration") == null ? "6h" : event.getOption("duration").getAsString();
-        MuteEntry currentMute = getCurrentMutes().get(target);
+        JDA jda = event.getJDA();
+        MuteEntry currentMute = getCurrentMutes(jda).get(target);
 
         if (currentMute == null) { // User is not muted
 
@@ -92,10 +94,7 @@ public class Mute extends SlashCommand {
 
                 switch (id) {
 
-                    case "yes" -> {
-                        unmute(currentMute, "Manually unmuted by " + buttonClickEventUser.getAsTag(), buttonClickEvent);
-
-                    }
+                    case "yes" -> unmute(currentMute, "Manually unmuted by " + buttonClickEventUser.getAsTag(), buttonClickEvent);
                     case "no" -> {
 
                         MessageEmbed stillMutedEmbed = new EmbedBuilder()
@@ -266,8 +265,8 @@ public class Mute extends SlashCommand {
     /**
      * Re-schedules all saved mutes, and unmutes all expired mutes
      */
-    public static void rescheduleMutes() {
-        for (MuteEntry mute : getCurrentMutes().values()) {
+    public static void rescheduleMutes(JDA jda) {
+        for (MuteEntry mute : getCurrentMutes(jda).values()) {
             if (mute.expiry().before(Date.from(Instant.now()))) {
                 unmute(mute, "The duration of the mute was over while the bot wasn't running", null); // Already expired
             } else {
@@ -284,8 +283,8 @@ public class Mute extends SlashCommand {
     /**
      * Gets a {@link Map} mapping {@link Member} to their {@link MuteEntry}, for all active maps
      */
-    public static Map<Member, MuteEntry> getCurrentMutes() {
-        Guild guild = LilyBot.INSTANCE.jda.getGuildById(Constants.GUILD_ID);
+    public static Map<Member, MuteEntry> getCurrentMutes(JDA jda) {
+        Guild guild = jda.getGuildById(Constants.GUILD_ID);
         Map<Member, MuteEntry> mutes = new HashMap<>();
 
         try (Connection connection = SQLiteDataSource.getConnection();

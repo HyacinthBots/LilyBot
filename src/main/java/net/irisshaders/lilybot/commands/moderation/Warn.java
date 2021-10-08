@@ -2,8 +2,10 @@ package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -49,6 +51,7 @@ public class Warn extends SlashCommand {
         InteractionHook hook = event.getHook();
         Guild guild = event.getGuild();
         TextChannel actionLog = guild.getTextChannelById(Constants.ACTION_LOG);
+        JDA jda = event.getJDA();
 
         event.deferReply(true).queue();
 
@@ -57,7 +60,7 @@ public class Warn extends SlashCommand {
         // UPDATE Target's points with the given points
         updateUsers(points, targetId);
         // SELECT points from target, executes upon reaching a threshold
-        readPoints(target, points, hook, reason, user, actionLog, guild);
+        readPoints(target, points, hook, reason, user, actionLog, jda);
 
     }
 
@@ -100,10 +103,9 @@ public class Warn extends SlashCommand {
      * @param reason The reason for the points to be given. (String)
      * @param user The user of the command. (User)
      * @param actionLog Where the moderation messages are sent. (TextChannel)
-     * @param guild The guild where this took place. (Guild)
-     * @param mutedRole The role to give for a mute. (Role)
+     * @param jda The JDA instance. (JDA)
      */
-    private void readPoints(Member target, String points, InteractionHook hook, String reason, User user, TextChannel actionLog, Guild guild) {
+    private void readPoints(Member target, String points, InteractionHook hook, String reason, User user, TextChannel actionLog, JDA jda) {
         int totalPoints = 0;
         try (Connection connection = SQLiteDataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("SELECT points FROM warn WHERE id = (?)")) {
@@ -127,7 +129,7 @@ public class Warn extends SlashCommand {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        consequences(target, reason, user, actionLog, guild, totalPoints);
+        consequences(target, reason, user, actionLog, totalPoints, jda);
     }
 
     /**
@@ -136,29 +138,28 @@ public class Warn extends SlashCommand {
      * @param reason The reason for the mute / ban. (String)
      * @param user The user of the command. (User)
      * @param actionLog Where the moderation messages are sent. (TextChannel)
-     * @param guild The guild where this took place. (Guild)
-     * @param mutedRole The role to give for a mute. (Guild)
      * @param totalPoints The total number of points in the database. (int)
+     * @param jda The JDA instance. (JDA)
      */
-    private void consequences(Member target, String reason, User user, TextChannel actionLog, Guild guild, int totalPoints) {
+    private void consequences(Member target, String reason, User user, TextChannel actionLog, int totalPoints, JDA jda) {
         if (totalPoints >= 50 && totalPoints < 100) { // 3 hr mute
-            mute(target, "3h", user);
+            mute(target, "3h", user, jda);
         } else if (totalPoints >= 100 && totalPoints < 150) { // 12 hr mute
-            mute(target, "12h", user);
+            mute(target, "12h", user, jda);
         } else if (totalPoints >= 150) { // ban
             ban(target, user, actionLog, reason);
         }
     }
 
     /**
-     * An utility method for giving mutes from here. Basically calls {@link Mute#mute(MuteEntry, SlashCommandEvent)}.<p>
+     * A utility method for giving mutes from here. Basically calls {@link Mute#mute(MuteEntry, Interaction)}.<p>
      * It also checks if the {@link Member} is muted before muting
      * @param target The target. (Member)
      * @param duration The length of the mute. (String)
      * @param requester The user of the command. (User)
      */
-    private void mute(Member target, String duration, User requester) {
-        if (Mute.getCurrentMutes().containsKey(target)) { // Currently muted
+    private void mute(Member target, String duration, User requester, JDA jda) {
+        if (Mute.getCurrentMutes(jda).containsKey(target)) { // Currently muted
             return; // Do nothing. The warn was already notified, and there just was no mute since the user is already muted
         }
         Timestamp expiry = Timestamp.from(Instant.now().plusSeconds(Mute.parseDuration(duration)));
@@ -183,9 +184,10 @@ public class Warn extends SlashCommand {
                 .setTimestamp(Instant.now())
                 .build();
         actionLog.sendMessageEmbeds(banEmbed).queue();
-        target.ban(7, reason).queue(null, throwable -> {
-            actionLog.sendMessageEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to DM " + target.getUser().getAsTag() + " for ban.", null)).queue();
-        });
+        target.ban(7, reason).queue(null, throwable -> actionLog.sendMessageEmbeds(
+                ResponseHelper.genFailureEmbed(user, "Failed to DM " + target.getUser().getAsTag() + " for ban.",
+                        null)).queue())
+        ;
     }
 
 }
