@@ -2,12 +2,10 @@ package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -24,7 +22,7 @@ public class Say extends SlashCommand {
     public Say() {
         this.name = "say";
         this.help = "Sends a message in a specified channel. If none is given, it sends in the current one.";
-        this.defaultEnabled = false;
+        this.defaultEnabled = true;
         this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
         this.guildOnly = true;
         this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS};
@@ -43,6 +41,9 @@ public class Say extends SlashCommand {
                 event.getChannel() : event.getOption("channel").getAsMessageChannel();
         boolean audio = channel.getType().isAudio();
         User user = event.getUser();
+        JDA jda = event.getJDA();
+        TextChannel actionLog = jda.getTextChannelById(Constants.ACTION_LOG);
+        String channelString = String.format("<#%s>", channel.getId());
 
         if (audio) {
             event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "You cannot send messages in a voice channel!", null))
@@ -77,6 +78,16 @@ public class Say extends SlashCommand {
         } catch (Exception e) {
             event.replyEmbeds(sayFailEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
         }
+
+        MessageEmbed actionLogEmbed = new EmbedBuilder()
+                .setTitle(user.getAsTag() + " used the Say Command")
+                .addField("Message sent:", message, false)
+                .addField("Channel:", channelString, false)
+                .setColor(0x9992ff)
+                .setTimestamp(Instant.now())
+                .build();
+
+        actionLog.sendMessageEmbeds(actionLogEmbed).queue();
 
     }
 
