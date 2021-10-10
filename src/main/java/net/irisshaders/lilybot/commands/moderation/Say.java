@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.Button;
 import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
 
@@ -30,6 +31,7 @@ public class Say extends SlashCommand {
         List<OptionData> optionData = new ArrayList<>();
         optionData.add(new OptionData(OptionType.STRING, "message", "What you want to send in the channel.").setRequired(true));
         optionData.add(new OptionData(OptionType.CHANNEL, "channel", "The channel to send the message in.").setRequired(false));
+        optionData.add(new OptionData(OptionType.BOOLEAN, "embed", "Whether the response should be in the form of an embed or not.").setRequired(false));
         this.options = optionData;
     }
 
@@ -39,6 +41,7 @@ public class Say extends SlashCommand {
         String message = event.getOption("message").getAsString();
         MessageChannel channel = event.getOption("channel") == null ?
                 event.getChannel() : event.getOption("channel").getAsMessageChannel();
+        boolean isEmbed = event.getOption("embed").getAsBoolean();
         boolean audio = channel.getType().isAudio();
         User user = event.getUser();
         JDA jda = event.getJDA();
@@ -72,13 +75,6 @@ public class Say extends SlashCommand {
                 .setTimestamp(Instant.now())
                 .build();
 
-        try {
-            channel.sendMessage(say).queue(success -> event.replyEmbeds(saySuccessEmbed).mentionRepliedUser(false)
-                    .setEphemeral(true).queue());
-        } catch (Exception e) {
-            event.replyEmbeds(sayFailEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
-        }
-
         MessageEmbed actionLogEmbed = new EmbedBuilder()
                 .setTitle(user.getAsTag() + " used the Say Command")
                 .addField("Message sent:", message, false)
@@ -87,8 +83,23 @@ public class Say extends SlashCommand {
                 .setTimestamp(Instant.now())
                 .build();
 
-        actionLog.sendMessageEmbeds(actionLogEmbed).queue();
+        try {
+            if (isEmbed) {
+                channel.sendMessageEmbeds(sayEmbed).queue(message1 -> reply(event, actionLog, saySuccessEmbed, actionLogEmbed, message1));
+            } else {
+                channel.sendMessage(say).queue(message1 -> reply(event, actionLog, saySuccessEmbed, actionLogEmbed, message1));
+            }
+        } catch (Exception e) {
+            event.replyEmbeds(sayFailEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
+        }
 
+    }
+
+    private void reply(SlashCommandEvent event, TextChannel actionLog, MessageEmbed saySuccessEmbed, MessageEmbed actionLogEmbed, Message message1) {
+        event.replyEmbeds(saySuccessEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
+        actionLog.sendMessageEmbeds(actionLogEmbed).setActionRow(
+                Button.link(message1.getJumpUrl(), "Click here to see the message")
+        ).queue();
     }
 
 }
