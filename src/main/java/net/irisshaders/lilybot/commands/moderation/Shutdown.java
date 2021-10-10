@@ -73,16 +73,7 @@ public class Shutdown extends SlashCommand {
                     actionLog.sendMessageEmbeds(finalShutdownEmbed).queue();
                     LoggerFactory.getLogger(Shutdown.class).info("Shutting down due to a request from " + buttonClickEventUser.getAsTag() + "!");
 
-                    // Wait for it to send the embed and respond to any other commands. Can be reduced to a lower number if testing allows for it.
-                    try { TimeUnit.SECONDS.sleep(10); } catch (InterruptedException e) { e.printStackTrace(); }
-
-                    jda.shutdownNow();
-                    try {
-                        TimeUnit.SECONDS.sleep(3L);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    System.exit(0);
+                    jda.shutdown();
 
                 }
                 case "no" -> {
