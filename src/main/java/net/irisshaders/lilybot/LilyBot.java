@@ -44,7 +44,6 @@ public class LilyBot {
     public final EventWaiter waiter;
     public final Properties config;
     public final Path configPath;
-    public final SlashCommandHandler slashCommandHandler;
 
     public LilyBot(Path configPath) {
         JDA jda = null;
@@ -66,9 +65,9 @@ public class LilyBot {
                 .forceGuildOnly(Constants.GUILD_ID)
                 .build();
 
-        this.slashCommandHandler = new SlashCommandHandler(commandClient);
-        LilyBot.addBuiltinCommands(slashCommandHandler);
-        this.addCustomCommands(slashCommandHandler);
+        SlashCommandHandler slashCommandHandler = new SlashCommandHandler(commandClient);
+        addBuiltinCommands(slashCommandHandler);
+        addCustomCommands(slashCommandHandler);
 
         try {
             SQLiteDataSource.getConnection();
@@ -120,7 +119,7 @@ public class LilyBot {
         INSTANCE = new LilyBot(Paths.get(Constants.CONFIG_PATH));
     }
 
-    public static void addBuiltinCommands(SlashCommandHandler commands) {
+    public void addBuiltinCommands(SlashCommandHandler commands) {
         // add commands now
         commands.addSlashCommand(new Ping());
 
