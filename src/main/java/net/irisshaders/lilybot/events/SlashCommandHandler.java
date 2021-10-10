@@ -55,13 +55,13 @@ public class SlashCommandHandler extends ListenerAdapter {
             throw new IllegalStateException("Ready was called twice, what");
         ready = true;
         jda = event.getJDA();
-        removeStrayCommands();
         synchronized (preReadyQueue) {
             for (var command: preReadyQueue) {
                 registerCommand(command);
             }
             preReadyQueue.clear();
         }
+        removeStrayCommands();
     }
     
     /**
