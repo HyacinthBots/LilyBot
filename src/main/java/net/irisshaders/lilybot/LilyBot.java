@@ -59,7 +59,7 @@ public class LilyBot {
         CommandClient builder = new CommandClientBuilder()
                 .setHelpConsumer(null)
                 .setStatus(OnlineStatus.ONLINE)
-                .setActivity(Activity.playing("Iris 1.17.1"))
+                .setActivity(Activity.playing(properties.getProperty("activity")))
                 .setOwnerId(Constants.OWNER)
                 .forceGuildOnly(Constants.GUILD_ID)
                 .build();
