@@ -41,7 +41,8 @@ public class Say extends SlashCommand {
         String message = event.getOption("message").getAsString();
         MessageChannel channel = event.getOption("channel") == null ?
                 event.getChannel() : event.getOption("channel").getAsMessageChannel();
-        boolean isEmbed = event.getOption("embed").getAsBoolean();
+        boolean isEmbed = event.getOption("embed") != null &&
+                event.getOption("embed").getAsBoolean();
         boolean audio = channel.getType().isAudio();
         User user = event.getUser();
         JDA jda = event.getJDA();
