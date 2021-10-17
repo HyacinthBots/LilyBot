@@ -60,15 +60,15 @@ public class SlashCommandHandler extends ListenerAdapter {
         jda = event.getJDA();
         ready = true;
         var currentCommandsFuture = getCurrentCommands();
+        Map<String, Command> currentCommands;
         synchronized (preReadyQueue) {
-            currentCommandsFuture.thenAccept(currentCommands -> {
-                for (var command: preReadyQueue) {
-                    registerCommandIfNoEquivalentIsPresent(currentCommands, command);
-                }
-                preReadyQueue.clear();
-                removeStrayCommands(currentCommands.values());
-            });
+        	currentCommands = currentCommandsFuture.join();
+            for (var command: preReadyQueue) {
+                registerCommandIfNoEquivalentIsPresent(currentCommands, command);
+            }
+            preReadyQueue.clear();
         }
+        removeStrayCommands(currentCommands.values());
     }
     
     /**
