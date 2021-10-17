@@ -6,14 +6,14 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.irisshaders.lilybot.commands.moderation.Mute.MuteEntry;
 import net.irisshaders.lilybot.utils.Constants;
+import net.irisshaders.lilybot.utils.DateHelper;
 
 import java.awt.*;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
-@SuppressWarnings("ConstantConditions")
 public class MuteList extends SlashCommand {
 
     public MuteList() {
@@ -28,16 +28,9 @@ public class MuteList extends SlashCommand {
 
     @Override
     protected void execute(SlashCommandEvent event) {
-
-        JDA jda = event.getJDA();
-        Guild guild = jda.getGuildById(Constants.GUILD_ID);
-        Role mutedRole = guild.getRoleById(Constants.MUTED_ROLE);
         User user = event.getUser();
-        List<Member> guildMembers = guild.getMembers();
-        List<String> mutedMembers = new ArrayList<>();
-
-        guildMembers.stream().filter(member -> member.getRoles().contains(mutedRole))
-                .forEach(member -> mutedMembers.add(member.getAsMention()));
+        JDA jda = event.getJDA();
+        Collection<MuteEntry> mutedMembers = Mute.getCurrentMutes(jda).values();
 
         if (mutedMembers.isEmpty()) {
 
@@ -52,16 +45,20 @@ public class MuteList extends SlashCommand {
 
         } else {
 
-            MessageEmbed muteListEmbed = new EmbedBuilder()
+            EmbedBuilder muteListEmbedBuilder = new EmbedBuilder()
                     .setTitle("Mute List")
-                    .setDescription(String.format("These are the muted members:\n %s", mutedMembers)
-                            .replace("[", "").replace("]", ""))
+                    .setDescription("These are the muted members:")
                     .setColor(Color.CYAN)
                     .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
-                    .build();
+                    .setTimestamp(Instant.now());
+            for (MuteEntry mute: mutedMembers) {
+                muteListEmbedBuilder.addField("User:", mute.target().getUser().getAsTag(), false);
+                muteListEmbedBuilder.addField("Muted by:", mute.requester().getAsTag(), true);
+                muteListEmbedBuilder.addField("Expires:", DateHelper.formatDateAndTime(mute.expiry()), true);
+                muteListEmbedBuilder.addField("Reason:", mute.reason(), true);
+            }
 
-            event.replyEmbeds(muteListEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
+            event.replyEmbeds(muteListEmbedBuilder.build()).mentionRepliedUser(false).setEphemeral(true).queue();
 
         }
 
