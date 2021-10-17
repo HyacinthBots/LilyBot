@@ -59,7 +59,7 @@ public class LilyBot {
         CommandClient builder = new CommandClientBuilder()
                 .setHelpConsumer(null)
                 .setStatus(OnlineStatus.ONLINE)
-                .setActivity(Activity.playing("Iris 1.17.1"))
+                .setActivity(Activity.playing(properties.getProperty("status")))
                 .setOwnerId(Constants.OWNER)
                 .forceGuildOnly(Constants.GUILD_ID)
                 .build();
@@ -132,7 +132,7 @@ public class LilyBot {
         commands.addSlashCommand(new MuteList());
         commands.addSlashCommand(new Warn());
         commands.addSlashCommand(new Say());
-
+        commands.addSlashCommand(new BotActivity());
         // Services
         commands.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
 
