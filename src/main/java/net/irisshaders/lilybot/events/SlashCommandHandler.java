@@ -1,14 +1,15 @@
 package net.irisshaders.lilybot.events;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.SlashCommand;
@@ -58,31 +59,36 @@ public class SlashCommandHandler extends ListenerAdapter {
             throw new IllegalStateException("Ready was called twice, what");
         jda = event.getJDA();
         ready = true;
-        var currentCommands = getCurrentCommands();
+        var currentCommandsFuture = getCurrentCommands();
         synchronized (preReadyQueue) {
-            for (var command: preReadyQueue) {
-                registerCommandIfNoEquivalentIsPresent(currentCommands, command);
-            }
-            preReadyQueue.clear();
+            currentCommandsFuture.thenAccept(currentCommands -> {
+                for (var command: preReadyQueue) {
+                    registerCommandIfNoEquivalentIsPresent(currentCommands, command);
+                }
+                preReadyQueue.clear();
+                removeStrayCommands(currentCommands.values());
+            });
         }
-        removeStrayCommands();
     }
     
     /**
-     * Returns the commands that are currently registered <i>in Discord</i>. Can differ from the ones we have registered here
+     * Returns a {@link CompletableFuture} with the commands that are currently registered <i>in Discord</i>.<p>
+     * 
+     * Can differ from the ones we have registered here
      */
-    private Map<String, Command> getCurrentCommands() {
-        var map = new ConcurrentHashMap<String, Command>();
-        Consumer<List<Command>> commandAdder = list -> {
-            for (Command cmd : list) {
+    private CompletableFuture<Map<String, Command>> getCurrentCommands() {
+        var cf1 = jda.getGuildById(Constants.GUILD_ID).retrieveCommands().submit();
+        var cf2 = jda.retrieveCommands().submit();
+        return CompletableFuture.allOf(cf1, cf2).thenApply(nothing -> {
+            var map = new HashMap<String, Command>();
+            for (Command cmd : cf1.join()) {
                 map.put(cmd.getName(), cmd);
             }
-        };
-        CompletableFuture<?> cf1 = jda.getGuildById(Constants.GUILD_ID).retrieveCommands().submit().thenAccept(commandAdder);
-        CompletableFuture<?> cf2 = jda.retrieveCommands().submit().thenAccept(commandAdder);
-        cf1.join(); // Could this be properly multithreaded?
-        cf2.join();
-        return map;
+            for (Command cmd : cf2.join()) {
+                map.put(cmd.getName(), cmd);
+            }
+            return map;
+        });
     }
     
     /**
@@ -132,17 +138,16 @@ public class SlashCommandHandler extends ListenerAdapter {
         }
     }
     
-    private void removeStrayCommands() { // This could use the result of getCurrentCommands that was already computed, but it would make it not async
+    private void removeStrayCommands(Collection<Command> guildCommands) {
         String ourId = jda.getSelfUser().getApplicationId();
-        Consumer<List<Command>> deleter = guildCommands -> {
-            guildCommands.stream().filter(c -> ourId.equals(c.getApplicationId()) && !commands.containsKey(c.getName())).forEach(cmd -> {
+        guildCommands.parallelStream()
+            .filter(c -> ourId.equals(c.getApplicationId()) && !commands.containsKey(c.getName()))
+            .forEach(cmd -> {
                 jda.getGuildById(Constants.GUILD_ID).deleteCommandById(cmd.getId()).queue(nothing -> 
                     LilyBot.LOG_LILY.info("Removed stray command: "+cmd.getName())
                 );
-            });
-        };
-        jda.getGuildById(Constants.GUILD_ID).retrieveCommands().submit().thenAccept(deleter);
-        jda.retrieveCommands().submit().thenAccept(deleter);
+            }
+        );
     }
     
     /**
