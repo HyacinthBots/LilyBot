@@ -98,7 +98,8 @@ public class Report extends Command implements EventListener {
                             Guild guild = event.getGuild();
                             TextChannel actionLog = guild.getTextChannelById(Constants.ACTION_LOG);
                             String channel = String.format("<#%s>", id);
-                            String mention = String.format("<@&%s>", Constants.MODERATOR_ROLE, " <@&%s>", Constants.TRIAL_MODERATOR_ROLE);
+                            String mention = String.format("<@&%s>", Constants.MODERATOR_ROLE);
+                            String mention2 = String.format( "<@&%s>", Constants.TRIAL_MODERATOR_ROLE);
 
                             if (contentDisplay.length() > 100) {
                                 contentDisplay = contentDisplay.substring(0, 99) + "...";
@@ -106,6 +107,7 @@ public class Report extends Command implements EventListener {
 
                             hook.editOriginalEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl, channel)).queue();
                             actionLog.sendMessage(mention).queue();
+                            actionLog.sendMessage(mention2).queue();
                             actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay, messageUrl, channel)).queue();
 
                         }
