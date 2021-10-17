@@ -39,7 +39,7 @@ public class Mute extends SlashCommand {
         this.name = "mute";
         this.help = "Mutes a specified member for the given reason and duration. Defaults to 6h and no reason.";
         this.defaultEnabled = false;
-        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
+        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE, Constants.TRIAL_MODERATOR_ROLE};
         this.guildOnly = true;
         this.botPermissions = new Permission[]{Permission.MANAGE_ROLES};
         this.botMissingPermMessage = "The bot does not have the `MANAGE ROLES` permission.";
