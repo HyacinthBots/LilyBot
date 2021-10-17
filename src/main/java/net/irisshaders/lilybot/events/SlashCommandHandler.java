@@ -2,12 +2,11 @@ package net.irisshaders.lilybot.events;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import com.jagrosh.jdautilities.command.CommandClient;
@@ -31,9 +30,9 @@ import net.irisshaders.lilybot.utils.Constants;
 public class SlashCommandHandler extends ListenerAdapter {
     private volatile boolean ready = false;
     private final List<SlashCommand> preReadyQueue = Collections.synchronizedList(new ArrayList<>());
-    private final Map<String, SlashCommand> commands = new HashMap<>();
-    private final Map<String, Optional<String>> commandsIds = new HashMap<>();
-    private final Set<String> commandsToRemove = Collections.synchronizedSet(new HashSet<>());
+    private final Map<String, SlashCommand> commands = new ConcurrentHashMap<>();
+    private final Map<String, Optional<String>> commandsIds = new ConcurrentHashMap<>();
+    private final Set<String> commandsToRemove = ConcurrentHashMap.newKeySet();
     private final CommandClient client; // For some reason they need this to run
     private JDA jda;
     
@@ -53,8 +52,8 @@ public class SlashCommandHandler extends ListenerAdapter {
     public void onReady(ReadyEvent event) {
         if (ready)
             throw new IllegalStateException("Ready was called twice, what");
-        ready = true;
         jda = event.getJDA();
+        ready = true;
         synchronized (preReadyQueue) {
             for (var command: preReadyQueue) {
                 registerCommand(command);
