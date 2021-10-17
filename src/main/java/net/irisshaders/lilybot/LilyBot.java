@@ -119,35 +119,35 @@ public class LilyBot {
         INSTANCE = new LilyBot(Paths.get(Constants.CONFIG_PATH));
     }
 
-    public void addBuiltinCommands(SlashCommandHandler commands) {
+    public void addBuiltinCommands(SlashCommandHandler handler) {
         // add commands now
-        commands.addSlashCommand(new Ping());
+        handler.addSlashCommand(new Ping());
 
         // Mod Commands
-        commands.addSlashCommand(new Ban());
-        commands.addSlashCommand(new Kick());
-        commands.addSlashCommand(new Unban());
-        commands.addSlashCommand(new Clear());
-        commands.addSlashCommand(new Mute());
-        commands.addSlashCommand(new MuteList());
-        commands.addSlashCommand(new Warn());
-        commands.addSlashCommand(new Say());
+        handler.addSlashCommand(new Ban());
+        handler.addSlashCommand(new Kick());
+        handler.addSlashCommand(new Unban());
+        handler.addSlashCommand(new Clear());
+        handler.addSlashCommand(new Mute());
+        handler.addSlashCommand(new MuteList());
+        handler.addSlashCommand(new Warn());
+        handler.addSlashCommand(new Say());
 
         // Services
-        commands.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
+        handler.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
 
         // normal commands
         // builder.addCommand(new Report()); // TODO uncomment when threads are finished
 
         // Shutdown Command
-        commands.addSlashCommand(new Shutdown());
+        handler.addSlashCommand(new Shutdown());
     }
 
-    public void addCustomCommands(SlashCommandHandler commands) {
+    public void addCustomCommands(SlashCommandHandler handler) {
         var cmdNames = this.config.getProperty("commands").split(" ");
         for (var cmd : cmdNames) {
             LOG_LILY.info("Adding custom command '{}'", cmd);
-            commands.addSlashCommand(Custom.parse(cmd, this.config));
+            handler.addSlashCommand(Custom.parse(cmd, this.config));
         }
     }
 
