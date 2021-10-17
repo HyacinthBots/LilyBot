@@ -31,7 +31,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Properties;
 
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings("UnusedAssignment")
 public class LilyBot {
 
     public static LilyBot INSTANCE;
@@ -60,7 +60,7 @@ public class LilyBot {
         CommandClient commandClient = new CommandClientBuilder()
                 .setHelpConsumer(null)
                 .setStatus(OnlineStatus.ONLINE)
-                .setActivity(Activity.playing("Iris 1.17.1"))
+                .setActivity(Activity.playing(properties.getProperty("status")))
                 .setOwnerId(Constants.OWNER)
                 .forceGuildOnly(Constants.GUILD_ID)
                 .build();
@@ -113,6 +113,7 @@ public class LilyBot {
         this.jda = jda;
         this.gitHub = github;
         this.waiter = waiter;
+
     }
 
     public static void main(String[] args) {
@@ -132,6 +133,7 @@ public class LilyBot {
         handler.addSlashCommand(new MuteList());
         handler.addSlashCommand(new Warn());
         handler.addSlashCommand(new Say());
+        handler.addSlashCommand(new BotActivity());
 
         // Services
         handler.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());

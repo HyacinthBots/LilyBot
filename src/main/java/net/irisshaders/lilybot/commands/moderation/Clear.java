@@ -38,6 +38,7 @@ public class Clear extends SlashCommand {
         int index = Integer.parseInt(event.getOption("messages") == null ? "100" : event.getOption("messages").getAsString());
         User user = event.getUser();
         MessageChannel channel = event.getChannel();
+        String id = event.getChannel().getId();
 
         try {
 
@@ -45,7 +46,8 @@ public class Clear extends SlashCommand {
             channel.purgeMessages(messageHistory);
 
             MessageEmbed deletedMessagesEmbed = new EmbedBuilder()
-                    .setTitle("Successfully deleted " + index + " messages.")
+                    .setTitle("Successfully deleted " + index + " messages from:")
+                    .setDescription(String.format("<#%s>", id))
                     .setColor(Color.GREEN)
                     .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                     .setTimestamp(Instant.now())
