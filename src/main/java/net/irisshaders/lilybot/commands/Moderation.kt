@@ -8,14 +8,13 @@ import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.env
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
-import net.irisshaders.lilybot.GUILD_ID
-import net.irisshaders.lilybot.MODERATOR_ROLE
+import net.irisshaders.lilybot.utils.GUILD_ID
+import net.irisshaders.lilybot.utils.MODERATORS
 import kotlin.system.exitProcess
 
 class Moderation: Extension() {
@@ -26,7 +25,7 @@ class Moderation: Extension() {
         ephemeralSlashCommand(::ClearArgs) {  // Ephemeral slash commands have private responses
             name = "clear"
             description = "Clears messages."
-            allowRole(Snowflake(MODERATOR_ROLE))
+            allowRole(MODERATORS)
             // Use guild commands for commands that have guild-specific actions
             guild(GUILD_ID)
 
@@ -50,7 +49,7 @@ class Moderation: Extension() {
         //Kick command
         ephemeralSlashCommand(::KickArgs) {  // Ephemeral slash commands have private responses
             name = "kick"
-            allowRole(Snowflake(MODERATOR_ROLE))
+            allowRole(MODERATORS)
             description = "Kicks a user."
 
 
@@ -72,7 +71,7 @@ class Moderation: Extension() {
             name = "shutdown"
             description = "Shuts down the bot."
             allowByDefault = false
-            allowedRoles.add(Snowflake(MODERATOR_ROLE))
+            allowedRoles.add(MODERATORS)
 
 
             // Use guild commands for testing, global ones take up to an hour to update
