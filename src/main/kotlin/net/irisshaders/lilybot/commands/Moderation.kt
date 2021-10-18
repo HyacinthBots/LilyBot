@@ -47,8 +47,8 @@ class Moderation: Extension() {
                 respond {
                     embed {
                         color = DISCORD_BLACK
-                        title = "$messageAmount messages have been cleared"
-
+                        title = "$messageAmount messages have been cleared."
+                        description = "Action occured in ${textChannel.mention}."
                         timestamp = Clock.System.now()
                     }
                 }
