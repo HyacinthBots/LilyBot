@@ -8,8 +8,8 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
-group = "template"
-version = "1.0-SNAPSHOT"
+group = "net.irisshaders.lilybot"
+version = "1.0"
 
 repositories {
     // You can remove this if you're not testing locally-installed KordEx builds
@@ -38,8 +38,7 @@ application {
 }
 
 tasks.withType<KotlinCompile> {
-    // Current LTS version of Java
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "16"
 
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
 }
@@ -58,7 +57,6 @@ tasks.create<Delete>("detekt") {
 }
 
 java {
-    // Current LTS version of Java
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
 }
