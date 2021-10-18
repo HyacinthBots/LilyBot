@@ -15,6 +15,7 @@ import net.irisshaders.lilybot.commands.custom.Custom;
 import net.irisshaders.lilybot.commands.moderation.Shutdown;
 import net.irisshaders.lilybot.commands.moderation.*;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
+import net.irisshaders.lilybot.events.AttachmentHandler;
 import net.irisshaders.lilybot.events.ReadyHandler;
 import net.irisshaders.lilybot.utils.Constants;
 import org.kohsuke.github.GitHub;
@@ -90,7 +91,7 @@ public class LilyBot {
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.watching("Loading..."))
                     .setAutoReconnect(true)
-                    .addEventListeners(builder, waiter, new ReadyHandler())
+                    .addEventListeners(builder, waiter, new ReadyHandler(), new AttachmentHandler())
                     .build();
         } catch (LoginException e) {
             throw new RuntimeException(e);
