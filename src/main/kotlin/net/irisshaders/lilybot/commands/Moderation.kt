@@ -1,5 +1,6 @@
 package net.irisshaders.lilybot.commands
 
+import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
@@ -11,8 +12,10 @@ import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.entity.channel.Channel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
+import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.GUILD_ID
 import net.irisshaders.lilybot.utils.MODERATORS
 import kotlin.system.exitProcess
@@ -34,15 +37,21 @@ class Moderation: Extension() {
                 val messageHolder = arrayListOf<Snowflake>()
                 val textChannel = channel as GuildMessageChannelBehavior
 
-                channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100)).filterNotNull().onEach { messageHolder.add(it.id)
-                }.catch { it.printStackTrace()
+                channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100)).filterNotNull().onEach {
+                    messageHolder.add(it.id)
+                }.catch {
+                    it.printStackTrace()
                     println("error")
                 }.collect()
                 textChannel.bulkDelete(messageHolder)
                 respond {
-                    content = "Cleared $messageAmount messages!"
-                }
+                    embed {
+                        color = DISCORD_BLACK
+                        title = "$messageAmount messages have been cleared"
 
+                        timestamp = Clock.System.now()
+                    }
+                }
             }
         }
 

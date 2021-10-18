@@ -34,7 +34,7 @@ dependencies {
 
 application {
     // This is deprecated, but the Shadow plugin requires it
-    mainClassName = "net.irisshaders.lilybot.LilyBotKt"
+    mainClassName = "net.irisshaders.lilybot.LilyBotkt"
 }
 
 tasks.withType<KotlinCompile> {
