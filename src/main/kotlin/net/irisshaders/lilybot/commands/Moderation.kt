@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.components.components
@@ -13,6 +14,7 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.addRole
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
@@ -28,7 +30,7 @@ import kotlin.system.exitProcess
  * @author NoComment1105
  * @author IMS212
  */
-class Moderation: Extension() {
+class Moderation : Extension() {
     override val name = "moderation"
 
     override suspend fun setup() {
@@ -46,9 +48,10 @@ class Moderation: Extension() {
                 val messageHolder = arrayListOf<Snowflake>()
                 val textChannel = channel as GuildMessageChannelBehavior
 
-                channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100)).filterNotNull().onEach {
-                    messageHolder.add(it.id)
-                }.catch {
+                channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100)).filterNotNull()
+                    .onEach {
+                        messageHolder.add(it.id)
+                    }.catch {
                     it.printStackTrace()
                     println("error")
                 }.collect()
@@ -85,7 +88,7 @@ class Moderation: Extension() {
                 guild?.ban(arguments.userArgument.id, builder = {
                     this.reason = "Requested by " + user.asUser().username
                     this.deleteMessagesDays = arguments.messages
-            })
+                })
                 respond {
                     embed {
                         color = DISCORD_BLACK
@@ -94,7 +97,7 @@ class Moderation: Extension() {
                         timestamp = Clock.System.now()
                     }
                 }
-                actionLog.createEmbed { 
+                actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Banned a user"
                     description = "${user.asUser().username} banned ${arguments.userArgument.mention}!"
@@ -196,7 +199,6 @@ class Moderation: Extension() {
         }
 
         //Shutdown command
-
         ephemeralSlashCommand {  // Ephemeral slash commands have private responses
             name = "shutdown"
             description = "Shuts down the bot."
@@ -243,8 +245,8 @@ class Moderation: Extension() {
     inner class ClearArgs : Arguments() {
         // A single user argument, required for the command to be able to run
         val messages by int(
-                "messages",
-                description = "Messages"
+            "messages",
+            description = "Messages"
         )
     }
 
@@ -255,17 +257,49 @@ class Moderation: Extension() {
     inner class BanArgs : Arguments() {
         val userArgument by user("banUser", description = "Person to ban")
         val messages by int(
-                "messages",
-                description = "Messages"
+            "messages",
+            description = "Messages"
         )
     }
+
     inner class UnbanArgs : Arguments() {
         val userArgument by user("unbanUserId", description = "Person Unbanned")
     }
+
     inner class SoftBanArgs : Arguments() {
         val userArgument by user("softBanUser", description = "Person to Soft ban")
         val messages by defaultingInt(
-            "messages", description = "Messages", defaultValue = 3
+            "messages",
+            description = "Messages",
+            defaultValue = 3
+        )
+    }
+
+    inner class MuteArgs : Arguments() {
+        val userArgument by user("muteUser", description = "Person to mute")
+        val duration by defaultingInt(
+            "duration",
+            description = "Duration of Mute",
+            defaultValue = 6
+        )
+        val reason by defaultingString(
+            "reason",
+            description = "Reason for Mute",
+            defaultValue = "No Reason Provided"
+        )
+    }
+
+    inner class WarnArgs : Arguments() {
+        val userArgument by user("warnUser", description = "Person to Warn")
+        val warnPoints by defaultingInt(
+            "points",
+            description = "Amount of points to add",
+            defaultValue = 10,
+        )
+        val reason by defaultingString(
+            "reason",
+            description = "Reason for Warn",
+            defaultValue = "No Reason Provided"
         )
     }
 }
