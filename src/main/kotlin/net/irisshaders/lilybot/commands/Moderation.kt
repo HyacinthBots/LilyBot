@@ -24,6 +24,10 @@ import net.irisshaders.lilybot.utils.GUILD_ID
 import net.irisshaders.lilybot.utils.MODERATORS
 import kotlin.system.exitProcess
 
+/**
+ * @author NoComment1105
+ * @author IMS212
+ */
 class Moderation: Extension() {
     override val name = "moderation"
 
@@ -37,7 +41,7 @@ class Moderation: Extension() {
             guild(GUILD_ID)
 
             action {
-                var actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
                 val messageAmount = arguments.messages
                 val messageHolder = arrayListOf<Snowflake>()
                 val textChannel = channel as GuildMessageChannelBehavior
@@ -77,7 +81,7 @@ class Moderation: Extension() {
             guild(GUILD_ID)
 
             action {
-                var actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
                 guild?.ban(arguments.userArgument.id, builder = {
                     this.reason = "Requested by " + user.asUser().username
                     this.deleteMessagesDays = arguments.messages
@@ -109,7 +113,7 @@ class Moderation: Extension() {
             guild(GUILD_ID)
 
             action {
-                var actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
                 guild?.kick(arguments.userArgument.id, "Requested by " + user.asUser().username)
                 respond {
                     embed {
