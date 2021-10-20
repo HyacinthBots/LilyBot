@@ -18,7 +18,7 @@ import net.irisshaders.lilybot.utils.MODERATORS
 import net.irisshaders.lilybot.utils.OWNER_ID
 import kotlin.system.exitProcess
 
-class ThreadInviter: Extension() {
+class ThreadInviter : Extension() {
     override val name = "threads"
 
     override suspend fun setup() {
@@ -41,16 +41,19 @@ class ThreadInviter: Extension() {
                             ephemeralButton {
                                 label = "Create"
                                 style = ButtonStyle.Primary
-                                var textchannel = channel.asChannel() as TextChannel
+                                val textchannel = channel.asChannel() as TextChannel
 
                                 action {
-                                    var thread = textchannel.startPublicThread("Thread for " + user.asUser().username)
-                                    var editMessage = thread.createMessage("a")
+                                    val thread = textchannel.startPublicThread("Thread for " + user.asUser().username)
+                                    val editMessage = thread.createMessage("a")
                                     editMessage.edit {
                                         this.content = guild?.getRole(MODERATORS)?.mention
                                     }
                                     if (channel.messages.last().author?.id == kord.selfId) {
-                                        channel.deleteMessage(channel.messages.last().id, "Automatic deletion of thread creation message")
+                                        channel.deleteMessage(
+                                            channel.messages.last().id,
+                                            "Automatic deletion of thread creation message"
+                                        )
                                     }
                                 }
 
@@ -62,4 +65,4 @@ class ThreadInviter: Extension() {
         }
     }
 
-    }
+}
