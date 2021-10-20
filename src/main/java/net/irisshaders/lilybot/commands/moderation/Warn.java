@@ -31,7 +31,7 @@ public class Warn extends SlashCommand {
         this.name = "warn";
         this.help = "Warns a member for any infractions.";
         this.defaultEnabled = false;
-        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
+        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE, Constants.TRIAL_MODERATOR_ROLE};
         this.guildOnly = true;
         List<OptionData> optionData = new ArrayList<>();
         optionData.add(new OptionData(OptionType.USER, "member", "The member to warn.").setRequired(true));
