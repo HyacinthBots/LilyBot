@@ -45,20 +45,20 @@ class ThreadInviter : Extension() {
                                 val textchannel = channel.asChannel() as TextChannel
 
                                 action {
-                                    var userThreadExists = false;
-                                    var userThreadArchived = false;
-                                    var existingUserThread : TextChannelThread? = null;
+                                    var userThreadExists = false
+                                    var userThreadArchived = false
+                                    var existingUserThread : TextChannelThread? = null
                                     //TODO: this is incredibly stupid, there has to be a better way to do this.
                                     textchannel.activeThreads.collect {
                                         if (it.name == "Support thread for " + user.asUser().username) {
-                                            userThreadExists = true;
-                                            existingUserThread = it;
+                                            userThreadExists = true
+                                            existingUserThread = it
                                         }
                                     }
                                     textchannel.getPublicArchivedThreads().collect {
                                         if (it.name == "Support thread for " + user.asUser().username) {
-                                            userThreadArchived = true;
-                                            existingUserThread = it;
+                                            userThreadArchived = true
+                                            existingUserThread = it
                                         }
                                     }
                                     if (userThreadExists) {
