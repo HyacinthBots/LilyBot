@@ -1,6 +1,7 @@
 package net.irisshaders.lilybot.commands
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
+import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
@@ -14,8 +15,6 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.entity.channel.Channel
-import dev.kord.rest.builder.ban.BanCreateBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
@@ -98,7 +97,38 @@ class Moderation: Extension() {
                     color = DISCORD_BLACK
                     title = "Banned a user"
                     description = "${user.asUser().username} banned ${arguments.userArgument.mention}!"
-                    timestamp = Clock.System.now() }
+                    timestamp = Clock.System.now()
+                }
+            }
+        }
+        // Unban command
+        ephemeralSlashCommand(::UnbanArgs) { // Ephemeral slash commands have private responses
+            name = "unban"
+            allowRole(MODERATORS)
+            description = "Unbans a user"
+
+
+            // User guild commands for commands that have guild specific actions
+            guild(GUILD_ID)
+
+            action {
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                guild?.unban(arguments.userArgument.id)
+
+                respond {
+                    embed {
+                        color = DISCORD_GREEN
+                        title = "Unbanned a user"
+                        description = "Unbanned ${arguments.userArgument.mention}!"
+                        timestamp = Clock.System.now()
+                    }
+                }
+                actionLog.createEmbed {
+                    color = DISCORD_GREEN
+                    title = "Unbanned a user"
+                    description = "${user.asUser().username} unbanned ${arguments.userArgument.mention}!"
+                    timestamp = Clock.System.now()
+                }
             }
         }
 
@@ -186,14 +216,17 @@ class Moderation: Extension() {
     }
 
     inner class KickArgs : Arguments() {
-        val userArgument by user("kickedUser", description = "Person to kick")
+        val userArgument by user("kickUser", description = "Person to kick")
     }
 
     inner class BanArgs : Arguments() {
-        val userArgument by user("bannedUser", description = "Person to ban")
+        val userArgument by user("banUser", description = "Person to ban")
         val messages by int(
                 "messages",
                 description = "Messages"
         )
+    }
+    inner class UnbanArgs : Arguments() {
+        val userArgument by user("unbanUserId", description = "Person Unbanned")
     }
 }
