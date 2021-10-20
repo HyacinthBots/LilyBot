@@ -66,7 +66,7 @@ class Moderation: Extension() {
             }
         }
 
-        //Kick command
+        //Ban command
         ephemeralSlashCommand(::BanArgs) {  // Ephemeral slash commands have private responses
             name = "ban"
             allowRole(MODERATORS)
@@ -90,7 +90,8 @@ class Moderation: Extension() {
                         timestamp = Clock.System.now()
                     }
                 }
-                actionLog.createEmbed { color = DISCORD_BLACK
+                actionLog.createEmbed { 
+                    color = DISCORD_BLACK
                     title = "Banned a user"
                     description = "${user.asUser().username} banned ${arguments.userArgument.mention}!"
                     timestamp = Clock.System.now() }
