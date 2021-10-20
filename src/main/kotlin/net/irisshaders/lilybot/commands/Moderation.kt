@@ -11,8 +11,10 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.entity.channel.Channel
+import dev.kord.rest.builder.ban.BanCreateBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
@@ -52,6 +54,28 @@ class Moderation: Extension() {
                         timestamp = Clock.System.now()
                     }
                 }
+            }
+        }
+
+        //Kick command
+        ephemeralSlashCommand(::BanArgs) {  // Ephemeral slash commands have private responses
+            name = "ban"
+            allowRole(MODERATORS)
+            description = "Bans a user."
+
+
+            // Use guild commands for commands that have guild-specific actions
+            guild(GUILD_ID)
+
+            action {
+                guild?.ban(arguments.userArgument.id, builder = {
+                    this.reason = "Requested by " + user.asUser().username
+                    this.deleteMessagesDays = arguments.messages
+            })
+                respond {
+                    content = "Banned ${arguments.userArgument.mention}!"
+                }
+
             }
         }
 
@@ -129,5 +153,13 @@ class Moderation: Extension() {
 
     inner class KickArgs : Arguments() {
         val userArgument by user("kickedUser", description = "Person to kick")
+    }
+
+    inner class BanArgs : Arguments() {
+        val userArgument by user("bannedUser", description = "Person to ban")
+        val messages by int(
+                "messages",
+                description = "Messages"
+        )
     }
 }
