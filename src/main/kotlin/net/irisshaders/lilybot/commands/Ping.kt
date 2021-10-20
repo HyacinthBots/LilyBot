@@ -9,6 +9,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 
+@Suppress("PrivatePropertyName")
 class Ping: Extension() {
     // Used throughout KordEx to refer to your extension
     override val name = "ping"
@@ -20,7 +21,7 @@ class Ping: Extension() {
     override suspend fun setup() {
         // ...
 
-        publicSlashCommand() {  // Public slash commands have public responses
+        publicSlashCommand {  // Public slash commands have public responses
             name = "ping"
             description = "Am I alive?"
 

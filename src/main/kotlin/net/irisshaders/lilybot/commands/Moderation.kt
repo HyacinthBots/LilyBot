@@ -3,6 +3,7 @@ package net.irisshaders.lilybot.commands
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.components.components
@@ -108,7 +109,7 @@ class Moderation: Extension() {
             description = "Unbans a user"
 
 
-            // User guild commands for commands that have guild specific actions
+            // Use guild commands for commands that have guild specific actions
             guild(GUILD_ID)
 
             action {
@@ -129,6 +130,38 @@ class Moderation: Extension() {
                     description = "${user.asUser().username} unbanned ${arguments.userArgument.mention}!"
                     timestamp = Clock.System.now()
                 }
+            }
+        }
+        //Soft ban command
+        ephemeralSlashCommand(::SoftBanArgs) {
+            name = "softban"
+            allowRole(MODERATORS)
+            description = "Softbans a user"
+
+            // Use guild commands for commands that have guild specific actions
+            guild(GUILD_ID)
+
+            action {
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                guild?.ban(arguments.userArgument.id, builder = {
+                    this.reason = "Soft ban requested by ${user.asUser().username}"
+                    this.deleteMessagesDays = arguments.messages
+                })
+                respond {
+                    embed {
+                        color = DISCORD_BLACK
+                        title = "Soft-banned a user"
+                        description = "Soft-banned ${arguments.userArgument.mention}!"
+                        timestamp = Clock.System.now()
+                    }
+                }
+                actionLog.createEmbed {
+                    color = DISCORD_BLACK
+                    title = "Soft-banned a user"
+                    description = "Soft-banned ${arguments.userArgument.mention}"
+                    timestamp = Clock.System.now()
+                }
+                guild?.unban(arguments.userArgument.id)
             }
         }
 
@@ -164,7 +197,7 @@ class Moderation: Extension() {
 
         //Shutdown command
 
-        ephemeralSlashCommand() {  // Ephemeral slash commands have private responses
+        ephemeralSlashCommand {  // Ephemeral slash commands have private responses
             name = "shutdown"
             description = "Shuts down the bot."
             allowByDefault = false
@@ -228,5 +261,11 @@ class Moderation: Extension() {
     }
     inner class UnbanArgs : Arguments() {
         val userArgument by user("unbanUserId", description = "Person Unbanned")
+    }
+    inner class SoftBanArgs : Arguments() {
+        val userArgument by user("softBanUser", description = "Person to Soft ban")
+        val messages by defaultingInt(
+            "messages", description = "Messages", defaultValue = 3
+        )
     }
 }
