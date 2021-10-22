@@ -60,14 +60,14 @@ class Moderation : Extension() {
                     embed {
                         color = DISCORD_BLACK
                         title = "$messageAmount messages have been cleared."
-                        description = "Action occured in ${textChannel.mention}."
+                        description = "Action occurred in ${textChannel.mention}."
                         timestamp = Clock.System.now()
                     }
                 }
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "$messageAmount messages have been cleared by ${user.asUser().username}."
-                    description = "Action occured in ${textChannel.mention}."
+                    description = "Action occurred in ${textChannel.mention}."
                     timestamp = Clock.System.now()
                 }
             }
