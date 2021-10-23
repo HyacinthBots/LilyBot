@@ -1,0 +1,8 @@
+---
+type: embed
+colour: red
+embed:
+    title: "YOu may need Indium for some mods' feature to work"
+---
+
+    Indium is a minecraft mod that adds Fabric Rendering API (FRAPI) support to Sodium. It is compatible with both mainstream Sodium and Iris' fork of Sodium. It can be required for many mods, such as Connected Texture mods and Campanion. It can be found at this link: (<https://modrinth.com/mod/Indium>)

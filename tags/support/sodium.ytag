@@ -1,0 +1,8 @@
+---
+type: embed
+colour: red
+embed:
+    title: "Remove Sodium from your mods folder"
+---
+
+    If you're getting an error similar to `Could not execute entrypoint stage 'client' due to errors, provided by 'iris'!`, please remove Sodium from your mods folder. Iris bundles a version of Sodium that is not compatible with the official version.

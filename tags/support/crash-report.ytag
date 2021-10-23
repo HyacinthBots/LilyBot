@@ -1,0 +1,8 @@
+---
+type: embed
+colour: red
+embed:
+    title: "How to get crash reports:"
+---
+
+    Crash reports can be found in the `crash-reports` sub-directory in `.minecraft` on clients, or the crash-reports sub-directory of the server directory for servers. We're probably interested in the most recent file, which you can drag and drop into Discord.

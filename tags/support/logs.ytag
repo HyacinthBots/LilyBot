@@ -1,0 +1,8 @@
+---
+type: embed
+colour: red
+embed:
+    title: "How to get a log file:"
+---
+
+    Game logs can be found in the `logs` sub-directory in .minecraft on clients, or the `logs` sub-folder of the server directory for servers. We're probably interested in the file named `latest.log`, which you can drag and drop into Discord.
