@@ -1,23 +1,23 @@
 package net.irisshaders.lilybot.commands
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
+import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
-import com.kotlindiscord.kord.extensions.commands.converters.impl.int
-import com.kotlindiscord.kord.extensions.commands.converters.impl.user
+import com.kotlindiscord.kord.extensions.commands.converters.impl.*
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.types.respondEphemeral
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.addRole
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
@@ -52,9 +52,9 @@ class Moderation : Extension() {
                     .onEach {
                         messageHolder.add(it.id)
                     }.catch {
-                    it.printStackTrace()
-                    println("error")
-                }.collect()
+                        it.printStackTrace()
+                        println("error")
+                    }.collect()
                 textChannel.bulkDelete(messageHolder)
                 respond {
                     embed {
@@ -197,41 +197,73 @@ class Moderation : Extension() {
                 }
             }
         }
+        publicSlashCommand(::SayArgs) {
+            name = "say"
+            allowRole(MODERATORS)
+            description = "Say something as lily."
 
-        //Shutdown command
-        ephemeralSlashCommand {  // Ephemeral slash commands have private responses
-            name = "shutdown"
-            description = "Shuts down the bot."
-            allowByDefault = false
-            allowedRoles.add(MODERATORS)
-
-
-            // Use guild commands for testing, global ones take up to an hour to update
+            // Use guild commands for commands that have guild-specific actions
             guild(GUILD_ID)
 
-            @Suppress("DSL_SCOPE_VIOLATION")
             action {
-                respond {
-                    embed {
-                        title = "Shutdown"
-                        description = "Are you sure you would like to shut down?"
-                        components {
-                            ephemeralButton {
-                                label = "Yes"
-                                style = ButtonStyle.Success
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
 
-                                action {
-                                    respond { content = "Shutting down..." }
-                                    kord.shutdown()
-                                    exitProcess(0)
+                channel.createMessage {
+                    if (arguments.embedMessage) {
+                        channel.createEmbed {
+                            color = DISCORD_BLURPLE
+                            description = arguments.messageArgument
+                            timestamp = Clock.System.now()
+                        }
+                    } else {
+                        content = arguments.messageArgument
+                    }
+                }
+                respondEphemeral { content = "Command used" }
+
+                actionLog.createEmbed {
+                    color = DISCORD_BLACK
+                    title = "/Say Used"
+                    description = "${user.asUser().username} used /Say to say ${arguments.messageArgument} "
+                    timestamp = Clock.System.now()
+                }
+            }
+
+            //Shutdown command
+            ephemeralSlashCommand {  // Ephemeral slash commands have private responses
+                name = "shutdown"
+                description = "Shuts down the bot."
+                allowByDefault = false
+                allowedRoles.add(MODERATORS)
+
+
+                // Use guild commands for testing, global ones take up to an hour to update
+                guild(GUILD_ID)
+
+                @Suppress("DSL_SCOPE_VIOLATION")
+                action {
+                    respond {
+                        embed {
+                            title = "Shutdown"
+                            description = "Are you sure you would like to shut down?"
+                            components {
+                                ephemeralButton {
+                                    label = "Yes"
+                                    style = ButtonStyle.Success
+
+                                    action {
+                                        respond { content = "Shutting down..." }
+                                        kord.shutdown()
+                                        exitProcess(0)
+                                    }
                                 }
-                            }
-                            ephemeralButton {
-                                label = "No"
-                                style = ButtonStyle.Danger
+                                ephemeralButton {
+                                    label = "No"
+                                    style = ButtonStyle.Danger
 
-                                action {
-                                    respond { content = "Shutdown aborted." }
+                                    action {
+                                        respond { content = "Shutdown aborted." }
+                                    }
                                 }
                             }
                         }
@@ -239,7 +271,6 @@ class Moderation : Extension() {
                 }
             }
         }
-
     }
 
     inner class ClearArgs : Arguments() {
@@ -301,5 +332,10 @@ class Moderation : Extension() {
             description = "Reason for Warn",
             defaultValue = "No Reason Provided"
         )
+    }
+
+    inner class SayArgs : Arguments() {
+        val messageArgument by string("message", description = "Message contents")
+        val embedMessage by boolean("embed", description = "Would you like to send as embed")
     }
 }
