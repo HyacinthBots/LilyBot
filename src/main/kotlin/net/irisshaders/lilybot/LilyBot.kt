@@ -7,18 +7,19 @@ import net.irisshaders.lilybot.support.ThreadInviter
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 
 suspend fun main() {
-        val bot = ExtensibleBot(BOT_TOKEN) {
-            chatCommands {
-                // Enable chat command handling
-                enabled = true
-            }
 
-            extensions {
-                add(::Ping)
-                add(::Moderation)
-                add(::ThreadInviter)
-            }
+    val bot = ExtensibleBot(BOT_TOKEN) {
+        chatCommands {
+            // Enable chat command handling
+            enabled = true
         }
 
-        bot.start()
+        extensions {
+            add(::Ping)
+            add(::Moderation)
+            add(::ThreadInviter)
+        }
     }
+
+    bot.start()
+}
