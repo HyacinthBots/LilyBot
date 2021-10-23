@@ -39,7 +39,7 @@ public class Mute extends SlashCommand {
         this.name = "mute";
         this.help = "Mutes a specified member for the given reason and duration. Defaults to 6h and no reason.";
         this.defaultEnabled = false;
-        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
+        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE, Constants.TRIAL_MODERATOR_ROLE};
         this.guildOnly = true;
         this.botPermissions = new Permission[]{Permission.MANAGE_ROLES};
         this.botMissingPermMessage = "The bot does not have the `MANAGE ROLES` permission.";
@@ -81,11 +81,11 @@ public class Mute extends SlashCommand {
                     .build();
 
             event.replyEmbeds(alreadyMutedEmbed).addActionRow(
-                    Button.of(ButtonStyle.PRIMARY, "mute:yes", "Yes", Emoji.fromUnicode("\u2705")),
-                    Button.of(ButtonStyle.PRIMARY, "mute:no", "No", Emoji.fromUnicode("\u274C"))
+                    Button.of(ButtonStyle.PRIMARY, "mute"+target.getId()+":yes", "Yes", Emoji.fromUnicode("\u2705")),
+                    Button.of(ButtonStyle.PRIMARY, "mute"+target.getId()+":no", "No", Emoji.fromUnicode("\u274C"))
             ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
                 if (!buttonClickEvent.getUser().equals(user)) return false;
-                if (!equalsAny(buttonClickEvent.getButton().getId())) return false;
+                if (!equalsAny(buttonClickEvent.getButton().getId(), target)) return false;
                 return !buttonClickEvent.isAcknowledged();
             }, buttonClickEvent -> {
 
@@ -257,9 +257,9 @@ public class Mute extends SlashCommand {
            }
     }
 
-    private boolean equalsAny(String id) {
-        return id.equals("mute:yes") ||
-                id.equals("mute:no");
+    private boolean equalsAny(String id, Member member) {
+        return id.equals("mute"+member.getId()+":yes") ||
+                id.equals("mute"+member.getId()+":no");
     }
 
     /**

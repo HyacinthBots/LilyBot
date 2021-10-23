@@ -20,7 +20,7 @@ public class MuteList extends SlashCommand {
         this.name = "mute-list";
         this.help = "Lists all muted members.";
         this.defaultEnabled = false;
-        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
+        this.enabledRoles = new String[]{Constants.MODERATOR_ROLE, Constants.TRIAL_MODERATOR_ROLE};
         this.guildOnly = true;
         this.botPermissions = new Permission[]{Permission.MANAGE_ROLES};
         this.botMissingPermMessage = "The bot does not have the `MANAGE_ROLES` permission.";

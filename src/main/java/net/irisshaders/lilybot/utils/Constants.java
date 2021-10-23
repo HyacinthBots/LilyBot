@@ -10,6 +10,7 @@ public interface Constants {
     Dotenv dotenv = Dotenv.load();
 
     String MODERATOR_ROLE = dotenv.get("MODERATOR_ROLE");
+    String TRIAL_MODERATOR_ROLE = dotenv.get("TRIAL_MODERATOR_ROLE");
     String MUTED_ROLE = dotenv.get("MUTED_ROLE");
     String GUILD_ID = dotenv.get("GUILD_ID");
     String ACTION_LOG = dotenv.get("ACTION_LOG");
