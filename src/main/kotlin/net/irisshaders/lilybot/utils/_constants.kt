@@ -13,4 +13,6 @@ val ACTION_LOG = Snowflake(env("ACTION_LOG"))
 val OWNER_ID = Snowflake(env("OWNER"))
 val GITHUB_OAUTH = env("GITHUB_OAUTH")
 val CONFIG_PATH = env("CONFIG_PATH")
+val REPO_URL = "https://github.com/IrisShaders/LilyBot"
+val TAG_PREFIX = "!"
 

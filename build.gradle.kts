@@ -4,6 +4,7 @@ plugins {
     application
 
     kotlin("jvm")
+    kotlin("plugin.serialization")
 
     id("com.github.johnrengelman.shadow")
 }
@@ -30,6 +31,11 @@ dependencies {
     implementation(libs.groovy)
     implementation(libs.logback)
     implementation(libs.logging)
+
+    // Tags
+    implementation(libs.kotlinx.serialization)
+    implementation(libs.kaml)
+    implementation(libs.jgit)
 }
 
 application {
