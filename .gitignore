@@ -4,3 +4,4 @@
 *.iml
 .env
 database.db
+/tags-repo

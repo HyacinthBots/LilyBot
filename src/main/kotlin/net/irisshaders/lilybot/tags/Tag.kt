@@ -1,3 +1,8 @@
+/**
+ * This code was taken, with permission, from <https://github.com/QuiltServerTools/axolotl>
+ * This code is Licensed under the MIT license (<https://mit-license.org/>) unlike the rest of hte project
+ * @author Tom_The_Geek
+ */
 package net.irisshaders.lilybot.tags
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK

@@ -1,3 +1,8 @@
+/**
+ * This code was taken, with permission, from <https://github.com/QuiltServerTools/axolotl>
+ * This code is Licensed under the MIT license (<https://mit-license.org/>) unlike the rest of hte project
+ * @author Tom_The_Geek
+ */
 package net.irisshaders.lilybot.tags
 
 import net.irisshaders.lilybot.utils.REPO_URL
@@ -25,6 +30,8 @@ class TagRepo(
             logger.info { "Repo $repoDir does not exist, cloning from $REPO_URL..." }
             Git.cloneRepository()
                 .setURI(REPO_URL)
+                // Make sure to set this to the correct branch, or remove once merged into main
+                .setBranch("kord-experiments")
                 .setDirectory(repoDir.toFile())
                 .call()
         }
