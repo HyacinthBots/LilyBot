@@ -197,10 +197,11 @@ class Moderation : Extension() {
                 }
             }
         }
-        publicSlashCommand(::SayArgs) {
+
+        ephemeralSlashCommand(::SayArgs) {
             name = "say"
             allowRole(MODERATORS)
-            description = "Say something as lily."
+            description = "Say something through Lily."
 
             // Use guild commands for commands that have guild-specific actions
             guild(GUILD_ID)
@@ -208,23 +209,24 @@ class Moderation : Extension() {
             action {
                 val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
 
-                channel.createMessage {
-                    if (arguments.embedMessage) {
-                        channel.createEmbed {
-                            color = DISCORD_BLURPLE
-                            description = arguments.messageArgument
-                            timestamp = Clock.System.now()
-                        }
-                    } else {
+                if (arguments.embedMessage) {
+                    channel.createEmbed {
+                        color = DISCORD_BLURPLE
+                        description = arguments.messageArgument
+                        timestamp = Clock.System.now()
+                    }
+                } else {
+                    channel.createMessage {
                         content = arguments.messageArgument
                     }
                 }
-                respondEphemeral { content = "Command used" }
+
+                respond { content = "Command used" }
 
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
-                    title = "/Say Used"
-                    description = "${user.asUser().username} used /Say to say ${arguments.messageArgument} "
+                    title = "Message sent"
+                    description = "${user.asUser().username} used /say to say ${arguments.messageArgument} "
                     timestamp = Clock.System.now()
                 }
             }
