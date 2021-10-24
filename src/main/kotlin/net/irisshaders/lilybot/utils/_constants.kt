@@ -15,4 +15,5 @@ val GITHUB_OAUTH = env("GITHUB_OAUTH")
 val CONFIG_PATH = env("CONFIG_PATH")
 val REPO_URL = "https://github.com/IrisShaders/LilyBot"
 val TAG_PREFIX = "!"
+val JDBC_URL = "jdbc:sqlite:database.db"
 

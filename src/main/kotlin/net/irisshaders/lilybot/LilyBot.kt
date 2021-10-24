@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.utils.loadModule
 import net.irisshaders.lilybot.commands.Moderation
 import net.irisshaders.lilybot.commands.Ping
+import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.support.ThreadInviter
 import net.irisshaders.lilybot.tags.TagRepo
 import net.irisshaders.lilybot.tags.TagsExtension
@@ -27,6 +28,7 @@ suspend fun main() {
     }
     val tagRepo = TagRepo(Paths.get("tags-repo"))
     tagRepo.init()
+    DatabaseManager.startDatabase()
 
     loadModule {
         single { tagRepo }

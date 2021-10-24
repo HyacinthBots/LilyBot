@@ -9,9 +9,7 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.types.respondEphemeral
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
@@ -21,9 +19,12 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.ACTION_LOG
 import net.irisshaders.lilybot.utils.GUILD_ID
 import net.irisshaders.lilybot.utils.MODERATORS
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.system.exitProcess
 
 /**
@@ -272,6 +273,65 @@ class Moderation : Extension() {
                     }
                 }
             }
+
+            ephemeralSlashCommand(::WarnArgs) {
+                name = "warn"
+                description = "Warn a member for any infractions."
+                // allowByDefault = false
+                // allowedRoles.add(MODERATORS)
+                guild(GUILD_ID)
+                action {
+                    val userId = arguments.userArgument.id.asString
+                    val userTag = arguments.userArgument.tag
+                    val warnPoints = arguments.warnPoints
+                    val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                    var databasePoints: String? = null
+                    transaction {
+                        DatabaseManager.Warn.insertIgnore {
+                            it[id] = userId
+                            it[points] = "0"
+                        }
+                        databasePoints = DatabaseManager.Warn.select {
+                            DatabaseManager.Warn.id eq userId
+                        }.single()[DatabaseManager.Warn.points]
+                        DatabaseManager.Warn.replace {
+                            it[id] = id
+                            it[points] = (warnPoints + Integer.parseInt(databasePoints)).toString()
+                        }
+                    }
+                    respond {
+                        embed {
+                            title = "$userTag was warned with $warnPoints points."
+                            color = DISCORD_BLACK
+                            field {
+                                name = "Total Points:"
+                                value = databasePoints.toString()
+                                inline = false
+                            }
+                            field {
+                                name = "Points added:"
+                                value = warnPoints.toString()
+                                inline = false
+                            }
+                        }
+                    }
+                    actionLog.createEmbed {
+                        title = "${arguments.userArgument.tag} was warned with ${arguments.warnPoints} points."
+                        color = DISCORD_BLACK
+                        field {
+                            name = "Total Points:"
+                            // value =
+                            inline = false
+                        }
+                        field {
+                            name = "Points added:"
+                            // value =
+                            inline = false
+                        }
+                    }
+                }
+            }
+
         }
     }
 

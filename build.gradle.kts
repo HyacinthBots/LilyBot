@@ -36,6 +36,17 @@ dependencies {
     implementation(libs.kotlinx.serialization)
     implementation(libs.kaml)
     implementation(libs.jgit)
+
+    // Exposed
+    implementation("org.jetbrains.exposed:exposed-core:0.35.3")
+    implementation("org.jetbrains.exposed:exposed-dao:0.35.3")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.35.3")
+
+    // Hikari
+    implementation("com.zaxxer:HikariCP:5.0.0")
+
+    // SQLite
+    implementation("org.xerial:sqlite-jdbc:3.36.0.3")
 }
 
 application {
