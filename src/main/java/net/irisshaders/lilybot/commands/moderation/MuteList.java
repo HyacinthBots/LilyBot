@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.irisshaders.lilybot.commands.moderation.Mute.MuteEntry;
 import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.DateHelper;

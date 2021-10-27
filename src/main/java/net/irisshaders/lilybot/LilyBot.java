@@ -91,7 +91,7 @@ public class LilyBot {
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.watching("Loading..."))
                     .setAutoReconnect(true)
-                    .addEventListeners(builder, waiter, new ReadyHandler(), new AttachmentHandler())
+                    .addEventListeners(builder, waiter, new ReadyHandler(), new AttachmentHandler(), new Report())
                     .build();
         } catch (LoginException e) {
             throw new RuntimeException(e);

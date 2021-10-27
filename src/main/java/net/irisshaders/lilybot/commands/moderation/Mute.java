@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -81,16 +81,16 @@ public class Mute extends SlashCommand {
                     .build();
 
             event.replyEmbeds(alreadyMutedEmbed).addActionRow(
-                    Button.of(ButtonStyle.PRIMARY, "mute"+target.getId()+":yes", "Yes", Emoji.fromUnicode("\u2705")),
-                    Button.of(ButtonStyle.PRIMARY, "mute"+target.getId()+":no", "No", Emoji.fromUnicode("\u274C"))
+                    Button.of(ButtonStyle.PRIMARY, "mute:yes", "Yes", Emoji.fromUnicode("\u2705")),
+                    Button.of(ButtonStyle.PRIMARY, "mute:no", "No", Emoji.fromUnicode("\u274C"))
             ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
                 if (!buttonClickEvent.getUser().equals(user)) return false;
-                if (!equalsAny(buttonClickEvent.getButton().getId(), target)) return false;
+                if (!equalsAny(buttonClickEvent.getComponentId(), target)) return false;
                 return !buttonClickEvent.isAcknowledged();
             }, buttonClickEvent -> {
 
                 User buttonClickEventUser = buttonClickEvent.getUser();
-                String id = buttonClickEvent.getButton().getId().split(":")[1];
+                String id = buttonClickEvent.getComponentId().split(":")[1];
 
                 switch (id) {
 
@@ -127,7 +127,7 @@ public class Mute extends SlashCommand {
         Guild guild = LilyBot.INSTANCE.jda.getGuildById(Constants.GUILD_ID);
         TextChannel actionLog = LilyBot.INSTANCE.jda.getTextChannelById(Constants.ACTION_LOG);
         Role mutedRole = LilyBot.INSTANCE.jda.getRoleById(Constants.MUTED_ROLE);
-        
+
         MessageEmbed muteEmbed = new EmbedBuilder()
                 .setTitle("Mute")
                 .addField("Muted:", mute.target().getUser().getAsMention(), false)
@@ -145,13 +145,13 @@ public class Mute extends SlashCommand {
                 .setFooter("Muted by " + mute.requester().getAsTag(), mute.requester().getEffectiveAvatarUrl())
                 .setTimestamp(Instant.now())
                 .build();
-        
+
         // Send the embed as Interaction reply, in action log and to the user
         if (interaction != null) { // There may not be an event if this is a consequence of warn points
             interaction.replyEmbeds(muteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
         }
         actionLog.sendMessageEmbeds(muteEmbed).queue();
-        
+
         mute.target().getUser().openPrivateChannel()
             .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(userEmbed))
             .queue(null, throwable -> {
@@ -201,7 +201,7 @@ public class Mute extends SlashCommand {
     private static void unmute(MuteEntry mute, String reason, Interaction interaction) {
         Guild guild = LilyBot.INSTANCE.jda.getGuildById(Constants.GUILD_ID);
         TextChannel actionLog = LilyBot.INSTANCE.jda.getTextChannelById(Constants.ACTION_LOG);
-        
+
         MessageEmbed unmuteEmbed = new EmbedBuilder()
                 .setTitle("Unmute")
                 .addField("Unmuted:", mute.target().getUser().getAsMention(), false)
@@ -210,7 +210,7 @@ public class Mute extends SlashCommand {
                 .setFooter("Mute was originally requested by " + mute.requester().getAsTag(), mute.requester().getEffectiveAvatarUrl())
                 .setTimestamp(Instant.now())
                 .build();
-        
+
         guild.removeRoleFromMember(mute.target(), LilyBot.INSTANCE.jda.getRoleById(Constants.MUTED_ROLE)).queue(
                 success -> {
                     actionLog.sendMessageEmbeds(unmuteEmbed).queue();
@@ -246,7 +246,7 @@ public class Mute extends SlashCommand {
             e.printStackTrace();
         }
     }
-    
+
     private static void removeUserFromDb(String targetId) {
         try (Connection connection = SQLiteDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement("DELETE FROM mute WHERE id=?")) {
@@ -302,9 +302,9 @@ public class Mute extends SlashCommand {
         }
         return mutes;
     }
-    
+
     /**
-     * 
+     *
      * @param target The target that was muted
      * @param requester The requester of the mute, that may come from a warn
      *
