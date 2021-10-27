@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package net.irisshaders.lilybot.commands
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
@@ -16,16 +18,20 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.ACTION_LOG
-import net.irisshaders.lilybot.utils.GUILD_ID
 import net.irisshaders.lilybot.utils.MODERATORS
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.insertIgnore
+import org.jetbrains.exposed.sql.replace
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.system.exitProcess
+import kotlin.time.ExperimentalTime
 
 /**
  * @author NoComment1105
@@ -39,9 +45,8 @@ class Moderation : Extension() {
         ephemeralSlashCommand(::ClearArgs) {  // Ephemeral slash commands have private responses
             name = "clear"
             description = "Clears messages."
+
             allowRole(MODERATORS)
-            // Use guild commands for commands that have guild-specific actions
-            guild(GUILD_ID)
 
             action {
                 val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
@@ -56,7 +61,9 @@ class Moderation : Extension() {
                         it.printStackTrace()
                         println("error")
                     }.collect()
+
                 textChannel.bulkDelete(messageHolder)
+
                 respond {
                     embed {
                         color = DISCORD_BLACK
@@ -65,6 +72,7 @@ class Moderation : Extension() {
                         timestamp = Clock.System.now()
                     }
                 }
+
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "$messageAmount messages have been cleared by ${user.asUser().username}."
@@ -77,19 +85,18 @@ class Moderation : Extension() {
         //Ban command
         ephemeralSlashCommand(::BanArgs) {  // Ephemeral slash commands have private responses
             name = "ban"
-            allowRole(MODERATORS)
             description = "Bans a user."
 
-
-            // Use guild commands for commands that have guild-specific actions
-            guild(GUILD_ID)
+            allowRole(MODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+
                 guild?.ban(arguments.userArgument.id, builder = {
                     this.reason = "Requested by " + user.asUser().username
                     this.deleteMessagesDays = arguments.messages
                 })
+
                 respond {
                     embed {
                         color = DISCORD_BLACK
@@ -98,6 +105,7 @@ class Moderation : Extension() {
                         timestamp = Clock.System.now()
                     }
                 }
+
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Banned a user"
@@ -106,18 +114,17 @@ class Moderation : Extension() {
                 }
             }
         }
+
         // Unban command
         ephemeralSlashCommand(::UnbanArgs) { // Ephemeral slash commands have private responses
             name = "unban"
-            allowRole(MODERATORS)
             description = "Unbans a user"
 
-
-            // Use guild commands for commands that have guild specific actions
-            guild(GUILD_ID)
+            allowRole(MODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+
                 guild?.unban(arguments.userArgument.id)
 
                 respond {
@@ -128,6 +135,7 @@ class Moderation : Extension() {
                         timestamp = Clock.System.now()
                     }
                 }
+
                 actionLog.createEmbed {
                     color = DISCORD_GREEN
                     title = "Unbanned a user"
@@ -136,21 +144,22 @@ class Moderation : Extension() {
                 }
             }
         }
+
         //Soft ban command
         ephemeralSlashCommand(::SoftBanArgs) {
             name = "softban"
-            allowRole(MODERATORS)
             description = "Softbans a user"
 
-            // Use guild commands for commands that have guild specific actions
-            guild(GUILD_ID)
+            allowRole(MODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+
                 guild?.ban(arguments.userArgument.id, builder = {
                     this.reason = "Soft ban requested by ${user.asUser().username}"
                     this.deleteMessagesDays = arguments.messages
                 })
+
                 respond {
                     embed {
                         color = DISCORD_BLACK
@@ -159,12 +168,14 @@ class Moderation : Extension() {
                         timestamp = Clock.System.now()
                     }
                 }
+
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Soft-banned a user"
                     description = "Soft-banned ${arguments.userArgument.mention}"
                     timestamp = Clock.System.now()
                 }
+
                 guild?.unban(arguments.userArgument.id)
             }
         }
@@ -172,16 +183,15 @@ class Moderation : Extension() {
         //Kick command
         ephemeralSlashCommand(::KickArgs) {  // Ephemeral slash commands have private responses
             name = "kick"
-            allowRole(MODERATORS)
             description = "Kicks a user."
 
-
-            // Use guild commands for commands that have guild-specific actions
-            guild(GUILD_ID)
+            allowRole(MODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+
                 guild?.kick(arguments.userArgument.id, "Requested by " + user.asUser().username)
+
                 respond {
                     embed {
                         color = DISCORD_BLACK
@@ -190,6 +200,7 @@ class Moderation : Extension() {
                         timestamp = Clock.System.now()
                     }
                 }
+
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Kicked a user"
@@ -201,11 +212,9 @@ class Moderation : Extension() {
 
         ephemeralSlashCommand(::SayArgs) {
             name = "say"
-            allowRole(MODERATORS)
             description = "Say something through Lily."
 
-            // Use guild commands for commands that have guild-specific actions
-            guild(GUILD_ID)
+            allowRole(MODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
@@ -231,173 +240,159 @@ class Moderation : Extension() {
                     timestamp = Clock.System.now()
                 }
             }
+        }
 
-            //Shutdown command
-            ephemeralSlashCommand {  // Ephemeral slash commands have private responses
-                name = "shutdown"
-                description = "Shuts down the bot."
-                allowByDefault = false
-                allowedRoles.add(MODERATORS)
+        //Shutdown command
+        ephemeralSlashCommand {  // Ephemeral slash commands have private responses
+            name = "shutdown"
+            description = "Shuts down the bot."
 
+            allowRole(MODERATORS)
 
-                // Use guild commands for testing, global ones take up to an hour to update
-                guild(GUILD_ID)
+            action {
+                respond {
+                    embed {
+                        title = "Shutdown"
+                        description = "Are you sure you would like to shut down?"
+                    }
 
-                @Suppress("DSL_SCOPE_VIOLATION")
-                action {
-                    respond {
-                        embed {
-                            title = "Shutdown"
-                            description = "Are you sure you would like to shut down?"
-                            components {
-                                ephemeralButton {
-                                    label = "Yes"
-                                    style = ButtonStyle.Success
+                    components {
+                        ephemeralButton {
+                            label = "Yes"
+                            style = ButtonStyle.Success
 
-                                    action {
-                                        respond { content = "Shutting down..." }
-                                        kord.shutdown()
-                                        exitProcess(0)
-                                    }
-                                }
-                                ephemeralButton {
-                                    label = "No"
-                                    style = ButtonStyle.Danger
+                            action {
+                                respond { content = "Shutting down..." }
+                                kord.shutdown()
+                                exitProcess(0)
+                            }
+                        }
 
-                                    action {
-                                        respond { content = "Shutdown aborted." }
-                                    }
-                                }
+                        ephemeralButton {
+                            label = "No"
+                            style = ButtonStyle.Danger
+
+                            action {
+                                respond { content = "Shutdown aborted." }
                             }
                         }
                     }
                 }
             }
+        }
 
-            ephemeralSlashCommand(::WarnArgs) {
-                name = "warn"
-                description = "Warn a member for any infractions."
-                // allowByDefault = false
-                // allowedRoles.add(MODERATORS)
-                guild(GUILD_ID)
-                action {
-                    val userId = arguments.userArgument.id.asString
-                    val userTag = arguments.userArgument.tag
-                    val warnPoints = arguments.warnPoints
-                    val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
-                    var databasePoints: String? = null
-                    transaction {
-                        DatabaseManager.Warn.insertIgnore {
-                            it[id] = userId
-                            it[points] = "0"
-                        }
-                        databasePoints = DatabaseManager.Warn.select {
-                            DatabaseManager.Warn.id eq userId
-                        }.single()[DatabaseManager.Warn.points]
-                        DatabaseManager.Warn.replace {
-                            it[id] = id
-                            it[points] = (warnPoints + Integer.parseInt(databasePoints)).toString()
-                        }
+        ephemeralSlashCommand(::WarnArgs) {
+            name = "warn"
+            description = "Warn a member for any infractions."
+
+            allowRole(MODERATORS)
+
+            action {
+                val userId = arguments.userArgument.id.asString
+                val userTag = arguments.userArgument.tag
+                val warnPoints = arguments.warnPoints
+                val actionLog = guild!!.getChannelOf<GuildMessageChannel>(ACTION_LOG)
+                var databasePoints: String? = null
+
+                newSuspendedTransaction {
+                    DatabaseManager.Warn.insertIgnore {
+                        it[id] = userId
+                        it[points] = "0"
                     }
-                    respond {
-                        embed {
-                            title = "$userTag was warned with $warnPoints points."
-                            color = DISCORD_BLACK
-                            field {
-                                name = "Total Points:"
-                                value = databasePoints.toString()
-                                inline = false
-                            }
-                            field {
-                                name = "Points added:"
-                                value = warnPoints.toString()
-                                inline = false
-                            }
-                        }
+
+                    databasePoints = DatabaseManager.Warn.select {
+                        DatabaseManager.Warn.id eq userId
+                    }.single()[DatabaseManager.Warn.points]
+
+                    DatabaseManager.Warn.replace {
+                        it[id] = id
+                        it[points] = (warnPoints + Integer.parseInt(databasePoints)).toString()
                     }
-                    actionLog.createEmbed {
-                        title = "${arguments.userArgument.tag} was warned with ${arguments.warnPoints} points."
+                }
+
+                respond {
+                    embed {
+                        title = "$userTag was warned with $warnPoints points."
                         color = DISCORD_BLACK
+
                         field {
                             name = "Total Points:"
-                            // value =
+                            value = databasePoints.toString()
                             inline = false
                         }
+
                         field {
                             name = "Points added:"
-                            // value =
+                            value = warnPoints.toString()
                             inline = false
                         }
                     }
                 }
-            }
 
+                actionLog.createEmbed {
+                    title = "${arguments.userArgument.tag} was warned with ${arguments.warnPoints} points."
+                    color = DISCORD_BLACK
+                    field {
+                        name = "Total Points:"
+                        // value =
+                        inline = false
+                    }
+                    field {
+                        name = "Points added:"
+                        // value =
+                        inline = false
+                    }
+                }
+            }
         }
     }
 
     inner class ClearArgs : Arguments() {
-        // A single user argument, required for the command to be able to run
-        val messages by int(
-            "messages",
-            description = "Messages"
-        )
+        val messages by int("messages", "Messages")
     }
 
     inner class KickArgs : Arguments() {
-        val userArgument by user("kickUser", description = "Person to kick")
+        val userArgument by user("kickUser", "Person to kick")
     }
 
     inner class BanArgs : Arguments() {
-        val userArgument by user("banUser", description = "Person to ban")
-        val messages by int(
-            "messages",
-            description = "Messages"
-        )
+        val userArgument by user("banUser", "Person to ban")
+        val messages by int("messages", "Messages")
     }
 
     inner class UnbanArgs : Arguments() {
-        val userArgument by user("unbanUserId", description = "Person Unbanned")
+        val userArgument by user("unbanUserId", "Person Unbanned")
     }
 
     inner class SoftBanArgs : Arguments() {
-        val userArgument by user("softBanUser", description = "Person to Soft ban")
-        val messages by defaultingInt(
-            "messages",
-            description = "Messages",
-            defaultValue = 3
-        )
+        val userArgument by user("softBanUser", "Person to Soft ban")
+        val messages by defaultingInt("messages", "Messages", 3)
     }
 
     inner class MuteArgs : Arguments() {
-        val userArgument by user("muteUser", description = "Person to mute")
-        val duration by defaultingInt(
-            "duration",
-            description = "Duration of Mute",
-            defaultValue = 6
-        )
+        val userArgument by user("muteUser", "Person to mute")
+        val duration by defaultingInt("duration", "Duration of Mute", 6)
+
         val reason by defaultingString(
             "reason",
-            description = "Reason for Mute",
-            defaultValue = "No Reason Provided"
+            "Reason for Mute",
+            "No Reason Provided"
         )
     }
 
     inner class WarnArgs : Arguments() {
-        val userArgument by user("warnUser", description = "Person to Warn")
-        val warnPoints by defaultingInt(
-            "points",
-            description = "Amount of points to add",
-            defaultValue = 10,
-        )
+        val userArgument by user("warnUser", "Person to Warn")
+        val warnPoints by defaultingInt("points", "Amount of points to add", 10)
+
         val reason by defaultingString(
             "reason",
-            description = "Reason for Warn",
-            defaultValue = "No Reason Provided"
+            "Reason for Warn",
+            "No Reason Provided"
         )
     }
 
     inner class SayArgs : Arguments() {
-        val messageArgument by string("message", description = "Message contents")
-        val embedMessage by boolean("embed", description = "Would you like to send as embed")
+        val messageArgument by string("message", "Message contents")
+        val embedMessage by boolean("embed", "Would you like to send as embed")
     }
 }

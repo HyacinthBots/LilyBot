@@ -28,12 +28,14 @@ class TagParser {
 
     fun loadTags(dir: Path) {
         logger.debug { "Loading tags from $dir..." }
+
         for (path in Files.walk(dir)) {
             if (path.isRegularFile() && path.fileName.toString().endsWith(".ytag")) {
                 val tagName = path.fileName.toString().substringBefore(".ytag")
 
                 if (tags.containsKey(tagName)) {
                     logger.error { "There is already a duplicate tag named $tagName (found at $path)" }
+
                     continue
                 }
 
@@ -42,6 +44,7 @@ class TagParser {
                     parseTag(tagName, path.readText(charset = Charsets.UTF_8))
                 } catch (e: Exception) {
                     logger.error(e) { "Failed to load tag $path" }
+
                     continue
                 }
 
@@ -57,7 +60,9 @@ class TagParser {
     fun reloadTags(dir: Path): Int {
         logger.info { "Reloading tags..." }
         tags.clear()
+
         loadTags(dir)
+
         return tags.size
     }
 
@@ -65,15 +70,19 @@ class TagParser {
 
     private fun resolveAliasTags() {
         val invalidTags = ArrayList<String>()
+
         for ((name, tag) in tags) {
             if (tag.data is TagData.AliasTagData) {
                 if (!tags.containsKey(tag.data.target)) {
                     logger.warn { "Alias tag $name points to missing tag ${tag.data.target}" }
+
                     invalidTags += name
                 } else {
                     val targetTag = tags[tag.data.target]!!
+
                     if (targetTag.data is TagData.AliasTagData) {
                         logger.warn { "Alias tag should not point to another alias tag ($name -> ${tag.data.target})" }
+
                         invalidTags += name
                     } else {
                         tag.data.targetTag = targetTag
@@ -83,6 +92,7 @@ class TagParser {
         }
         if (invalidTags.isNotEmpty()) {
             logger.warn { "Ignoring ${invalidTags.size} invalid tags" }
+
             invalidTags.forEach(this.tags::remove)
         }
     }
@@ -93,12 +103,13 @@ class TagParser {
         }
 
         val remaining = content.substringAfter(SEPARATOR)
+
         if (!remaining.contains(SEPARATOR)) {
             throw IllegalArgumentException("front matter is not closed")
         }
+
         val yaml = remaining.substringBefore(SEPARATOR).trim()
         val markdown = remaining.substringAfter(SEPARATOR).trim()
-
         val tagData = format.decodeFromString<TagData>(yaml)
 
         // Validate tag data
@@ -106,13 +117,16 @@ class TagParser {
             is TagData.AliasTagData -> if (markdown.isNotEmpty()) {
                 throw IllegalArgumentException("alias tag should not have markdown content")
             }
+
             is TagData.TextTagData -> if (markdown.isEmpty()) {
                 throw IllegalArgumentException("text tag is missing markdown content")
             }
+
             is TagData.EmbedTagData -> {
                 if (tagData.embed.color !is OptionalInt.Missing) {
                     throw IllegalArgumentException("embed colour should be set at the root level not in the embed data")
                 }
+
                 if (tagData.embed.description !is Optional.Missing) {
                     throw IllegalArgumentException("embed description should be set in the markdown content")
                 }

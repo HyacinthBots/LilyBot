@@ -9,11 +9,15 @@ import net.irisshaders.lilybot.support.ThreadInviter
 import net.irisshaders.lilybot.tags.TagRepo
 import net.irisshaders.lilybot.tags.TagsExtension
 import net.irisshaders.lilybot.utils.BOT_TOKEN
+import net.irisshaders.lilybot.utils.GUILD_ID
 import java.nio.file.Paths
 
 suspend fun main() {
-
     val bot = ExtensibleBot(BOT_TOKEN) {
+        applicationCommands {
+            defaultGuild(GUILD_ID)
+        }
+
         chatCommands {
             // Enable chat command handling
             enabled = true
@@ -25,13 +29,20 @@ suspend fun main() {
             add(::ThreadInviter)
             add(::TagsExtension)
         }
-    }
-    val tagRepo = TagRepo(Paths.get("tags-repo"))
-    tagRepo.init()
-    DatabaseManager.startDatabase()
 
-    loadModule {
-        single { tagRepo }
+        hooks {
+            afterKoinSetup {
+                DatabaseManager.startDatabase()
+
+                val tagRepo = TagRepo(Paths.get("tags-repo"))
+
+                tagRepo.init()
+
+                loadModule {
+                    single { tagRepo }
+                }
+            }
+        }
     }
 
     bot.start()

@@ -15,7 +15,6 @@ import dev.kord.common.annotation.KordPreview
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
-import net.irisshaders.lilybot.utils.GUILD_ID
 import net.irisshaders.lilybot.utils.MODERATORS
 import net.irisshaders.lilybot.utils.TAG_PREFIX
 import org.koin.core.component.inject
@@ -59,8 +58,8 @@ class TagsExtension : Extension() {
         ephemeralSlashCommand {
             name = "reload-tags"
             description = "Reloads the tags"
+
             allowRole(MODERATORS)
-            guild(GUILD_ID)
 
             action {
                 val tagCount = tagRepo.reload()
