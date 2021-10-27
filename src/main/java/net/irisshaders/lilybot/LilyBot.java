@@ -91,14 +91,11 @@ public class LilyBot {
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.watching("Loading..."))
                     .setAutoReconnect(true)
-                    .addEventListeners(builder, waiter, new ReadyHandler(), new AttachmentHandler(), new Report())
+                    .addEventListeners(builder, waiter, new ReadyHandler(), new AttachmentHandler(), new Report()) // still waiting on threads :P
                     .build();
         } catch (LoginException e) {
             throw new RuntimeException(e);
         }
-
-        // jda.addEventListener(new Report()); // TODO uncomment when threads are finished but in the builder if possible
-
 
         GitHub github = null;
         try {
