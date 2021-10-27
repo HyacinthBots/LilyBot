@@ -15,6 +15,7 @@ import net.irisshaders.lilybot.commands.custom.Custom;
 import net.irisshaders.lilybot.commands.moderation.Shutdown;
 import net.irisshaders.lilybot.commands.moderation.*;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
+import net.irisshaders.lilybot.events.AttachmentHandler;
 import net.irisshaders.lilybot.events.ReadyHandler;
 import net.irisshaders.lilybot.utils.Constants;
 import org.kohsuke.github.GitHub;
@@ -54,7 +55,7 @@ public class LilyBot {
             LOG_LILY.error("Error loading lily config file at "+configPath, e);
         }
         this.config = properties;
-
+        
         EventWaiter waiter = new EventWaiter();
         CommandClient builder = new CommandClientBuilder()
                 .setHelpConsumer(null)
@@ -72,7 +73,7 @@ public class LilyBot {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
+        
         try {
             jda = JDABuilder.createDefault(Constants.TOKEN)
                     .setEnabledIntents(
@@ -90,12 +91,11 @@ public class LilyBot {
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.watching("Loading..."))
                     .setAutoReconnect(true)
-                    .addEventListeners(builder, waiter, new ReadyHandler(), new Report())
+                    .addEventListeners(builder, waiter, new ReadyHandler(), new AttachmentHandler(), new Report())
                     .build();
         } catch (LoginException e) {
             throw new RuntimeException(e);
         }
-
 
         // jda.addEventListener(new Report()); // TODO uncomment when threads are finished but in the builder if possible
 
@@ -109,7 +109,7 @@ public class LilyBot {
             LOG_GITHUB.error("Failed to log into GitHub!");
             jda.shutdownNow();
         }
-
+        
         this.jda = jda;
         this.gitHub = github;
         this.waiter = waiter;
@@ -139,7 +139,6 @@ public class LilyBot {
 
         // normal commands
         // builder.addCommand(new Report()); // TODO uncomment when threads are finished
-
 
         // Shutdown Command
         commands.addSlashCommand(new Shutdown());

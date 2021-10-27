@@ -85,7 +85,7 @@ public class Mute extends SlashCommand {
                     Button.of(ButtonStyle.PRIMARY, "mute:no", "No", Emoji.fromUnicode("\u274C"))
             ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
                 if (!buttonClickEvent.getUser().equals(user)) return false;
-                if (!equalsAny(buttonClickEvent.getComponentId())) return false;
+                if (!equalsAny(buttonClickEvent.getComponentId(), target)) return false;
                 return !buttonClickEvent.isAcknowledged();
             }, buttonClickEvent -> {
 
@@ -257,9 +257,9 @@ public class Mute extends SlashCommand {
            }
     }
 
-    private boolean equalsAny(String id) {
-        return id.equals("mute:yes") ||
-                id.equals("mute:no");
+    private boolean equalsAny(String id, Member member) {
+        return id.equals("mute"+member.getId()+":yes") ||
+                id.equals("mute"+member.getId()+":no");
     }
 
     /**

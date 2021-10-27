@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.irisshaders.lilybot.LilyBot;
-import net.irisshaders.lilybot.utils.Memory;
 import org.kohsuke.github.*;
 
 import java.awt.*;
