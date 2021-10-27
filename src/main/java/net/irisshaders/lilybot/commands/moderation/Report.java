@@ -105,10 +105,15 @@ public class Report extends Command implements EventListener {
                                 contentDisplay = contentDisplay.substring(0, 99) + "...";
                             }
 
-                            hook.editOriginalEmbeds(reportMessage(user, author, "Report a message", contentDisplay, messageUrl, channel)).queue();
-                            actionLog.sendMessage(mention).queue();
-                            actionLog.sendMessage(mention2).queue();
-                            actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", contentDisplay, messageUrl, channel)).queue();
+                            String finalContentDisplay = contentDisplay;
+
+                            hook.editOriginalEmbeds(reportMessage(user, author, "Report a message", contentDisplay, channel)).queue();
+                            actionLog.sendMessage(mention).queue(message1 -> {
+                                actionLog.sendMessage(mention2).queue();
+                                actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", finalContentDisplay, channel)).setActionRow(
+                                        Button.link(messageUrl, "Message Link")
+                                ).queue();
+                            });
 
                         }
                         case "no" -> {
@@ -127,13 +132,12 @@ public class Report extends Command implements EventListener {
         }
     }
 
-    private MessageEmbed reportMessage(User user, User author, String title, String contentDisplay, String messageUrl, String channel) {
+    private MessageEmbed reportMessage(User user, User author, String title, String contentDisplay, String channel) {
         return new EmbedBuilder()
                 .setTitle(title)
                 .setDescription("A message was reported in " + channel)
                 .addField("Message Content:", contentDisplay, false)
                 .addField("Message Author:", author.getAsTag(), false)
-                .addField("Message Link:", messageUrl, false)
                 .setColor(Color.CYAN)
                 .setFooter("Message reported by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                 .setTimestamp(Instant.now())
