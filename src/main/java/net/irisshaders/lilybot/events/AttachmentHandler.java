@@ -28,10 +28,11 @@ public class AttachmentHandler extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         Message message = event.getMessage();
-        if (message.getAttachments().size() == 0) return;
+        List<Message.Attachment> attachments = message.getAttachments();
+        if (attachments.size() == 0) return;
         User author = message.getAuthor();
         MessageChannel channel = message.getChannel();
-        List<Message.Attachment> attachments = message.getAttachments();
+        String messageId = message.getId();
         List<String> extensions = List.of("txt", "log");
         boolean shouldUpload = attachments.stream().map(Message.Attachment::getFileExtension).anyMatch(extensions::contains);
         if (shouldUpload) {
@@ -54,8 +55,8 @@ public class AttachmentHandler extends ListenerAdapter {
                                 e.printStackTrace();
                             }
                             channel.sendMessageEmbeds(linkEmbed(author)).setActionRow(
-                                    Button.of(ButtonStyle.DANGER, "hastebin:yes", "Yes"),
-                                    Button.of(ButtonStyle.SECONDARY, "hastebin:no", "No")
+                                    Button.of(ButtonStyle.DANGER, "hastebin" + messageId + ":yes", "Yes"),
+                                    Button.of(ButtonStyle.SECONDARY, "hastebin" + messageId + ":no", "No")
                             ).queue(message1 -> waitForButton(author, message, builder.toString()));
                         });
             }
@@ -64,7 +65,7 @@ public class AttachmentHandler extends ListenerAdapter {
 
     private void waitForButton(User author, Message message, String attachment) {
         LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
-            if (!equalsAny(buttonClickEvent.getComponentId())) return false;
+            if (!equalsAny(buttonClickEvent.getComponentId(), message.getId())) return false;
             return !buttonClickEvent.isAcknowledged();
         }, buttonClickEvent -> {
             String id = buttonClickEvent.getComponentId().split(":")[1];
@@ -110,9 +111,9 @@ public class AttachmentHandler extends ListenerAdapter {
                 .build();
     }
 
-    private boolean equalsAny(String id) {
-        return id.equals("hastebin:yes") ||
-                id.equals("hastebin:no");
+    private boolean equalsAny(String id, String messageId) {
+        return id.equals("hastebin" + messageId + ":yes") ||
+                id.equals("hastebin" + messageId + ":no");
     }
 
     private String post(String text) throws IOException {
