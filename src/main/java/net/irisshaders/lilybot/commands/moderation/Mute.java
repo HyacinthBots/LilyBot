@@ -66,7 +66,6 @@ public class Mute extends SlashCommand {
             MuteEntry mute = new MuteEntry(target, user, expiry, reason);
             mute(mute, event);
 
-
         } else { // User is muted, ask for unmuting
             MessageEmbed alreadyMutedEmbed = new EmbedBuilder()
                     .setTitle("Already muted")
@@ -249,7 +248,7 @@ public class Mute extends SlashCommand {
 
     private static void removeUserFromDb(String targetId) {
         try (Connection connection = SQLiteDataSource.getConnection();
-                PreparedStatement ps = connection.prepareStatement("DELETE FROM mute WHERE id=?")) {
+                PreparedStatement ps = connection.prepareStatement("DELETE FROM mute WHERE id = ?")) {
                ps.setString(1, targetId);
                ps.executeUpdate();
            } catch (SQLException e) {
@@ -258,8 +257,8 @@ public class Mute extends SlashCommand {
     }
 
     private boolean equalsAny(String id, Member member) {
-        return id.equals("mute"+member.getId()+":yes") ||
-                id.equals("mute"+member.getId()+":no");
+        return id.equals("mute" + member.getId() + ":yes") ||
+                id.equals("mute" + member.getId() + ":no");
     }
 
     /**
