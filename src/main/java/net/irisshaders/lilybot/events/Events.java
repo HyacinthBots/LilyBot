@@ -64,7 +64,8 @@ public class Events extends ListenerAdapter {
 
         MessageEmbed joinEmbed = new EmbedBuilder()
                 .setTitle("User joined the server!")
-                .setDescription("Everyone welcome " + member.getAsMention() + "!")
+                .setDescription("Everyone welcome " + member.getUser().getAsTag() + "!")
+                .addField("ID:", member.getId(), true)
                 .setColor(Color.GREEN)
                 .setFooter("Member count: " + memberList.size())
                 .setTimestamp(Instant.now())
@@ -85,7 +86,8 @@ public class Events extends ListenerAdapter {
 
         MessageEmbed leaveEmbed = new EmbedBuilder()
                 .setTitle("User left the server!")
-                .setDescription("Goodbye " + member.getAsMention() + "!")
+                .setDescription("Goodbye " + member.getUser().getAsTag() + "!")
+                .addField("ID:", member.getId(), true)
                 .addField("Joined on:", timeJoined, true)
                 .setColor(Color.RED)
                 .setFooter("Member count: " + memberList.size())
