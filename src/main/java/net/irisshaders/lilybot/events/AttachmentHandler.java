@@ -5,14 +5,9 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.Button;
-import net.dv8tion.jda.api.interactions.components.ButtonStyle;
-import net.irisshaders.lilybot.LilyBot;
-import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -32,7 +27,6 @@ public class AttachmentHandler extends ListenerAdapter {
         if (attachments.size() == 0) return;
         User author = message.getAuthor();
         MessageChannel channel = message.getChannel();
-        String messageId = message.getId();
         List<String> extensions = List.of("txt", "log");
         boolean shouldUpload = attachments.stream().map(Message.Attachment::getFileExtension).anyMatch(extensions::contains);
         if (shouldUpload) {
@@ -54,66 +48,25 @@ public class AttachmentHandler extends ListenerAdapter {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                            channel.sendMessageEmbeds(linkEmbed(author)).setActionRow(
-                                    Button.of(ButtonStyle.DANGER, "hastebin" + messageId + ":yes", "Yes"),
-                                    Button.of(ButtonStyle.SECONDARY, "hastebin" + messageId + ":no", "No")
-                            ).queue(message1 -> waitForButton(author, message, builder.toString()));
+                            try {
+                                channel.sendMessageEmbeds(linkEmbed(author)).setActionRow(
+                                        Button.link(post(builder.toString()), "Click here to view")
+                                ).flatMap(m -> message.delete())
+                                .queue();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         });
             }
         }
     }
 
-    private void waitForButton(User author, Message message, String attachment) {
-        LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
-            if (!equalsAny(buttonClickEvent.getComponentId(), message.getId())) return false;
-            return !buttonClickEvent.isAcknowledged();
-        }, buttonClickEvent -> {
-            String id = buttonClickEvent.getComponentId().split(":")[1];
-            InteractionHook hook = buttonClickEvent.getHook();
-            User buttonClickEventUser = buttonClickEvent.getUser();
-            if (!buttonClickEventUser.equals(author)) {
-                buttonClickEvent.replyEmbeds(ResponseHelper.genFailureEmbed(buttonClickEventUser,
-                        "You aren't allowed to do that!",  "Only the message author can!")
-                ).mentionRepliedUser(false).setEphemeral(true).queue();
-                waitForButton(author, message, attachment);
-                return;
-            }
-            buttonClickEvent.deferEdit().queue();
-            switch (id) {
-                case "yes" -> {
-                    try {
-                        hook.editOriginalEmbeds(finalLinkEmbed(author)).setActionRow(
-                                Button.link(post(attachment), "Click here to see")
-                        ).queue(message2 -> message.delete().queue());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                case "no" -> hook.deleteOriginal().queue();
-            }
-        });
-    }
-
     private MessageEmbed linkEmbed(User user) {
-        return new EmbedBuilder()
-                .setTitle("Do you want to upload this file to Hastebin?")
-                .setDescription("It's easier for helpers to view the file on Hastebin. Do you want it to be uploaded?")
-                .setColor(0x9992ff)
-                .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                .build();
-    }
-
-    private MessageEmbed finalLinkEmbed(User user) {
         return new EmbedBuilder()
                 .setTitle("File uploaded to Hastebin")
                 .setColor(0x9992ff)
                 .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                 .build();
-    }
-
-    private boolean equalsAny(String id, String messageId) {
-        return id.equals("hastebin" + messageId + ":yes") ||
-                id.equals("hastebin" + messageId + ":no");
     }
 
     private String post(String text) throws IOException {
