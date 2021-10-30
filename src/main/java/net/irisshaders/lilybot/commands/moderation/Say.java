@@ -23,7 +23,7 @@ public class Say extends SlashCommand {
     public Say() {
         this.name = "say";
         this.help = "Sends a message in a specified channel. If none is given, it sends in the current one.";
-        this.defaultEnabled = true;
+        this.defaultEnabled = false;
         this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
         this.guildOnly = true;
         this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS};
