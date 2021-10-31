@@ -11,9 +11,11 @@ val SUPPORT_TEAM = Snowflake(env("SUPPORT_ROLE"))
 val MUTED_ROLE = Snowflake(env("MUTED_ROLE"))
 val ACTION_LOG = Snowflake(env("ACTION_LOG"))
 val OWNER_ID = Snowflake(env("OWNER"))
-val GITHUB_OAUTH = env("GITHUB_OAUTH")
-val CONFIG_PATH = env("CONFIG_PATH")
-val REPO_URL = "https://github.com/IrisShaders/LilyBot"
-val TAG_PREFIX = "!"
-val JDBC_URL = "jdbc:sqlite:database.db"
+//val GITHUB_OAUTH = env("GITHUB_OAUTH")
+//val CONFIG_PATH = env("CONFIG_PATH")
+const val REPO_URL = "https://github.com/IrisShaders/LilyBot"
+const val TAG_PREFIX = "!"
+const val JDBC_URL = "jdbc:sqlite:database.db"
 
+// I don't want to do this in prod
+const val GUILD_NAME = "The Iris Project"

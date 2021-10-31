@@ -5,6 +5,7 @@ package net.irisshaders.lilybot.commands
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.*
 import com.kotlindiscord.kord.extensions.components.components
@@ -12,6 +13,7 @@ import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
@@ -24,8 +26,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.utils.ACTION_LOG
-import net.irisshaders.lilybot.utils.MODERATORS
+import net.irisshaders.lilybot.utils.*
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.select
@@ -65,12 +66,7 @@ class Moderation : Extension() {
                 textChannel.bulkDelete(messageHolder)
 
                 respond {
-                    embed {
-                        color = DISCORD_BLACK
-                        title = "$messageAmount messages have been cleared."
-                        description = "Action occurred in ${textChannel.mention}."
-                        timestamp = Clock.System.now()
-                    }
+                    content = "Messages Cleared"
                 }
 
                 actionLog.createEmbed {
@@ -98,12 +94,7 @@ class Moderation : Extension() {
                 })
 
                 respond {
-                    embed {
-                        color = DISCORD_BLACK
-                        title = "Banned a user"
-                        description = "Banned ${arguments.userArgument.mention}!"
-                        timestamp = Clock.System.now()
-                    }
+                    content = "Banned a user"
                 }
 
                 actionLog.createEmbed {
@@ -128,12 +119,7 @@ class Moderation : Extension() {
                 guild?.unban(arguments.userArgument.id)
 
                 respond {
-                    embed {
-                        color = DISCORD_GREEN
-                        title = "Unbanned a user"
-                        description = "Unbanned ${arguments.userArgument.mention}!"
-                        timestamp = Clock.System.now()
-                    }
+                    content = "Unbanned User"
                 }
 
                 actionLog.createEmbed {
@@ -161,12 +147,7 @@ class Moderation : Extension() {
                 })
 
                 respond {
-                    embed {
-                        color = DISCORD_BLACK
-                        title = "Soft-banned a user"
-                        description = "Soft-banned ${arguments.userArgument.mention}!"
-                        timestamp = Clock.System.now()
-                    }
+                    content = "Soft-Banned User"
                 }
 
                 actionLog.createEmbed {
@@ -193,12 +174,7 @@ class Moderation : Extension() {
                 guild?.kick(arguments.userArgument.id, "Requested by " + user.asUser().username)
 
                 respond {
-                    embed {
-                        color = DISCORD_BLACK
-                        title = "Kicked a user"
-                        description = "Kicked ${arguments.userArgument.mention}!"
-                        timestamp = Clock.System.now()
-                    }
+                    content = "Kicked User"
                 }
 
                 actionLog.createEmbed {
@@ -247,9 +223,10 @@ class Moderation : Extension() {
             name = "shutdown"
             description = "Shuts down the bot."
 
-            allowRole(MODERATORS)
+            allowUser(OWNER_ID)
 
             action {
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
                 respond {
                     embed {
                         title = "Shutdown"
@@ -263,6 +240,11 @@ class Moderation : Extension() {
 
                             action {
                                 respond { content = "Shutting down..." }
+                                actionLog.createEmbed {
+                                    title = "Shutting Down!"
+                                    color = DISCORD_RED
+                                    timestamp = Clock.System.now()
+                                }
                                 kord.shutdown()
                                 exitProcess(0)
                             }
@@ -311,40 +293,104 @@ class Moderation : Extension() {
                 }
 
                 respond {
-                    embed {
-                        title = "$userTag was warned with $warnPoints points."
-                        color = DISCORD_BLACK
-
-                        field {
-                            name = "Total Points:"
-                            value = databasePoints.toString()
-                            inline = false
-                        }
-
-                        field {
-                            name = "Points added:"
-                            value = warnPoints.toString()
-                            inline = false
-                        }
-                    }
+                    content = "Warned User"
                 }
-
                 actionLog.createEmbed {
-                    title = "${arguments.userArgument.tag} was warned with ${arguments.warnPoints} points."
+                    title = "Warning"
                     color = DISCORD_BLACK
+                    timestamp = Clock.System.now()
+
+                    field {
+                        name = "User:"
+                        value = "$userTag \n $userId"
+                        inline = false
+                    }
                     field {
                         name = "Total Points:"
-                        // value =
+                        value = databasePoints.toString()
                         inline = false
                     }
                     field {
                         name = "Points added:"
-                        // value =
+                        value = warnPoints.toString()
+                        inline = false
+                    }
+                    field {
+                        name = "Reason:"
+                        value = arguments.reason
+                        inline = false
+                    }
+                    field {
+                        value = "Requested by: ${user.asUser().username}"
                         inline = false
                     }
                 }
             }
         }
+        ephemeralSlashCommand(::MuteArgs) {
+            name = "mute"
+            description = "Mute a member for any infractions"
+
+            allowRole(MODERATORS)
+
+            action {
+                val userId = arguments.userArgument.id.asString
+                val userTag = arguments.userArgument.tag
+                val member = guild!!.getMemberOrNull(arguments.userArgument.id)
+                val dmUser = member?.getDmChannelOrNull()
+                val actionLog = guild!!.getChannelOf<GuildMessageChannel>(ACTION_LOG)
+
+                member?.addRole(
+                    MUTED_ROLE,
+                    "$userTag was muted for ${arguments.reason}"
+                ) // This here is written to the guild's Audit log
+
+                respond {
+                    content = "Muted user"
+                }
+                actionLog.createEmbed {
+                    title = "Mute"
+                    color = DISCORD_BLACK
+                    timestamp = Clock.System.now()
+
+                    field {
+                        name = "User muted:"
+                        value = "**Tag:** $userTag \n **ID:** $userId"
+                        inline = false
+                    }
+                    field {
+                        name = "Duration:"
+                        value = arguments.duration.toString()
+                        inline = false
+                    }
+                    field {
+                        name = "Reason:"
+                        value = arguments.reason
+                        inline = false
+                    }
+                }
+                dmUser?.createEmbed {
+                    title = "You were Muted"
+                    description =
+                        "You were muted from $GUILD_NAME \n Duration: ${arguments.duration} \n Reason: ${arguments.reason}"
+                    timestamp = Clock.System.now()
+                }
+                var durationInt: Int = parseDuration(arguments.duration.toString())
+
+                Scheduler()
+
+            }
+        }
+    }
+    private fun parseDuration(time: String): Int {
+        var duration: Int = Integer.parseInt(time.replace("[^0-9]", ""))
+        when (time.replace("[^A-Za-z]+", "").trim()) {
+            "s" -> duration *= 1000
+            "m", "min", "mins" -> duration *= 60000
+            "h", "hour", "hours" -> duration *= 3600000
+            "d", "day", "days" -> duration *= 86400000
+        }
+        return duration
     }
 
     inner class ClearArgs : Arguments() {
@@ -372,23 +418,13 @@ class Moderation : Extension() {
     inner class MuteArgs : Arguments() {
         val userArgument by user("muteUser", "Person to mute")
         val duration by defaultingInt("duration", "Duration of Mute", 6)
-
-        val reason by defaultingString(
-            "reason",
-            "Reason for Mute",
-            "No Reason Provided"
-        )
+        val reason by defaultingString("reason","Reason for Mute", "No Reason Provided")
     }
 
     inner class WarnArgs : Arguments() {
         val userArgument by user("warnUser", "Person to Warn")
         val warnPoints by defaultingInt("points", "Amount of points to add", 10)
-
-        val reason by defaultingString(
-            "reason",
-            "Reason for Warn",
-            "No Reason Provided"
-        )
+        val reason by defaultingString("reason", "Reason for Warn", "No Reason Provided")
     }
 
     inner class SayArgs : Arguments() {
