@@ -38,9 +38,9 @@ dependencies {
     implementation(libs.jgit)
 
     // Exposed
-    implementation("org.jetbrains.exposed:exposed-core:0.35.3")
-    implementation("org.jetbrains.exposed:exposed-dao:0.35.3")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.35.3")
+    implementation("org.jetbrains.exposed:exposed-core:0.36.1")
+    implementation("org.jetbrains.exposed:exposed-dao:0.36.1")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.36.1")
 
     // Hikari
     implementation("com.zaxxer:HikariCP:5.0.0")
@@ -55,7 +55,7 @@ application {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "16"
+    kotlinOptions.jvmTarget = "17"
 
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
 }
@@ -74,6 +74,6 @@ tasks.create<Delete>("detekt") {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
