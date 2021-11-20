@@ -1,8 +1,0 @@
----
-type: embed
-colour: red
-embed:
-    title: "You can't currently edit shader settings."
----
-
-    A Configuration menu will be coming in a future version. (<https://https://github.com/IrisShaders/Iris/issues/663>)
