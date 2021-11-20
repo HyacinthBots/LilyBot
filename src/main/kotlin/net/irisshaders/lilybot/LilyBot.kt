@@ -24,7 +24,7 @@ suspend fun main() {
             add(::Ping)
             add(::Moderation)
             add(::ThreadInviter)
-            //add(::Report)
+            add(::Report)
         }
 
         hooks {

@@ -7,6 +7,7 @@ import dev.kord.common.entity.Snowflake
 val BOT_TOKEN = env("TOKEN")
 val GUILD_ID = Snowflake(env("GUILD_ID"))
 val MODERATORS = Snowflake(env("MODERATOR_ROLE"))
+val TRIALMODERATORS = Snowflake(env("TRIAL_MODERATOR_ROLE"))
 val SUPPORT_TEAM = Snowflake(env("SUPPORT_ROLE"))
 val MUTED_ROLE = Snowflake(env("MUTED_ROLE"))
 val ACTION_LOG = Snowflake(env("ACTION_LOG"))
