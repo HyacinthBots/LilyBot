@@ -51,8 +51,7 @@ public class AttachmentHandler extends ListenerAdapter {
                             try {
                                 channel.sendMessageEmbeds(linkEmbed(author)).setActionRow(
                                         Button.link(post(builder.toString()), "Click here to view")
-                                ).flatMap(m -> message.delete())
-                                .queue();
+                                ).queue();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
