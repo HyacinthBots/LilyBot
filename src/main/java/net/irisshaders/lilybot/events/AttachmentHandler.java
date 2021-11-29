@@ -35,27 +35,31 @@ public class AttachmentHandler extends ListenerAdapter {
             not sure who would do that though
              */
             for (var attachment : attachments) {
-                attachment.retrieveInputStream()
-                        .thenAccept(stream -> {
-                            StringBuilder builder = new StringBuilder();
-                            byte[] buffer = new byte[1024];
-                            int count;
-                            try {
-                                while ((count = stream.read(buffer)) > 0) {
-                                    builder.append(new String(buffer, 0, count));
+                if (!extensions.contains(attachment.getFileExtension())) {
+                    continue;
+                } else {
+                    attachment.retrieveInputStream()
+                            .thenAccept(stream -> {
+                                StringBuilder builder = new StringBuilder();
+                                byte[] buffer = new byte[1024];
+                                int count;
+                                try {
+                                    while ((count = stream.read(buffer)) > 0) {
+                                        builder.append(new String(buffer, 0, count));
+                                    }
+                                    stream.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
                                 }
-                                stream.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            try {
-                                channel.sendMessageEmbeds(linkEmbed(author)).setActionRow(
-                                        Button.link(post(builder.toString()), "Click here to view")
-                                ).queue();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        });
+                                try {
+                                    channel.sendMessageEmbeds(linkEmbed(author)).setActionRow(
+                                            Button.link(post(builder.toString()), "Click here to view")
+                                    ).queue();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            });
+                }
             }
         }
     }
@@ -64,7 +68,7 @@ public class AttachmentHandler extends ListenerAdapter {
         return new EmbedBuilder()
                 .setTitle("File uploaded to Hastebin")
                 .setColor(0x9992ff)
-                .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
+                .setFooter("Uploaded by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                 .build();
     }
 
