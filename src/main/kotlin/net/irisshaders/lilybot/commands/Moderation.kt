@@ -33,6 +33,7 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.system.exitProcess
 import kotlin.time.ExperimentalTime
+import kotlin.time.Duration
 
 /**
  * @author NoComment1105
@@ -40,6 +41,7 @@ import kotlin.time.ExperimentalTime
  */
 class Moderation : Extension() {
     override val name = "moderation"
+    val scheduler = Scheduler()
 
     override suspend fun setup() {
         // Clear command
@@ -345,6 +347,15 @@ class Moderation : Extension() {
                     "$userTag was muted for ${arguments.reason}"
                 ) // This here is written to the guild's Audit log
 
+                var duration = parseDuration(arguments.duration.toString())
+
+                scheduler.schedule(Duration.milliseconds(duration)) { 
+                    member?.removeRole(
+                        MUTED_ROLE, 
+                        "$userTag's mute has ended"
+                    ) // This here is written to the guild's Audit log
+                }
+
                 respond {
                     content = "Muted user"
                 }
@@ -375,10 +386,6 @@ class Moderation : Extension() {
                         "You were muted from $GUILD_NAME \n Duration: ${arguments.duration} \n Reason: ${arguments.reason}"
                     timestamp = Clock.System.now()
                 }
-                var durationInt: Int = parseDuration(arguments.duration.toString())
-
-                Scheduler()
-
             }
         }
     }
