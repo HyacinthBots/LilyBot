@@ -26,7 +26,7 @@ public class Say extends SlashCommand {
         this.defaultEnabled = false;
         this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
         this.guildOnly = true;
-        this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS};
+        this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
         List<OptionData> optionData = new ArrayList<>();
         optionData.add(new OptionData(OptionType.STRING, "message", "What you want to send in the channel.").setRequired(true));
