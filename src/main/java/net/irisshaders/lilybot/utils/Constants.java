@@ -15,6 +15,8 @@ public interface Constants {
     String GUILD_ID = dotenv.get("GUILD_ID");
     String ACTION_LOG = dotenv.get("ACTION_LOG");
     String JOIN_MESSAGES = dotenv.get("JOIN_MESSAGES");
+    String SUPPORT_CHANNEL = dotenv.get("SUPPORT_CHANNEL");
+    String SUPPORT_TEAM = dotenv.get("SUPPORT_TEAM_ROLE");
     String OWNER = dotenv.get("OWNER");
     String TOKEN = dotenv.get("TOKEN");
     String GITHUB_OAUTH = dotenv.get("GITHUB_OAUTH");
