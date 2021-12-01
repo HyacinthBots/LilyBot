@@ -22,7 +22,7 @@ public class Custom extends SlashCommand {
         this.help = help;
         this.defaultEnabled = true;
         this.guildOnly = false;
-        this.botPermissions = new Permission[]{ Permission.MESSAGE_WRITE };
+        this.botPermissions = new Permission[]{ Permission.MESSAGE_SEND };
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
         this.children = children;
     }
