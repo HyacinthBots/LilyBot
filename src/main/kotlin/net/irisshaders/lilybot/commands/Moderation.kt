@@ -22,9 +22,12 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.User
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.Instant
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.*
 import org.jetbrains.exposed.sql.insertIgnore
@@ -32,8 +35,9 @@ import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.system.exitProcess
-import kotlin.time.ExperimentalTime
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 /**
  * @author NoComment1105
@@ -342,19 +346,22 @@ class Moderation : Extension() {
                 val dmUser = member?.getDmChannelOrNull()
                 val actionLog = guild!!.getChannelOf<GuildMessageChannel>(ACTION_LOG)
 
+                newSuspendedTransaction {
+                    DatabaseManager.Mute.insertIgnore {
+                        it[id] = userId
+                        it[expiryTime] = "0"
+                    }
+
+                    DatabaseManager.Mute.replace {
+                        it[id] = id
+                        it[expiryTime] = (Clock.System.now() + Duration.seconds(arguments.duration.seconds)).epochSeconds.toString()
+                    }
+                }
+
                 member?.addRole(
                     MUTED_ROLE,
                     "$userTag was muted for ${arguments.reason}"
                 ) // This here is written to the guild's Audit log
-
-                var duration = parseDuration(arguments.duration.toString())
-
-                scheduler.schedule(Duration.milliseconds(duration)) { 
-                    member?.removeRole(
-                        MUTED_ROLE, 
-                        "$userTag's mute has ended"
-                    ) // This here is written to the guild's Audit log
-                }
 
                 respond {
                     content = "Muted user"
@@ -383,21 +390,11 @@ class Moderation : Extension() {
                 dmUser?.createEmbed {
                     title = "You were Muted"
                     description =
-                        "You were muted from $GUILD_NAME \n Duration: ${arguments.duration} \n Reason: ${arguments.reason}"
+                        "You were muted from $GUILD_NAME \n Duration: ${arguments.duration.toString()} \n Reason: ${arguments.reason}"
                     timestamp = Clock.System.now()
                 }
             }
         }
-    }
-    private fun parseDuration(time: String): Int {
-        var duration: Int = Integer.parseInt(time.replace("[^0-9]", ""))
-        when (time.replace("[^A-Za-z]+", "").trim()) {
-            "s" -> duration *= 1000
-            "m", "min", "mins" -> duration *= 60000
-            "h", "hour", "hours" -> duration *= 3600000
-            "d", "day", "days" -> duration *= 86400000
-        }
-        return duration
     }
 
     inner class ClearArgs : Arguments() {
@@ -424,7 +421,7 @@ class Moderation : Extension() {
 
     inner class MuteArgs : Arguments() {
         val userArgument by user("muteUser", "Person to mute")
-        val duration by defaultingInt("duration", "Duration of Mute", 6)
+        val duration by defaultingCoalescingDuration("duration", "Duration of mute", DateTimePeriod(0, 0, 0, 6, 0, 0, 0))
         val reason by defaultingString("reason","Reason for Mute", "No Reason Provided")
     }
 

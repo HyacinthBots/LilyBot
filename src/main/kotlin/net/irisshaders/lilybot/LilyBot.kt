@@ -30,7 +30,6 @@ suspend fun main() {
         hooks {
             afterKoinSetup {
                 DatabaseManager.startDatabase()
-
             }
         }
     }
