@@ -353,7 +353,7 @@ class Moderation : Extension() {
                     }
 
                     DatabaseManager.Mute.replace {
-                        it[id] = id
+                        it[id] = userId
                         it[expiryTime] = (Clock.System.now() + Duration.seconds(arguments.duration.seconds)).epochSeconds.toString()
                     }
                 }
