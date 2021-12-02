@@ -7,9 +7,9 @@ import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.types.respondEphemeral
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.interaction.followUpEphemeral
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.rest.builder.message.create.embed
@@ -64,13 +64,13 @@ class ThreadInviter : Extension() {
                                     }
 
                                     if (userThreadExists) {
-                                        respondEphemeral {
+                                        interactionResponse.followUpEphemeral {
                                             content = "You already have a thread! " + existingUserThread!!.mention
                                         }
                                     } else if (userThreadArchived) {
                                         existingUserThread!!.createMessage("Unarchived thread.")
 
-                                        respondEphemeral {
+                                        interactionResponse.followUpEphemeral {
                                             content =
                                                 "Your previous thread has been unarchived.  " + existingUserThread!!.mention
                                         }
@@ -91,7 +91,7 @@ class ThreadInviter : Extension() {
                                             )
                                         }
 
-                                        respondEphemeral {
+                                        interactionResponse.followUpEphemeral {
                                             content = "A thread has been created for you: " + thread.mention
                                         }
                                     }
