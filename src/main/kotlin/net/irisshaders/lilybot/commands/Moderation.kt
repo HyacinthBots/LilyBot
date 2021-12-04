@@ -20,8 +20,6 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
@@ -273,7 +271,7 @@ class Moderation : Extension() {
                 val userId = arguments.userArgument.id.asString
                 val userTag = arguments.userArgument.tag
                 val warnPoints = arguments.warnPoints
-                val actionLog = guild!!.getChannelOf<GuildMessageChannel>(ACTION_LOG)
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
                 var databasePoints: String? = null
 
                 newSuspendedTransaction {
@@ -338,7 +336,7 @@ class Moderation : Extension() {
                 val userTag = arguments.userArgument.tag
                 val member = guild!!.getMemberOrNull(arguments.userArgument.id)
                 val dmUser = member?.getDmChannelOrNull()
-                val actionLog = guild!!.getChannelOf<GuildMessageChannel>(ACTION_LOG)
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
 
                 member?.addRole(
                     MUTED_ROLE,
