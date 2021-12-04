@@ -4,7 +4,7 @@ import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionType;

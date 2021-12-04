@@ -18,6 +18,7 @@ import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.events.AttachmentHandler;
 import net.irisshaders.lilybot.events.ReadyHandler;
 import net.irisshaders.lilybot.events.SlashCommandHandler;
+import net.irisshaders.lilybot.events.Events;
 import net.irisshaders.lilybot.utils.Constants;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
@@ -93,13 +94,11 @@ public class LilyBot {
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.watching("Loading..."))
                     .setAutoReconnect(true)
-                    .addEventListeners(commandClient, waiter, new ReadyHandler(), slashCommandHandler, new AttachmentHandler())
+                    .addEventListeners(builder, waiter, new Events(), slashCommandHandler, new AttachmentHandler(), new Report()) // still waiting on threads :P
                     .build();
         } catch (LoginException e) {
             throw new RuntimeException(e);
         }
-
-        // jda.addEventListener(new Report()); // TODO uncomment when threads are finished but in the builder if possible
 
         GitHub github = null;
         try {
