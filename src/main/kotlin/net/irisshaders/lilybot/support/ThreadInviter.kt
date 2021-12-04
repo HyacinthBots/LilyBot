@@ -2,20 +2,18 @@
 
 package net.irisshaders.lilybot.support
 
-import com.kotlindiscord.kord.extensions.components.components
-import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
-import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.types.respondEphemeral
-import dev.kord.common.entity.ButtonStyle
+import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.utils.delete
+import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.reply
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
-import dev.kord.rest.builder.message.create.embed
+import dev.kord.core.event.message.MessageCreateEvent
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.last
-import net.irisshaders.lilybot.utils.OWNER_ID
+import net.irisshaders.lilybot.utils.SUPPORT_CHANNEL
 import net.irisshaders.lilybot.utils.SUPPORT_TEAM
 import kotlin.time.ExperimentalTime
 
@@ -23,84 +21,52 @@ class ThreadInviter : Extension() {
     override val name = "threads"
 
     override suspend fun setup() {
-        publicSlashCommand {  // Ephemeral slash commands have private responses
-            name = "supportthread"
-            description = "Creates the button to launch a support thread."
-
-            allowUser(OWNER_ID)
-
-            @Suppress("DSL_SCOPE_VIOLATION")
+        event<MessageCreateEvent> {  // Ephemeral slash commands have private responses
+            check {
+                failIf(event.message.channelId != SUPPORT_CHANNEL || event.member!!.id == kord.selfId)
+            }
             action {
-                respond {
-                    embed {
-                        title = "Create support thread"
-                        description = "Please click the button below if you need support with Iris."
-
-                        components {
-                            ephemeralButton {
-                                label = "Create"
-                                style = ButtonStyle.Primary
-
-                                val textchannel = channel.asChannel() as TextChannel
-
-                                action {
-                                    var userThreadExists = false
-                                    var userThreadArchived = false
-                                    var existingUserThread: TextChannelThread? = null
-
-                                    //TODO: this is incredibly stupid, there has to be a better way to do this.
-                                    textchannel.activeThreads.collect {
-                                        if (it.name == "Support thread for " + user.asUser().username) {
-                                            userThreadExists = true
-                                            existingUserThread = it
-                                        }
-                                    }
-
-                                    textchannel.getPublicArchivedThreads().collect {
-                                        if (it.name == "Support thread for " + user.asUser().username) {
-                                            userThreadArchived = true
-                                            existingUserThread = it
-                                        }
-                                    }
-
-                                    if (userThreadExists) {
-                                        respondEphemeral {
-                                            content = "You already have a thread! " + existingUserThread!!.mention
-                                        }
-                                    } else if (userThreadArchived) {
-                                        existingUserThread!!.createMessage("Unarchived thread.")
-
-                                        respondEphemeral {
-                                            content =
-                                                "Your previous thread has been unarchived.  " + existingUserThread!!.mention
-                                        }
-                                    } else {
-                                        val thread =
-                                            textchannel.startPublicThread("Support thread for " + user.asUser().username)
-                                        val editMessage = thread.createMessage("edit message")
-
-                                        editMessage.edit {
-                                            this.content =
-                                                user.mention + ", the " + guild?.getRole(SUPPORT_TEAM)?.mention + " will be with you shortly!"
-                                        }
-
-                                        if (channel.messages.last().author?.id == kord.selfId) {
-                                            channel.deleteMessage(
-                                                channel.messages.last().id,
-                                                "Automatic deletion of thread creation message"
-                                            )
-                                        }
-
-                                        respondEphemeral {
-                                            content = "A thread has been created for you: " + thread.mention
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                var userThreadExists = false
+                var existingUserThread: TextChannelThread? = null
+                var textchannel = event.message.getChannel() as TextChannel
+                //TODO: this is incredibly stupid, there has to be a better way to do this.
+                textchannel.activeThreads.collect {
+                    if (it.name == "Support thread for " + event.member!!.asUser().username) {
+                        userThreadExists = true
+                        existingUserThread = it
                     }
+                }
+
+                if (userThreadExists) {
+                    var response = event.message.respond {
+                        content = "You already have a thread, please talk about your issue in it. " + existingUserThread!!.mention
+                    }
+                    event.message.delete("User already has a thread")
+                    response.delete(10000L, false)
+                } else {
+                    val thread =
+                            textchannel.startPublicThreadWithMessage(event.message.id, "Support thread for " + event.member!!.asUser().username)
+                    val editMessage = thread.createMessage("edit message")
+
+                    editMessage.edit {
+                        this.content =
+                                event.member!!.asUser().mention + ", the " + event.getGuild()?.getRole(SUPPORT_TEAM)?.mention + " will be with you shortly!"
+                    }
+
+                    if (textchannel.messages.last().author?.id == kord.selfId) {
+                        textchannel.deleteMessage(
+                                textchannel.messages.last().id,
+                                "Automatic deletion of thread creation message"
+                        )
+                    }
+
+                    var response = event.message.reply {
+                        content = "A thread has been created for you: " + thread.mention
+                    }
+                    response.delete(10000L, false)
                 }
             }
         }
     }
+
 }
