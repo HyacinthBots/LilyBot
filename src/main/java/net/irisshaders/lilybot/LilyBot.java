@@ -133,6 +133,7 @@ public class LilyBot {
         handler.addSlashCommand(new Warn());
         handler.addSlashCommand(new Say());
         handler.addSlashCommand(new BotActivity());
+        handler.addSlashCommand(new CheckPoints());
 
         // Services
         handler.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
