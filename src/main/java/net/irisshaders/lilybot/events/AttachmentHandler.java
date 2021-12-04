@@ -3,7 +3,6 @@ package net.irisshaders.lilybot.events;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -34,7 +33,8 @@ public class AttachmentHandler extends ListenerAdapter {
             if (!extensions.contains(attachment.getFileExtension())) {
                 continue;
             }
-            var uploadMessage = channel.sendMessageEmbeds(progressEmbed(attachment.getFileName(), author)).submit();
+            String name = attachment.getFileName();
+            var uploadMessage = channel.sendMessageEmbeds(fileEmbed(author).setTitle("Uploading `" + name + "` to Hastebin...").build()).submit();
             attachment.retrieveInputStream()
                 .thenAccept(stream -> {
                     StringBuilder builder = new StringBuilder();
@@ -55,31 +55,25 @@ public class AttachmentHandler extends ListenerAdapter {
                         builder.replace(indexOfToken + tokenKey.length() + 1, endOfToken, "**removed acess token**");
                     }
                     try {
-                        uploadMessage.join().editMessageEmbeds(linkEmbed(attachment.getFileName(), author)).setActionRow(
+                        uploadMessage.join().editMessageEmbeds(fileEmbed(author).setTitle("`" + name + "` uploaded to Hastebin").build()).setActionRow(
                                 Button.link(post(builder.toString()), "Click here to view")
                                 ).queue();
                     } catch (IOException e) {
+                        uploadMessage.join().editMessageEmbeds(fileEmbed(author)
+                                .setTitle("Failed to upload `" + name + "` to Hastebin")
+                                .addField("Exception", e.toString(), false)
+                                .build())
+                        .queue();
                         e.printStackTrace();
                     }
             });
         }
     }
 
-    private MessageEmbed progressEmbed(String filename, User user) {
+    private EmbedBuilder fileEmbed(User user) {
         return new EmbedBuilder()
-                .setTitle("Uploading `" + filename + "` to Hastebin...")
                 .setColor(0x9992ff)
-                .setFooter("Uploaded by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                .build();
-    }
-    
-
-    private MessageEmbed linkEmbed(String fileName, User user) {
-        return new EmbedBuilder()
-                .setTitle("`" + fileName + "` uploaded to Hastebin")
-                .setColor(0x9992ff)
-                .setFooter("Uploaded by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                .build();
+                .setFooter("Uploaded by " + user.getAsTag(), user.getEffectiveAvatarUrl());
     }
 
     private String post(String text) throws IOException {
