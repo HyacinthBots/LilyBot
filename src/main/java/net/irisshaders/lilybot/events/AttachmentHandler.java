@@ -34,6 +34,7 @@ public class AttachmentHandler extends ListenerAdapter {
             if (!extensions.contains(attachment.getFileExtension())) {
                 continue;
             }
+            var uploadMessage = channel.sendMessageEmbeds(progressEmbed(attachment.getFileName(), author)).submit();
             attachment.retrieveInputStream()
                 .thenAccept(stream -> {
                     StringBuilder builder = new StringBuilder();
@@ -54,7 +55,7 @@ public class AttachmentHandler extends ListenerAdapter {
                         builder.replace(indexOfToken + tokenKey.length() + 1, endOfToken, "**removed acess token**");
                     }
                     try {
-                        channel.sendMessageEmbeds(linkEmbed(attachment.getFileName(), author)).setActionRow(
+                        uploadMessage.join().editMessageEmbeds(linkEmbed(attachment.getFileName(), author)).setActionRow(
                                 Button.link(post(builder.toString()), "Click here to view")
                                 ).queue();
                     } catch (IOException e) {
@@ -63,6 +64,15 @@ public class AttachmentHandler extends ListenerAdapter {
             });
         }
     }
+
+    private MessageEmbed progressEmbed(String filename, User user) {
+        return new EmbedBuilder()
+                .setTitle("Uploading `" + filename + "` to Hastebin...")
+                .setColor(0x9992ff)
+                .setFooter("Uploaded by " + user.getAsTag(), user.getEffectiveAvatarUrl())
+                .build();
+    }
+    
 
     private MessageEmbed linkEmbed(String fileName, User user) {
         return new EmbedBuilder()
