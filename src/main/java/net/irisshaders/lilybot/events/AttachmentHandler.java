@@ -28,45 +28,43 @@ public class AttachmentHandler extends ListenerAdapter {
         User author = message.getAuthor();
         MessageChannel channel = message.getChannel();
         List<String> extensions = List.of("txt", "log");
-        boolean shouldUpload = attachments.stream().map(Message.Attachment::getFileExtension).anyMatch(extensions::contains);
-        if (shouldUpload) {
-            /*
-            done because apparently you can send multiple attachments from mobile at once
-            not sure who would do that though
-             */
-            for (var attachment : attachments) {
-                if (!extensions.contains(attachment.getFileExtension())) {
-                    continue;
-                } else {
-                    attachment.retrieveInputStream()
-                            .thenAccept(stream -> {
-                                StringBuilder builder = new StringBuilder();
-                                byte[] buffer = new byte[1024];
-                                int count;
-                                try {
-                                    while ((count = stream.read(buffer)) > 0) {
-                                        builder.append(new String(buffer, 0, count));
-                                    }
-                                    stream.close();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                try {
-                                    channel.sendMessageEmbeds(linkEmbed(author)).setActionRow(
-                                            Button.link(post(builder.toString()), "Click here to view")
-                                    ).queue();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                }
+        for (var attachment : attachments) {
+            if (!extensions.contains(attachment.getFileExtension())) {
+                continue;
             }
+            attachment.retrieveInputStream()
+                .thenAccept(stream -> {
+                    StringBuilder builder = new StringBuilder();
+                    byte[] buffer = new byte[1024];
+                    int count;
+                    try (stream) {
+                        while ((count = stream.read(buffer)) > 0) {
+                            builder.append(new String(buffer, 0, count));
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                    final String tokenKey = "--accessToken";
+                    int indexOfToken = builder.indexOf(tokenKey);
+                    if (indexOfToken != -1) {
+                        int endOfToken = builder.indexOf(" ", indexOfToken + tokenKey.length() + 1);
+                        builder.replace(indexOfToken + tokenKey.length() + 1, endOfToken, "**removed acess token**");
+                    }
+                    try {
+                        channel.sendMessageEmbeds(linkEmbed(attachment.getFileName(), author)).setActionRow(
+                                Button.link(post(builder.toString()), "Click here to view")
+                                ).queue();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+            });
         }
     }
 
-    private MessageEmbed linkEmbed(User user) {
+    private MessageEmbed linkEmbed(String fileName, User user) {
         return new EmbedBuilder()
-                .setTitle("File uploaded to Hastebin")
+                .setTitle("`" + fileName + "` uploaded to Hastebin")
                 .setColor(0x9992ff)
                 .setFooter("Uploaded by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                 .build();
@@ -89,8 +87,6 @@ public class AttachmentHandler extends ListenerAdapter {
             stream.write(postData);
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             response = reader.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         if (response.contains("\"key\"")) {
             response = response.substring(response.indexOf(":") + 2, response.length() - 2);
