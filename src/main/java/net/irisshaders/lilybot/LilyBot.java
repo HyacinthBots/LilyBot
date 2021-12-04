@@ -16,6 +16,7 @@ import net.irisshaders.lilybot.commands.moderation.Shutdown;
 import net.irisshaders.lilybot.commands.moderation.*;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.events.AttachmentHandler;
+import net.irisshaders.lilybot.events.SlashCommandHandler;
 import net.irisshaders.lilybot.events.Events;
 import net.irisshaders.lilybot.utils.Constants;
 import org.kohsuke.github.GitHub;
@@ -57,7 +58,7 @@ public class LilyBot {
         this.config = properties;
         
         EventWaiter waiter = new EventWaiter();
-        CommandClient builder = new CommandClientBuilder()
+        CommandClient commandClient = new CommandClientBuilder()
                 .setHelpConsumer(null)
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing(properties.getProperty("status")))
@@ -65,8 +66,9 @@ public class LilyBot {
                 .forceGuildOnly(Constants.GUILD_ID)
                 .build();
 
-        LilyBot.addBuiltinCommands(builder);
-        this.addCustomCommands(builder);
+        SlashCommandHandler slashCommandHandler = new SlashCommandHandler(commandClient);
+        addBuiltinCommands(slashCommandHandler);
+        addCustomCommands(slashCommandHandler);
 
         try {
             SQLiteDataSource.getConnection();
@@ -91,7 +93,7 @@ public class LilyBot {
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.watching("Loading..."))
                     .setAutoReconnect(true)
-                    .addEventListeners(builder, waiter, new Events(), new AttachmentHandler(), new Report()) // still waiting on threads :P
+                    .addEventListeners(commandClient, waiter, new Events(), slashCommandHandler, new AttachmentHandler(), new Report()) // still waiting on threads :P
                     .build();
         } catch (LoginException e) {
             throw new RuntimeException(e);
@@ -117,35 +119,36 @@ public class LilyBot {
         INSTANCE = new LilyBot(Paths.get(Constants.CONFIG_PATH));
     }
 
-    public static void addBuiltinCommands(CommandClient commands) {
+    public void addBuiltinCommands(SlashCommandHandler handler) {
         // add commands now
-        commands.addSlashCommand(new Ping());
+        handler.addSlashCommand(new Ping());
 
         // Mod Commands
-        commands.addSlashCommand(new Ban());
-        commands.addSlashCommand(new Kick());
-        commands.addSlashCommand(new Unban());
-        commands.addSlashCommand(new Clear());
-        commands.addSlashCommand(new Mute());
-        commands.addSlashCommand(new MuteList());
-        commands.addSlashCommand(new Warn());
-        commands.addSlashCommand(new Say());
-        commands.addSlashCommand(new BotActivity());
+        handler.addSlashCommand(new Ban());
+        handler.addSlashCommand(new Kick());
+        handler.addSlashCommand(new Unban());
+        handler.addSlashCommand(new Clear());
+        handler.addSlashCommand(new Mute());
+        handler.addSlashCommand(new MuteList());
+        handler.addSlashCommand(new Warn());
+        handler.addSlashCommand(new Say());
+        handler.addSlashCommand(new BotActivity());
+
         // Services
-        commands.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
+        handler.addSlashCommand(new net.irisshaders.lilybot.commands.services.GitHub());
 
         // normal commands
         // builder.addCommand(new Report()); // TODO uncomment when threads are finished
 
         // Shutdown Command
-        commands.addSlashCommand(new Shutdown());
+        handler.addSlashCommand(new Shutdown());
     }
 
-    public void addCustomCommands(CommandClient commands) {
+    public void addCustomCommands(SlashCommandHandler handler) {
         var cmdNames = this.config.getProperty("commands").split(" ");
         for (var cmd : cmdNames) {
             LOG_LILY.info("Adding custom command '{}'", cmd);
-            commands.addSlashCommand(Custom.parse(cmd, this.config));
+            handler.addSlashCommand(Custom.parse(cmd, this.config));
         }
     }
 
