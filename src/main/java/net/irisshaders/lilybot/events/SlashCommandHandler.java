@@ -1,13 +1,15 @@
 package net.irisshaders.lilybot.events;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.SlashCommand;
@@ -18,7 +20,10 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.SlashCommand.Option;
+import net.dv8tion.jda.api.interactions.commands.SlashCommand.Subcommand;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.utils.Constants;
@@ -54,13 +59,36 @@ public class SlashCommandHandler extends ListenerAdapter {
             throw new IllegalStateException("Ready was called twice, what");
         jda = event.getJDA();
         ready = true;
+        var currentCommandsFuture = getCurrentCommands();
+        Map<String, Command> currentCommands;
         synchronized (preReadyQueue) {
+        	currentCommands = currentCommandsFuture.join();
             for (var command: preReadyQueue) {
-                registerCommand(command);
+                registerCommandIfNoEquivalentIsPresent(currentCommands, command);
             }
             preReadyQueue.clear();
         }
-        removeStrayCommands();
+        removeStrayCommands(currentCommands.values());
+    }
+    
+    /**
+     * Returns a {@link CompletableFuture} with the commands that are currently registered <i>in Discord</i>.<p>
+     * 
+     * Can differ from the ones we have registered here
+     */
+    private CompletableFuture<Map<String, Command>> getCurrentCommands() {
+        var cf1 = jda.getGuildById(Constants.GUILD_ID).retrieveCommands().submit();
+        var cf2 = jda.retrieveCommands().submit();
+        return CompletableFuture.allOf(cf1, cf2).thenApply(nothing -> {
+            var map = new HashMap<String, Command>();
+            for (Command cmd : cf1.join()) {
+                map.put(cmd.getName(), cmd);
+            }
+            for (Command cmd : cf2.join()) {
+                map.put(cmd.getName(), cmd);
+            }
+            return map;
+        });
     }
     
     /**
@@ -110,17 +138,16 @@ public class SlashCommandHandler extends ListenerAdapter {
         }
     }
     
-    private void removeStrayCommands() {
+    private void removeStrayCommands(Collection<Command> guildCommands) {
         String ourId = jda.getSelfUser().getApplicationId();
-        Consumer<List<Command>> deleter = guildCommands -> {
-            guildCommands.stream().filter(c -> c instanceof net.dv8tion.jda.api.interactions.commands.SlashCommand && ourId.equals(c.getApplicationId()) && !commands.containsKey(c.getName())).forEach(cmd -> {
+        guildCommands.parallelStream()
+            .filter(c -> c instanceof net.dv8tion.jda.api.interactions.commands.SlashCommand && ourId.equals(c.getApplicationId()) && !commands.containsKey(c.getName()))
+            .forEach(cmd -> {
                 jda.getGuildById(Constants.GUILD_ID).deleteCommandById(cmd.getId()).queue(nothing -> 
                     LilyBot.LOG_LILY.info("Removed stray command: "+cmd.getName())
                 );
-            });
-        };
-        jda.getGuildById(Constants.GUILD_ID).retrieveCommands().submit().thenAccept(deleter);
-        jda.retrieveCommands().submit().thenAccept(deleter);
+            }
+        );
     }
     
     /**
@@ -150,9 +177,84 @@ public class SlashCommandHandler extends ListenerAdapter {
             if (commandsToRemove.contains(command1.getName())) {
                 actuallyRemove(command1.getName());
             }
-            LilyBot.LOG_LILY.info("Command "+command1.getName()+" accepted by Discord");
+            LilyBot.LOG_LILY.info("Command '"+command1.getName()+"' accepted by Discord");
         });
         commands.put(command.getName(), command);
         commandsIds.put(command.getName(), Optional.empty());
+    }
+    
+    /**
+     * Registers a command if there isn't an equivalent one already registered in commands.<p>
+     * 
+     * To be used when registering all commands at startup.<p>
+     * 
+     * This calls {@link #registerCommand(SlashCommand)} for registering the command if it's not present.
+     * 
+     * @implNote The code is awful because our JDA doesn't use the same class for a command that we create
+     *           and a command that is registered in Discord
+     */
+    private void registerCommandIfNoEquivalentIsPresent(Map<String, Command> existingCommands, SlashCommand slashCommand) {
+        Command command = existingCommands.get(slashCommand.getName());
+        if (command instanceof net.dv8tion.jda.api.interactions.commands.SlashCommand currentCommand) {
+            if (currentCommand.getDescription().equals(slashCommand.getHelp()) // They are called differently, but are the same
+                    && currentCommand.getOptions().size() == slashCommand.getOptions().size()
+                    && currentCommand.isDefaultEnabled() == slashCommand.isDefaultEnabled()
+                    && currentCommand.getSubcommands().size() == slashCommand.getChildren().length
+                    && optionsMatches(slashCommand.getOptions(), currentCommand.getOptions()))
+            {
+                boolean everySubcommandMatches = true;
+                for (SlashCommand subcommand : slashCommand.getChildren()) {
+                    Subcommand equivalent = null;
+                    for (Subcommand currentSubcommand: currentCommand.getSubcommands()) {
+                        if (subcommand.getName().equals(currentSubcommand.getName())) {
+                            equivalent = currentSubcommand;
+                            break;
+                        }
+                    }
+                    if (equivalent == null || !(subcommand.getHelp().equals(equivalent.getDescription())
+                        && subcommand.getOptions().size() == equivalent.getOptions().size()
+                        && optionsMatches(subcommand.getOptions(), equivalent.getOptions())
+                        ))
+                    {
+                        everySubcommandMatches = false;
+                        break;
+                    }
+                }
+                if (everySubcommandMatches) {
+                    // The command is equivalent. Register its id and things only, without sending it
+                    commands.put(slashCommand.getName(), slashCommand);
+                    commandsIds.put(slashCommand.getName(), Optional.of(currentCommand.getId()));
+                    LilyBot.LOG_LILY.info("Equivalent to '"+slashCommand.getName()+"' is already registered to Discord as is, not sending it");
+                    return;
+                }
+            }
+        }
+        // The command isn't equivalent or doesn't exist. Sending it will create or update it
+        registerCommand(slashCommand);
+    }
+    
+    /**
+     * Part of {@link #registerCommandIfNoEquivalentIsPresent(Map, SlashCommand)}.<p>
+     * 
+     * List size must have already been checked to be equals
+     */
+    private boolean optionsMatches(List<OptionData> optionDataList, List<Option> optionList) {
+        for (OptionData optionData : optionDataList) {
+            Option equivalent = null;
+            for (Option option : optionList) {
+                if (option.getName().equals(optionData.getName())) {
+                    equivalent = option;
+                    break;
+                }
+            }
+            if (equivalent == null || !(optionData.getType() == equivalent.getType()
+                    && optionData.isRequired() == equivalent.isRequired()
+                    && optionData.getDescription().equals(equivalent.getDescription())
+                    && optionData.getChoices().equals(equivalent.getChoices())))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
