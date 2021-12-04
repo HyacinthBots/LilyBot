@@ -1,4 +1,4 @@
-//package
+package com.example.test.bot;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -17,21 +17,21 @@ use Chewtils for you bot's slash commands
 public class TestCommand extends SlashCommand {
 
     /*
-    A method for defining all the settings and parameters of you slash command
+    A method for defining all the settings and parameters of your slash command
      */
     public TestCommand() {
         this.name = "command"; // The name that will appear in the suggestion list. Must to be lower case
 
         this.help = "Command help message."; // The description of your command
 
-        this.defaultEnabled = true; // Sets weather this command is enabled or disabled by default. If disabled you must specify a permission
+        this.defaultEnabled = true; // Sets whether this command is enabled or disabled by default. If disabled you must specify a permission
 
-//        this.enabledRoles = new String[]{MainClass.ROLE};   Sets the roles that allow you to use the command. Ideally you will have a specified role
-//                                                              in you main class that is set with an id in a .env file. Not needed if this.defaultEnabled is true
+        this.enabledRoles = new String[]{Constants.ROLE}; /* Sets the roles that allow you to use the command. Ideally you will have a specified role
+                                                              in your main class that is set with an id in a .env file. Not needed if this.defaultEnabled is true */
 
-        this.guildOnly = false; // Sets weather the command can be used in dms too. Not Threads count as DMs because Discord is concern
+        this.guildOnly = false; // Sets whether the command can be used in dms too. Not Threads count as DMs because Discord is concern
 
-        this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE}; // Set's the required permission for the command to work
+        this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE}; // Sets the required permission for the command to work
 
         this.botMissingPermMessage = "The bot can't write messages!"; // The error message shown to the user if permission(s) above aren't full filled
     }
@@ -41,7 +41,7 @@ public class TestCommand extends SlashCommand {
 
         User user = event.getUser(); // Get's the user that ran the command
 
-        MessageEmbed embed = new EmbedBuilder() // Creates a builder for the embed, name "builder" in this case
+        MessageEmbed embed = new EmbedBuilder() // Creates a builder for the embed, name "embed" in this case
                 .setTitle("Command Title!")
                 .setDescription(
                         "Command Description!"

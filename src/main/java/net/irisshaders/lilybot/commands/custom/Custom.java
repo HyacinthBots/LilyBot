@@ -3,7 +3,7 @@ package net.irisshaders.lilybot.commands.custom;
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 
 import java.awt.*;
 import java.time.Instant;
@@ -22,7 +22,7 @@ public class Custom extends SlashCommand {
         this.help = help;
         this.defaultEnabled = true;
         this.guildOnly = false;
-        this.botPermissions = new Permission[]{ Permission.MESSAGE_WRITE };
+        this.botPermissions = new Permission[]{ Permission.MESSAGE_SEND };
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
         this.children = children;
     }

@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 group = 'net.irisshaders.lilybot'
@@ -13,8 +13,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.dv8tion:JDA:4.3.0_330'
-    implementation 'com.github.chalkyjeans:JDA-Chewtils:8b203c50c2'
+    implementation 'com.github.altrisi:JDA:68a46e84ee' // Context menus, revert to official when merged
+    implementation 'com.github.altrisi:JDA-Chewtils:96b65c4fd' // Updated to jda 5 with context menus
     implementation 'ch.qos.logback:logback-classic:1.2.6'
     implementation 'io.github.cdimascio:dotenv-java:2.2.0'
     implementation 'org.kohsuke:github-api:1.133'

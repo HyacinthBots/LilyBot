@@ -8,12 +8,11 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.utils.Constants;
-import net.irisshaders.lilybot.utils.Memory;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
@@ -50,12 +49,12 @@ public class Shutdown extends SlashCommand {
                 Button.of(ButtonStyle.PRIMARY, "shutdown:no", "No", Emoji.fromUnicode("\u274C"))
         ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
             if (!buttonClickEvent.getUser().equals(user)) return false;
-            if (!equalsAny(buttonClickEvent.getButton().getId())) return false;
+            if (!equalsAny(buttonClickEvent.getComponentId())) return false;
             return !buttonClickEvent.isAcknowledged();
         }, buttonClickEvent -> {
 
             User buttonClickEventUser = buttonClickEvent.getUser();
-            String id = buttonClickEvent.getButton().getId().split(":")[1];
+            String id = buttonClickEvent.getComponentId().split(":")[1];
 
             switch (id) {
 

@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
@@ -23,10 +23,10 @@ public class Say extends SlashCommand {
     public Say() {
         this.name = "say";
         this.help = "Sends a message in a specified channel. If none is given, it sends in the current one.";
-        this.defaultEnabled = true;
+        this.defaultEnabled = false;
         this.enabledRoles = new String[]{Constants.MODERATOR_ROLE};
         this.guildOnly = true;
-        this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS};
+        this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
         this.botMissingPermMessage = "The bot does not have the `MESSAGE WRITE` permission.";
         List<OptionData> optionData = new ArrayList<>();
         optionData.add(new OptionData(OptionType.STRING, "message", "What you want to send in the channel.").setRequired(true));

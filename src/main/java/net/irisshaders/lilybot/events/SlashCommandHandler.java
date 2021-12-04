@@ -17,11 +17,11 @@ import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.ReadyEvent;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
-import net.dv8tion.jda.api.interactions.commands.Command.Option;
-import net.dv8tion.jda.api.interactions.commands.Command.Subcommand;
+import net.dv8tion.jda.api.interactions.commands.SlashCommand.Option;
+import net.dv8tion.jda.api.interactions.commands.SlashCommand.Subcommand;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
@@ -141,7 +141,7 @@ public class SlashCommandHandler extends ListenerAdapter {
     private void removeStrayCommands(Collection<Command> guildCommands) {
         String ourId = jda.getSelfUser().getApplicationId();
         guildCommands.parallelStream()
-            .filter(c -> ourId.equals(c.getApplicationId()) && !commands.containsKey(c.getName()))
+            .filter(c -> c instanceof net.dv8tion.jda.api.interactions.commands.SlashCommand && ourId.equals(c.getApplicationId()) && !commands.containsKey(c.getName()))
             .forEach(cmd -> {
                 jda.getGuildById(Constants.GUILD_ID).deleteCommandById(cmd.getId()).queue(nothing -> 
                     LilyBot.LOG_LILY.info("Removed stray command: "+cmd.getName())
@@ -194,8 +194,8 @@ public class SlashCommandHandler extends ListenerAdapter {
      *           and a command that is registered in Discord
      */
     private void registerCommandIfNoEquivalentIsPresent(Map<String, Command> existingCommands, SlashCommand slashCommand) {
-        Command currentCommand = existingCommands.get(slashCommand.getName());
-        if (currentCommand != null) {
+        Command command = existingCommands.get(slashCommand.getName());
+        if (command instanceof net.dv8tion.jda.api.interactions.commands.SlashCommand currentCommand) {
             if (currentCommand.getDescription().equals(slashCommand.getHelp()) // They are called differently, but are the same
                     && currentCommand.getOptions().size() == slashCommand.getOptions().size()
                     && currentCommand.isDefaultEnabled() == slashCommand.isDefaultEnabled()
