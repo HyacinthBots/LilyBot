@@ -4,7 +4,3 @@
 *.iml
 .env
 database.db
-bin/
-.classpath
-.project
-.settings/
