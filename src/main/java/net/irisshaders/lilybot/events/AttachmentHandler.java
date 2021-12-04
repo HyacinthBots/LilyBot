@@ -13,10 +13,12 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 public class AttachmentHandler extends ListenerAdapter {
 
@@ -27,18 +29,21 @@ public class AttachmentHandler extends ListenerAdapter {
         if (attachments.size() == 0) return;
         User author = message.getAuthor();
         MessageChannel channel = message.getChannel();
-        List<String> extensions = List.of("txt", "log");
+        List<String> extensions = List.of("txt", "log", "gz");
+        int attached = 0;
         for (var attachment : attachments) {
             if (!extensions.contains(attachment.getFileExtension())) {
                 continue;
             }
+            attached++;
+            var uploadMessage = channel.sendMessageEmbeds(progressEmbed(attachment.getFileName(), author)).submit();
             attachment.retrieveInputStream()
                 .thenAccept(stream -> {
                     StringBuilder builder = new StringBuilder();
                     byte[] buffer = new byte[1024];
                     int count;
-                    try (stream) {
-                        while ((count = stream.read(buffer)) > 0) {
+                    try (InputStream logStream = attachment.getFileExtension().equals("gz") ? new GZIPInputStream(stream) : stream) {
+                        while ((count = logStream.read(buffer)) > 0) {
                             builder.append(new String(buffer, 0, count));
                         }
                     } catch (IOException e) {
@@ -52,7 +57,7 @@ public class AttachmentHandler extends ListenerAdapter {
                         builder.replace(indexOfToken + tokenKey.length() + 1, endOfToken, "**removed acess token**");
                     }
                     try {
-                        channel.sendMessageEmbeds(linkEmbed(attachment.getFileName(), author)).setActionRow(
+                        uploadMessage.join().editMessageEmbeds(linkEmbed(attachment.getFileName(), author)).setActionRow(
                                 Button.link(post(builder.toString()), "Click here to view")
                                 ).queue();
                     } catch (IOException e) {
@@ -60,11 +65,22 @@ public class AttachmentHandler extends ListenerAdapter {
                     }
             });
         }
+        if (attached == attachments.size() && message.getContentRaw().isEmpty()) {
+            message.delete().queue();
+        }
     }
 
     private MessageEmbed linkEmbed(String fileName, User user) {
         return new EmbedBuilder()
                 .setTitle("`" + fileName + "` uploaded to Hastebin")
+                .setColor(0x9992ff)
+                .setFooter("Uploaded by " + user.getAsTag(), user.getEffectiveAvatarUrl())
+                .build();
+    }
+    
+    private MessageEmbed progressEmbed(String filename, User user) {
+    	return new EmbedBuilder()
+                .setTitle("Uploading `" + filename + "` to Hastebin...")
                 .setColor(0x9992ff)
                 .setFooter("Uploaded by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                 .build();
