@@ -113,7 +113,7 @@ public class SlashCommandHandler extends ListenerAdapter {
     private void removeStrayCommands() {
         String ourId = jda.getSelfUser().getApplicationId();
         Consumer<List<Command>> deleter = guildCommands -> {
-            guildCommands.stream().filter(c -> ourId.equals(c.getApplicationId()) && !commands.containsKey(c.getName())).forEach(cmd -> {
+            guildCommands.stream().filter(c -> c instanceof net.dv8tion.jda.api.interactions.commands.SlashCommand && ourId.equals(c.getApplicationId()) && !commands.containsKey(c.getName())).forEach(cmd -> {
                 jda.getGuildById(Constants.GUILD_ID).deleteCommandById(cmd.getId()).queue(nothing -> 
                     LilyBot.LOG_LILY.info("Removed stray command: "+cmd.getName())
                 );
