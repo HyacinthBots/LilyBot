@@ -30,13 +30,10 @@ public class AttachmentHandler extends ListenerAdapter {
         User author = message.getAuthor();
         MessageChannel channel = message.getChannel();
         List<String> extensions = List.of("txt", "log", "gz");
-        int attached = 0;
         for (var attachment : attachments) {
             if (!extensions.contains(attachment.getFileExtension())) {
                 continue;
             }
-            attached++;
-            var uploadMessage = channel.sendMessageEmbeds(progressEmbed(attachment.getFileName(), author)).submit();
             attachment.retrieveInputStream()
                 .thenAccept(stream -> {
                     StringBuilder builder = new StringBuilder();
@@ -57,7 +54,7 @@ public class AttachmentHandler extends ListenerAdapter {
                         builder.replace(indexOfToken + tokenKey.length() + 1, endOfToken, "**removed acess token**");
                     }
                     try {
-                        uploadMessage.join().editMessageEmbeds(linkEmbed(attachment.getFileName(), author)).setActionRow(
+                        channel.sendMessageEmbeds(linkEmbed(attachment.getFileName(), author)).setActionRow(
                                 Button.link(post(builder.toString()), "Click here to view")
                                 ).queue();
                     } catch (IOException e) {
@@ -65,22 +62,11 @@ public class AttachmentHandler extends ListenerAdapter {
                     }
             });
         }
-        if (attached == attachments.size() && message.getContentRaw().isEmpty()) {
-            message.delete().queue();
-        }
     }
 
     private MessageEmbed linkEmbed(String fileName, User user) {
         return new EmbedBuilder()
                 .setTitle("`" + fileName + "` uploaded to Hastebin")
-                .setColor(0x9992ff)
-                .setFooter("Uploaded by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                .build();
-    }
-    
-    private MessageEmbed progressEmbed(String filename, User user) {
-    	return new EmbedBuilder()
-                .setTitle("Uploading `" + filename + "` to Hastebin...")
                 .setColor(0x9992ff)
                 .setFooter("Uploaded by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                 .build();
