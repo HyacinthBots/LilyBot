@@ -13,7 +13,6 @@ import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
@@ -32,15 +31,14 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import kotlin.system.exitProcess
 import kotlin.time.ExperimentalTime
 
-/**
- * @author NoComment1105
- * @author IMS212
- */
 class Moderation : Extension() {
     override val name = "moderation"
 
     override suspend fun setup() {
-        // Clear command
+        /**
+         * Clear Command
+         * @author IMS212
+          */
         ephemeralSlashCommand(::ClearArgs) {  // Ephemeral slash commands have private responses
             name = "clear"
             description = "Clears messages."
@@ -76,7 +74,10 @@ class Moderation : Extension() {
             }
         }
 
-        //Ban command
+        /**
+         * Ban command
+         * @author IMS212
+        */
         ephemeralSlashCommand(::BanArgs) {  // Ephemeral slash commands have private responses
             name = "ban"
             description = "Bans a user."
@@ -104,7 +105,10 @@ class Moderation : Extension() {
             }
         }
 
-        // Unban command
+        /**
+         *  Unban command
+         *  @author NoComment1105
+        */
         ephemeralSlashCommand(::UnbanArgs) { // Ephemeral slash commands have private responses
             name = "unban"
             description = "Unbans a user"
@@ -129,7 +133,10 @@ class Moderation : Extension() {
             }
         }
 
-        //Soft ban command
+        /**
+         * Soft ban command
+         * @author NoComment1105
+         */
         ephemeralSlashCommand(::SoftBanArgs) {
             name = "softban"
             description = "Softbans a user"
@@ -159,7 +166,10 @@ class Moderation : Extension() {
             }
         }
 
-        //Kick command
+        /**
+         * Kick command
+         * @author IMS212
+         */
         ephemeralSlashCommand(::KickArgs) {  // Ephemeral slash commands have private responses
             name = "kick"
             description = "Kicks a user."
@@ -184,6 +194,10 @@ class Moderation : Extension() {
             }
         }
 
+        /**
+         * Say Command
+         * @author NoComment1105
+         */
         ephemeralSlashCommand(::SayArgs) {
             name = "say"
             description = "Say something through Lily."
@@ -216,7 +230,10 @@ class Moderation : Extension() {
             }
         }
 
-        //Shutdown command
+        /**
+         * Shutdown command
+         * @author IMS212
+        */
         ephemeralSlashCommand {  // Ephemeral slash commands have private responses
             name = "shutdown"
             description = "Shuts down the bot."
@@ -261,6 +278,10 @@ class Moderation : Extension() {
             }
         }
 
+        /**
+         * Warn Command
+         * @author chalkyjeans
+         */
         ephemeralSlashCommand(::WarnArgs) {
             name = "warn"
             description = "Warn a member for any infractions."
@@ -325,6 +346,11 @@ class Moderation : Extension() {
                 }
             }
         }
+
+        /**
+         * Mute command
+         * @author NoComment1105
+         */
         ephemeralSlashCommand(::MuteArgs) {
             name = "mute"
             description = "Mute a member for any infractions"
@@ -373,10 +399,6 @@ class Moderation : Extension() {
                         "You were muted from $GUILD_NAME \n Duration: ${arguments.duration} \n Reason: ${arguments.reason}"
                     timestamp = Clock.System.now()
                 }
-                var durationInt: Int = parseDuration(arguments.duration.toString())
-
-                Scheduler()
-
             }
         }
     }

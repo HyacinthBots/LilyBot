@@ -6,7 +6,6 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import dev.kord.cache.api.data.description
 import dev.kord.common.DiscordTimestampStyle
 import dev.kord.common.toMessageFormat
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
@@ -14,18 +13,21 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.datetime.Clock
-import kotlinx.datetime.toJavaInstant
-import net.irisshaders.lilybot.utils.ACTION_LOG
 import net.irisshaders.lilybot.utils.JOIN_CHANNEL
 import kotlin.time.ExperimentalTime
 
+
+/**
+ * The join and leave logging for Members in the guild. More accurate join and leave times for users
+ * @author NoComment1105
+ */
 class JoinLeaveEvent : Extension() {
     override val name = "joinleaveevent"
 
     override suspend fun setup() {
         event<MemberJoinEvent> {
             action {
-                val member = event.member
+                val memberMention = event.member.mention
                 val memberId = event.member.id.asString
                 val memberTag = event.member.tag
                 val guildMemberCount = event.guild.fetchGuild().memberCount
@@ -37,12 +39,12 @@ class JoinLeaveEvent : Extension() {
                     timestamp = Clock.System.now()
 
                     field {
-                        value = "Everyone welcome $member"
-                        value = memberTag
-                        inline = false
+                        name = "Welcome:"
+                        value = "$memberMention! ($memberTag)"
+                        inline = true
                     }
                     field {
-                        name = "**ID:**"
+                        name = "ID:"
                         value = memberId
                         inline = false
                     }
@@ -54,10 +56,10 @@ class JoinLeaveEvent : Extension() {
         }
         event<MemberLeaveEvent> {
             action {
-                val user = event.user.mention
+                val userMention = event.user.mention
                 val userId = event.user.id.asString
                 val userTag = event.user.tag
-                val joinTime = event.guild.fetchGuild().joinedTime!!.toMessageFormat(DiscordTimestampStyle.LongTime)
+                val joinTime = event.guild.fetchGuild().joinedTime!!.toMessageFormat(DiscordTimestampStyle.LongDateTime)
                 var guildMemberCount = event.guild.fetchGuild().memberCount
                 guildMemberCount = guildMemberCount?.minus(1)
                 val joinChannel = event.guild.getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
@@ -68,12 +70,12 @@ class JoinLeaveEvent : Extension() {
                     timestamp = Clock.System.now()
 
                     field {
-                        value = "Goodbye $user!"
-                        value = userTag
-                        inline = false
+                        name = "Goodbye:"
+                        value = "$userMention! ($userTag)"
+                        inline = true
                     }
                     field {
-                        name = "**ID:**"
+                        name = "ID:"
                         value = userId
                         inline = false
                     }

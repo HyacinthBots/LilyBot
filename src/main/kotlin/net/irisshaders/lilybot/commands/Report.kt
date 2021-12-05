@@ -4,12 +4,10 @@ package net.irisshaders.lilybot.commands
 
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.long
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.types.edit
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
@@ -22,6 +20,10 @@ import net.irisshaders.lilybot.utils.GUILD_ID
 import net.irisshaders.lilybot.utils.MODERATORS
 import kotlin.time.ExperimentalTime
 
+/**
+ * The message reporting feature in the bot
+ * @author NoComment1105
+ */
 class Report : Extension() {
     override val name = "report"
 

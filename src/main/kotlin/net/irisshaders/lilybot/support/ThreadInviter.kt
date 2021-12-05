@@ -21,14 +21,18 @@ class ThreadInviter : Extension() {
     override val name = "threads"
 
     override suspend fun setup() {
-        event<MessageCreateEvent> {  // Ephemeral slash commands have private responses
+        /**
+         * Thread inviting system for Support Channels
+         * @author IMS212
+         */
+        event<MessageCreateEvent> {
             check {
                 failIf(event.message.channelId != SUPPORT_CHANNEL || event.member!!.id == kord.selfId)
             }
             action {
                 var userThreadExists = false
                 var existingUserThread: TextChannelThread? = null
-                var textchannel = event.message.getChannel() as TextChannel
+                val textchannel = event.message.getChannel() as TextChannel
                 //TODO: this is incredibly stupid, there has to be a better way to do this.
                 textchannel.activeThreads.collect {
                     if (it.name == "Support thread for " + event.member!!.asUser().username) {
@@ -38,7 +42,7 @@ class ThreadInviter : Extension() {
                 }
 
                 if (userThreadExists) {
-                    var response = event.message.respond {
+                    val response = event.message.respond {
                         content = "You already have a thread, please talk about your issue in it. " + existingUserThread!!.mention
                     }
                     event.message.delete("User already has a thread")
@@ -60,7 +64,7 @@ class ThreadInviter : Extension() {
                         )
                     }
 
-                    var response = event.message.reply {
+                    val response = event.message.reply {
                         content = "A thread has been created for you: " + thread.mention
                     }
                     response.delete(10000L, false)
