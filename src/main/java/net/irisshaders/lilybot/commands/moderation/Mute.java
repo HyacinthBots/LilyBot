@@ -78,13 +78,14 @@ public class Mute extends SlashCommand {
                     .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                     .setTimestamp(Instant.now())
                     .build();
+            String targetId = target.getId();
 
             event.replyEmbeds(alreadyMutedEmbed).addActionRow(
-                    Button.of(ButtonStyle.PRIMARY, "mute:yes", "Yes", Emoji.fromUnicode("\u2705")),
-                    Button.of(ButtonStyle.PRIMARY, "mute:no", "No", Emoji.fromUnicode("\u274C"))
+                    Button.of(ButtonStyle.PRIMARY, "mute" + targetId + ":yes", "Yes", Emoji.fromUnicode("\u2705")),
+                    Button.of(ButtonStyle.PRIMARY, "mute:" + targetId + "no", "No", Emoji.fromUnicode("\u274C"))
             ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
                 if (!buttonClickEvent.getUser().equals(user)) return false;
-                if (!equalsAny(buttonClickEvent.getComponentId(), target)) return false;
+                if (!equalsAny(buttonClickEvent.getComponentId(), targetId)) return false;
                 return !buttonClickEvent.isAcknowledged();
             }, buttonClickEvent -> {
 
@@ -256,9 +257,9 @@ public class Mute extends SlashCommand {
            }
     }
 
-    private boolean equalsAny(String id, Member member) {
-        return id.equals("mute" + member.getId() + ":yes") ||
-                id.equals("mute" + member.getId() + ":no");
+    private boolean equalsAny(String id, String memberId) {
+        return id.equals("mute" + memberId + ":yes") ||
+                id.equals("mute" + memberId + ":no");
     }
 
     /**
