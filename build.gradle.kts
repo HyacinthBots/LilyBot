@@ -63,7 +63,7 @@ tasks.withType<KotlinCompile> {
 tasks.jar {
     manifest {
         attributes(
-                "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
+            "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
         )
     }
 }
