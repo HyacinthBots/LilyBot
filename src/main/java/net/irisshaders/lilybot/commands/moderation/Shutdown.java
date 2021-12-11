@@ -68,7 +68,7 @@ public class Shutdown extends SlashCommand {
                             .setTimestamp(Instant.now())
                             .build();
 
-                    buttonClickEvent.replyEmbeds(finalShutdownEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
+                    buttonClickEvent.editComponents().setEmbeds(finalShutdownEmbed).queue();
                     actionLog.sendMessageEmbeds(finalShutdownEmbed).queue();
                     LoggerFactory.getLogger(Shutdown.class).info("Shutting down due to a request from " + buttonClickEventUser.getAsTag() + "!");
 
@@ -93,7 +93,7 @@ public class Shutdown extends SlashCommand {
                             .setTimestamp(Instant.now())
                             .build();
 
-                    buttonClickEvent.replyEmbeds(noShutdownEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
+                    buttonClickEvent.editComponents().setEmbeds(noShutdownEmbed).queue();
 
                 }
 
