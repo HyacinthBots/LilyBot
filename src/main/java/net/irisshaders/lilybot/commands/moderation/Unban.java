@@ -1,7 +1,6 @@
 package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -14,7 +13,6 @@ import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,12 +42,8 @@ public class Unban extends SlashCommand {
 
         guild.unban(userById).queue(unused -> {
 
-            MessageEmbed unbanEmbed = new EmbedBuilder()
-                    .setTitle("Unbanned a member.")
+            MessageEmbed unbanEmbed = ResponseHelper.responseEmbed("Unbanned a member", user, Color.CYAN)
                     .addField("Unbanned:", userById.getAsTag(), false)
-                    .setColor(Color.CYAN)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
                     .build();
 
             event.replyEmbeds(unbanEmbed).mentionRepliedUser(false).setEphemeral(true).queue();

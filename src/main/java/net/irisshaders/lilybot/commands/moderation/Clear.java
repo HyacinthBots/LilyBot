@@ -1,7 +1,6 @@
 package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
@@ -11,7 +10,6 @@ import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,12 +43,8 @@ public class Clear extends SlashCommand {
             List<Message> messageHistory = channel.getHistory().retrievePast(index).complete();
             channel.purgeMessages(messageHistory);
 
-            MessageEmbed deletedMessagesEmbed = new EmbedBuilder()
-                    .setTitle("Successfully deleted " + index + " messages from:")
+            MessageEmbed deletedMessagesEmbed = ResponseHelper.responseEmbed("Successfully deleted " + index + " messages from:", user, Color.GREEN)
                     .setDescription(String.format("<#%s>", id))
-                    .setColor(Color.GREEN)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
                     .build();
 
             event.replyEmbeds(deletedMessagesEmbed).mentionRepliedUser(false).setEphemeral(true).queue();

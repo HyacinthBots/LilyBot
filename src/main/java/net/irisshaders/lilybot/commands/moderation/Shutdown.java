@@ -1,7 +1,6 @@
 package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -13,9 +12,10 @@ import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.utils.Constants;
-
+import net.irisshaders.lilybot.utils.ResponseHelper;
+import org.slf4j.LoggerFactory;
 import java.awt.*;
-import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("ConstantConditions")
 public class Shutdown extends SlashCommand {
@@ -34,12 +34,8 @@ public class Shutdown extends SlashCommand {
         JDA jda = event.getJDA();
         TextChannel actionLog = jda.getTextChannelById(Constants.ACTION_LOG);
 
-        MessageEmbed shutdownEmbed = new EmbedBuilder()
-                .setTitle("Shut Down")
-                .setDescription("Do you want to shutdown the bot? Respond with the buttons below.")
-                .setColor(Color.RED)
-                .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                .setTimestamp(Instant.now())
+        MessageEmbed shutdownEmbed = ResponseHelper.responseEmbed("Shut Down", user, Color.RED)
+                .setDescription("Do you really want to shutdown the bot?")
                 .build();
 
         event.replyEmbeds(shutdownEmbed).addActionRow(
@@ -58,12 +54,8 @@ public class Shutdown extends SlashCommand {
 
                 case "yes" -> {
 
-                    MessageEmbed finalShutdownEmbed = new EmbedBuilder()
-                            .setTitle("Shutting down...")
+                    MessageEmbed finalShutdownEmbed = ResponseHelper.responseEmbed("Shutting down...", buttonClickEventUser, Color.RED)
                             .setDescription("Note: It may take a few minutes for Discord to update my presence and say that I am offline.")
-                            .setColor(Color.RED)
-                            .setFooter("Requested by " + buttonClickEventUser.getAsTag(), buttonClickEventUser.getEffectiveAvatarUrl())
-                            .setTimestamp(Instant.now())
                             .build();
 
                     buttonClickEvent.editComponents().setEmbeds(finalShutdownEmbed).queue();
@@ -77,11 +69,8 @@ public class Shutdown extends SlashCommand {
                 }
                 case "no" -> {
 
-                    MessageEmbed noShutdownEmbed = new EmbedBuilder()
-                            .setTitle("Shutdown canceled")
-                            .setColor(Color.GREEN)
-                            .setFooter("Requested by " + buttonClickEventUser.getAsTag(), buttonClickEventUser.getEffectiveAvatarUrl())
-                            .setTimestamp(Instant.now())
+                    MessageEmbed noShutdownEmbed = ResponseHelper.responseEmbed(user, Color.GREEN)
+                            .setDescription("Shutdown canceled")
                             .build();
 
                     buttonClickEvent.editComponents().setEmbeds(noShutdownEmbed).queue();

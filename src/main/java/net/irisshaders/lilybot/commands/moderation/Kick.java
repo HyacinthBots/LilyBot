@@ -1,7 +1,6 @@
 package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -14,7 +13,6 @@ import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,19 +43,15 @@ public class Kick extends SlashCommand {
 
         member.kick(reason).queue(unused -> {
 
-            MessageEmbed kickEmbed = new EmbedBuilder()
-                    .setTitle("Kicked a member")
+            MessageEmbed kickEmbed = ResponseHelper.responseEmbed("Kicked a member", user, Color.GREEN)
                     .addField("Kicked:", member.getUser().getAsTag(), false)
                     .addField("Reason:", reason, false)
-                    .setColor(Color.GREEN)
-                    .setFooter("Requested by " + user.getAsTag(), user.getAvatarUrl())
-                    .setTimestamp(Instant.now())
                     .build();
 
             event.replyEmbeds(kickEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
             actionLog.sendMessageEmbeds(kickEmbed).queue();
 
-        }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to kick.", null))
+        }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to kick " + member.getUser().getAsTag(), null))
                 .mentionRepliedUser(false).setEphemeral(true).queue()
         );
 

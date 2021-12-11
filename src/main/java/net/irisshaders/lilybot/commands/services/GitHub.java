@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.irisshaders.lilybot.LilyBot;
+import net.irisshaders.lilybot.utils.ResponseHelper;
+
 import org.kohsuke.github.*;
 
 import java.awt.*;
@@ -62,14 +64,11 @@ public class GitHub extends SlashCommand {
             try {
                 issue = parseMessage(repo, term);
             } catch (Exception e) {
-                MessageEmbed noMatchesEmbed = new EmbedBuilder()
+                MessageEmbed noMatchesEmbed = ResponseHelper.responseEmbed(user, Color.RED)
                         .setDescription(
                                 "Invalid issue number or an invalid repository was provided." +
                                 " Please ensure the issue exists and the repository is public."
                         )
-                        .setColor(Color.RED)
-                        .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                        .setTimestamp(Instant.now())
                         .build();
                 event.replyEmbeds(noMatchesEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
                 return;
@@ -215,16 +214,13 @@ public class GitHub extends SlashCommand {
             String repoName = event.getOption("repo").getAsString();
 
             if (!repoName.contains("/")) {
-                MessageEmbed incorrectSyntaxEmbed = new EmbedBuilder()
+                MessageEmbed incorrectSyntaxEmbed = ResponseHelper.responseEmbed(user, Color.RED)
                         .setDescription("""
                             Make sure your input is formatted like this:
                             Format: User/Repo or Org/Repo
                             For example: `IrisShaders/Iris`
                             """
                         )
-                        .setColor(Color.RED)
-                        .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                        .setTimestamp(Instant.now())
                         .build();
                 event.replyEmbeds(incorrectSyntaxEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
                 return;
@@ -235,11 +231,8 @@ public class GitHub extends SlashCommand {
             try {
                 repo = LilyBot.INSTANCE.gitHub.getRepository(repoName);
             } catch (IOException e) {
-                MessageEmbed noMatchesEmbed = new EmbedBuilder()
+                MessageEmbed noMatchesEmbed = ResponseHelper.responseEmbed(user, Color.RED)
                         .setDescription("Invalid repository name. Make sure this repository exists!")
-                        .setColor(Color.RED)
-                        .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                        .setTimestamp(Instant.now())
                         .build();
                 event.replyEmbeds(noMatchesEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
                 return;
@@ -306,11 +299,8 @@ public class GitHub extends SlashCommand {
             try {
                 ghUser = LilyBot.INSTANCE.gitHub.getUser(username);
             } catch (IOException e) {
-                MessageEmbed noMatchesEmbed = new EmbedBuilder()
+                MessageEmbed noMatchesEmbed = ResponseHelper.responseEmbed(user, Color.RED)
                         .setDescription("Invalid username. Make sure this user exists.")
-                        .setColor(Color.RED)
-                        .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                        .setTimestamp(Instant.now())
                         .build();
                 event.replyEmbeds(noMatchesEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
             }
