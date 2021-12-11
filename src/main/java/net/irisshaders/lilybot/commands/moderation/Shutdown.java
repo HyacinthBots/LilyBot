@@ -13,11 +13,9 @@ import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.utils.Constants;
-import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("ConstantConditions")
 public class Shutdown extends SlashCommand {
@@ -70,18 +68,11 @@ public class Shutdown extends SlashCommand {
 
                     buttonClickEvent.editComponents().setEmbeds(finalShutdownEmbed).queue();
                     actionLog.sendMessageEmbeds(finalShutdownEmbed).queue();
-                    LoggerFactory.getLogger(Shutdown.class).info("Shutting down due to a request from " + buttonClickEventUser.getAsTag() + "!");
+                    LilyBot.LOG_LILY.info("Shutting down due to a request from " + buttonClickEventUser.getAsTag() + "!");
 
-                    // Wait for it to send the embed and respond to any other commands. Can be reduced to a lower number if testing allows for it.
-                    try { TimeUnit.SECONDS.sleep(10); } catch (InterruptedException e) { e.printStackTrace(); }
+                    Mute.cancelTimers(); // Cancels timers, since they block shutdown by nothing being left (since they are left)
 
-                    jda.shutdownNow();
-                    try {
-                        TimeUnit.SECONDS.sleep(3L);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    System.exit(0);
+                    jda.shutdown();
 
                 }
                 case "no" -> {
