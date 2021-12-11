@@ -14,6 +14,7 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
+import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
@@ -22,7 +23,9 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.channel.DmChannel
 import dev.kord.core.entity.User
+import dev.kord.core.entity.Member
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
@@ -33,6 +36,7 @@ import net.irisshaders.lilybot.utils.*
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.milliseconds
@@ -48,6 +52,62 @@ class Moderation : Extension() {
     val scheduler = Scheduler()
 
     override suspend fun setup() {
+        var unmuteTask: Task? = null
+
+        unmuteTask = scheduler.schedule(5) {
+            newSuspendedTransaction {
+                DatabaseManager.Mute.selectAll().toList().forEach {
+                    val userId: String = it.get(DatabaseManager.Mute.id)
+                    val user: User? = kord.getUser(Snowflake(userId))
+                    val member: Member? = user?.asMember(GUILD_ID)
+                    val userTag: String? = user?.tag
+                    val dmUser: DmChannel? = member?.getDmChannelOrNull()
+                    val expiryTime: String? = it.get(DatabaseManager.Mute.expiryTime)
+
+                    if(expiryTime != null) {
+                        println(Clock.System.now().toEpochMilliseconds())
+                        println(expiryTime.toLong())
+                        if(Clock.System.now().toEpochMilliseconds() >= expiryTime.toLong()) {
+                            println("Unmuted")
+                            member?.removeRole(
+                                MUTED_ROLE, 
+                                "$userTag's mute has ended"
+                            ) // This here is written to the guild's Audit log
+
+                            dmUser?.createEmbed {
+                                title = "Your mute has ended"
+                                description =
+                                    "Your mute in $GUILD_NAME has ended"
+                                timestamp = Clock.System.now()
+                            }
+                        }
+                    }
+                }
+            }
+            // kord.guilds.collect { guild ->
+            //     println(guild.allMembers)
+            //     guild.members.collect { member ->
+            //         val user = member.fetchUser()
+            //         val userId = user.id.asString
+            //         val userTag = user.tag
+            //         val dmUser = member.getDmChannelOrNull()
+
+            //         println(userId)
+
+            //         newSuspendedTransaction {
+            //             val databaseExpiryTime = DatabaseManager.Mute.select {
+            //                 DatabaseManager.Mute.id eq userId
+            //             }.singleOrNull()?.get(DatabaseManager.Mute.expiryTime)?.toLong()
+
+            //             println(databaseExpiryTime)
+            //         }
+            //     }
+
+            unmuteTask?.restart()
+        }
+
+        unmuteTask.restart()
+
         // Clear command
         ephemeralSlashCommand(::ClearArgs) {  // Ephemeral slash commands have private responses
             name = "clear"
@@ -349,12 +409,12 @@ class Moderation : Extension() {
                 newSuspendedTransaction {
                     DatabaseManager.Mute.insertIgnore {
                         it[id] = userId
-                        it[expiryTime] = "0"
+                        it[expiryTime] = null
                     }
 
                     DatabaseManager.Mute.replace {
                         it[id] = userId
-                        it[expiryTime] = (Clock.System.now() + Duration.seconds(arguments.duration.seconds)).epochSeconds.toString()
+                        it[expiryTime] = (Clock.System.now() + Duration.seconds(arguments.duration.seconds)).toEpochMilliseconds().toString()
                     }
                 }
 

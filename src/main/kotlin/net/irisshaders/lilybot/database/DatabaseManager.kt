@@ -39,7 +39,7 @@ object DatabaseManager {
 
     object Mute : Table("mute") {
         val id = text("id")
-        val expiryTime = text("expiryTime")
+        val expiryTime = text("expiryTime").nullable()
 
         override val primaryKey = PrimaryKey(id)
     }
