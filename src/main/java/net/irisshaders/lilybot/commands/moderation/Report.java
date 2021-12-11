@@ -12,6 +12,8 @@ import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.utils.Constants;
+import net.irisshaders.lilybot.utils.ResponseHelper;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -66,12 +68,8 @@ public class Report extends Command implements EventListener {
                 User user = event.getUser();
                 String id = event.getChannel().getId();
 
-                MessageEmbed reportEmbed = new EmbedBuilder()
-                        .setTitle("Report")
+                MessageEmbed reportEmbed = ResponseHelper.responseEmbed("Report Message", user, Color.RED)
                         .setDescription("Would you like to report this message? This will ping moderators, and false reporting will be treated as spam and punished accordingly.")
-                        .setColor(Color.RED)
-                        .setFooter("Requested by " + event.getUser().getAsTag(), user.getEffectiveAvatarUrl())
-                        .setTimestamp(Instant.now())
                         .build();
 
                 event.replyEmbeds(reportEmbed).addActionRow(

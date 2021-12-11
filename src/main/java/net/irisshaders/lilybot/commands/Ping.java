@@ -5,9 +5,9 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
+import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
-import java.time.Instant;
 
 public class Ping extends SlashCommand {
 
@@ -23,29 +23,20 @@ public class Ping extends SlashCommand {
 
         User user = event.getUser();
 
-        MessageEmbed pingEmbed = new EmbedBuilder()
-                .setTitle("Ping!")
-                .setDescription("`Pong!` Shows the bot's ping!")
-                .setColor(Color.ORANGE)
-                .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                .setTimestamp(Instant.now())
-                .build();
+        EmbedBuilder pingEmbed = ResponseHelper.responseEmbed("Ping!", user, Color.ORANGE)
+                .setDescription("`Pong!` Shows the bot's ping!");
 
-        event.replyEmbeds(pingEmbed).mentionRepliedUser(false).setEphemeral(false).queue(interactionHook -> event.getJDA().getRestPing().queue(restPing -> {
+        event.replyEmbeds(pingEmbed.build()).mentionRepliedUser(false).setEphemeral(false).queue(interactionHook -> event.getJDA().getRestPing().queue(restPing -> {
 
             Long gatewayPing = event.getJDA().getGatewayPing();
 
-            MessageEmbed finalPingEmbed = new EmbedBuilder()
-                    .setTitle("Ping!")
+            MessageEmbed finalPingEmbed = pingEmbed
                     .setDescription(String.format(
                             """
                             `Pong!` Showing the bot's ping!
                             Gateway Ping: `%s ms`
                             Rest Ping: `%s ms`
                             """, gatewayPing, restPing))
-                    .setColor(Color.ORANGE)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
                     .build();
 
             interactionHook.editOriginalEmbeds(finalPingEmbed).queue();

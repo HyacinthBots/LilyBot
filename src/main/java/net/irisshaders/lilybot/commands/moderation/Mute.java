@@ -17,6 +17,7 @@ import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.DateHelper;
+import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
 import java.sql.Connection;
@@ -68,16 +69,12 @@ public class Mute extends SlashCommand {
             mute(mute, event);
 
         } else { // User is muted, ask for unmuting
-            MessageEmbed alreadyMutedEmbed = new EmbedBuilder()
-                    .setTitle("Already muted")
+            MessageEmbed alreadyMutedEmbed = ResponseHelper.responseEmbed("Already muted", user, Color.CYAN)
                     .setDescription("Do you want to unmute? Respond with the buttons below.")
                     .addField("The following member is already muted:", target.getUser().getAsTag(), false)
                     .addField("Mute reason:", currentMute.reason(), false)
                     .addField("Muted by:", currentMute.requester().getAsTag(), false)
                     .addField("Expires at", DateHelper.formatDateAndTime(currentMute.expiry()), false)
-                    .setColor(Color.CYAN)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
                     .build();
             String targetId = target.getId();
 
@@ -129,14 +126,10 @@ public class Mute extends SlashCommand {
         TextChannel actionLog = LilyBot.INSTANCE.jda.getTextChannelById(Constants.ACTION_LOG);
         Role mutedRole = LilyBot.INSTANCE.jda.getRoleById(Constants.MUTED_ROLE);
 
-        MessageEmbed muteEmbed = new EmbedBuilder()
-                .setTitle("Mute")
+        MessageEmbed muteEmbed = ResponseHelper.responseEmbed("Mute", mute.requester(), Color.CYAN)
                 .addField("Muted:", mute.target().getUser().getAsMention(), false)
                 .addField("Muted until:", DateHelper.formatRelative(mute.expiry()), false)
                 .addField("Reason:", mute.reason(), false)
-                .setColor(Color.CYAN)
-                .setFooter("Requested by " + mute.requester().getAsTag(), mute.requester().getEffectiveAvatarUrl())
-                .setTimestamp(Instant.now())
                 .build();
         MessageEmbed userEmbed = new EmbedBuilder()
                 .setTitle("You were muted")
@@ -156,11 +149,8 @@ public class Mute extends SlashCommand {
         mute.target().getUser().openPrivateChannel()
             .flatMap(privateChannel -> privateChannel.sendMessageEmbeds(userEmbed))
             .queue(null, throwable -> {
-                MessageEmbed failedToDMEmbed = new EmbedBuilder()
+                MessageEmbed failedToDMEmbed = ResponseHelper.responseEmbed(mute.requester(), Color.CYAN)
                         .setTitle("Failed to DM " + mute.target().getUser().getAsTag() + " for mute.")
-                        .setColor(Color.CYAN)
-                        .setFooter("Mute was requested by " + mute.requester().getAsTag(), mute.requester().getEffectiveAvatarUrl())
-                        .setTimestamp(Instant.now())
                         .build();
             actionLog.sendMessageEmbeds(failedToDMEmbed).queue();
         });

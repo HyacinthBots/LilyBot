@@ -1,7 +1,6 @@
 package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -9,13 +8,13 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.utils.Constants;
+import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class CheckPoints extends SlashCommand {
         this.enabledRoles = new String[]{Constants.MODERATOR_ROLE, Constants.TRIAL_MODERATOR_ROLE};
         this.guildOnly = true;
         List<OptionData> optionData = new ArrayList<>();
-        optionData.add(new OptionData(OptionType.USER, "member", "The member to warn.").setRequired(true));
+        optionData.add(new OptionData(OptionType.USER, "member", "The member to get points from.").setRequired(true));
         this.options = optionData;
     }
 
@@ -77,11 +76,8 @@ public class CheckPoints extends SlashCommand {
             ps.setString(1, target.getId());
             ResultSet resultSet = ps.executeQuery();
             totalPoints = resultSet.getInt("points");
-            MessageEmbed checkPointsEmbed = new EmbedBuilder()
+            MessageEmbed checkPointsEmbed = ResponseHelper.responseEmbed(user, Color.CYAN)
                     .setTitle(target.getUser().getAsTag() + " has " + totalPoints + " points!")
-                    .setColor(Color.CYAN)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
                     .build();
             hook.sendMessageEmbeds(checkPointsEmbed).mentionRepliedUser(false).queue();
         } catch (SQLException e) {

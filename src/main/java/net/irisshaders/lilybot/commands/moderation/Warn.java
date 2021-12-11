@@ -175,13 +175,9 @@ public class Warn extends SlashCommand {
      * @param reason The reason for the ban. (String)
      */
     private void ban(Member target, User user, TextChannel actionLog, String reason) {
-        MessageEmbed banEmbed = new EmbedBuilder()
-                .setTitle("Banned a member.")
-                .setColor(Color.CYAN)
+        MessageEmbed banEmbed = ResponseHelper.responseEmbed("Banned a member", user, Color.CYAN)
                 .addField("Banned:", target.getUser().getAsTag(), false)
                 .addField("Reason:", reason, false)
-                .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                .setTimestamp(Instant.now())
                 .build();
         actionLog.sendMessageEmbeds(banEmbed).queue();
         target.ban(7, reason).queue(null, throwable -> actionLog.sendMessageEmbeds(

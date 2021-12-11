@@ -1,12 +1,11 @@
 package net.irisshaders.lilybot.commands.custom;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
+import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
-import java.time.Instant;
 import java.util.Properties;
 
 public class Custom extends SlashCommand {
@@ -63,12 +62,8 @@ public class Custom extends SlashCommand {
     protected void execute(SlashCommandEvent event) {
         var user = event.getUser();
 
-        var embed = new EmbedBuilder()
-                .setTitle(this.title)
+        var embed = ResponseHelper.responseEmbed(this.title, user, this.color)
                 .setDescription(this.desc)
-                .setColor(this.color)
-                .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                .setTimestamp(Instant.now())
                 .build();
 
         event.replyEmbeds(embed).mentionRepliedUser(false).setEphemeral(false).queue();

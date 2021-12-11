@@ -9,9 +9,9 @@ import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.irisshaders.lilybot.commands.moderation.Mute.MuteEntry;
 import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.DateHelper;
+import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
-import java.time.Instant;
 import java.util.Collection;
 
 public class MuteList extends SlashCommand {
@@ -34,23 +34,16 @@ public class MuteList extends SlashCommand {
 
         if (mutedMembers.isEmpty()) {
 
-            MessageEmbed noMutedMembers = new EmbedBuilder()
-                    .setTitle("There are no muted members.")
-                    .setColor(Color.CYAN)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
+            MessageEmbed noMutedMembers = ResponseHelper.responseEmbed(user, Color.CYAN) 
+                    .setDescription("There are no muted members.")
                     .build();
 
             event.replyEmbeds(noMutedMembers).mentionRepliedUser(false).setEphemeral(true).queue();
 
         } else {
 
-            EmbedBuilder muteListEmbedBuilder = new EmbedBuilder()
-                    .setTitle("Mute List")
-                    .setDescription("These are the muted members:")
-                    .setColor(Color.CYAN)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now());
+            EmbedBuilder muteListEmbedBuilder = ResponseHelper.responseEmbed("Muted Users", user, Color.CYAN)
+                    .setDescription("These are the muted members:");
             for (MuteEntry mute: mutedMembers) {
                 muteListEmbedBuilder.addField("User:", mute.target().getUser().getAsTag(), false);
                 muteListEmbedBuilder.addField("Muted by:", mute.requester().getAsTag(), true);

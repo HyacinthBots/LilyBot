@@ -1,7 +1,6 @@
 package net.irisshaders.lilybot.commands.moderation;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
@@ -15,7 +14,6 @@ import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
 
 import java.awt.*;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,20 +59,16 @@ public class Ban extends SlashCommand {
 
         member.ban(days, reason).queue(unused -> {
 
-            MessageEmbed banEmbed = new EmbedBuilder()
-                    .setTitle("Banned a member.")
-                    .setColor(Color.CYAN)
+            MessageEmbed banEmbed = ResponseHelper.responseEmbed("Banned a member.", user, Color.CYAN)
                     .addField("Banned:", member.getUser().getAsTag(), false)
                     .addField("Days of messages deleted:", String.valueOf(days), false)
                     .addField("Reason:", reason, false)
-                    .setFooter("Requested by " + user.getAsTag(), user.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now())
                     .build();
 
             event.replyEmbeds(banEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
             actionLog.sendMessageEmbeds(banEmbed).queue();
 
-        }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to ban.", null))
+        }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to ban " + user.getAsTag(), null))
                             .mentionRepliedUser(false).setEphemeral(true).queue()
         );
 
