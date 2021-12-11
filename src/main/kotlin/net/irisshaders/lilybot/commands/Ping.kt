@@ -15,6 +15,11 @@ class Ping : Extension() {
     override val name = "ping"
 
     override suspend fun setup() {
+        /**
+         * Ping Command
+         * @author IMS212
+         * @author NoComment1105
+         */
         publicSlashCommand {  // Public slash commands have public responses
             name = "ping"
             description = "Am I alive?"

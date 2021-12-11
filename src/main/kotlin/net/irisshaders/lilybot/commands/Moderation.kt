@@ -43,10 +43,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-/**
- * @author NoComment1105
- * @author IMS212
- */
 class Moderation : Extension() {
     override val name = "moderation"
     val scheduler = Scheduler()
@@ -144,8 +140,11 @@ class Moderation : Extension() {
             }
         }
 
-        //Ban command
-        ephemeralSlashCommand(::BanArgs) {  // Ephemeral slash commands have private responses
+        /**
+         * Ban command
+         * @author IMS212
+         */
+        ephemeralSlashCommand(::BanArgs) {
             name = "ban"
             description = "Bans a user."
 
@@ -172,8 +171,11 @@ class Moderation : Extension() {
             }
         }
 
-        // Unban command
-        ephemeralSlashCommand(::UnbanArgs) { // Ephemeral slash commands have private responses
+        /**
+         *  Unban command
+         *  @author NoComment1105
+         */
+        ephemeralSlashCommand(::UnbanArgs) {
             name = "unban"
             description = "Unbans a user"
 
@@ -197,7 +199,10 @@ class Moderation : Extension() {
             }
         }
 
-        //Soft ban command
+        /**
+         * Soft ban command
+         * @author NoComment1105
+         */
         ephemeralSlashCommand(::SoftBanArgs) {
             name = "softban"
             description = "Softbans a user"
@@ -227,8 +232,11 @@ class Moderation : Extension() {
             }
         }
 
-        //Kick command
-        ephemeralSlashCommand(::KickArgs) {  // Ephemeral slash commands have private responses
+        /**
+         * Kick command
+         * @author IMS212
+         */
+        ephemeralSlashCommand(::KickArgs) {
             name = "kick"
             description = "Kicks a user."
 
@@ -252,6 +260,10 @@ class Moderation : Extension() {
             }
         }
 
+        /**
+         * Say Command
+         * @author NoComment1105
+         */
         ephemeralSlashCommand(::SayArgs) {
             name = "say"
             description = "Say something through Lily."
@@ -284,8 +296,11 @@ class Moderation : Extension() {
             }
         }
 
-        //Shutdown command
-        ephemeralSlashCommand {  // Ephemeral slash commands have private responses
+        /**
+         * Shutdown command
+         * @author IMS212
+         */
+        ephemeralSlashCommand {
             name = "shutdown"
             description = "Shuts down the bot."
 
@@ -329,6 +344,10 @@ class Moderation : Extension() {
             }
         }
 
+        /**
+         * Warn Command
+         * @author chalkyjeans
+         */
         ephemeralSlashCommand(::WarnArgs) {
             name = "warn"
             description = "Warn a member for any infractions."
@@ -339,7 +358,7 @@ class Moderation : Extension() {
                 val userId = arguments.userArgument.id.asString
                 val userTag = arguments.userArgument.tag
                 val warnPoints = arguments.warnPoints
-                val actionLog = guild!!.getChannelOf<GuildMessageChannel>(ACTION_LOG)
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
                 var databasePoints: String? = null
 
                 newSuspendedTransaction {
@@ -393,6 +412,11 @@ class Moderation : Extension() {
                 }
             }
         }
+
+        /**
+         * Mute command
+         * @author NoComment1105
+         */
         ephemeralSlashCommand(::MuteArgs) {
             name = "mute"
             description = "Mute a member for any infractions"
@@ -404,7 +428,7 @@ class Moderation : Extension() {
                 val userTag = arguments.userArgument.tag
                 val member = guild!!.getMemberOrNull(arguments.userArgument.id)
                 val dmUser = member?.getDmChannelOrNull()
-                val actionLog = guild!!.getChannelOf<GuildMessageChannel>(ACTION_LOG)
+                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
 
                 newSuspendedTransaction {
                     DatabaseManager.Mute.insertIgnore {

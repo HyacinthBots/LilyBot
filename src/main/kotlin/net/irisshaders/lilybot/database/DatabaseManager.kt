@@ -12,6 +12,10 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.nio.file.Files
 import java.nio.file.Path
 
+/**
+ * The Database system within the bot
+ * @author chalkyjeans
+ */
 object DatabaseManager {
     private val logger = KotlinLogging.logger { }
     private val config = HikariConfig()

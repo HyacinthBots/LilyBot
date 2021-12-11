@@ -7,6 +7,7 @@
 
 ### Why?
 * Late in August 2021, Discord.py was discontinued. This is previously what the Iris Project's Discord bot was written in, So [NoComment](https://github.com/NoComment1105), [Miss Corruption](https://github.com/Miss-Corruption), [Maxigator](https://github.com/Maxigator) and [chalkyjeans](https://github.com/chalkyjeans) took on the task of rewriting the bot in JDA.
+* Then again in October 2021, we changed course and rewrote the bot *again*, this time in Kord and KordEX
 
 ### How can I use LilyBot in my own server!?
 1. Set up a bot using the discord developer portal (https://discord.com/developers/applications)
@@ -28,18 +29,12 @@ CONFIG_PATH= CONFIG_PATH
 6. Run the main class
 7. Profit
 
-### What was used to write this bot?
-* JDA: https://github.com/DV8FromTheWorld/JDA
-* JDA Chewtils: https://github.com/Chew/JDA-Chewtils (well [chalkyjeans' fork](https://github.com/chalkyjeans/JDA-Chewtils) of it)
-* Logback: https://github.com/qos-ch/logback
-* dotenv: https://github.com/cdimascio/dotenv-java
-* Github-API: https://github.com/hub4j/github-api
 
-#### What do each of these do?
-* JDA: The Java API for Discord
-* JDA Chewtils: A forked fork of JDA Utils for useful implementations
-* Logback: Removes some fake errors
-* dotenv: For accessing `.env` files that contain the bots sensitive data
-* Github-API: The API for GitHub commands. Helps to produce the GitHub Repo, Issue and Profile embeds
+### What was used to write this bot and what does each thing do?
+* [Kord](https://github.com/kordlib/kord): The Kotlin API for Discord.
+* [KordEx](https://github.com/Kord-Extensions/kord-extensions): Integrated commands and extensions framework for Kord.
+* [JetBrains Exposed](https://github.com/JetBrains/Exposed): A Database library for storing various differnt things, such as warnings and mute timings
+* [Logback](https://github.com/qos-ch/logback): Removes some fake errors.
+* [Github-API](https://github.com/hub4j/github-api): The API for GitHub commands. Helps to produce the GitHub Repo, Issue and Profile embeds
 
 #### This repo is open to contributions by the community. Please contribute if you see anywhere it's needed.

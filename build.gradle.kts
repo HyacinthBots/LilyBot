@@ -38,9 +38,9 @@ dependencies {
     implementation(libs.jgit)
 
     // Exposed
-    implementation("org.jetbrains.exposed:exposed-core:0.36.1")
-    implementation("org.jetbrains.exposed:exposed-dao:0.36.1")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.36.1")
+    implementation("org.jetbrains.exposed:exposed-core:0.36.2")
+    implementation("org.jetbrains.exposed:exposed-dao:0.36.2")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.36.2")
 
     // Hikari
     implementation("com.zaxxer:HikariCP:5.0.0")
@@ -63,7 +63,7 @@ tasks.withType<KotlinCompile> {
 tasks.jar {
     manifest {
         attributes(
-                "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
+            "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
         )
     }
 }
