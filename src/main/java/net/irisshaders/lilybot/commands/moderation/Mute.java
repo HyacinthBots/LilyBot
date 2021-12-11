@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
+import net.dv8tion.jda.api.interactions.components.ComponentInteraction;
 import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.utils.Constants;
@@ -82,7 +83,7 @@ public class Mute extends SlashCommand {
 
             event.replyEmbeds(alreadyMutedEmbed).addActionRow(
                     Button.of(ButtonStyle.PRIMARY, "mute" + targetId + ":yes", "Yes", Emoji.fromUnicode("\u2705")),
-                    Button.of(ButtonStyle.PRIMARY, "mute:" + targetId + "no", "No", Emoji.fromUnicode("\u274C"))
+                    Button.of(ButtonStyle.PRIMARY, "mute" + targetId + ":no", "No", Emoji.fromUnicode("\u274C"))
             ).mentionRepliedUser(false).setEphemeral(true).queue(interactionHook -> LilyBot.INSTANCE.waiter.waitForEvent(ButtonClickEvent.class, buttonClickEvent -> {
                 if (!buttonClickEvent.getUser().equals(user)) return false;
                 if (!equalsAny(buttonClickEvent.getComponentId(), targetId)) return false;
@@ -104,7 +105,7 @@ public class Mute extends SlashCommand {
                                 .setTimestamp(Instant.now())
                                 .build();
 
-                        buttonClickEvent.replyEmbeds(stillMutedEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
+                        buttonClickEvent.editComponents().setEmbeds(stillMutedEmbed).submit();
 
                     }
 
@@ -198,7 +199,7 @@ public class Mute extends SlashCommand {
      * @param reason The reason of the unmute
      * @param interaction The interaction to notify about the unmute, or {@code null} if there's none
      */
-    private static void unmute(MuteEntry mute, String reason, Interaction interaction) {
+    private static void unmute(MuteEntry mute, String reason, ComponentInteraction interaction) {
         Guild guild = LilyBot.INSTANCE.jda.getGuildById(Constants.GUILD_ID);
         TextChannel actionLog = LilyBot.INSTANCE.jda.getTextChannelById(Constants.ACTION_LOG);
 
@@ -213,10 +214,10 @@ public class Mute extends SlashCommand {
 
         guild.removeRoleFromMember(mute.target(), LilyBot.INSTANCE.jda.getRoleById(Constants.MUTED_ROLE)).queue(
                 success -> {
-                    actionLog.sendMessageEmbeds(unmuteEmbed).queue();
                     if (interaction != null) {
-                        interaction.replyEmbeds(unmuteEmbed).mentionRepliedUser(false).setEphemeral(true).submit();
+                        interaction.editComponents().setEmbeds(unmuteEmbed).submit();
                     }
+                    actionLog.sendMessageEmbeds(unmuteEmbed).queue();
                 },
                 error -> {
                     MessageEmbed errorEmbed = new EmbedBuilder()
@@ -292,7 +293,7 @@ public class Mute extends SlashCommand {
             ResultSet queryResult = ps.executeQuery();
             while (queryResult.next()) {
                 Member target = guild.getMemberById(queryResult.getString("id"));
-                User requester = LilyBot.INSTANCE.jda.getUserById(queryResult.getString("requester"));
+                User requester = jda.getUserById(queryResult.getString("requester"));
                 Timestamp expiry = queryResult.getTimestamp("expiry");
                 String reason = queryResult.getString("reason");
                 mutes.put(target, new MuteEntry(target, requester, expiry, reason));

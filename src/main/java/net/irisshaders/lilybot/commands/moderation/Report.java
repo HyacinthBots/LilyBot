@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.commands.MessageContextCommandEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
-import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.irisshaders.lilybot.LilyBot;
@@ -85,9 +84,6 @@ public class Report extends Command implements EventListener {
                 }, buttonClickEvent -> {
                     User buttonClickEventUser = buttonClickEvent.getUser();
                     String buttonClicked = buttonClickEvent.getComponentId().split(":")[1];
-                    InteractionHook hook = buttonClickEvent.getHook();
-
-                    buttonClickEvent.deferEdit().queue();
 
                     switch (buttonClicked) {
                         case "yes" -> {
@@ -107,7 +103,7 @@ public class Report extends Command implements EventListener {
 
                             String finalContentDisplay = contentDisplay;
 
-                            hook.editOriginalEmbeds(reportMessage(user, author, "Report a message", contentDisplay, channel)).queue();
+                            buttonClickEvent.editComponents().setEmbeds(reportMessage(user, author, "Report a message", contentDisplay, channel)).queue();
                             actionLog.sendMessage(mention).queue(message1 -> {
                                 actionLog.sendMessage(mention2).queue();
                                 actionLog.sendMessageEmbeds(reportMessage(user, author, "Reported message", finalContentDisplay, channel)).setActionRow(
@@ -124,7 +120,7 @@ public class Report extends Command implements EventListener {
                                     .setTimestamp(Instant.now())
                                     .build();
 
-                            hook.editOriginalEmbeds(noReportEmbed).queue();
+                            buttonClickEvent.editComponents().setEmbeds(noReportEmbed).queue();
                         }
                     }
                 }));
