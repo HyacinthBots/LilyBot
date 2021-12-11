@@ -35,6 +35,8 @@ import java.util.TimerTask;
 
 @SuppressWarnings("ConstantConditions")
 public class Mute extends SlashCommand {
+    private static final Timer TIMER = new Timer();
+    private static final Map<Member, TimerTask> SCHEDULED_UNMUTES = new HashMap<>();
 
     public Mute() {
         this.name = "mute";
@@ -168,12 +170,7 @@ public class Mute extends SlashCommand {
         guild.addRoleToMember(mute.target(), mutedRole).queue();
 
         insertMuteToDb(mute);
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                unmute(mute, "The duration of the mute is over", null);
-            }
-        }, mute.expiry());
+        scheduleUnmute(mute);
     }
 
     /**
@@ -232,6 +229,10 @@ public class Mute extends SlashCommand {
                     error.printStackTrace();
                 }
         );
+        SCHEDULED_UNMUTES.computeIfPresent(mute.target(), (member, task) -> {
+            task.cancel();
+            return null;
+        });
         removeUserFromDb(mute.target().getId());
     }
 
@@ -271,14 +272,20 @@ public class Mute extends SlashCommand {
             if (mute.expiry().before(Date.from(Instant.now()))) {
                 unmute(mute, "The duration of the mute was over while the bot wasn't running", null); // Already expired
             } else {
-                new Timer().schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        unmute(mute, "The duration of the mute is over", null);
-                    }
-                }, mute.expiry());
+                scheduleUnmute(mute);
             }
         }
+    }
+    
+    private static void scheduleUnmute(MuteEntry mute) {
+        TimerTask unmuteTask = new TimerTask() {
+            @Override
+            public void run() {
+                unmute(mute, "The duration of the mute is over", null);
+            }
+        };
+        TIMER.schedule(unmuteTask, mute.expiry());
+        SCHEDULED_UNMUTES.put(mute.target(), unmuteTask);
     }
 
     /**
@@ -303,6 +310,13 @@ public class Mute extends SlashCommand {
         }
         return mutes;
     }
+
+    /**
+     * Stops the timer and all schedules mutes in order to be able to shutdown gracefully
+     */
+    public static void cancelTimers() {
+	    TIMER.cancel();
+	}
 
     /**
      *
