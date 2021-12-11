@@ -33,6 +33,7 @@ class MessageEvents : Extension() {
                     title = "Message Deleted"
                     description = "Location: <#$messageLocation>"
                     timestamp = Clock.System.now()
+
                     field {
                         name = "Message Contents:"
                         value = message

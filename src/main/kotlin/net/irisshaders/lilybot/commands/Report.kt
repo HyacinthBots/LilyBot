@@ -38,7 +38,11 @@ class Report : Extension() {
                 respond {
                     content = "Message reported to staff"
                 }
-                actionLog.createMessage { content = "<@&${MODERATORS.value}>" }
+
+                actionLog.createMessage {
+                    content = "<@&${MODERATORS.value}>"
+                }
+
                 actionLog.createEmbed {
                     color = DISCORD_RED
                     title = "Message reported!"
@@ -71,7 +75,11 @@ class Report : Extension() {
                 respond {
                     content = "Message reported to staff"
                 }
-                actionLog.createMessage { content = "`<@&${MODERATORS.value}>`"}
+
+                actionLog.createMessage {
+                    content = "`<@&${MODERATORS.value}>`"
+                }
+
                 actionLog.createEmbed {
                     color = DISCORD_RED
                     title = "Message Manually Reported!"
@@ -89,6 +97,7 @@ class Report : Extension() {
             }
         }
     }
+
     inner class ManualReportArgs : Arguments() {
         val message by string("message", "Link to the message to report")
     }

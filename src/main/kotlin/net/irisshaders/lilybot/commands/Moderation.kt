@@ -38,8 +38,8 @@ class Moderation : Extension() {
         /**
          * Clear Command
          * @author IMS212
-          */
-        ephemeralSlashCommand(::ClearArgs) {  // Ephemeral slash commands have private responses
+         */
+        ephemeralSlashCommand(::ClearArgs) {
             name = "clear"
             description = "Clears messages."
 
@@ -77,8 +77,8 @@ class Moderation : Extension() {
         /**
          * Ban command
          * @author IMS212
-        */
-        ephemeralSlashCommand(::BanArgs) {  // Ephemeral slash commands have private responses
+         */
+        ephemeralSlashCommand(::BanArgs) {
             name = "ban"
             description = "Bans a user."
 
@@ -108,8 +108,8 @@ class Moderation : Extension() {
         /**
          *  Unban command
          *  @author NoComment1105
-        */
-        ephemeralSlashCommand(::UnbanArgs) { // Ephemeral slash commands have private responses
+         */
+        ephemeralSlashCommand(::UnbanArgs) {
             name = "unban"
             description = "Unbans a user"
 
@@ -170,7 +170,7 @@ class Moderation : Extension() {
          * Kick command
          * @author IMS212
          */
-        ephemeralSlashCommand(::KickArgs) {  // Ephemeral slash commands have private responses
+        ephemeralSlashCommand(::KickArgs) {
             name = "kick"
             description = "Kicks a user."
 
@@ -233,8 +233,8 @@ class Moderation : Extension() {
         /**
          * Shutdown command
          * @author IMS212
-        */
-        ephemeralSlashCommand {  // Ephemeral slash commands have private responses
+         */
+        ephemeralSlashCommand {
             name = "shutdown"
             description = "Shuts down the bot."
 
@@ -402,6 +402,7 @@ class Moderation : Extension() {
             }
         }
     }
+
     private fun parseDuration(time: String): Int {
         var duration: Int = Integer.parseInt(time.replace("[^0-9]", ""))
         when (time.replace("[^A-Za-z]+", "").trim()) {
@@ -438,7 +439,7 @@ class Moderation : Extension() {
     inner class MuteArgs : Arguments() {
         val userArgument by user("muteUser", "Person to mute")
         val duration by defaultingInt("duration", "Duration of Mute", 6)
-        val reason by defaultingString("reason","Reason for Mute", "No Reason Provided")
+        val reason by defaultingString("reason", "Reason for Mute", "No Reason Provided")
     }
 
     inner class WarnArgs : Arguments() {

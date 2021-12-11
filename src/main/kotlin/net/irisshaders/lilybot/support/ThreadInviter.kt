@@ -43,24 +43,29 @@ class ThreadInviter : Extension() {
 
                 if (userThreadExists) {
                     val response = event.message.respond {
-                        content = "You already have a thread, please talk about your issue in it. " + existingUserThread!!.mention
+                        content =
+                            "You already have a thread, please talk about your issue in it. " + existingUserThread!!.mention
                     }
                     event.message.delete("User already has a thread")
                     response.delete(10000L, false)
                 } else {
                     val thread =
-                            textchannel.startPublicThreadWithMessage(event.message.id, "Support thread for " + event.member!!.asUser().username)
+                        textchannel.startPublicThreadWithMessage(
+                            event.message.id,
+                            "Support thread for " + event.member!!.asUser().username
+                        )
                     val editMessage = thread.createMessage("edit message")
 
                     editMessage.edit {
                         this.content =
-                                event.member!!.asUser().mention + ", the " + event.getGuild()?.getRole(SUPPORT_TEAM)?.mention + " will be with you shortly!"
+                            event.member!!.asUser().mention + ", the " + event.getGuild()
+                                ?.getRole(SUPPORT_TEAM)?.mention + " will be with you shortly!"
                     }
 
                     if (textchannel.messages.last().author?.id == kord.selfId) {
                         textchannel.deleteMessage(
-                                textchannel.messages.last().id,
-                                "Automatic deletion of thread creation message"
+                            textchannel.messages.last().id,
+                            "Automatic deletion of thread creation message"
                         )
                     }
 
