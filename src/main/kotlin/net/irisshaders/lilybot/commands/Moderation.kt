@@ -38,6 +38,8 @@ import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.Database
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration
@@ -54,21 +56,37 @@ class Moderation : Extension() {
             newSuspendedTransaction {
                 DatabaseManager.Mute.selectAll().toList().forEach {
                     val userId: String = it.get(DatabaseManager.Mute.id)
+                    println(userId)
                     val user: User? = kord.getUser(Snowflake(userId))
                     val member: Member? = user?.asMember(GUILD_ID)
                     val userTag: String? = user?.tag
                     val dmUser: DmChannel? = member?.getDmChannelOrNull()
                     val expiryTime: String? = it.get(DatabaseManager.Mute.expiryTime)
+                    val actionLog = kord.getGuild(GUILD_ID)?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
 
                     if(expiryTime != null) {
-                        println(Clock.System.now().toEpochMilliseconds())
-                        println(expiryTime.toLong())
                         if(Clock.System.now().toEpochMilliseconds() >= expiryTime.toLong()) {
-                            println("Unmuted")
                             member?.removeRole(
                                 MUTED_ROLE, 
                                 "$userTag's mute has ended"
                             ) // This here is written to the guild's Audit log
+
+                            actionLog.createEmbed {
+                                title = "Unmute"
+                                color = DISCORD_BLACK
+                                timestamp = Clock.System.now()
+            
+                                field {
+                                    name = "User Unmuted:"
+                                    value = "**Tag:** $userTag \n **ID:** $userId"
+                                    inline = false
+                                }
+                                field {
+                                    name = "Reason:"
+                                    value = "The duration of the mute is over"
+                                    inline = false
+                                }
+                            }
 
                             dmUser?.createEmbed {
                                 title = "Your mute has ended"
@@ -80,24 +98,6 @@ class Moderation : Extension() {
                     }
                 }
             }
-            // kord.guilds.collect { guild ->
-            //     println(guild.allMembers)
-            //     guild.members.collect { member ->
-            //         val user = member.fetchUser()
-            //         val userId = user.id.asString
-            //         val userTag = user.tag
-            //         val dmUser = member.getDmChannelOrNull()
-
-            //         println(userId)
-
-            //         newSuspendedTransaction {
-            //             val databaseExpiryTime = DatabaseManager.Mute.select {
-            //                 DatabaseManager.Mute.id eq userId
-            //             }.singleOrNull()?.get(DatabaseManager.Mute.expiryTime)?.toLong()
-
-            //             println(databaseExpiryTime)
-            //         }
-            //     }
 
             unmuteTask?.restart()
         }
