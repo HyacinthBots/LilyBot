@@ -100,6 +100,18 @@ class Moderation : Extension() {
                     color = DISCORD_BLACK
                     title = "Banned a user"
                     description = "${user.asUser().username} banned ${arguments.userArgument.mention}!"
+
+                    field {
+                        name = "Reason:"
+                        value = arguments.reason
+                        inline = false
+                    }
+                    field {
+                        name = "Days of messages deleted"
+                        value = arguments.messages.toString()
+                        inline = false
+                    }
+
                     timestamp = Clock.System.now()
                 }
             }
@@ -147,7 +159,7 @@ class Moderation : Extension() {
                 val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
 
                 guild?.ban(arguments.userArgument.id, builder = {
-                    this.reason = "Soft ban requested by ${user.asUser().username}"
+                    this.reason = "Requested by ${user.asUser().username}"
                     this.deleteMessagesDays = arguments.messages
                 })
 
@@ -158,7 +170,19 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Soft-banned a user"
-                    description = "Soft-banned ${arguments.userArgument.mention}"
+                    description = "${user.asUser().username} soft-banned ${arguments.userArgument.mention}"
+
+                    field {
+                        name = "Reason:"
+                        value = arguments.reason
+                        inline = false
+                    }
+                    field {
+                        name = "Days of messages deleted"
+                        value = arguments.messages.toString()
+                        inline = false
+                    }
+
                     timestamp = Clock.System.now()
                 }
 
@@ -287,6 +311,7 @@ class Moderation : Extension() {
             description = "Warn a member for any infractions."
 
             allowRole(MODERATORS)
+            allowRole(TRIALMODERATORS)
 
             action {
                 val userId = arguments.userArgument.id.asString
@@ -356,6 +381,7 @@ class Moderation : Extension() {
             description = "Mute a member for any infractions"
 
             allowRole(MODERATORS)
+            allowRole(TRIALMODERATORS)
 
             action {
                 val userId = arguments.userArgument.id.asString
@@ -425,6 +451,7 @@ class Moderation : Extension() {
     inner class BanArgs : Arguments() {
         val userArgument by user("banUser", "Person to ban")
         val messages by int("messages", "Messages")
+        val reason by defaultingString("reason", "The reason for the ban", "No Reason Provided")
     }
 
     inner class UnbanArgs : Arguments() {
@@ -434,6 +461,7 @@ class Moderation : Extension() {
     inner class SoftBanArgs : Arguments() {
         val userArgument by user("softBanUser", "Person to Soft ban")
         val messages by defaultingInt("messages", "Messages", 3)
+        val reason by defaultingString("reason", "The reason for the ban", "No Reason Provided")
     }
 
     inner class MuteArgs : Arguments() {
