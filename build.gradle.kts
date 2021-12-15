@@ -26,6 +26,7 @@ dependencies {
 
     implementation(libs.kord.extensions)
     implementation(libs.kotlin.stdlib)
+    implementation(libs.kord.phishing)
 
     // Logging dependencies
     implementation(libs.groovy)
