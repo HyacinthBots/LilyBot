@@ -262,7 +262,7 @@ class Moderation : Extension() {
             name = "shutdown"
             description = "Shuts down the bot."
 
-            allowUser(OWNER_ID)
+            allowRole(ADMIN)
 
             action {
                 val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
