@@ -1,5 +1,8 @@
 package net.irisshaders.lilybot;
 
+import com.github.jezza.Toml;
+import com.github.jezza.TomlArray;
+import com.github.jezza.TomlTable;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
@@ -26,11 +29,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.Properties;
 
 @SuppressWarnings("UnusedAssignment")
 public class LilyBot {
@@ -43,25 +46,23 @@ public class LilyBot {
     public final JDA jda;
     public final GitHub gitHub;
     public final EventWaiter waiter;
-    public final Properties config;
+    public final TomlTable config;
     public final Path configPath;
 
     public LilyBot(Path configPath) {
         JDA jda = null;
         this.configPath = configPath;
-        var properties = new Properties();
         try {
-            properties.load(Files.newInputStream(configPath));
+            this.config = Toml.from(Files.newInputStream(configPath));
         } catch (IOException e) {
-            LOG_LILY.error("Error loading lily config file at "+configPath, e);
+            throw new UncheckedIOException("Error when loading lily config file at " + configPath, e);
         }
-        this.config = properties;
         
         EventWaiter waiter = new EventWaiter();
         CommandClient commandClient = new CommandClientBuilder()
                 .setHelpConsumer(null)
                 .setStatus(OnlineStatus.ONLINE)
-                .setActivity(Activity.playing(properties.getProperty("status")))
+                .setActivity(Activity.playing((String)config.get("activity")))
                 .setOwnerId(Constants.OWNER)
                 .forceGuildOnly(Constants.GUILD_ID)
                 .build();
@@ -146,10 +147,10 @@ public class LilyBot {
     }
 
     public void addCustomCommands(SlashCommandHandler handler) {
-        var cmdNames = this.config.getProperty("commands").split(" ");
-        for (var cmd : cmdNames) {
-            LOG_LILY.info("Adding custom command '{}'", cmd);
-            handler.addSlashCommand(Custom.parse(cmd, this.config));
+        var commands = (TomlArray)this.config.get("command");
+        for (var cmd : commands) {
+            LOG_LILY.debug("Adding custom command '{}'", cmd);
+            handler.addSlashCommand(Custom.parse((TomlTable) cmd));
         }
     }
 

@@ -13,13 +13,14 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.altrisi:JDA:68a46e84ee' // Context menus, revert to official when merged
+    implementation 'com.github.altrisi:JDA:6607e7793a' // Context menus, revert to official when merged
     implementation 'com.github.altrisi:JDA-Chewtils:96b65c4fd' // Updated to jda 5 with context menus
     implementation 'ch.qos.logback:logback-classic:1.2.6'
     implementation 'io.github.cdimascio:dotenv-java:2.2.0'
     implementation 'org.kohsuke:github-api:1.133'
     implementation 'com.zaxxer:HikariCP:5.0.0'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'com.github.jezza:toml:1.2'
 }
 
 tasks.withType(JavaCompile) {

@@ -1,12 +1,14 @@
 package net.irisshaders.lilybot.commands.custom;
 
+import com.github.jezza.TomlArray;
+import com.github.jezza.TomlTable;
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.commands.SlashCommandEvent;
 import net.irisshaders.lilybot.utils.ResponseHelper;
 
-import java.awt.*;
-import java.util.Properties;
+import java.awt.Color;
+import java.util.Iterator;
 
 public class Custom extends SlashCommand {
     private final String title;
@@ -26,36 +28,29 @@ public class Custom extends SlashCommand {
         this.children = children;
     }
 
-    private static SlashCommand parse(String key, String name, Properties properties) {
+    public static SlashCommand parse(TomlTable command) {
         var color = Color.RED;
-        if (properties.getProperty(key + ".color") != null) {
-            color = Color.decode(properties.getProperty(key + ".color"));
+        if (command.get("color") instanceof String colorString) { //null check and cast
+            color = Color.decode(colorString);
         }
 
         var children = new SlashCommand[0];
-        if (properties.getProperty(key + ".children") != null) {
-            var childNames = properties.getProperty(key + ".children").split(" ");
-            children = new SlashCommand[childNames.length];
-
-            String child;
-            for (int i = 0; i < childNames.length; i++) {
-                child = childNames[i];
-                children[i] = parse(key + ".child." + child, child, properties);
+        if (command.get("subcommand") instanceof TomlArray subcommands) {
+            children = new SlashCommand[subcommands.size()];
+            Iterator<Object> iterator = subcommands.iterator();
+            for (int i = 0; iterator.hasNext(); i++) {
+                children[i] = parse((TomlTable)iterator.next());
             }
         }
 
         return new Custom(
-                name,
-                properties.getProperty(key + ".help", "A Lily bot command."),
-                properties.getProperty(key + ".title", name),
-                properties.getProperty(key + ".desc", ""),
+                (String)command.get("name"),
+                (String)command.getOrDefault("help", "A Lily bot command."),
+                (String)command.getOrDefault("title", null),
+                (String)command.getOrDefault("description", ""),
                 children,
                 color
         );
-    }
-
-    public static SlashCommand parse(String name, Properties properties) {
-        return parse(name, name, properties);
     }
 
     @Override

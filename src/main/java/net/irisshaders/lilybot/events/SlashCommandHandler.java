@@ -224,7 +224,7 @@ public class SlashCommandHandler extends ListenerAdapter {
                     // The command is equivalent. Register its id and things only, without sending it
                     commands.put(slashCommand.getName(), slashCommand);
                     commandsIds.put(slashCommand.getName(), Optional.of(currentCommand.getId()));
-                    LilyBot.LOG_LILY.info("Equivalent to '"+slashCommand.getName()+"' is already registered to Discord as is, not sending it");
+                    LilyBot.LOG_LILY.debug("Equivalent to '"+slashCommand.getName()+"' is already registered to Discord as is, not sending it");
                     return;
                 }
             }
