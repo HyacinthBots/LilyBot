@@ -76,5 +76,4 @@ target/
 
 # Project
 .env
-lily.properties
 database.db
