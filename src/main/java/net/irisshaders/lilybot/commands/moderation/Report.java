@@ -131,7 +131,7 @@ public class Report extends Command implements EventListener {
                 .setTitle(title)
                 .setDescription("A message was reported in " + channel)
                 .addField("Message Content:", contentDisplay, false)
-                .addField("Message Author:", author.getAsTag(), false)
+                .addField("Message Author:", ResponseHelper.userField(author), false)
                 .setColor(Color.CYAN)
                 .setFooter("Message reported by " + user.getAsTag(), user.getEffectiveAvatarUrl())
                 .setTimestamp(Instant.now())

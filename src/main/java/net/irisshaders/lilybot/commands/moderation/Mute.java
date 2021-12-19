@@ -129,7 +129,7 @@ public class Mute extends SlashCommand {
         Role mutedRole = LilyBot.INSTANCE.jda.getRoleById(Constants.MUTED_ROLE);
 
         MessageEmbed muteEmbed = ResponseHelper.responseEmbed("Mute", mute.requester(), Color.CYAN)
-                .addField("Muted:", mute.target().getUser().getAsMention(), false)
+                .addField("Muted:", ResponseHelper.userField(mute.target().getUser()), false)
                 .addField("Muted until:", DateHelper.formatRelative(mute.expiry()), false)
                 .addField("Reason:", mute.reason(), false)
                 .build();
