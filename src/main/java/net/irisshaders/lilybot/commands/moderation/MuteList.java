@@ -45,7 +45,7 @@ public class MuteList extends SlashCommand {
             EmbedBuilder muteListEmbedBuilder = ResponseHelper.responseEmbed("Muted Users", user, Color.CYAN)
                     .setDescription("These are the muted members:");
             for (MuteEntry mute: mutedMembers) {
-                muteListEmbedBuilder.addField("User:", mute.target().getUser().getAsTag(), false);
+                muteListEmbedBuilder.addField("User:", ResponseHelper.userField(mute.target().getUser()), false);
                 muteListEmbedBuilder.addField("Muted by:", mute.requester().getAsTag(), true);
                 muteListEmbedBuilder.addField("Expires:", DateHelper.formatDateAndTime(mute.expiry()), true);
                 muteListEmbedBuilder.addField("Reason:", mute.reason(), true);

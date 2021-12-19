@@ -3,7 +3,6 @@ package net.irisshaders.lilybot.commands.moderation;
 import com.jagrosh.jdautilities.command.SlashCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -29,7 +28,7 @@ public class Ban extends SlashCommand {
         this.botPermissions = new Permission[]{Permission.BAN_MEMBERS};
         this.botMissingPermMessage = "The bot does not have the `BAN MEMBERS` permission.";
         List<OptionData> optionData = new ArrayList<>();
-        optionData.add(new OptionData(OptionType.USER, "member", "The member to ban.").setRequired(true));
+        optionData.add(new OptionData(OptionType.USER, "target", "The user to ban.").setRequired(true));
         optionData.add(new OptionData(OptionType.INTEGER, "days", "Days of messages to delete.").setRequired(true));
         optionData.add(new OptionData(OptionType.STRING, "reason", "The reason for the ban.").setRequired(false));
         this.options = optionData;
@@ -39,28 +38,28 @@ public class Ban extends SlashCommand {
     protected void execute(SlashCommandEvent event) {
 
         TextChannel actionLog = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
-        Member member = event.getOption("member").getAsMember();
+        User target = event.getOption("target").getAsUser();
         int days = Integer.parseInt(event.getOption("days").getAsString());
         String reason = event.getOption("reason") == null ? "No reason provided." : event.getOption("reason").getAsString();
-        User user = event.getUser();
+        User requester = event.getUser();
         JDA jda = event.getJDA();
 
-        if (member.getUser().getId().equals(user.getId())) {
-            event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "You can't ban yourself!",
+        if (target.equals(requester)) {
+            event.replyEmbeds(ResponseHelper.genFailureEmbed(requester, "You can't ban yourself!",
                     "What were you thinking!")).mentionRepliedUser(false).setEphemeral(true).queue();
             return;
         }
 
         // Runs when user attempts to ban the bot.
-        if (member.getUser().getId().equals(jda.getSelfUser().getId())) {
+        if (target.equals(jda.getSelfUser())) {
             event.reply("bruh").mentionRepliedUser(false).setEphemeral(false).queue();
             return;
         }
 
-        member.ban(days, reason).queue(unused -> {
+        event.getGuild().ban(target, days, reason).queue(unused -> {
 
-            MessageEmbed banEmbed = ResponseHelper.responseEmbed("Banned a member.", user, Color.CYAN)
-                    .addField("Banned:", member.getUser().getAsTag(), false)
+            MessageEmbed banEmbed = ResponseHelper.responseEmbed("Banned a member.", requester, Color.CYAN)
+                    .addField("Banned:", ResponseHelper.userField(target), false)
                     .addField("Days of messages deleted:", String.valueOf(days), false)
                     .addField("Reason:", reason, false)
                     .build();
@@ -68,7 +67,7 @@ public class Ban extends SlashCommand {
             event.replyEmbeds(banEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
             actionLog.sendMessageEmbeds(banEmbed).queue();
 
-        }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to ban " + user.getAsTag(), null))
+        }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(requester, "Failed to ban " + target.getAsTag(), null))
                             .mentionRepliedUser(false).setEphemeral(true).queue()
         );
 

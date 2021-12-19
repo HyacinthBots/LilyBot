@@ -44,7 +44,7 @@ public class Kick extends SlashCommand {
         member.kick(reason).queue(unused -> {
 
             MessageEmbed kickEmbed = ResponseHelper.responseEmbed("Kicked a member", user, Color.GREEN)
-                    .addField("Kicked:", member.getUser().getAsTag(), false)
+                    .addField("Kicked:", ResponseHelper.userField(member.getUser()), false)
                     .addField("Reason:", reason, false)
                     .build();
 

@@ -61,5 +61,17 @@ public class ResponseHelper {
             .setColor(color)
             .setFooter("Requested by " + requester.getAsTag(), requester.getEffectiveAvatarUrl());
     }
+    
+    /**
+     * Creates a {@link String} containing the user as a mention, and their user tag {@code @user (user#1234)},
+     * to be used in moderation embeds where linking with the user id and their possibly changed name is desirable,
+     * but knowing the tag at the time of action is also important.
+     * 
+     * @param user The user to produce the string from
+     * @return The {@link String} being the user's mention followed by the user's tag (in parenthesis)
+     */
+    public static String userField(User user) {
+        return user.getAsMention() + " (" + user.getAsTag() + ")";
+    }
 
 }

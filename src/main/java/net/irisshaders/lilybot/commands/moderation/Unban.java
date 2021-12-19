@@ -38,18 +38,18 @@ public class Unban extends SlashCommand {
         TextChannel actionLog = event.getGuild().getTextChannelById(Constants.ACTION_LOG);
         Guild guild = event.getGuild();
         User userById = event.getOption("id").getAsUser();
-        User user = event.getUser();
+        User requester = event.getUser();
 
         guild.unban(userById).queue(unused -> {
 
-            MessageEmbed unbanEmbed = ResponseHelper.responseEmbed("Unbanned a member", user, Color.CYAN)
-                    .addField("Unbanned:", userById.getAsTag(), false)
+            MessageEmbed unbanEmbed = ResponseHelper.responseEmbed("Unbanned a member", requester, Color.CYAN)
+                    .addField("Unbanned:", ResponseHelper.userField(userById), false)
                     .build();
 
             event.replyEmbeds(unbanEmbed).mentionRepliedUser(false).setEphemeral(true).queue();
             actionLog.sendMessageEmbeds(unbanEmbed).queue();
 
-        }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(user, "Failed to unban.", null))
+        }, throwable -> event.replyEmbeds(ResponseHelper.genFailureEmbed(requester, "Failed to unban.", null))
                 .mentionRepliedUser(false).setEphemeral(true).queue()
         );
 
