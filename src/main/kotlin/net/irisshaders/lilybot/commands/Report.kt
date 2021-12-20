@@ -12,11 +12,9 @@ import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.ACTION_LOG
 import net.irisshaders.lilybot.utils.GUILD_ID
+import net.irisshaders.lilybot.utils.MESSAGE_LOGS
 import net.irisshaders.lilybot.utils.MODERATORS
 import kotlin.time.ExperimentalTime
 
@@ -33,7 +31,7 @@ class Report : Extension() {
             locking = true // To prevent the command from being run more than once concurrently
 
             action {
-                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
 
                 respond {
                     content = "Message reported to staff"
@@ -61,7 +59,6 @@ class Report : Extension() {
                     }
                     timestamp = Clock.System.now()
                 }
-
             }
 
         }
@@ -70,7 +67,7 @@ class Report : Extension() {
             description = "Manually report a message"
 
             action {
-                val actionLog = guild!!.getChannelOf<GuildMessageChannel>(ACTION_LOG)
+                val actionLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
 
                 respond {
                     content = "Message reported to staff"

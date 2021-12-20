@@ -9,7 +9,7 @@ import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageDeleteEvent
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.ACTION_LOG
+import net.irisshaders.lilybot.utils.MESSAGE_LOGS
 import kotlin.time.ExperimentalTime
 
 /**
@@ -22,7 +22,7 @@ class MessageEvents : Extension() {
     override suspend fun setup() {
         event<MessageDeleteEvent> {
             action {
-                val actionLog = event.guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = event.guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
                 val message = event.message!!.asMessage().content
                 val messageAuthor = event.message!!.author!!.tag
                 val messageAuthorId = event.message!!.author!!.id.value

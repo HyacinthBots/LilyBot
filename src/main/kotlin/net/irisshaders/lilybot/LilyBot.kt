@@ -3,6 +3,7 @@ package net.irisshaders.lilybot
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
+import dev.kord.common.entity.PresenceStatus
 import net.irisshaders.lilybot.commands.Moderation
 import net.irisshaders.lilybot.commands.Ping
 import net.irisshaders.lilybot.commands.Report
@@ -35,7 +36,7 @@ suspend fun main() {
             extPhishing {
                 appName = "Lily Bot"
                 detectionAction = DetectionAction.Kick
-                logChannelName = "action-log"
+                logChannelName = "anti-phishing-logs"
                 requiredCommandPermission = null
             }
         }
@@ -43,8 +44,11 @@ suspend fun main() {
         hooks {
             afterKoinSetup {
                 DatabaseManager.startDatabase()
-
             }
+        }
+        presence {
+            status = PresenceStatus.Online
+            playing("Iris")
         }
     }
 

@@ -46,7 +46,7 @@ class Moderation : Extension() {
             allowRole(MODERATORS)
 
             action {
-                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
                 val messageAmount = arguments.messages
                 val messageHolder = arrayListOf<Snowflake>()
                 val textChannel = channel as GuildMessageChannelBehavior
@@ -85,7 +85,7 @@ class Moderation : Extension() {
             allowRole(MODERATORS)
 
             action {
-                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
                 guild?.ban(arguments.userArgument.id, builder = {
                     this.reason = "Requested by " + user.asUser().username
@@ -128,7 +128,7 @@ class Moderation : Extension() {
             allowRole(MODERATORS)
 
             action {
-                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
                 guild?.unban(arguments.userArgument.id)
 
@@ -156,7 +156,7 @@ class Moderation : Extension() {
             allowRole(MODERATORS)
 
             action {
-                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
                 guild?.ban(arguments.userArgument.id, builder = {
                     this.reason = "Requested by ${user.asUser().username}"
@@ -201,7 +201,7 @@ class Moderation : Extension() {
             allowRole(MODERATORS)
 
             action {
-                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
                 guild?.kick(arguments.userArgument.id, "Requested by " + user.asUser().username)
 
@@ -229,7 +229,7 @@ class Moderation : Extension() {
             allowRole(MODERATORS)
 
             action {
-                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
                 if (arguments.embedMessage) {
                     channel.createEmbed {
@@ -265,7 +265,7 @@ class Moderation : Extension() {
             allowRole(ADMIN)
 
             action {
-                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
                 respond {
                     embed {
                         title = "Shutdown"
@@ -317,7 +317,7 @@ class Moderation : Extension() {
                 val userId = arguments.userArgument.id.asString
                 val userTag = arguments.userArgument.tag
                 val warnPoints = arguments.warnPoints
-                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
                 var databasePoints: String? = null
 
                 newSuspendedTransaction {
@@ -388,7 +388,7 @@ class Moderation : Extension() {
                 val userTag = arguments.userArgument.tag
                 val member = guild!!.getMemberOrNull(arguments.userArgument.id)
                 val dmUser = member?.getDmChannelOrNull()
-                val actionLog = guild?.getChannel(ACTION_LOG) as GuildMessageChannelBehavior
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
                 member?.addRole(
                     MUTED_ROLE,
