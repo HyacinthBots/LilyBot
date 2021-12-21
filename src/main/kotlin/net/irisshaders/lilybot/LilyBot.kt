@@ -24,7 +24,6 @@ import java.nio.file.Paths
 val configPath: Path = Paths.get(CONFIG_PATH)
 val config: TomlTable = Toml.from(Files.newInputStream(configPath))
 suspend fun main() {
-    println(config)
     val bot = ExtensibleBot(BOT_TOKEN) {
         applicationCommands {
             defaultGuild(GUILD_ID)

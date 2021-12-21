@@ -274,12 +274,12 @@ class Moderation : Extension() {
                     playing(arguments.presenceArgument)
                 }
 
-                respond { content = "Presence set to " + arguments.presenceArgument }
+                respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
                 actionLog.createEmbed {
                     color = DISCORD_BLURPLE
                     title = "Presence changed"
-                    description = "${user.asUser().username} used /set-status to set Lily's presence to ${arguments.presenceArgument} "
+                    description = "${user.asUser().username} used /set-status to set Lily's presence to `${arguments.presenceArgument}`"
                     timestamp = Clock.System.now()
                 }
             }

@@ -12,6 +12,10 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.config
 
+/**
+ * This class reads in the config TOML file and converts each array of info into a usable discord slash command
+ * @author IMS212
+ */
 class Custom : Extension() {
     override var name = "custom"
 
@@ -19,7 +23,7 @@ class Custom : Extension() {
     override suspend fun setup() {
         val commands: TomlArray = config.get("command") as TomlArray
         for (cmds in commands) {
-            var cmd = cmds as TomlTable
+            val cmd = cmds as TomlTable
             if (cmd.get("subcommand") is TomlArray) {
                 var subCmds = cmd.get("subcommand") as TomlArray
 
@@ -28,7 +32,7 @@ class Custom : Extension() {
         }
     }
 
-    suspend fun addCommand(names: String, desc: String, cmdTitle: String, cmdValue: String, subCmds: TomlArray?) {
+    private suspend fun addCommand(names: String, desc: String, cmdTitle: String, cmdValue: String, subCmds: TomlArray?) {
         publicSlashCommand {
 
             name = names
@@ -46,7 +50,7 @@ class Custom : Extension() {
                 }
             } else {
                 for (subs in subCmds) {
-                    var sub = subs as TomlTable
+                    val sub = subs as TomlTable
                     publicSubCommand {
                         name = sub.get("name") as String
                         description = sub.getOrDefault("help", "A Lily bot command.") as String
