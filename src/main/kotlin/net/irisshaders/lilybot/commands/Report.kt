@@ -8,7 +8,14 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.ephemeralButton
+import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
+import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.getJumpUrl
+import dev.kord.cache.api.data.description
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
@@ -39,6 +46,47 @@ class Report : Extension() {
 
                 actionLog.createMessage {
                     content = "<@&${MODERATORS.value}>"
+                    components {
+                        linkButton(row = 0) {
+                            label = "Jump to reported message"
+                            url = event.interaction.getTarget().getJumpUrl()
+                        }
+                        ephemeralButton(row = 1) {
+                            label = "Delete the report"
+                            style = ButtonStyle.Danger
+
+                            action {
+                                this.message?.delete()
+                            }
+                        }
+
+                        ephemeralButton(row = 1) {
+                            label = "Delete the reported message"
+                            style = ButtonStyle.Danger
+
+                            action {
+                                // Delete the reported messahe here
+                            }
+                        }
+
+                        ephemeralSelectMenu(row = 2) {
+                            option(
+                                label = "10-Minute Timeout",
+                                value = "10-timeout",
+                            )
+                            option(
+                                label = "20-Minute Timeout",
+                                value = "20-timeout",
+                            )
+                            option(
+                                label = "30-Minute Timeout",
+                                value = "30-timeout",
+                            )
+                            action {
+                                // IDK how to do selection menus
+                            }
+                        }
+                    }
                 }
 
                 actionLog.createEmbed {
@@ -75,6 +123,47 @@ class Report : Extension() {
 
                 actionLog.createMessage {
                     content = "`<@&${MODERATORS.value}>`"
+                    components {
+                        linkButton(row = 0) {
+                            label = "Jump to reported message"
+                            url = arguments.message
+                        }
+                        ephemeralButton(row = 1) {
+                            label = "Delete the report"
+                            style = ButtonStyle.Danger
+
+                            action {
+                                this.message?.delete()
+                            }
+                        }
+
+                        ephemeralButton(row = 1) {
+                            label = "Delete the reported message"
+                            style = ButtonStyle.Danger
+
+                            action {
+                                // Delete the reported messahe here
+                            }
+                        }
+
+                        ephemeralSelectMenu(row = 2) {
+                            option(
+                                label = "10-Minute Timeout",
+                                value = "10-timeout",
+                            )
+                            option(
+                                label = "20-Minute Timeout",
+                                value = "20-timeout",
+                            )
+                            option(
+                                label = "30-Minute Timeout",
+                                value = "30-timeout",
+                            )
+                            action {
+                                // IDK how to do selection menus
+                            }
+                        }
+                    }
                 }
 
                 actionLog.createEmbed {
