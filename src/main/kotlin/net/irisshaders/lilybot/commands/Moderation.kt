@@ -14,6 +14,7 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
@@ -22,6 +23,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.config
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.*
 import org.jetbrains.exposed.sql.insertIgnore
@@ -255,6 +257,35 @@ class Moderation : Extension() {
         }
 
         /**
+         * Presence Command
+         * @author IMS
+         */
+        ephemeralSlashCommand(::PresenceArgs) {
+            name = "set-status"
+            description = "Set Lily's current presence/status."
+
+            allowRole(MODERATORS)
+
+            action {
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+
+                this@ephemeralSlashCommand.kord.editPresence {
+                    status = PresenceStatus.Online
+                    playing(arguments.presenceArgument)
+                }
+
+                respond { content = "Presence set to " + arguments.presenceArgument }
+
+                actionLog.createEmbed {
+                    color = DISCORD_BLURPLE
+                    title = "Presence changed"
+                    description = "${user.asUser().username} used /set-status to set Lily's presence to ${arguments.presenceArgument} "
+                    timestamp = Clock.System.now()
+                }
+            }
+        }
+
+        /**
          * Shutdown command
          * @author IMS212
          */
@@ -479,5 +510,9 @@ class Moderation : Extension() {
     inner class SayArgs : Arguments() {
         val messageArgument by string("message", "Message contents")
         val embedMessage by boolean("embed", "Would you like to send as embed")
+    }
+
+    inner class PresenceArgs : Arguments() {
+        val presenceArgument by string("presence", "Lily's presence")
     }
 }
