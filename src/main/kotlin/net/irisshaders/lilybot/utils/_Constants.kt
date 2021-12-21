@@ -16,7 +16,7 @@ val MESSAGE_LOGS = Snowflake(env("MESSAGE_LOGS"))
 val SUPPORT_CHANNEL = Snowflake(env("SUPPORT_CHANNEL"))
 val JOIN_CHANNEL = Snowflake(env("JOIN_CHANNEL"))
 //val GITHUB_OAUTH = env("GITHUB_OAUTH")
-//val CONFIG_PATH = env("CONFIG_PATH")
+val CONFIG_PATH = env("CONFIG_PATH")
 const val JDBC_URL = "jdbc:sqlite:database.db"
 
 // I don't want to do this in prod
