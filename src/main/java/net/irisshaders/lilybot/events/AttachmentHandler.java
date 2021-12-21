@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.Button;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -54,16 +55,28 @@ public class AttachmentHandler extends ListenerAdapter {
                         int endOfToken = builder.indexOf(" ", indexOfToken + tokenKey.length() + 1);
                         builder.replace(indexOfToken + tokenKey.length() + 1, endOfToken, "**removed acess token**");
                     }
+                    final String nEC = "notenoughcrashes";
+                    int indexOfnEC = builder.indexOf(nEC);
+                    if (indexOfnEC != -1) {
+                            uploadMessage.join().editMessageEmbeds(fileEmbed(author)
+                                            .setTitle("Not Enough Crashes detected in logs")
+                                            .addField("Not Enough Crashes", "Not Enough Crashes (NEC) is well know to cause issues and often makes the debugging process more difficult. Please remove NEC, recreate the issue, and resend the relevant files (ie. log or crash report) if the issue persists.", false)
+                                            .setColor(Color.RED)
+                                            .build())
+                                    .queue();
+                            return;
+                    }
+
                     try {
                         uploadMessage.join().editMessageEmbeds(fileEmbed(author).setTitle("`" + name + "` uploaded to Hastebin").build()).setActionRow(
                                 Button.link(post(builder.toString()), "Click here to view")
                                 ).queue();
                     } catch (IOException e) {
                         uploadMessage.join().editMessageEmbeds(fileEmbed(author)
-                                .setTitle("Failed to upload `" + name + "` to Hastebin")
-                                .addField("Exception", e.toString(), false)
-                                .build())
-                        .queue();
+                                        .setTitle("Failed to upload `" + name + "` to Hastebin")
+                                        .addField("Exception", e.toString(), false)
+                                        .build())
+                                .queue();
                         e.printStackTrace();
                     }
             });
