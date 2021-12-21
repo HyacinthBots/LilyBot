@@ -20,6 +20,7 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
@@ -69,9 +70,13 @@ class Moderation : Extension() {
 
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
-                    title = "$messageAmount messages have been cleared by ${user.asUser().username}."
+                    title = "$messageAmount messages have been cleared."
                     description = "Action occurred in ${textChannel.mention}."
                     timestamp = Clock.System.now()
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
                 }
             }
         }
@@ -101,7 +106,7 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Banned a user"
-                    description = "${user.asUser().username} banned ${arguments.userArgument.mention}!"
+                    description = "${arguments.userArgument.mention} has been banned!"
 
                     field {
                         name = "Reason:"
@@ -112,6 +117,11 @@ class Moderation : Extension() {
                         name = "Days of messages deleted"
                         value = arguments.messages.toString()
                         inline = false
+                    }
+
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
                     }
 
                     timestamp = Clock.System.now()
@@ -141,7 +151,11 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_GREEN
                     title = "Unbanned a user"
-                    description = "${user.asUser().username} unbanned ${arguments.userArgument.mention}!"
+                    description = "${arguments.userArgument.mention} has been unbanned!"
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
                     timestamp = Clock.System.now()
                 }
             }
@@ -172,7 +186,7 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Soft-banned a user"
-                    description = "${user.asUser().username} soft-banned ${arguments.userArgument.mention}"
+                    description = "${arguments.userArgument.mention} has been soft banned."
 
                     field {
                         name = "Reason:"
@@ -183,6 +197,11 @@ class Moderation : Extension() {
                         name = "Days of messages deleted"
                         value = arguments.messages.toString()
                         inline = false
+                    }
+
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
                     }
 
                     timestamp = Clock.System.now()
@@ -216,6 +235,10 @@ class Moderation : Extension() {
                     title = "Kicked a user"
                     description = "Kicked ${arguments.userArgument.mention}!"
                     timestamp = Clock.System.now()
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
                 }
             }
         }
@@ -250,7 +273,11 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Message sent"
-                    description = "${user.asUser().username} used /say to say ${arguments.messageArgument} "
+                    description = "/say has been used to say ${arguments.messageArgument}."
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
                     timestamp = Clock.System.now()
                 }
             }
@@ -279,7 +306,11 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLURPLE
                     title = "Presence changed"
-                    description = "${user.asUser().username} used /set-status to set Lily's presence to `${arguments.presenceArgument}`"
+                    description = "Lily's presence has been set to ${arguments.presenceArgument} "
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
                     timestamp = Clock.System.now()
                 }
             }
@@ -314,6 +345,10 @@ class Moderation : Extension() {
                                     title = "Shutting Down!"
                                     color = DISCORD_RED
                                     timestamp = Clock.System.now()
+                                    footer {
+                                        text = "Requested by " + user.asUser().tag
+                                        icon = user.asUser().avatar?.url
+                                    }
                                 }
                                 kord.shutdown()
                                 exitProcess(0)
@@ -395,9 +430,9 @@ class Moderation : Extension() {
                         value = arguments.reason
                         inline = false
                     }
-                    field {
-                        value = "Requested by: ${user.asUser().username}"
-                        inline = false
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
                     }
                 }
             }
@@ -448,6 +483,10 @@ class Moderation : Extension() {
                         name = "Reason:"
                         value = arguments.reason
                         inline = false
+                    }
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
                     }
                 }
                 dmUser?.createEmbed {

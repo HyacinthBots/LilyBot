@@ -24,10 +24,6 @@ class Custom : Extension() {
         val commands: TomlArray = config.get("command") as TomlArray
         for (cmds in commands) {
             val cmd = cmds as TomlTable
-            if (cmd.get("subcommand") is TomlArray) {
-                var subCmds = cmd.get("subcommand") as TomlArray
-
-            }
             addCommand(cmd.get("name") as String, cmd.getOrDefault("help", "A Lily bot command.") as String, cmd.getOrDefault("title", "No title") as String, cmd.getOrDefault("description", "") as String, cmd.get("subcommand") as TomlArray?)
         }
     }
