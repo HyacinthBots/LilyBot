@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.irisshaders.lilybot.commands.EightBall;
 import net.irisshaders.lilybot.commands.Ping;
 import net.irisshaders.lilybot.commands.custom.Custom;
 import net.irisshaders.lilybot.commands.moderation.Shutdown;
@@ -122,6 +123,7 @@ public class LilyBot {
     public void addBuiltinCommands(SlashCommandHandler handler) {
         // add commands now
         handler.addSlashCommand(new Ping());
+        handler.addSlashCommand(new EightBall());
 
         // Mod Commands
         handler.addSlashCommand(new Ban());
