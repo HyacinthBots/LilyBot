@@ -49,7 +49,7 @@ class JoinLeaveEvent : Extension() {
                         inline = false
                     }
                     footer {
-                        this.text = "Member Count: $guildMemberCount"
+                        text = "Member Count: $guildMemberCount"
                     }
                 }
             }
@@ -85,7 +85,7 @@ class JoinLeaveEvent : Extension() {
                         inline = true
                     }
                     footer {
-                        this.text = "Member count: $guildMemberCount"
+                        text = "Member count: $guildMemberCount"
                     }
                 }
             }
