@@ -53,9 +53,9 @@ class Report : Extension() {
                         value = "**Message Link:** https://discord.com/channels/${GUILD_ID.value}/${event.interaction.channelId.value}/${event.interaction.targetId.value}"
                         inline = false
                     }
-                    field {
-                        value = "**Reported by:** ${user.asUser().tag}"
-                        inline = false
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
                     }
                     timestamp = Clock.System.now()
                 }
@@ -74,7 +74,7 @@ class Report : Extension() {
                 }
 
                 actionLog.createMessage {
-                    content = "`<@&${MODERATORS.value}>`"
+                    content = "<@&${MODERATORS.value}>"
                 }
 
                 actionLog.createEmbed {
@@ -85,9 +85,9 @@ class Report : Extension() {
                         value = "**Message Link:** ${arguments.message}"
                         inline = true
                     }
-                    field {
-                        value = "**Reported by:** ${user.asUser().tag}"
-                        inline = false
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
                     }
                     timestamp = Clock.System.now()
                 }
