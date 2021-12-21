@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.Button;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -52,8 +53,20 @@ public class AttachmentHandler extends ListenerAdapter {
                     int indexOfToken = builder.indexOf(tokenKey);
                     if (indexOfToken != -1) {
                         int endOfToken = builder.indexOf(" ", indexOfToken + tokenKey.length() + 1);
-                        builder.replace(indexOfToken + tokenKey.length() + 1, endOfToken, "**removed acess token**");
+                        builder.replace(indexOfToken + tokenKey.length() + 1, endOfToken, "**removed access token**");
                     }
+                    final String necText = "at Not Enough Crashes";
+                    int indexOfnecText = builder.indexOf(necText);
+                    if (indexOfnecText != -1) {
+                        uploadMessage.join().editMessageEmbeds(fileEmbed(author)
+                                        .setTitle("Not Enough Crashes detected in logs")
+                                        .addField("Not Enough Crashes", "Not Enough Crashes (NEC) is well know to cause issues and often makes the debugging process more difficult. Please remove NEC, recreate the issue, and resend the relevant files (ie. log or crash report) if the issue persists.", false)
+                                        .setColor(Color.RED)
+                                        .build())
+                                .queue();
+                        return;
+                    }
+
                     try {
                         uploadMessage.join().editMessageEmbeds(fileEmbed(author).setTitle("`" + name + "` uploaded to Hastebin").build()).setActionRow(
                                 Button.link(post(builder.toString()), "Click here to view")
