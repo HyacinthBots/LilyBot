@@ -32,9 +32,9 @@ class ThreadInviter : Extension() {
             action {
                 var userThreadExists = false
                 var existingUserThread: TextChannelThread? = null
-                val textchannel = event.message.getChannel() as TextChannel
+                val textChannel = event.message.getChannel() as TextChannel
                 //TODO: this is incredibly stupid, there has to be a better way to do this.
-                textchannel.activeThreads.collect {
+                textChannel.activeThreads.collect {
                     if (it.name == "Support thread for " + event.member!!.asUser().username) {
                         userThreadExists = true
                         existingUserThread = it
@@ -50,7 +50,7 @@ class ThreadInviter : Extension() {
                     response.delete(10000L, false)
                 } else {
                     val thread =
-                        textchannel.startPublicThreadWithMessage(
+                        textChannel.startPublicThreadWithMessage(
                             event.message.id,
                             "Support thread for " + event.member!!.asUser().username
                         )
@@ -62,9 +62,9 @@ class ThreadInviter : Extension() {
                                 ?.getRole(SUPPORT_TEAM)?.mention + " will be with you shortly!"
                     }
 
-                    if (textchannel.messages.last().author?.id == kord.selfId) {
-                        textchannel.deleteMessage(
-                            textchannel.messages.last().id,
+                    if (textChannel.messages.last().author?.id == kord.selfId) {
+                        textChannel.deleteMessage(
+                            textChannel.messages.last().id,
                             "Automatic deletion of thread creation message"
                         )
                     }
