@@ -23,7 +23,6 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.config
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.*
 import org.jetbrains.exposed.sql.insertIgnore
@@ -33,6 +32,7 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import kotlin.system.exitProcess
 import kotlin.time.ExperimentalTime
 
+@Suppress("DuplicatedCode")
 class Moderation : Extension() {
     override val name = "moderation"
 
@@ -458,17 +458,6 @@ class Moderation : Extension() {
                 }
             }
         }
-    }
-
-    private fun parseDuration(time: String): Int {
-        var duration: Int = Integer.parseInt(time.replace("[^0-9]", ""))
-        when (time.replace("[^A-Za-z]+", "").trim()) {
-            "s" -> duration *= 1000
-            "m", "min", "mins" -> duration *= 60000
-            "h", "hour", "hours" -> duration *= 3600000
-            "d", "day", "days" -> duration *= 86400000
-        }
-        return duration
     }
 
     inner class ClearArgs : Arguments() {
