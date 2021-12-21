@@ -53,7 +53,7 @@ public class AttachmentHandler extends ListenerAdapter {
                     int indexOfToken = builder.indexOf(tokenKey);
                     if (indexOfToken != -1) {
                         int endOfToken = builder.indexOf(" ", indexOfToken + tokenKey.length() + 1);
-                        builder.replace(indexOfToken + tokenKey.length() + 1, endOfToken, "**removed acess token**");
+                        builder.replace(indexOfToken + tokenKey.length() + 1, endOfToken, "**removed access token**");
                     }
                     final String necText = "at Not Enough Crashes";
                     int indexOfnecText = builder.indexOf(necText);
