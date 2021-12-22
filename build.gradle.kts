@@ -14,7 +14,7 @@ version = "1.0"
 
 repositories {
     // You can remove this if you're not testing locally-installed KordEx builds
-    mavenLocal()
+    mavenCentral()
 
     maven {
         name = "Kotlin Discord"
@@ -37,6 +37,9 @@ dependencies {
     implementation(libs.kotlinx.serialization)
     implementation(libs.kaml)
     implementation(libs.jgit)
+
+    // TOML reader
+    implementation("com.github.jezza:toml:1.2")
 
     // Exposed
     implementation("org.jetbrains.exposed:exposed-core:0.36.2")

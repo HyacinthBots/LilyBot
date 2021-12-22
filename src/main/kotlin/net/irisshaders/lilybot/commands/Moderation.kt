@@ -14,6 +14,7 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
@@ -31,6 +32,7 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import kotlin.system.exitProcess
 import kotlin.time.ExperimentalTime
 
+@Suppress("DuplicatedCode")
 class Moderation : Extension() {
     override val name = "moderation"
 
@@ -67,9 +69,13 @@ class Moderation : Extension() {
 
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
-                    title = "$messageAmount messages have been cleared by ${user.asUser().username}."
+                    title = "$messageAmount messages have been cleared."
                     description = "Action occurred in ${textChannel.mention}."
                     timestamp = Clock.System.now()
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
                 }
             }
         }
@@ -99,7 +105,7 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Banned a user"
-                    description = "${user.asUser().username} banned ${arguments.userArgument.mention}!"
+                    description = "${arguments.userArgument.mention} has been banned!"
 
                     field {
                         name = "Reason:"
@@ -110,6 +116,11 @@ class Moderation : Extension() {
                         name = "Days of messages deleted"
                         value = arguments.messages.toString()
                         inline = false
+                    }
+
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
                     }
 
                     timestamp = Clock.System.now()
@@ -139,7 +150,11 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_GREEN
                     title = "Unbanned a user"
-                    description = "${user.asUser().username} unbanned ${arguments.userArgument.mention}!"
+                    description = "${arguments.userArgument.mention} has been unbanned!"
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
                     timestamp = Clock.System.now()
                 }
             }
@@ -170,7 +185,7 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Soft-banned a user"
-                    description = "${user.asUser().username} soft-banned ${arguments.userArgument.mention}"
+                    description = "${arguments.userArgument.mention} has been soft banned."
 
                     field {
                         name = "Reason:"
@@ -181,6 +196,11 @@ class Moderation : Extension() {
                         name = "Days of messages deleted"
                         value = arguments.messages.toString()
                         inline = false
+                    }
+
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
                     }
 
                     timestamp = Clock.System.now()
@@ -214,6 +234,10 @@ class Moderation : Extension() {
                     title = "Kicked a user"
                     description = "Kicked ${arguments.userArgument.mention}!"
                     timestamp = Clock.System.now()
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
                 }
             }
         }
@@ -248,7 +272,44 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Message sent"
-                    description = "${user.asUser().username} used /say to say ${arguments.messageArgument} "
+                    description = "/say has been used to say ${arguments.messageArgument}."
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
+                    timestamp = Clock.System.now()
+                }
+            }
+        }
+
+        /**
+         * Presence Command
+         * @author IMS
+         */
+        ephemeralSlashCommand(::PresenceArgs) {
+            name = "set-status"
+            description = "Set Lily's current presence/status."
+
+            allowRole(MODERATORS)
+
+            action {
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+
+                this@ephemeralSlashCommand.kord.editPresence {
+                    status = PresenceStatus.Online
+                    playing(arguments.presenceArgument)
+                }
+
+                respond { content = "Presence set to `${arguments.presenceArgument}`" }
+
+                actionLog.createEmbed {
+                    color = DISCORD_BLURPLE
+                    title = "Presence changed"
+                    description = "Lily's presence has been set to ${arguments.presenceArgument} "
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
                     timestamp = Clock.System.now()
                 }
             }
@@ -283,6 +344,10 @@ class Moderation : Extension() {
                                     title = "Shutting Down!"
                                     color = DISCORD_RED
                                     timestamp = Clock.System.now()
+                                    footer {
+                                        text = "Requested by " + user.asUser().tag
+                                        icon = user.asUser().avatar?.url
+                                    }
                                 }
                                 kord.shutdown()
                                 exitProcess(0)
@@ -364,9 +429,9 @@ class Moderation : Extension() {
                         value = arguments.reason
                         inline = false
                     }
-                    field {
-                        value = "Requested by: ${user.asUser().username}"
-                        inline = false
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
                     }
                 }
             }
@@ -418,6 +483,10 @@ class Moderation : Extension() {
                         value = arguments.reason
                         inline = false
                     }
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
                 }
                 dmUser?.createEmbed {
                     title = "You were Muted"
@@ -427,17 +496,6 @@ class Moderation : Extension() {
                 }
             }
         }
-    }
-
-    private fun parseDuration(time: String): Int {
-        var duration: Int = Integer.parseInt(time.replace("[^0-9]", ""))
-        when (time.replace("[^A-Za-z]+", "").trim()) {
-            "s" -> duration *= 1000
-            "m", "min", "mins" -> duration *= 60000
-            "h", "hour", "hours" -> duration *= 3600000
-            "d", "day", "days" -> duration *= 86400000
-        }
-        return duration
     }
 
     inner class ClearArgs : Arguments() {
@@ -479,5 +537,9 @@ class Moderation : Extension() {
     inner class SayArgs : Arguments() {
         val messageArgument by string("message", "Message contents")
         val embedMessage by boolean("embed", "Would you like to send as embed")
+    }
+
+    inner class PresenceArgs : Arguments() {
+        val presenceArgument by string("presence", "Lily's presence")
     }
 }
