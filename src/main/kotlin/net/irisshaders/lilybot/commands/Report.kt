@@ -53,7 +53,7 @@ class Report : Extension() {
             }
 
         }
-        // Fuck this thing ngl
+
         ephemeralSlashCommand(::ManualReportArgs) {
             name = "manual-report"
             description = "Manually report a message"
@@ -72,17 +72,12 @@ class Report : Extension() {
         }
     }
 
-    inner class ManualReportArgs : Arguments() {
-        val message by string("message", "Link to the message to report")
-    }
-
     private suspend fun createReport(
         user: UserBehavior,
         actionLog: GuildMessageChannelBehavior,
         messageAuthor: Member?,
         reportedMessage: Message
     ) {
-        println("Test")
         actionLog.createMessage {
             content = "<@&${MODERATORS.value}>"
         }
@@ -196,5 +191,9 @@ class Report : Extension() {
                 }
             }
         }
+    }
+
+    inner class ManualReportArgs : Arguments() {
+        val message by string("message", "Link to the message to report")
     }
 }
