@@ -20,7 +20,6 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock

@@ -9,9 +9,14 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.getJumpUrl
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.entity.channel.Channel
+import dev.kord.core.entity.channel.GuildChannel
+import dev.kord.core.entity.channel.MessageChannel
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.GUILD_ID
 import net.irisshaders.lilybot.utils.MESSAGE_LOGS
@@ -47,11 +52,13 @@ class Report : Extension() {
                     description = event.interaction.getChannel().mention
 
                     field {
-                        value = "**Messaged Content:** ${event.interaction.getTarget().content}"
+                        name  = "Messaged Content:"
+                        value = event.interaction.getTarget().content
                         inline = true
                     }
                     field {
-                        value = "**Message Link:** https://discord.com/channels/${GUILD_ID.value}/${event.interaction.channelId.value}/${event.interaction.targetId.value}"
+                        name = "Message Link:"
+                        value = event.interaction.getTarget().getJumpUrl()
                         inline = false
                     }
                     footer {
@@ -66,9 +73,13 @@ class Report : Extension() {
         ephemeralSlashCommand(::ManualReportArgs) {
             name = "manual-report"
             description = "Manually report a message"
+            locking = true // To prevent the command from being run more than once concurrently
 
             action {
                 val actionLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
+                val messageID = Snowflake(arguments.message.split("/")[6])
+                val messageChannelID = Snowflake(arguments.message.split("/")[5])
+                val messageChannel = (guild?.getChannel(messageChannelID) as MessageChannel).getMessage(messageID).content
 
                 respond {
                     content = "Message reported to staff"
@@ -84,7 +95,13 @@ class Report : Extension() {
                     description = event.interaction.getChannel().mention
 
                     field {
-                        value = "**Message Link:** ${arguments.message}"
+                        name = "Message content:"
+                        value = messageChannel
+                        inline = false
+                    }
+                    field {
+                        name = "Message Link:"
+                        value = arguments.message
                         inline = true
                     }
                     footer {
