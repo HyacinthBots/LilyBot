@@ -2,12 +2,17 @@
 
 package net.irisshaders.lilybot.commands
 
+import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.utils.GUILD_ID
+import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
 import kotlin.time.ExperimentalTime
 
 @Suppress("PrivatePropertyName")
@@ -15,6 +20,14 @@ class Ping : Extension() {
     override val name = "ping"
 
     override suspend fun setup() {
+        val actionLog = kord.getGuild(GUILD_ID)?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+
+        actionLog.createEmbed {
+             color = DISCORD_GREEN
+             title = "Lily is now online!"
+
+            timestamp = Clock.System.now()
+        }
         /**
          * Ping Command
          * @author IMS212

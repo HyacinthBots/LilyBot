@@ -7,9 +7,11 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.message.MessageDeleteEvent
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.MESSAGE_LOGS
+import net.irisshaders.lilybot.utils.SUPPORT_CHANNEL
 import kotlin.time.ExperimentalTime
 
 /**
@@ -22,6 +24,10 @@ class MessageEvents : Extension() {
     override suspend fun setup() {
         event<MessageDeleteEvent> {
             action {
+                // Ignore messages from Lily itself
+                if (event.message?.author?.id == kord.selfId) return@action
+                if (event.message?.channel !is ThreadChannel && event.message?.channel?.id == SUPPORT_CHANNEL) return@action
+
                 val actionLog = event.guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
                 val message = event.message?.asMessageOrNull()?.content.toString()
                 val messageAuthor = event.message!!.author!!.tag
