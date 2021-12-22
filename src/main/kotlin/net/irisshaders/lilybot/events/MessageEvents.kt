@@ -23,7 +23,7 @@ class MessageEvents : Extension() {
         event<MessageDeleteEvent> {
             action {
                 val actionLog = event.guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
-                val message = event.message!!.asMessage().content
+                val message = event.message?.asMessageOrNull()?.content.toString()
                 val messageAuthor = event.message!!.author!!.tag
                 val messageAuthorId = event.message!!.author!!.id.value
                 val messageLocation = event.channel.id.value

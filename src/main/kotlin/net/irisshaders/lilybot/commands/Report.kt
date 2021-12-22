@@ -44,6 +44,7 @@ class Report : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_RED
                     title = "Message reported!"
+                    description = event.interaction.getChannel().mention
 
                     field {
                         value = "**Messaged Content:** ${event.interaction.getTarget().content}"
@@ -80,6 +81,7 @@ class Report : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_RED
                     title = "Message Manually Reported!"
+                    description = event.interaction.getChannel().mention
 
                     field {
                         value = "**Message Link:** ${arguments.message}"
