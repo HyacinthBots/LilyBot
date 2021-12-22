@@ -80,20 +80,22 @@ class Report : Extension() {
 
         actionLog.createEmbed {
             color = DISCORD_RED
-            title = "Message reported!"
+            title = "Message reported"
+            description = "A message was reported in ${reportedMessage.getChannel().mention}"
 
             field {
-                value = "**Messaged Content:** ${reportedMessage.content}"
+                name = "Message Content:"
+                value = reportedMessage.content
                 inline = true
             }
             field {
-                value =
-                    "**Message Link:** ${reportedMessage.getJumpUrl()}"
+                name = "Message Link:"
+                value = reportedMessage.getJumpUrl()
                 inline = false
             }
-            field {
-                value = "**Reported by:** ${user.asUser().tag}"
-                inline = false
+            footer {
+                text = "Reported by: ${user.asUser().tag}"
+                icon = user.asUser().avatar?.url
             }
             timestamp = Clock.System.now()
         }.edit {
