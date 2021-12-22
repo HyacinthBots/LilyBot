@@ -25,7 +25,6 @@ import dev.kord.core.entity.Member
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.MessageChannel
 import kotlinx.datetime.Clock
-import kotlinx.serialization.json.JsonNull.content
 import net.irisshaders.lilybot.utils.MESSAGE_LOGS
 import net.irisshaders.lilybot.utils.MODERATORS
 import kotlin.time.ExperimentalTime
@@ -77,7 +76,12 @@ class Report : Extension() {
         val message by string("message", "Link to the message to report")
     }
 
-    private suspend fun createReport(user: UserBehavior, actionLog: GuildMessageChannelBehavior, messageAuthor: Member?, reportedMessage: Message) {
+    private suspend fun createReport(
+        user: UserBehavior,
+        actionLog: GuildMessageChannelBehavior,
+        messageAuthor: Member?,
+        reportedMessage: Message
+    ) {
         println("Test")
         actionLog.createMessage {
             content = "<@&${MODERATORS.value}>"
@@ -115,6 +119,7 @@ class Report : Extension() {
                 }
 
                 ephemeralSelectMenu(row = 1) {
+                    placeholder = "Select a quick-action"
                     option(
                         label = "10-Minute Timeout",
                         value = "10-timeout",
@@ -157,10 +162,24 @@ class Report : Extension() {
                     }
                     action {
                         when (this.selected[0]) {
-                            "10-timeout" -> println("10")
-                            "20-timeout" -> println("20")
-                            "30-timeout" -> println("30")
-                            "kick-user" -> messageAuthor?.kick(reason = "Kicked via report")
+                            "10-timeout" -> {
+                                respond {
+                                    content = "This is not yet implemented"
+                                }
+                            }
+                            "20-timeout" -> {
+                                respond {
+                                    content = "This is not yet implemented"
+                                }
+                            }
+                            "30-timeout" -> {
+                                respond {
+                                    content = "This is not yet implemented"
+                                }
+                            }
+                            "kick-user" -> {
+                                messageAuthor?.kick(reason = "Kicked via report")
+                            }
                             "softban-user" -> {
                                 messageAuthor?.ban {
                                     this.reason = "Banned via report."
