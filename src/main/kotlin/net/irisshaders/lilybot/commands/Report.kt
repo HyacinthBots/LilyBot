@@ -57,6 +57,7 @@ class Report : Extension() {
         ephemeralSlashCommand(::ManualReportArgs) {
             name = "manual-report"
             description = "Manually report a message"
+            locking = true
 
             action {
                 val actionLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
