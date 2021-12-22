@@ -14,6 +14,7 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
@@ -22,6 +23,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.MessageChannel
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.JsonNull.content
 import net.irisshaders.lilybot.utils.MESSAGE_LOGS
@@ -42,8 +44,8 @@ class Report : Extension() {
 
             action {
                 val actionLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
-                val messageAuthor = event.interaction.getTarget().getAuthorAsMember()
                 val reportedMessage = event.interaction.getTarget()
+                val messageAuthor = reportedMessage.getAuthorAsMember()
 
                 respond {
                     content = "Message reported to staff"
@@ -59,11 +61,14 @@ class Report : Extension() {
 
             action {
                 val actionLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
+                val channel = (guild?.getChannel(Snowflake(arguments.message.split("/")[5])) as MessageChannel)
+                val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
+                val messageAuthor = reportedMessage.getAuthorAsMember()
 
                 respond {
                     content = "Message reported to staff"
                 }
-//                createReport(user, actionLog, messageAuthor, reportedMessage)
+                createReport(user, actionLog, messageAuthor, reportedMessage)
             }
         }
     }
