@@ -13,6 +13,7 @@ import dev.kord.rest.builder.message.create.embed
 import io.ktor.utils.io.errors.IOException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.github
+import net.irisshaders.lilybot.utils.ResponseHelper
 
 import org.kohsuke.github.GHIssue
 import org.kohsuke.github.PagedIterator
@@ -23,6 +24,7 @@ import org.kohsuke.github.GHUser
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GHLabel
 import org.kohsuke.github.GHOrganization
+import org.kohsuke.github.GHFileNotFoundException
 
 import java.text.DecimalFormat
 import kotlin.math.floor
@@ -78,8 +80,7 @@ class Github : Extension() {
                             var draft = false
 
                             if (issue!!.isPullRequest) {
-                                title =
-                                    "Information for Pull Request #" + issue.number + " in " + issue.repository.fullName
+                                title = "Information for Pull Request #" + issue.number + " in " + issue.repository.fullName
 
                                 try {
                                     val pull: GHPullRequest = issue.repository.getPullRequest(issue.number)
@@ -89,7 +90,8 @@ class Github : Extension() {
                                     ioException.printStackTrace()
                                     title = "Error!"
                                     description = "Error occurred initializing Pull Request. How did this happen?"
-                                    return@embed
+                                    color = DISCORD_RED
+                                    return@action
                                 }
                             } else {
                                 title = "Information for issue #" + issue.number + " in " + issue.repository.fullName
@@ -203,28 +205,24 @@ class Github : Extension() {
 
                     if (!repoArg.contains("/")) {
                         respond {
-                            embed {
-                                title = "Make sure your input is formatted like this:"
-                                description = "Format: `User/Repo` or `Org/Repo` \n For example: `IrisShaders/Iris"
-                                color = DISCORD_RED
-                                return@embed
-                            }
+                            ResponseHelper.failureEmbed("Make sure your input is formatted like this:", "Format: `User/Repo` or `Org/Repo` \n For example: `IrisShaders/Iris`")
                         }
+                        return@action
                     }
 
                     var repo: GHRepository?
 
                     try {
                         repo = github!!.getRepository(repoArg)
-                    } catch (ioException: IOException) {
+                    } catch (illegalException: IllegalArgumentException) {
                         respond {
-                            embed {
-                                title = "Invalid repository name. Make sure this repository exists!"
-                                color = DISCORD_RED
-                                return@action
-                            }
+                            ResponseHelper.failureEmbed(
+                                "Invalid repository name. Make sure this repository exists!",
+                                null
+                            )
                         }
                         repo = null
+                        return@action
                     }
 
                     respond {
@@ -273,16 +271,13 @@ class Github : Extension() {
 
                 action {
                     var ghUser: GHUser? = null
-
+                    val user = arguments.username
                     try {
-                        ghUser = github?.getUser(arguments.username)
-                    } catch (exception: Exception) {
+                        ghUser = github!!.getUser(user)
+                    } catch (exception: GHFileNotFoundException) {
                         respond {
-                            embed {
-                                color = DISCORD_RED
-                                title = "Invalid Username. Make sure this user exists"
-                                return@action
-                            }
+                            ResponseHelper.failureEmbed("Invalid Username. Make sure this user exists", "ohno")
+                            return@action
                         }
                     }
 

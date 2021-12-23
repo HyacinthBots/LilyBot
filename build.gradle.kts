@@ -13,7 +13,6 @@ group = "net.irisshaders.lilybot"
 version = "1.0"
 
 repositories {
-    // You can remove this if you're not testing locally-installed KordEx builds
     mavenCentral()
 
     maven {

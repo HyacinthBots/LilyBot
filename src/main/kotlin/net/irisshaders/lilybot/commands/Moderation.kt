@@ -76,16 +76,7 @@ class Moderation : Extension() {
                     content = "Messages Cleared"
                 }
 
-                actionLog.createEmbed {
-                    color = DISCORD_BLACK
-                    title = "$messageAmount messages have been cleared."
-                    description = "Action occurred in ${textChannel.mention}."
-                    timestamp = Clock.System.now()
-                    footer {
-                        text = "Requested by " + user.asUser().tag
-                        icon = user.asUser().avatar?.url
-                    }
-                }
+                ResponseHelper.responseEmbedInActionLog(actionLog, "$messageAmount messages have been cleared.", "Action occured in ${textChannel.mention}", DISCORD_BLACK, user.asUser())
             }
         }
 
@@ -156,16 +147,8 @@ class Moderation : Extension() {
                     content = "Unbanned User"
                 }
 
-                actionLog.createEmbed {
-                    color = DISCORD_GREEN
-                    title = "Unbanned a user"
-                    description = "${arguments.userArgument.mention} has been unbanned!"
-                    footer {
-                        text = "Requested by " + user.asUser().tag
-                        icon = user.asUser().avatar?.url
-                    }
-                    timestamp = Clock.System.now()
-                }
+                ResponseHelper.responseEmbedInActionLog(actionLog, "Unbanned a user", "${arguments.userArgument.mention} has been unbanned!", DISCORD_GREEN, user.asUser())
+
             }
         }
 
@@ -238,16 +221,7 @@ class Moderation : Extension() {
                     content = "Kicked User"
                 }
 
-                actionLog.createEmbed {
-                    color = DISCORD_BLACK
-                    title = "Kicked a user"
-                    description = "Kicked ${arguments.userArgument.mention}!"
-                    timestamp = Clock.System.now()
-                    footer {
-                        text = "Requested by " + user.asUser().tag
-                        icon = user.asUser().avatar?.url
-                    }
-                }
+                ResponseHelper.responseEmbedInActionLog(actionLog, "Kicked a user", "Kicked ${arguments.userArgument.mention}!", DISCORD_BLACK, user.asUser())
             }
         }
 
@@ -278,16 +252,13 @@ class Moderation : Extension() {
 
                 respond { content = "Command used" }
 
-                actionLog.createEmbed {
-                    color = DISCORD_BLACK
-                    title = "Message sent"
-                    description = "/say has been used to say ${arguments.messageArgument}."
-                    footer {
-                        text = "Requested by " + user.asUser().tag
-                        icon = user.asUser().avatar?.url
-                    }
-                    timestamp = Clock.System.now()
-                }
+                ResponseHelper.responseEmbedInActionLog(
+                    actionLog,
+                    "Message Sent",
+                    "/say has been used to say ${arguments.messageArgument}.",
+                    DISCORD_BLACK,
+                    user.asUser()
+                )
             }
         }
 
@@ -311,16 +282,7 @@ class Moderation : Extension() {
 
                 respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
-                actionLog.createEmbed {
-                    color = DISCORD_BLURPLE
-                    title = "Presence changed"
-                    description = "Lily's presence has been set to ${arguments.presenceArgument} "
-                    footer {
-                        text = "Requested by " + user.asUser().tag
-                        icon = user.asUser().avatar?.url
-                    }
-                    timestamp = Clock.System.now()
-                }
+                ResponseHelper.responseEmbedInActionLog(actionLog, "Presence Changed", "Lily's presence has been set to ${arguments.presenceArgument}", DISCORD_BLACK, user.asUser())
             }
         }
 
@@ -349,15 +311,7 @@ class Moderation : Extension() {
 
                             action {
                                 respond { content = "Shutting down..." }
-                                actionLog.createEmbed {
-                                    title = "Shutting Down!"
-                                    color = DISCORD_RED
-                                    timestamp = Clock.System.now()
-                                    footer {
-                                        text = "Requested by " + user.asUser().tag
-                                        icon = user.asUser().avatar?.url
-                                    }
-                                }
+                                ResponseHelper.responseEmbedInActionLog(actionLog, "Shutting Down!", null, DISCORD_RED, user.asUser())
                                 kord.shutdown()
                                 exitProcess(0)
                             }
@@ -445,66 +399,6 @@ class Moderation : Extension() {
                 }
             }
         }
-
-        /**
-         * Mute command
-         * @author NoComment1105
-         */
-        ephemeralSlashCommand(::MuteArgs) {
-            name = "mute"
-            description = "Mute a member for any infractions"
-
-            allowRole(MODERATORS)
-            allowRole(TRIALMODERATORS)
-
-            action {
-                val userId = arguments.userArgument.id.asString
-                val userTag = arguments.userArgument.tag
-                val member = guild!!.getMemberOrNull(arguments.userArgument.id)
-                val dmUser = member?.getDmChannelOrNull()
-                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
-
-                member?.addRole(
-                    MUTED_ROLE,
-                    "$userTag was muted for ${arguments.reason}"
-                ) // This here is written to the guild's Audit log
-
-                respond {
-                    content = "Muted user"
-                }
-                actionLog.createEmbed {
-                    title = "Mute"
-                    color = DISCORD_BLACK
-                    timestamp = Clock.System.now()
-
-                    field {
-                        name = "User muted:"
-                        value = "**Tag:** $userTag \n **ID:** $userId"
-                        inline = false
-                    }
-                    field {
-                        name = "Duration:"
-                        value = arguments.duration.toString()
-                        inline = false
-                    }
-                    field {
-                        name = "Reason:"
-                        value = arguments.reason
-                        inline = false
-                    }
-                    footer {
-                        text = "Requested by " + user.asUser().tag
-                        icon = user.asUser().avatar?.url
-                    }
-                }
-                dmUser?.createEmbed {
-                    title = "You were Muted"
-                    description =
-                        "You were muted from $GUILD_NAME \n Duration: ${arguments.duration} \n Reason: ${arguments.reason}"
-                    timestamp = Clock.System.now()
-                }
-            }
-        }
     }
 
     inner class ClearArgs : Arguments() {
@@ -529,12 +423,6 @@ class Moderation : Extension() {
         val userArgument by user("softBanUser", "Person to Soft ban")
         val messages by defaultingInt("messages", "Messages", 3)
         val reason by defaultingString("reason", "The reason for the ban", "No Reason Provided")
-    }
-
-    inner class MuteArgs : Arguments() {
-        val userArgument by user("muteUser", "Person to mute")
-        val duration by defaultingInt("duration", "Duration of Mute", 6)
-        val reason by defaultingString("reason", "Reason for Mute", "No Reason Provided")
     }
 
     inner class WarnArgs : Arguments() {

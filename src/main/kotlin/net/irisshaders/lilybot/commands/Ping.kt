@@ -13,6 +13,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.GUILD_ID
 import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
+import net.irisshaders.lilybot.utils.ResponseHelper
 import kotlin.time.ExperimentalTime
 
 @Suppress("PrivatePropertyName")
@@ -22,12 +23,7 @@ class Ping : Extension() {
     override suspend fun setup() {
         val actionLog = kord.getGuild(GUILD_ID)?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
-        actionLog.createEmbed {
-             color = DISCORD_GREEN
-             title = "Lily is now online!"
-
-            timestamp = Clock.System.now()
-        }
+        ResponseHelper.responseEmbedInActionLog(actionLog, "Lily is now online!", null, DISCORD_GREEN, null)
         /**
          * Ping Command
          * @author IMS212
