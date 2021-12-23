@@ -93,10 +93,10 @@ class Github : Extension() {
                                 }
                             } else {
                                 title = "Information for issue #" + issue.number + " in " + issue.repository.fullName
+                                url = issue.htmlUrl.toString()
                             }
 
                             field {
-                                name = issue.htmlUrl.toString()
 
                                 if (issue.body != null) {
                                     value = if (issue.body.length > 400) {
@@ -231,6 +231,7 @@ class Github : Extension() {
                         embed {
                             try {
                                 title = "GitHub Repository Info for " + repo?.fullName
+                                url = repo?.htmlUrl.toString()
                                 description = repo?.description
                                 if (repo!!.license != null) {
                                     field {
@@ -258,9 +259,6 @@ class Github : Extension() {
                                     name = "Size:"
                                     value = bytesToFriendly(repo.size)
                                     inline = false
-                                }
-                                field {
-                                    name = repo.htmlUrl.toString()
                                 }
                             } catch (ioException: IOException) {
                                 ioException.printStackTrace()
@@ -295,6 +293,7 @@ class Github : Extension() {
                             respond {
                                 embed {
                                     title = "GitHub profile for " + ghUser?.login
+                                    url = "https://github.com/" + ghUser?.login
                                     description = ghUser?.bio
 
                                     field {
@@ -346,7 +345,7 @@ class Github : Extension() {
                             respond {
                                 embed {
                                     title = "GitHub profile for " + ghUser?.login
-                                    description = "https://github.com/" + ghUser?.login
+                                    url = "https://github.com/" + ghUser?.login
 
                                     field {
                                         name = "Public Members:"
