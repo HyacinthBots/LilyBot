@@ -6,7 +6,9 @@ import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import dev.kord.common.entity.PresenceStatus
+import mu.KotlinLogging
 import net.irisshaders.lilybot.commands.Custom
+import net.irisshaders.lilybot.commands.Github
 import net.irisshaders.lilybot.commands.Moderation
 import net.irisshaders.lilybot.commands.Ping
 import net.irisshaders.lilybot.commands.Report
@@ -16,13 +18,21 @@ import net.irisshaders.lilybot.events.MessageEvents
 import net.irisshaders.lilybot.support.ThreadInviter
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CONFIG_PATH
+import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.GUILD_ID
+import org.kohsuke.github.GitHub
+import org.kohsuke.github.GitHubBuilder
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.Exception
 
 val configPath: Path = Paths.get(CONFIG_PATH)
 val config: TomlTable = Toml.from(Files.newInputStream(configPath))
+var github: GitHub? = null
+
+private val gitHubLogger = KotlinLogging.logger {}
+
 suspend fun main() {
     val bot = ExtensibleBot(BOT_TOKEN) {
         applicationCommands {
@@ -41,6 +51,7 @@ suspend fun main() {
             add(::Report)
             add(::JoinLeaveEvent)
             add(::MessageEvents)
+            add(::Github)
             add(::Custom)
 
             extPhishing {
@@ -59,6 +70,15 @@ suspend fun main() {
         presence {
             status = PresenceStatus.Online
             playing(config.get("activity") as String)
+        }
+
+        try {
+            github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()
+            gitHubLogger.info("Logged into GitHub!")
+        } catch (exception: Exception) {
+            exception.printStackTrace()
+            gitHubLogger.error("Failed to log into GitHub!")
+            throw Exception(exception)
         }
     }
     bot.start()

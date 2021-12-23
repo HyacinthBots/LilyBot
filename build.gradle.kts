@@ -41,6 +41,9 @@ dependencies {
     // TOML reader
     implementation("com.github.jezza:toml:1.2")
 
+    // Github API
+    implementation("org.kohsuke:github-api:1.301")
+
     // Exposed
     implementation("org.jetbrains.exposed:exposed-core:0.36.2")
     implementation("org.jetbrains.exposed:exposed-dao:0.36.2")
