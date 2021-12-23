@@ -1,0 +1,8 @@
+/build/
+/.gradle
+/.idea
+*.iml
+.env
+database.db
+/tags-repo
+bin
