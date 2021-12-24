@@ -51,7 +51,7 @@ import java.io.InputStreamReader
 class MessageEvents : Extension() {
     override val name = "messageevents"
 
-    private val LOG_FILE_EXTENSIONS = setOf("log", "gz")
+    private val LOG_FILE_EXTENSIONS = setOf("log", "gz", "txt")
 
     override suspend fun setup() {
         event<MessageDeleteEvent> {
@@ -99,7 +99,7 @@ class MessageEvents : Extension() {
                 val messageAuthorAvatar = messageAuthor.avatar!!.url
                 val attachments = message.attachments
 
-                for (attachment in attachments) {
+                attachments.forEach {attachment ->
                     val attachmentFileName = attachment.filename
                     val attachmentFileExtension = attachmentFileName.substring(attachmentFileName.lastIndexOf(".") + 1)
 
@@ -138,7 +138,7 @@ class MessageEvents : Extension() {
 
                                                 val builder = StringBuilder()
 
-                                                if (attachmentFileExtension == "log") {
+                                                if (attachmentFileExtension != "gz") {
                                                     builder.append(logBytes.decodeToString())
                                                 } else {
                                                     val bis = ByteArrayInputStream(logBytes)

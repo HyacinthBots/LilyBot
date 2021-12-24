@@ -4,6 +4,5 @@
 *.iml
 .env
 database.db
-/tags-repo
 /bin/
 /.vscode/
