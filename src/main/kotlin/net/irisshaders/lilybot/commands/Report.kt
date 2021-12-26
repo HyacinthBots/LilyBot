@@ -26,6 +26,7 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.MessageChannel
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.MESSAGE_LOGS
+import net.irisshaders.lilybot.utils.FULLMODERATORS
 import net.irisshaders.lilybot.utils.MODERATORS
 import kotlin.time.ExperimentalTime
 

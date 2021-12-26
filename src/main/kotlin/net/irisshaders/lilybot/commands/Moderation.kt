@@ -12,7 +12,6 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.parsers.DurationParser.parse
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
@@ -55,7 +54,7 @@ class Moderation : Extension() {
             name = "clear"
             description = "Clears messages."
 
-            allowRole(MODERATORS)
+            allowRole(FULLMODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -90,7 +89,7 @@ class Moderation : Extension() {
             name = "ban"
             description = "Bans a user."
 
-            allowRole(MODERATORS)
+            allowRole(FULLMODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -138,7 +137,7 @@ class Moderation : Extension() {
             name = "unban"
             description = "Unbans a user"
 
-            allowRole(MODERATORS)
+            allowRole(FULLMODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -162,7 +161,7 @@ class Moderation : Extension() {
             name = "softban"
             description = "Softbans a user"
 
-            allowRole(MODERATORS)
+            allowRole(FULLMODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -212,7 +211,7 @@ class Moderation : Extension() {
             name = "kick"
             description = "Kicks a user."
 
-            allowRole(MODERATORS)
+            allowRole(FULLMODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -235,7 +234,7 @@ class Moderation : Extension() {
             name = "say"
             description = "Say something through Lily."
 
-            allowRole(MODERATORS)
+            allowRole(FULLMODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -272,7 +271,7 @@ class Moderation : Extension() {
             name = "set-status"
             description = "Set Lily's current presence/status."
 
-            allowRole(MODERATORS)
+            allowRole(FULLMODERATORS)
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -340,7 +339,7 @@ class Moderation : Extension() {
             name = "warn"
             description = "Warn a member for any infractions."
 
-            allowRole(MODERATORS)
+            allowRole(FULLMODERATORS)
             allowRole(TRIALMODERATORS)
 
             action {
@@ -411,7 +410,7 @@ class Moderation : Extension() {
             name = "timeout"
             description = "Timeout a user"
 
-            allowRole(MODERATORS)
+            allowRole(FULLMODERATORS)
             allowRole(TRIALMODERATORS)
 
             action {
@@ -472,7 +471,7 @@ class Moderation : Extension() {
             name = "remove-timeout"
             description = "Remove timeout on a user"
 
-            allowRole(MODERATORS)
+            allowRole(FULLMODERATORS)
             allowRole(TRIALMODERATORS)
 
             action {
