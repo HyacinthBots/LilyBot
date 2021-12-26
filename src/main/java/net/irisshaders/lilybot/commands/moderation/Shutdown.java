@@ -13,9 +13,7 @@ import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 import net.irisshaders.lilybot.LilyBot;
 import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
-import org.slf4j.LoggerFactory;
-import java.awt.*;
-import java.util.concurrent.TimeUnit;
+import java.awt.Color;
 
 @SuppressWarnings("ConstantConditions")
 public class Shutdown extends SlashCommand {
@@ -55,14 +53,11 @@ public class Shutdown extends SlashCommand {
                 case "yes" -> {
 
                     MessageEmbed finalShutdownEmbed = ResponseHelper.responseEmbed("Shutting down...", buttonClickEventUser, Color.RED)
-                            .setDescription("Note: It may take a few minutes for Discord to update my presence and say that I am offline.")
                             .build();
 
                     buttonClickEvent.editComponents().setEmbeds(finalShutdownEmbed).queue();
                     actionLog.sendMessageEmbeds(finalShutdownEmbed).queue();
                     LilyBot.LOG_LILY.info("Shutting down due to a request from " + buttonClickEventUser.getAsTag() + "!");
-
-                    Mute.cancelTimers(); // Cancels timers, since they block shutdown by nothing being left (since they are left)
 
                     jda.shutdown();
 

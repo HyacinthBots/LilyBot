@@ -46,10 +46,6 @@ public class SQLiteDataSource {
             String tableString = "CREATE TABLE IF NOT EXISTS warn(id INTEGER UNIQUE, points INTEGER)";
             statement.execute(tableString);
             LOGGER.info("Warn table initialised!");
-            @Language("SQL")
-            String muteString = "CREATE TABLE IF NOT EXISTS mute(id INTEGER UNIQUE, expiry TIMESTAMP, requester INTEGER, reason TINYTEXT)";
-            statement.execute(muteString);
-            LOGGER.info("Mute table initialised!");
         } catch (SQLException e) {
             e.printStackTrace();
         }

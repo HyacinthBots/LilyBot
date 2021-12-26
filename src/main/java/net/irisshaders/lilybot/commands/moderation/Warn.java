@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.irisshaders.lilybot.commands.moderation.Mute.MuteEntry;
+import net.irisshaders.lilybot.commands.moderation.Timeout.TimeOutEntry;
 import net.irisshaders.lilybot.database.SQLiteDataSource;
 import net.irisshaders.lilybot.utils.Constants;
 import net.irisshaders.lilybot.utils.ResponseHelper;
@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -152,19 +151,19 @@ public class Warn extends SlashCommand {
     }
 
     /**
-     * A utility method for giving mutes from here. Basically calls {@link Mute#mute(MuteEntry, Interaction)}.<p>
+     * A utility method for giving mutes from here. Basically calls {@link Timeout#timeout(TimeOutEntry, Interaction)}.<p>
      * It also checks if the {@link Member} is muted before muting
      * @param target The target. (Member)
      * @param duration The length of the mute. (String)
      * @param requester The user of the command. (User)
      */
     private void mute(Member target, String duration, User requester, JDA jda) {
-        if (Mute.getCurrentMutes(jda).containsKey(target)) { // Currently muted
+        if (target.isTimedOut()) { // Currently muted
             return; // Do nothing. The warn was already notified, and there just was no mute since the user is already muted
         }
-        Timestamp expiry = Timestamp.from(Instant.now().plusSeconds(Mute.parseDuration(duration)));
-        MuteEntry mute = new MuteEntry(target, requester, expiry, "Being warned");
-        Mute.mute(mute, null);
+        Instant expiry = Instant.now().plusSeconds(Timeout.parseDuration(duration));
+        TimeOutEntry mute = new TimeOutEntry(target, requester, expiry, "Being warned");
+        Timeout.timeout(mute, null);
     }
 
     /**

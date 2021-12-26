@@ -128,8 +128,8 @@ public class LilyBot {
         handler.addSlashCommand(new Kick());
         handler.addSlashCommand(new Unban());
         handler.addSlashCommand(new Clear());
-        handler.addSlashCommand(new Mute());
-        handler.addSlashCommand(new MuteList());
+        handler.addSlashCommand(new Timeout());
+        handler.addSlashCommand(new TimeoutList());
         handler.addSlashCommand(new Warn());
         handler.addSlashCommand(new Say());
         handler.addSlashCommand(new BotActivity());
