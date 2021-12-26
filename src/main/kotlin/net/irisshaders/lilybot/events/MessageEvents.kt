@@ -1,48 +1,36 @@
 @file:OptIn(ExperimentalTime::class)
+@file:Suppress("PrivatePropertyName", "BlockingMethodInNonBlockingContext")
 
 package net.irisshaders.lilybot.events
 
-import com.kotlindiscord.kord.extensions.DISCORD_PINK
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
-import com.kotlindiscord.kord.extensions.utils.download
-import com.kotlindiscord.kord.extensions.DISCORD_RED
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
-import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.entity.channel.thread.ThreadChannel
-import dev.kord.core.entity.Message
-import dev.kord.core.event.message.MessageDeleteEvent
-import dev.kord.core.event.message.MessageCreateEvent
-import dev.kord.core.behavior.edit
-import dev.kord.rest.builder.message.create.MessageCreateBuilder
-import dev.kord.rest.builder.message.create.actionRow
-import dev.kord.rest.builder.message.create.embed
-import dev.kord.rest.builder.message.modify.MessageModifyBuilder
-import dev.kord.rest.builder.message.modify.actionRow
-import dev.kord.rest.builder.message.modify.embed
+import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
+import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
-import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.ResponseHelper
-import net.irisshaders.lilybot.utils.MESSAGE_LOGS
-import net.irisshaders.lilybot.utils.SUPPORT_CHANNEL
-import kotlin.time.ExperimentalTime
+import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.edit
+import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.event.message.MessageDeleteEvent
+import dev.kord.rest.builder.message.modify.actionRow
+import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.content.*
-import io.ktor.http.HttpHeaders
-import io.ktor.utils.io.*
-import io.ktor.client.engine.*
-import io.ktor.util.toByteArray
-import io.ktor.util.GZip
-import java.util.zip.GZIPInputStream
+import io.ktor.client.statement.*
+import io.ktor.util.*
+import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.utils.MESSAGE_LOGS
+import net.irisshaders.lilybot.utils.ResponseHelper
+import net.irisshaders.lilybot.utils.SUPPORT_CHANNEL
 import java.io.ByteArrayInputStream
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import java.util.zip.GZIPInputStream
+import kotlin.time.ExperimentalTime
 
 /**
  * Log Message events to the Guilds channel action log.
@@ -124,11 +112,11 @@ class MessageEvents : Extension() {
 
                                             val uploadMessage = message.channel.createEmbed {
                                                 color = DISCORD_BLURPLE
-                                                title = "Uploading `" + attachmentFileName + "` to Hastebin..."
+                                                title = "Uploading `$attachmentFileName` to Hastebin..."
                                                 timestamp = Clock.System.now()
 
                                                 footer {
-                                                    text = "Uploaded by " + messageAuthorTag
+                                                    text = "Uploaded by $messageAuthorTag"
                                                     icon = messageAuthorAvatar
                                                 }
                                             }
@@ -152,11 +140,11 @@ class MessageEvents : Extension() {
                                                 uploadMessage.edit {
                                                     embed {
                                                         color = DISCORD_BLURPLE
-                                                        title = "`" + attachmentFileName + "` uploaded to Hastebin"
+                                                        title = "`$attachmentFileName` uploaded to Hastebin"
                                                         timestamp = Clock.System.now()
 
                                                         footer {
-                                                            text = "Uploaded by " + messageAuthorTag
+                                                            text = "Uploaded by $messageAuthorTag"
                                                             icon = messageAuthorAvatar
                                                         }
                                                     }
@@ -169,7 +157,7 @@ class MessageEvents : Extension() {
                                                 }
                                             } catch (e: Exception) {
                                                 uploadMessage.edit {
-                                                    ResponseHelper.failureEmbed("Failed to upload `" + attachmentFileName + "` to Hastebin", e.toString())
+                                                    ResponseHelper.failureEmbed("Failed to upload `$attachmentFileName` to Hastebin", e.toString())
                                                 }
                                             }
                                         }
