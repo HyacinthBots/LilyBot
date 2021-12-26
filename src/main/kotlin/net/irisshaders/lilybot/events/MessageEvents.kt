@@ -14,6 +14,7 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
+import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.message.MessageCreateEvent
@@ -99,7 +100,7 @@ class MessageEvents : Extension() {
                             "Do you want to upload this file to Hastebin?", 
                             "Hastebin is a website that allows users to share plain text through public posts called “pastes.”\nIt's easier for the support team to view the file on Hastebin, do you want it to be uploaded?", 
                             DISCORD_BLURPLE,
-                            null
+                            messageAuthor
                         ).edit {
                             components {
                                 ephemeralButton(row = 0) {
@@ -160,6 +161,8 @@ class MessageEvents : Extension() {
                                                     ResponseHelper.failureEmbed("Failed to upload `$attachmentFileName` to Hastebin", e.toString())
                                                 }
                                             }
+                                        } else {
+                                            respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }
                                         }
                                     }
                                 }
@@ -169,7 +172,11 @@ class MessageEvents : Extension() {
                                     style = ButtonStyle.Secondary
 
                                     action {
-                                        if (event.interaction.user.id == messageAuthor?.id) confirmationMessage!!.delete()
+                                        if (event.interaction.user.id == messageAuthor?.id) {
+                                            confirmationMessage!!.delete()
+                                        } else {
+                                            respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }
+                                        }
                                     }
                                 }
                             }
