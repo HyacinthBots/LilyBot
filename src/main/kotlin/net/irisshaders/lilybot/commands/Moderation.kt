@@ -12,7 +12,12 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.parsers.DurationParser.parse
+import com.kotlindiscord.kord.extensions.time.TimestampType
+import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.hasRole
+import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
@@ -20,14 +25,14 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.edit
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
-import kotlinx.datetime.Clock
-import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.*
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.*
 import org.jetbrains.exposed.sql.insertIgnore
@@ -400,7 +405,7 @@ class Moderation : Extension() {
         /**
          * Timeout command
          *
-         * @author
+         * @author NoComment/IMS
          */
         ephemeralSlashCommand(::TimeoutArgs) {
             name = "timeout"
@@ -413,8 +418,19 @@ class Moderation : Extension() {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
                 val userID = arguments.userArgument.id.toString()
                 val userTag = arguments.userArgument.tag
-                val duration = arguments.duration.toString()
+                val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
 
+                if (guild?.getMember(arguments.userArgument.id)?.isBot == true || guild?.getRole(MODERATORS)?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true) {
+                    respond {
+                        content = "You cannot timeout a moderator/bot!"
+                    }
+
+                    return@action;
+                }
+
+                guild?.getMember(arguments.userArgument.id)?.edit {
+                    timeoutUntil = duration
+                }
                 respond {
                     content = "Timed out $userID"
                 }
@@ -431,7 +447,7 @@ class Moderation : Extension() {
                     }
                     field {
                         name = "Duration:"
-                        value = duration
+                        value = duration.toDiscord(TimestampType.Default) +  " (" + arguments.duration.toString().replace("PT", "") + ")"
                         inline = false
                     }
                     field {
@@ -446,7 +462,50 @@ class Moderation : Extension() {
                 }
             }
         }
+
+        /**
+         * Timeout removal command
+         *
+         * @author IMS
+         */
+        ephemeralSlashCommand(::UnbanArgs) {
+            name = "remove-timeout"
+            description = "Remove timeout on a user"
+
+            allowRole(MODERATORS)
+            allowRole(TRIALMODERATORS)
+
+            action {
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+                val userID = arguments.userArgument.id.toString()
+                val userTag = arguments.userArgument.tag
+
+                guild?.getMember(arguments.userArgument.id)?.edit {
+                    timeoutUntil = null
+                }
+                respond {
+                    content = "Removed timeout on $userID"
+                }
+
+                actionLog.createEmbed {
+                    title = "Remove Timeout"
+                    color = DISCORD_BLACK
+                    timestamp = Clock.System.now()
+
+                    field {
+                        name = "User:"
+                        value = "$userTag \n $userID"
+                        inline = false
+                    }
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
+                }
+            }
+        }
     }
+
 
     inner class ClearArgs : Arguments() {
         val messages by int("messages", "Messages")
