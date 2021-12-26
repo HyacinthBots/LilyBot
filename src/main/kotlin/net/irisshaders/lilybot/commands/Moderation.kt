@@ -7,12 +7,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.int
-import com.kotlindiscord.kord.extensions.commands.converters.impl.string
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
-import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
-import com.kotlindiscord.kord.extensions.commands.converters.impl.user
+import com.kotlindiscord.kord.extensions.commands.converters.impl.*
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -32,6 +27,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimePeriod
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.*
 import org.jetbrains.exposed.sql.insertIgnore
@@ -79,6 +75,7 @@ class Moderation : Extension() {
                 ResponseHelper.responseEmbedInActionLog(actionLog, "$messageAmount messages have been cleared.", "Action occured in ${textChannel.mention}", DISCORD_BLACK, user.asUser())
             }
         }
+
 
         /**
          * Ban command
@@ -399,6 +396,56 @@ class Moderation : Extension() {
                 }
             }
         }
+
+        /**
+         * Timeout command
+         *
+         * @author
+         */
+        ephemeralSlashCommand(::TimeoutArgs) {
+            name = "timeout"
+            description = "Timeout a user"
+
+            allowRole(MODERATORS)
+            allowRole(TRIALMODERATORS)
+
+            action {
+                val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+                val userID = arguments.userArgument.id.toString()
+                val userTag = arguments.userArgument.tag
+                val duration = arguments.duration.toString()
+
+                respond {
+                    content = "Timed out $userID"
+                }
+
+                actionLog.createEmbed {
+                    title = "Timeout"
+                    color = DISCORD_BLACK
+                    timestamp = Clock.System.now()
+
+                    field {
+                        name = "User:"
+                        value = "$userTag \n $userID"
+                        inline = false
+                    }
+                    field {
+                        name = "Duration:"
+                        value = duration
+                        inline = false
+                    }
+                    field {
+                        name = "Reason:"
+                        value = arguments.reason
+                        inline = false
+                    }
+                    footer {
+                        text = "Requested by " + user.asUser().tag
+                        icon = user.asUser().avatar?.url
+                    }
+                }
+            }
+        }
     }
 
     inner class ClearArgs : Arguments() {
@@ -425,12 +472,6 @@ class Moderation : Extension() {
         val reason by defaultingString("reason", "The reason for the ban", "No Reason Provided")
     }
 
-    inner class WarnArgs : Arguments() {
-        val userArgument by user("warnUser", "Person to Warn")
-        val warnPoints by defaultingInt("points", "Amount of points to add", 10)
-        val reason by defaultingString("reason", "Reason for Warn", "No Reason Provided")
-    }
-
     inner class SayArgs : Arguments() {
         val messageArgument by string("message", "Message contents")
         val embedMessage by boolean("embed", "Would you like to send as embed")
@@ -438,5 +479,17 @@ class Moderation : Extension() {
 
     inner class PresenceArgs : Arguments() {
         val presenceArgument by string("presence", "Lily's presence")
+    }
+
+    inner class WarnArgs : Arguments() {
+        val userArgument by user("warnUser", "Person to Warn")
+        val warnPoints by defaultingInt("points", "Amount of points to add", 10)
+        val reason by defaultingString("reason", "Reason for Warn", "No Reason Provided")
+    }
+
+    inner class TimeoutArgs : Arguments() {
+        val userArgument by user("timeoutUser", "Person to timeout")
+        val duration by defaultingCoalescingDuration("duration", "Duration of timeout", DateTimePeriod(0, 0, 0, 6, 0, 0, 0))
+        val reason by defaultingString("reason", "Reason for timeout", "No reason provided")
     }
 }
