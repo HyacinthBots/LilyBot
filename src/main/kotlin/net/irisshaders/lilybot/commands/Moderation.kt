@@ -72,7 +72,7 @@ class Moderation : Extension() {
                     content = "Messages Cleared"
                 }
 
-                ResponseHelper.responseEmbedInActionLog(actionLog, "$messageAmount messages have been cleared.", "Action occured in ${textChannel.mention}", DISCORD_BLACK, user.asUser())
+                ResponseHelper.responseEmbedInChannel(actionLog, "$messageAmount messages have been cleared.", "Action occured in ${textChannel.mention}", DISCORD_BLACK, user.asUser())
             }
         }
 
@@ -144,7 +144,7 @@ class Moderation : Extension() {
                     content = "Unbanned User"
                 }
 
-                ResponseHelper.responseEmbedInActionLog(actionLog, "Unbanned a user", "${arguments.userArgument.mention} has been unbanned!", DISCORD_GREEN, user.asUser())
+                ResponseHelper.responseEmbedInChannel(actionLog, "Unbanned a user", "${arguments.userArgument.mention} has been unbanned!", DISCORD_GREEN, user.asUser())
 
             }
         }
@@ -218,7 +218,7 @@ class Moderation : Extension() {
                     content = "Kicked User"
                 }
 
-                ResponseHelper.responseEmbedInActionLog(actionLog, "Kicked a user", "Kicked ${arguments.userArgument.mention}!", DISCORD_BLACK, user.asUser())
+                ResponseHelper.responseEmbedInChannel(actionLog, "Kicked a user", "Kicked ${arguments.userArgument.mention}!", DISCORD_BLACK, user.asUser())
             }
         }
 
@@ -249,7 +249,7 @@ class Moderation : Extension() {
 
                 respond { content = "Command used" }
 
-                ResponseHelper.responseEmbedInActionLog(
+                ResponseHelper.responseEmbedInChannel(
                     actionLog,
                     "Message Sent",
                     "/say has been used to say ${arguments.messageArgument}.",
@@ -279,7 +279,7 @@ class Moderation : Extension() {
 
                 respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
-                ResponseHelper.responseEmbedInActionLog(actionLog, "Presence Changed", "Lily's presence has been set to ${arguments.presenceArgument}", DISCORD_BLACK, user.asUser())
+                ResponseHelper.responseEmbedInChannel(actionLog, "Presence Changed", "Lily's presence has been set to ${arguments.presenceArgument}", DISCORD_BLACK, user.asUser())
             }
         }
 
@@ -308,7 +308,7 @@ class Moderation : Extension() {
 
                             action {
                                 respond { content = "Shutting down..." }
-                                ResponseHelper.responseEmbedInActionLog(actionLog, "Shutting Down!", null, DISCORD_RED, user.asUser())
+                                ResponseHelper.responseEmbedInChannel(actionLog, "Shutting Down!", null, DISCORD_RED, user.asUser())
                                 kord.shutdown()
                                 exitProcess(0)
                             }

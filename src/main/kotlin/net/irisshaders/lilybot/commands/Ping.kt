@@ -23,7 +23,7 @@ class Ping : Extension() {
     override suspend fun setup() {
         val actionLog = kord.getGuild(GUILD_ID)?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
-        ResponseHelper.responseEmbedInActionLog(actionLog, "Lily is now online!", null, DISCORD_GREEN, null)
+        ResponseHelper.responseEmbedInChannel(actionLog, "Lily is now online!", null, DISCORD_GREEN, null)
         /**
          * Ping Command
          * @author IMS212
