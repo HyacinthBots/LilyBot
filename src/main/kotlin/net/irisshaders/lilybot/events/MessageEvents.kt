@@ -93,10 +93,10 @@ class MessageEvents : Extension() {
 
         event<MessageCreateEvent> {
             action {
-                val message = event.message.asMessage()
+                val message = event.message.asMessageOrNull()
                 val messageAuthor = message.author
-                val messageAuthorTag = messageAuthor!!.tag
-                val messageAuthorAvatar = messageAuthor.avatar!!.url
+                val messageAuthorTag = messageAuthor?.tag
+                val messageAuthorAvatar = messageAuthor?.avatar?.url
                 val attachments = message.attachments
 
                 attachments.forEach {attachment ->
@@ -119,7 +119,7 @@ class MessageEvents : Extension() {
                                     style = ButtonStyle.Primary
 
                                     action {
-                                        if (event.interaction.user.id == messageAuthor.id) {
+                                        if (event.interaction.user.id == messageAuthor?.id) {
                                             confirmationMessage!!.delete()
 
                                             val uploadMessage = message.channel.createEmbed {
@@ -181,7 +181,7 @@ class MessageEvents : Extension() {
                                     style = ButtonStyle.Secondary
 
                                     action {
-                                        if (event.interaction.user.id == messageAuthor.id) confirmationMessage!!.delete()
+                                        if (event.interaction.user.id == messageAuthor?.id) confirmationMessage!!.delete()
                                     }
                                 }
                             }
