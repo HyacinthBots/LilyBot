@@ -132,7 +132,7 @@ class Moderation : Extension() {
                     }
 
                     footer {
-                        text = "Requested by " + user.asUser().tag
+                        text = "Requested by ${user.asUser().tag}"
                         icon = user.asUser().avatar?.url
                     }
 
@@ -216,7 +216,7 @@ class Moderation : Extension() {
                     }
 
                     footer {
-                        text = "Requested by " + user.asUser().tag
+                        text = "Requested by ${user.asUser().tag}"
                         icon = user.asUser().avatar?.url
                     }
 
@@ -258,7 +258,21 @@ class Moderation : Extension() {
                     content = "Kicked User"
                 }
 
-                ResponseHelper.responseEmbedInChannel(actionLog, "Kicked a user", "Kicked ${arguments.userArgument.mention}!", DISCORD_BLACK, user.asUser())
+                actionLog.createEmbed {
+                    color = DISCORD_BLACK
+                    title = "Kicked User"
+                    description = "Kicked ${arguments.userArgument.tag} from the Server"
+
+                    field {
+                        name = "Reason"
+                        value = arguments.reason
+                        inline = false
+                    }
+                    footer {
+                        text = "Requested By ${user.asUser().tag}"
+                        icon = user.asUser().avatar?.url
+                    }
+                }
             }
         }
 
@@ -429,7 +443,7 @@ class Moderation : Extension() {
                         inline = false
                     }
                     footer {
-                        text = "Requested by " + user.asUser().tag
+                        text = "Requested by ${user.asUser().tag}"
                         icon = user.asUser().avatar?.url
                     }
                 }
@@ -488,7 +502,7 @@ class Moderation : Extension() {
                         inline = false
                     }
                     footer {
-                        text = "Requested by " + user.asUser().tag
+                        text = "Requested by ${user.asUser().tag}"
                         icon = user.asUser().avatar?.url
                     }
                 }
@@ -529,7 +543,7 @@ class Moderation : Extension() {
                         inline = false
                     }
                     footer {
-                        text = "Requested by " + user.asUser().tag
+                        text = "Requested by ${user.asUser().tag}"
                         icon = user.asUser().avatar?.url
                     }
                 }
@@ -544,6 +558,7 @@ class Moderation : Extension() {
 
     inner class KickArgs : Arguments() {
         val userArgument by user("kickUser", "Person to kick")
+        val reason by defaultingString("reason", "The reason for the Kick", "No Reason Provided")
     }
 
     inner class BanArgs : Arguments() {
