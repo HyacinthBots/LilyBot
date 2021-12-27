@@ -28,7 +28,7 @@ class JoinLeaveEvent : Extension() {
         event<MemberJoinEvent> {
             action {
                 val memberMention = event.member.mention
-                val memberId = event.member.id.asString
+                val memberId = event.member.id.toString()
                 val memberTag = event.member.tag
                 val guildMemberCount = event.guild.fetchGuild().memberCount
                 val joinChannel = event.guild.getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
@@ -57,7 +57,7 @@ class JoinLeaveEvent : Extension() {
         event<MemberLeaveEvent> {
             action {
                 val userMention = event.user.mention
-                val userId = event.user.id.asString
+                val userId = event.user.id.toString()
                 val userTag = event.user.tag
                 val joinTime = event.guild.fetchGuild().joinedTime!!.toMessageFormat(DiscordTimestampStyle.LongDateTime)
                 var guildMemberCount = event.guild.fetchGuild().memberCount
