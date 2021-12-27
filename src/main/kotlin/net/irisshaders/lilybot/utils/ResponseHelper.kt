@@ -1,38 +1,33 @@
 package net.irisshaders.lilybot.utils
 
-import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import dev.kord.common.Color
 import dev.kord.core.behavior.channel.MessageChannelBehavior
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.entity.User
 import dev.kord.core.entity.Message
-import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.core.entity.User
 import kotlinx.datetime.Clock
 
 object ResponseHelper {
     /**
      * This function generates a Failure embed for ease of use in other places
+     * @param channel The channel that the embed will be created in
      * @param embedTitle The title of the embed
      * @param embedDescription The description of the embed
      * @return the build in embed
      * @author NoComment1105
      */
-    fun failureEmbed(embedTitle: String?, embedDescription: String?) {
-        val embed = EmbedBuilder()
-        embed.title = "Something went wrong!"
-        embed.description = "Please try again!"
-        embed.color = DISCORD_RED
-
-        if (embedTitle != null) embed.title
-        if (embedDescription != null) embed.description
-        return
+    suspend fun failureEmbed(channel: MessageChannelBehavior, embedTitle: String?, embedDescription: String?): Message {
+        return channel.createEmbed {
+            title = embedTitle
+            if (embedDescription != null) description = embedDescription
+            color = DISCORD_RED
+            timestamp = Clock.System.now()
+        }
     }
 
     /**
-     * Creates an [EmbedBuilder] and populates it with the current timestamp, the given as the
-     * requester and the given [Color] as its color.
+     * Using the provided [channel] an embed will be returned, populated by the fields specified by the user
      *
      * @param channel The channel that the embed will be created in.
      * @param embedTitle The title to set the embed to, or null to set no title.
@@ -47,7 +42,7 @@ object ResponseHelper {
         return channel.createEmbed {
             title = embedTitle
             if (embedDescription != null) description = embedDescription
-            color = embedColor
+            if (embedColor != null) color = embedColor
             timestamp = Clock.System.now()
             if (requestedBy != null) {
                 footer {

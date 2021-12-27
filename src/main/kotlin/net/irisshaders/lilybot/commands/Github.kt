@@ -205,7 +205,8 @@ class Github : Extension() {
 
                     if (!repoArg.contains("/")) {
                         respond {
-                            ResponseHelper.failureEmbed("Make sure your input is formatted like this:", "Format: `User/Repo` or `Org/Repo` \n For example: `IrisShaders/Iris`")
+                            content = "ohno"
+                            ResponseHelper.failureEmbed(event.interaction.getChannel(),"Make sure your input is formatted like this:", "Format: `User/Repo` or `Org/Repo` \n For example: `IrisShaders/Iris`")
                         }
                         return@action
                     }
@@ -214,12 +215,10 @@ class Github : Extension() {
 
                     try {
                         repo = github!!.getRepository(repoArg)
-                    } catch (illegalException: IllegalArgumentException) {
+                    } catch (exception: Exception) {
                         respond {
-                            ResponseHelper.failureEmbed(
-                                "Invalid repository name. Make sure this repository exists!",
-                                null
-                            )
+                            content = "ohno"
+                            ResponseHelper.failureEmbed(event.interaction.getChannel(), "Invalid repository name. Make sure this repository exists!", null)
                         }
                         repo = null
                         return@action
@@ -270,15 +269,16 @@ class Github : Extension() {
                 description = "Search github for a User/Organisation"
 
                 action {
-                    var ghUser: GHUser? = null
+                    val ghUser: GHUser?
                     val user = arguments.username
                     try {
                         ghUser = github!!.getUser(user)
                     } catch (exception: GHFileNotFoundException) {
                         respond {
-                            ResponseHelper.failureEmbed("Invalid Username. Make sure this user exists", "ohno")
-                            return@action
+                            content = "ohno"
+                            ResponseHelper.failureEmbed(event.interaction.getChannel(),"Invalid Username. Make sure this user exists", null)
                         }
+                        return@action
                     }
 
                     try {
