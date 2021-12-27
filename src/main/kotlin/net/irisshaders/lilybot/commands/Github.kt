@@ -82,6 +82,7 @@ class Github : Extension() {
                             if (issue!!.isPullRequest) {
                                 title = issue.title
                                 url = issue.htmlUrl.toString()
+                                description = "**Information for Pull request #${issue.number} in ${issue.repository.fullName}**"
 
                                 try {
                                     val pull: GHPullRequest = issue.repository.getPullRequest(issue.number)
@@ -97,6 +98,7 @@ class Github : Extension() {
                             } else {
                                 title = issue.title
                                 url = issue.htmlUrl.toString()
+                                description = "**Information for issue #${issue.number} in ${issue.repository.fullName}**"
                             }
 
                             field {
