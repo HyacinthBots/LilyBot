@@ -80,7 +80,8 @@ class Github : Extension() {
                             var draft = false
 
                             if (issue!!.isPullRequest) {
-                                title = "Information for Pull Request #" + issue.number + " in " + issue.repository.fullName
+                                title = issue.title
+                                url = issue.htmlUrl.toString()
 
                                 try {
                                     val pull: GHPullRequest = issue.repository.getPullRequest(issue.number)
@@ -94,7 +95,7 @@ class Github : Extension() {
                                     return@action
                                 }
                             } else {
-                                title = "Information for issue #" + issue.number + " in " + issue.repository.fullName
+                                title = issue.title
                                 url = issue.htmlUrl.toString()
                             }
 
