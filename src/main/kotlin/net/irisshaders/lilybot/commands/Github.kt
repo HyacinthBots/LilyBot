@@ -5,6 +5,7 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.publicSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
+import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
@@ -50,15 +51,13 @@ class Github : Extension() {
                 description = "Look up an issue on a specific repository"
 
                 action {
-                    val issueNumberArg = arguments.issue
-                    val issueRepoArg = arguments.repository
                     var issue: GHIssue?
 
                     try {
-                        issue = github?.getRepository(issueRepoArg)?.getIssue(issueNumberArg)
+                        issue = github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
                     } catch (e: NumberFormatException) {
                         val iterator: PagedIterator<GHIssue>? = github?.searchIssues()
-                            ?.q("$issueNumberArg repo: $issueRepoArg")
+                            ?.q("${arguments.issue} repo: ${arguments.repository}")
                             ?.order(GHDirection.DESC)
                             ?.list()
                             ?._iterator(1)
@@ -66,11 +65,11 @@ class Github : Extension() {
                         if (iterator!!.hasNext()) {
                             issue = iterator.next()
                         } else {
-                            throw Exception("Could not find specified issue in repo `$issueRepoArg`!")
+                            throw Exception("Could not find specified issue in repo `${arguments.repository}`!")
                         }
 
                         val num: Int = issue.number
-                        issue = github?.getRepository(issueRepoArg)?.getIssue(num)
+                        issue = github?.getRepository(arguments.repository)?.getIssue(num)
                     }
                     respondPublic {
                         embed {
@@ -204,9 +203,8 @@ class Github : Extension() {
                 description = "Search GitHub for a specific repository"
 
                 action {
-                    val repoArg = arguments.repository
 
-                    if (!repoArg.contains("/")) {
+                    if (!arguments.repository.contains("/")) {
                         respond {
                             content = "ohno"
                             ResponseHelper.failureEmbed(event.interaction.getChannel(),"Make sure your input is formatted like this:", "Format: `User/Repo` or `Org/Repo` \n For example: `IrisShaders/Iris`")
@@ -217,7 +215,7 @@ class Github : Extension() {
                     var repo: GHRepository?
 
                     try {
-                        repo = github!!.getRepository(repoArg)
+                        repo = github!!.getRepository(arguments.repository)
                     } catch (exception: Exception) {
                         respond {
                             content = "ohno"
@@ -233,6 +231,7 @@ class Github : Extension() {
                                 title = "GitHub Repository Info for " + repo?.fullName
                                 url = repo?.htmlUrl.toString()
                                 description = repo?.description
+
                                 if (repo!!.license != null) {
                                     field {
                                         name = "License:"
@@ -240,6 +239,7 @@ class Github : Extension() {
                                         inline = false
                                     }
                                 }
+
                                 field {
                                     name = "Open Issues and PRs:"
                                     value = repo.openIssueCount.toString()
@@ -273,9 +273,9 @@ class Github : Extension() {
 
                 action {
                     val ghUser: GHUser?
-                    val user = arguments.username
+
                     try {
-                        ghUser = github!!.getUser(user)
+                        ghUser = github!!.getUser(arguments.username)
                     } catch (exception: GHFileNotFoundException) {
                         respond {
                             content = "ohno"

@@ -24,6 +24,7 @@ import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.http.auth.*
 import io.ktor.util.*
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.MESSAGE_LOGS
@@ -50,9 +51,8 @@ class MessageEvents : Extension() {
                 if (event.message?.channel !is ThreadChannel && event.message?.channel?.id == SUPPORT_CHANNEL) return@action
 
                 val actionLog = event.guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
-                val message = event.message?.asMessageOrNull()?.content.toString()
-                val messageAuthor = event.message!!.author!!.tag
-                val messageAuthorId = event.message!!.author!!.id.value
+                val messageContent = event.message?.asMessageOrNull()?.content.toString()
+                val message = event.message!!
                 val messageLocation = event.channel.id.value
 
                 actionLog.createEmbed {
@@ -63,17 +63,17 @@ class MessageEvents : Extension() {
 
                     field {
                         name = "Message Contents:"
-                        value = message
+                        value = messageContent
                         inline = false
                     }
                     field {
                         name = "Message Author:"
-                        value = messageAuthor
+                        value = message.author.toString()
                         inline = true
                     }
                     field {
                         name = "Author ID:"
-                        value = "$messageAuthorId"
+                        value = message.author?.id.toString()
                         inline = true
                     }
                 }
@@ -88,12 +88,8 @@ class MessageEvents : Extension() {
         event<MessageCreateEvent> {
             action {
                 val message = event.message.asMessageOrNull()
-                val messageAuthor = message.author
-                val messageAuthorTag = messageAuthor?.tag
-                val messageAuthorAvatar = messageAuthor?.avatar?.url
-                val attachments = message.attachments
 
-                attachments.forEach {attachment ->
+                message.attachments.forEach {attachment ->
                     val attachmentFileName = attachment.filename
                     val attachmentFileExtension = attachmentFileName.substring(attachmentFileName.lastIndexOf(".") + 1)
 
@@ -105,7 +101,7 @@ class MessageEvents : Extension() {
                             "Do you want to upload this file to Hastebin?", 
                             "Hastebin is a website that allows users to share plain text through public posts called “pastes.”\nIt's easier for the support team to view the file on Hastebin, do you want it to be uploaded?", 
                             DISCORD_BLURPLE,
-                            messageAuthor
+                            message.author
                         ).edit {
                             components {
                                 ephemeralButton(row = 0) {
@@ -113,7 +109,7 @@ class MessageEvents : Extension() {
                                     style = ButtonStyle.Primary
 
                                     action {
-                                        if (event.interaction.user.id == messageAuthor?.id) {
+                                        if (event.interaction.user.id == message.author?.id) {
                                             confirmationMessage!!.delete()
 
                                             val uploadMessage = message.channel.createEmbed {
@@ -122,8 +118,8 @@ class MessageEvents : Extension() {
                                                 timestamp = Clock.System.now()
 
                                                 footer {
-                                                    text = "Uploaded by $messageAuthorTag"
-                                                    icon = messageAuthorAvatar
+                                                    text = "Uploaded by ${message.author?.tag}"
+                                                    icon = message.author?.avatar?.url
                                                 }
                                             }
 
@@ -150,8 +146,8 @@ class MessageEvents : Extension() {
                                                         timestamp = Clock.System.now()
 
                                                         footer {
-                                                            text = "Uploaded by $messageAuthorTag"
-                                                            icon = messageAuthorAvatar
+                                                            text = "Uploaded by ${message.author?.tag}"
+                                                            icon = message.author?.avatar?.url
                                                         }
                                                     }
 
@@ -177,7 +173,7 @@ class MessageEvents : Extension() {
                                     style = ButtonStyle.Secondary
 
                                     action {
-                                        if (event.interaction.user.id == messageAuthor?.id) {
+                                        if (event.interaction.user.id == message.author?.id) {
                                             confirmationMessage!!.delete()
                                         } else {
                                             respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }

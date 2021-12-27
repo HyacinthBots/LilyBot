@@ -380,25 +380,23 @@ class Moderation : Extension() {
             allowRole(TRIALMODERATORS)
 
             action {
-                val userId = arguments.userArgument.id.toString()
-                val userTag = arguments.userArgument.tag
-                val warnPoints = arguments.warnPoints
+                val userArg = arguments.userArgument
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
                 var databasePoints: String? = null
 
                 newSuspendedTransaction {
                     DatabaseManager.Warn.insertIgnore {
-                        it[id] = userId
+                        it[id] = userArg.id.toString()
                         it[points] = "0"
                     }
 
                     databasePoints = DatabaseManager.Warn.select {
-                        DatabaseManager.Warn.id eq userId
+                        DatabaseManager.Warn.id eq userArg.id.toString()
                     }.single()[DatabaseManager.Warn.points]
 
                     DatabaseManager.Warn.replace {
                         it[id] = id
-                        it[points] = (warnPoints + Integer.parseInt(databasePoints)).toString()
+                        it[points] = (arguments.warnPoints + Integer.parseInt(databasePoints)).toString()
                     }
                 }
 
@@ -412,7 +410,7 @@ class Moderation : Extension() {
 
                     field {
                         name = "User:"
-                        value = "$userTag \n $userId"
+                        value = "${userArg.tag} \n${userArg.id}"
                         inline = false
                     }
                     field {
@@ -422,7 +420,7 @@ class Moderation : Extension() {
                     }
                     field {
                         name = "Points added:"
-                        value = warnPoints.toString()
+                        value = arguments.warnPoints.toString()
                         inline = false
                     }
                     field {
@@ -452,22 +450,21 @@ class Moderation : Extension() {
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
-                val userID = arguments.userArgument.id.toString()
-                val userTag = arguments.userArgument.tag
+                val userArg = arguments.userArgument
                 val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
 
-                if (guild?.getMember(arguments.userArgument.id)?.isBot == true || guild?.getRole(MODERATORS)?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true) {
+                if (guild?.getMember(userArg.id)?.isBot == true || guild?.getRole(MODERATORS)?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true) {
                     respond {
                         content = "You cannot timeout a moderator/bot!"
                     }
                     return@action
                 }
 
-                guild?.getMember(arguments.userArgument.id)?.edit {
+                guild?.getMember(userArg.id)?.edit {
                     timeoutUntil = duration
                 }
                 respond {
-                    content = "Timed out $userID"
+                    content = "Timed out ${userArg.id}"
                 }
 
                 actionLog.createEmbed {
@@ -477,7 +474,7 @@ class Moderation : Extension() {
 
                     field {
                         name = "User:"
-                        value = "$userTag \n $userID"
+                        value = "${userArg.tag} \n${userArg.id}"
                         inline = false
                     }
                     field {
@@ -512,14 +509,13 @@ class Moderation : Extension() {
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
-                val userID = arguments.userArgument.id.toString()
-                val userTag = arguments.userArgument.tag
+                val userArg = arguments.userArgument
 
-                guild?.getMember(arguments.userArgument.id)?.edit {
+                guild?.getMember(userArg.id)?.edit {
                     timeoutUntil = null
                 }
                 respond {
-                    content = "Removed timeout on $userID"
+                    content = "Removed timeout on ${userArg.id}"
                 }
 
                 actionLog.createEmbed {
@@ -529,7 +525,7 @@ class Moderation : Extension() {
 
                     field {
                         name = "User:"
-                        value = "$userTag \n $userID"
+                        value = "${userArg.tag} \n${userArg.id}"
                         inline = false
                     }
                     footer {
