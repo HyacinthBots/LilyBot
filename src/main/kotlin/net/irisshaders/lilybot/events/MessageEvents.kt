@@ -33,16 +33,16 @@ import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
 import kotlin.time.ExperimentalTime
 
-/**
- * Log Message events to the Guilds channel action log.
- * @author NoComment1105
- */
 class MessageEvents : Extension() {
     override val name = "messageevents"
 
     private val LOG_FILE_EXTENSIONS = setOf("log", "gz", "txt")
 
     override suspend fun setup() {
+        /**
+         * Log the deletion of messages to the guilds [MESSAGE_LOGS] channel
+         * @author NoComment1105
+         */
         event<MessageDeleteEvent> {
             action {
                 // Ignore messages from Lily itself
@@ -80,6 +80,11 @@ class MessageEvents : Extension() {
             }
         }
 
+        /**
+         * Upload files that have the extensions specified in [LOG_FILE_EXTENSIONS] to hastebin, giving a user confirmation
+         *
+         * @author maximumpower55
+         */
         event<MessageCreateEvent> {
             action {
                 val message = event.message.asMessageOrNull()
@@ -136,7 +141,7 @@ class MessageEvents : Extension() {
                                                     builder.append(String(gis.readAllBytes()))
                                                 }
 
-                                                val response = postToHasteBin(builder.toString())!!
+                                                val response = postToHasteBin(builder.toString())
 
                                                 uploadMessage.edit {
                                                     embed {
@@ -158,7 +163,7 @@ class MessageEvents : Extension() {
                                                 }
                                             } catch (e: Exception) {
                                                 uploadMessage.edit {
-                                                    ResponseHelper.failureEmbed("Failed to upload `$attachmentFileName` to Hastebin", e.toString())
+                                                    ResponseHelper.failureEmbed(event.interaction.getChannel(),"Failed to upload `$attachmentFileName` to Hastebin", e.toString())
                                                 }
                                             }
                                         } else {
@@ -187,7 +192,7 @@ class MessageEvents : Extension() {
         }
     }
 
-    private suspend fun postToHasteBin(text: String) : String? {
+    private suspend fun postToHasteBin(text: String) : String {
         val client = HttpClient()
 
         var response = client.post<HttpResponse>("https://www.toptal.com/developers/hastebin/documents") {
@@ -195,11 +200,11 @@ class MessageEvents : Extension() {
         }.content.toByteArray().decodeToString()
 
         if (response.contains("\"key\"")) {
-            response = "https://www.toptal.com/developers/hastebin/" + response.substring(response.indexOf(":") + 2, response.length - 2);
+            response = "https://www.toptal.com/developers/hastebin/" + response.substring(response.indexOf(":") + 2, response.length - 2)
         }
 
-        client.close();
+        client.close()
 
-        return response;
+        return response
     }
 }
