@@ -13,6 +13,7 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
+import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.UserBehavior
@@ -23,11 +24,13 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.MessageChannel
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.MESSAGE_LOGS
-import net.irisshaders.lilybot.utils.FULLMODERATORS
 import net.irisshaders.lilybot.utils.MODERATORS
+import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 /**
@@ -158,21 +161,34 @@ class Report : Extension() {
                         description = "Ban the user and delete their messages."
                     }
                     action {
+                        val actionlog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
                         when (this.selected[0]) {
                             "10-timeout" -> {
-                                respond {
-                                    content = "This is not yet implemented"
+                                guild?.getMember(messageAuthor!!.id)?.edit {
+                                    timeoutUntil = Clock.System.now().plus(Duration.parse("PT10M"))
                                 }
+                                respond {
+                                    content = "Timed out user for 10 minutes"
+                                }
+                                quickTimeoutEmbed(actionlog, messageAuthor!!.asUser(), 30)
                             }
                             "20-timeout" -> {
-                                respond {
-                                    content = "This is not yet implemented"
+                                guild?.getMember(messageAuthor!!.id)?.edit {
+                                    timeoutUntil = Clock.System.now().plus(Duration.parse("PT20M"))
                                 }
+                                respond {
+                                    content = "Timed out user for 20 minutes"
+                                }
+                                quickTimeoutEmbed(actionlog, messageAuthor!!.asUser(), 30)
                             }
                             "30-timeout" -> {
-                                respond {
-                                    content = "This is not yet implemented"
+                                guild?.getMember(messageAuthor!!.id)?.edit {
+                                    timeoutUntil = Clock.System.now().plus(Duration.parse("PT30M"))
                                 }
+                                respond {
+                                    content = "Timed out user for 30 minutes"
+                                }
+                                quickTimeoutEmbed(actionlog, messageAuthor!!.asUser(), 30)
                             }
                             "kick-user" -> {
                                 messageAuthor?.kick(reason = "Kicked via report")
@@ -191,6 +207,32 @@ class Report : Extension() {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private suspend fun quickTimeoutEmbed(actionLog: GuildMessageChannelBehavior, user: User, duration: Int): Message {
+        return actionLog.createEmbed {
+            title = "Timeout"
+
+            field {
+                name = "User"
+                value = "${user.tag}\n${user.id}"
+                inline = false
+            }
+            field {
+                name = "Duration"
+                value = "$duration minutes \n ${Clock.System.now().plus(Duration.parse("PT${duration}M"))}"
+                inline = false
+            }
+            field {
+                name = "Reason"
+                value = "Timed out user for $duration minutes"
+                inline = false
+            }
+            footer {
+                text = "Requested by" + user.asUser().tag
+                icon = user.avatar?.url
             }
         }
     }
