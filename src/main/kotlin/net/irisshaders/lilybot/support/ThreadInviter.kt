@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.utils.delete
 import com.kotlindiscord.kord.extensions.utils.respond
+import dev.kord.common.entity.ArchiveDuration
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.channel.TextChannel
@@ -52,7 +53,8 @@ class ThreadInviter : Extension() {
                     val thread =
                         textChannel.startPublicThreadWithMessage(
                             event.message.id,
-                            "Support thread for " + event.member!!.asUser().username
+                            "Support thread for " + event.member!!.asUser().username,
+                            ArchiveDuration.Hour
                         )
                     val editMessage = thread.createMessage("edit message")
 
