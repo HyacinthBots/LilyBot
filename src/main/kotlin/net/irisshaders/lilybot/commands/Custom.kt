@@ -53,7 +53,7 @@ class Custom : Extension() {
                         action {
                             respond {
                                 embed {
-                                    color = DISCORD_RED
+                                    color = DISCORD_BLURPLE
                                     timestamp = Clock.System.now()
                                     title = sub.getOrDefault("title", null) as String
                                     description = sub.getOrDefault("description", "") as String
