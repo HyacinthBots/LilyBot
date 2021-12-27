@@ -27,10 +27,8 @@ class JoinLeaveEvent : Extension() {
     override suspend fun setup() {
         event<MemberJoinEvent> {
             action {
-                val memberMention = event.member.mention
-                val memberId = event.member.id.toString()
-                val memberTag = event.member.tag
-                val guildMemberCount = event.guild.fetchGuild().memberCount
+                val eventMember = event.member
+                val guildMemberCount = event.guild.fetchGuild().memberCount!!.plus(1)
                 val joinChannel = event.guild.getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
 
                 joinChannel.createEmbed {
@@ -40,12 +38,12 @@ class JoinLeaveEvent : Extension() {
 
                     field {
                         name = "Welcome:"
-                        value = "$memberMention! ($memberTag)"
+                        value = "${eventMember.mention}! (${eventMember.tag})"
                         inline = true
                     }
                     field {
                         name = "ID:"
-                        value = memberId
+                        value = eventMember.id.toString()
                         inline = false
                     }
                     footer {
@@ -56,12 +54,8 @@ class JoinLeaveEvent : Extension() {
         }
         event<MemberLeaveEvent> {
             action {
-                val userMention = event.user.mention
-                val userId = event.user.id.toString()
-                val userTag = event.user.tag
-                val joinTime = event.guild.fetchGuild().joinedTime!!.toMessageFormat(DiscordTimestampStyle.LongDateTime)
-                var guildMemberCount = event.guild.fetchGuild().memberCount
-                guildMemberCount = guildMemberCount?.minus(1)
+                val eventUser = event.user
+                val guildMemberCount = event.guild.fetchGuild().memberCount
                 val joinChannel = event.guild.getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
 
                 joinChannel.createEmbed {
@@ -71,18 +65,13 @@ class JoinLeaveEvent : Extension() {
 
                     field {
                         name = "Goodbye:"
-                        value = "$userMention! ($userTag)"
+                        value = "${eventUser.mention}! (${eventUser.tag})"
                         inline = true
                     }
                     field {
                         name = "ID:"
-                        value = userId
+                        value = eventUser.id.toString()
                         inline = false
-                    }
-                    field {
-                        name = "**Joined on:**"
-                        value = joinTime
-                        inline = true
                     }
                     footer {
                         text = "Member count: $guildMemberCount"
