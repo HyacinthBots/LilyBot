@@ -52,7 +52,7 @@ class MessageEvents : Extension() {
 
                 val actionLog = event.guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
                 val messageContent = event.message?.asMessageOrNull()?.content.toString()
-                val message = event.message!!
+                val message = event.message
                 val messageLocation = event.channel.id.value
 
                 actionLog.createEmbed {
@@ -68,12 +68,12 @@ class MessageEvents : Extension() {
                     }
                     field {
                         name = "Message Author:"
-                        value = message.author.toString()
+                        value = message?.author!!.tag
                         inline = true
                     }
                     field {
                         name = "Author ID:"
-                        value = message.author?.id.toString()
+                        value = message?.author?.id.toString()
                         inline = true
                     }
                 }
