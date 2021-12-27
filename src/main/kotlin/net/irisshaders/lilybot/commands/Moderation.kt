@@ -94,6 +94,18 @@ class Moderation : Extension() {
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
+                if (guild?.getMember(arguments.userArgument.id)?.isBot == true) {
+                    respond {
+                        content = "Lol you can't ban me or other bots"
+                    }
+                    return@action
+                } else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole())} == true) {
+                    respond {
+                        content = "Bruh don't try to ban a moderator"
+                    }
+                    return@action
+                }
+
                 guild?.ban(arguments.userArgument.id, builder = {
                     this.reason = "Requested by " + user.asUser().username
                     this.deleteMessagesDays = arguments.messages
@@ -166,6 +178,18 @@ class Moderation : Extension() {
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
+                if (guild?.getMember(arguments.userArgument.id)?.isBot == true) {
+                    respond {
+                        content = "Lol you can't ban me or other bots"
+                    }
+                    return@action
+                } else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole())} == true) {
+                    respond {
+                        content = "Bruh don't try to ban a moderator"
+                    }
+                    return@action
+                }
+
                 guild?.ban(arguments.userArgument.id, builder = {
                     this.reason = "Requested by ${user.asUser().username}"
                     this.deleteMessagesDays = arguments.messages
@@ -215,6 +239,18 @@ class Moderation : Extension() {
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+
+                if (guild?.getMember(arguments.userArgument.id)?.isBot == true) {
+                    respond {
+                        content = "Lol you can't kick me or other bots"
+                    }
+                    return@action
+                } else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole())} == true) {
+                    respond {
+                        content = "Bruh don't try to kick a moderator"
+                    }
+                    return@action
+                }
 
                 guild?.kick(arguments.userArgument.id, "Requested by " + user.asUser().username)
 
@@ -299,6 +335,7 @@ class Moderation : Extension() {
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+
                 respond {
                     embed {
                         title = "Shutdown"
@@ -343,7 +380,7 @@ class Moderation : Extension() {
             allowRole(TRIALMODERATORS)
 
             action {
-                val userId = arguments.userArgument.id.asString
+                val userId = arguments.userArgument.id.toString()
                 val userTag = arguments.userArgument.tag
                 val warnPoints = arguments.warnPoints
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -423,8 +460,7 @@ class Moderation : Extension() {
                     respond {
                         content = "You cannot timeout a moderator/bot!"
                     }
-
-                    return@action;
+                    return@action
                 }
 
                 guild?.getMember(arguments.userArgument.id)?.edit {
