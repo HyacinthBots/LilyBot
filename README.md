@@ -7,6 +7,7 @@
 
 ### Why?
 * Late in August 2021, Discord.py was discontinued. This is previously what the Iris Project's Discord bot was written in, So [NoComment](https://github.com/NoComment1105), [Miss Corruption](https://github.com/Miss-Corruption), [Maxigator](https://github.com/Maxigator) and [chalkyjeans](https://github.com/chalkyjeans) took on the task of rewriting the bot in JDA.
+* Then with need for features that JDA did not provide, another rewrite occured! This time [NoComment](https://github.com/NoComment1105), [Miss Corruption](https://github.com/Miss-Corruption), [Maximum](https://github.com/maximumpower55) and [IMS](https://github.com/IMS212), began rewiting in Kotlin, using the [Kord API](https://github.com/kordlib/kord) and [KordEx Extension Library](https://github.com/Kord-Extensions/kord-extensions)
 
 ### How can I use LilyBot in my own server!?
 Follow the in-depth [installation guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/installation-guide.md).
