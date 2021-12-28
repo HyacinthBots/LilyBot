@@ -9,12 +9,12 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
-import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.message.MessageCreateEvent
@@ -24,7 +24,6 @@ import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.auth.*
 import io.ktor.util.*
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.MESSAGE_LOGS
@@ -68,7 +67,7 @@ class MessageEvents : Extension() {
                     }
                     field {
                         name = "Message Author:"
-                        value = message?.author!!.tag
+                        value = message?.author?.tag.toString()
                         inline = true
                     }
                     field {
