@@ -8,7 +8,6 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
-import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.GUILD_ID
@@ -23,7 +22,12 @@ class Ping : Extension() {
     override suspend fun setup() {
         val actionLog = kord.getGuild(GUILD_ID)?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
+        /**
+         * Online notification
+         * @author IMS212
+         */
         ResponseHelper.responseEmbedInChannel(actionLog, "Lily is now online!", null, DISCORD_GREEN, null)
+
         /**
          * Ping Command
          * @author IMS212

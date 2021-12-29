@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
@@ -47,6 +48,11 @@ class JoinLeaveEvent : Extension() {
                     footer {
                         text = "Member Count: $guildMemberCount"
                     }
+                    if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                        category = "events.joinleaveevent.join"
+                        message = "Member joined"
+                        data["user"] = eventMember.tag
+                    }
                 }
             }
         }
@@ -73,6 +79,12 @@ class JoinLeaveEvent : Extension() {
                     }
                     footer {
                         text = "Member count: $guildMemberCount"
+                    }
+
+                    if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                        category = "events.joinleaveevent.leave"
+                        message = "Member Left"
+                        data["user"] = eventUser.tag
                     }
                 }
             }

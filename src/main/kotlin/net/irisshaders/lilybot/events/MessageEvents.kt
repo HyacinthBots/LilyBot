@@ -9,6 +9,7 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
@@ -51,7 +52,7 @@ class MessageEvents : Extension() {
 
                 val actionLog = event.guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
                 val messageContent = event.message?.asMessageOrNull()?.content.toString()
-                val message = event.message
+                val eventMessage = event.message
                 val messageLocation = event.channel.id.value
 
                 actionLog.createEmbed {
@@ -70,14 +71,20 @@ class MessageEvents : Extension() {
                     }
                     field {
                         name = "Message Author:"
-                        value = message?.author?.tag.toString()
+                        value = eventMessage?.author?.tag.toString()
                         inline = true
                     }
                     field {
                         name = "Author ID:"
-                        value = message?.author?.id.toString()
+                        value = eventMessage?.author?.id.toString()
                         inline = true
                     }
+                }
+
+                if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                    category = "events.messageevents.MessageDeleted"
+                    message = "A message was deleted"
+                    data["content"] = messageContent.ifEmpty { "Failed to get content of message" }
                 }
             }
         }
@@ -89,9 +96,9 @@ class MessageEvents : Extension() {
          */
         event<MessageCreateEvent> {
             action {
-                val message = event.message.asMessageOrNull()
+                val eventMessage = event.message.asMessageOrNull()
 
-                message.attachments.forEach {attachment ->
+                eventMessage.attachments.forEach { attachment ->
                     val attachmentFileName = attachment.filename
                     val attachmentFileExtension = attachmentFileName.substring(attachmentFileName.lastIndexOf(".") + 1)
 
@@ -99,11 +106,11 @@ class MessageEvents : Extension() {
                         var confirmationMessage: Message? = null
 
                         confirmationMessage = ResponseHelper.responseEmbedInChannel(
-                            message.channel,
+                            eventMessage.channel,
                             "Do you want to upload this file to Hastebin?", 
                             "Hastebin is a website that allows users to share plain text through public posts called “pastes.”\nIt's easier for the support team to view the file on Hastebin, do you want it to be uploaded?", 
                             DISCORD_BLURPLE,
-                            message.author
+                            eventMessage.author
                         ).edit {
                             components {
                                 ephemeralButton(row = 0) {
@@ -111,17 +118,21 @@ class MessageEvents : Extension() {
                                     style = ButtonStyle.Primary
 
                                     action {
-                                        if (event.interaction.user.id == message.author?.id) {
+                                        if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                                            category = "events.messageevents.loguploading.uploadAccept"
+                                            message = "Upload accpeted"
+                                        }
+                                        if (event.interaction.user.id == eventMessage.author?.id) {
                                             confirmationMessage!!.delete()
 
-                                            val uploadMessage = message.channel.createEmbed {
+                                            val uploadMessage = eventMessage.channel.createEmbed {
                                                 color = DISCORD_BLURPLE
                                                 title = "Uploading `$attachmentFileName` to Hastebin..."
                                                 timestamp = Clock.System.now()
 
                                                 footer {
-                                                    text = "Uploaded by ${message.author?.tag}"
-                                                    icon = message.author?.avatar?.url
+                                                    text = "Uploaded by ${eventMessage.author?.tag}"
+                                                    icon = eventMessage.author?.avatar?.url
                                                 }
                                             }
 
@@ -132,6 +143,10 @@ class MessageEvents : Extension() {
 
                                                 if (attachmentFileExtension != "gz") {
                                                     builder.append(logBytes.decodeToString())
+                                                    if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                                                        category = "events.messageevents.loguploading.decodeGZ"
+                                                        message = "A GZ file was decoded"
+                                                    }
                                                 } else {
                                                     val bis = ByteArrayInputStream(logBytes)
                                                     val gis = GZIPInputStream(bis)
@@ -148,8 +163,8 @@ class MessageEvents : Extension() {
                                                         timestamp = Clock.System.now()
 
                                                         footer {
-                                                            text = "Uploaded by ${message.author?.tag}"
-                                                            icon = message.author?.avatar?.url
+                                                            text = "Uploaded by ${eventMessage.author?.tag}"
+                                                            icon = eventMessage.author?.avatar?.url
                                                         }
                                                     }
 
@@ -163,6 +178,10 @@ class MessageEvents : Extension() {
                                                 uploadMessage.edit {
                                                     ResponseHelper.failureEmbed(event.interaction.getChannel(),"Failed to upload `$attachmentFileName` to Hastebin", e.toString())
                                                 }
+                                                if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Error) {
+                                                    category = "events.messageevnets.loguploading.UploadTask"
+                                                    message = "Failed to upload a file to hastebin"
+                                                }
                                             }
                                         } else {
                                             respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }
@@ -175,8 +194,12 @@ class MessageEvents : Extension() {
                                     style = ButtonStyle.Secondary
 
                                     action {
-                                        if (event.interaction.user.id == message.author?.id) {
+                                        if (event.interaction.user.id == eventMessage.author?.id) {
                                             confirmationMessage!!.delete()
+                                            if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                                                category = "events.messagevents.loguploading.uploadDeny"
+                                                message = "Upload of log denied"
+                                            }
                                         } else {
                                             respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }
                                         }

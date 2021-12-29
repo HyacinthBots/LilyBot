@@ -18,5 +18,6 @@ val SUPPORT_CHANNEL = Snowflake(env("SUPPORT_CHANNEL"))
 val JOIN_CHANNEL = Snowflake(env("JOIN_CHANNEL"))
 val GITHUB_OAUTH = env("GITHUB_OAUTH")
 val CONFIG_PATH = env("CONFIG_PATH")
+val ENABLE_SENTRY = env("ENABLE_SENTRY")
 val SENTRY_DSN = envOrNull("SENTRY_DSN")
 const val JDBC_URL = "jdbc:sqlite:database.db"
