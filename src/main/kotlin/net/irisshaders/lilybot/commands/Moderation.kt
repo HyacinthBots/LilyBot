@@ -17,21 +17,22 @@ import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.hasRole
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
+import dev.kord.common.DiscordTimestampStyle
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
+import dev.kord.common.toMessageFormat
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.rest.builder.message.create.embed
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.datetime.*
+import kotlinx.coroutines.flow.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.*
 import org.jetbrains.exposed.sql.insertIgnore
@@ -76,7 +77,13 @@ class Moderation : Extension() {
                     content = "Messages Cleared"
                 }
 
-                ResponseHelper.responseEmbedInChannel(actionLog, "$messageAmount messages have been cleared.", "Action occured in ${textChannel.mention}", DISCORD_BLACK, user.asUser())
+                ResponseHelper.responseEmbedInChannel(
+                    actionLog,
+                    "$messageAmount messages have been cleared.",
+                    "Action occured in ${textChannel.mention}",
+                    DISCORD_BLACK,
+                    user.asUser()
+                )
             }
         }
 
@@ -93,20 +100,28 @@ class Moderation : Extension() {
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+                val userArg = arguments.userArgument
 
-                if (guild?.getMember(arguments.userArgument.id)?.isBot == true) {
+                if (guild?.getMember(userArg.id)?.isBot == true) {
                     respond {
                         content = "Lol you can't ban me or other bots"
                     }
                     return@action
-                } else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole())} == true) {
+                } else if (guild?.getRole(MODERATORS) ?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true) {
                     respond {
                         content = "Bruh don't try to ban a moderator"
                     }
                     return@action
                 }
 
-                guild?.ban(arguments.userArgument.id, builder = {
+                val dm = ResponseHelper.userDMEmbed(
+                    userArg,
+                    "You have been banned from ${guild?.fetchGuild()?.name}",
+                    "**Reason:**\n${arguments.reason}",
+                    null
+                )
+
+                guild?.ban(userArg.id, builder = {
                     this.reason = "Requested by " + user.asUser().username
                     this.deleteMessagesDays = arguments.messages
                 })
@@ -118,7 +133,7 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Banned a user"
-                    description = "${arguments.userArgument.mention} has been banned!"
+                    description = "${userArg.mention} has been banned!"
 
                     field {
                         name = "Reason:"
@@ -126,8 +141,18 @@ class Moderation : Extension() {
                         inline = false
                     }
                     field {
-                        name = "Days of messages deleted"
+                        name = "Days of messages deleted:"
                         value = arguments.messages.toString()
+                        inline = false
+                    }
+                    field {
+                        name = "User Notification:"
+                        value =
+                            if (dm != null) {
+                                "User notified with a direct message"
+                            } else {
+                                "Failed to notify user with a direct message"
+                            }
                         inline = false
                     }
 
@@ -160,7 +185,13 @@ class Moderation : Extension() {
                     content = "Unbanned User"
                 }
 
-                ResponseHelper.responseEmbedInChannel(actionLog, "Unbanned a user", "${arguments.userArgument.mention} has been unbanned!", DISCORD_GREEN, user.asUser())
+                ResponseHelper.responseEmbedInChannel(
+                    actionLog,
+                    "Unbanned a user",
+                    "${arguments.userArgument.mention} has been unbanned!",
+                    DISCORD_GREEN,
+                    user.asUser()
+                )
 
             }
         }
@@ -177,20 +208,29 @@ class Moderation : Extension() {
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+                val userArg = arguments.userArgument
 
-                if (guild?.getMember(arguments.userArgument.id)?.isBot == true) {
+                if (guild?.getMember(userArg.id)?.isBot == true) {
                     respond {
                         content = "Lol you can't ban me or other bots"
                     }
                     return@action
-                } else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole())} == true) {
+
+                } else if (guild?.getRole(MODERATORS) ?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true) {
                     respond {
                         content = "Bruh don't try to ban a moderator"
                     }
                     return@action
                 }
 
-                guild?.ban(arguments.userArgument.id, builder = {
+                val dm = ResponseHelper.userDMEmbed(
+                    userArg,
+                    "You have been soft-banned from ${guild?.fetchGuild()?.name}",
+                    "**Reason:**\n${arguments.reason}\n\nYou are free to rejoin without the need to be unbanned",
+                    null
+                )
+
+                guild?.ban(userArg.id, builder = {
                     this.reason = "Requested by ${user.asUser().username}"
                     this.deleteMessagesDays = arguments.messages
                 })
@@ -202,7 +242,7 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Soft-banned a user"
-                    description = "${arguments.userArgument.mention} has been soft banned."
+                    description = "${userArg.mention} has been soft banned."
 
                     field {
                         name = "Reason:"
@@ -214,6 +254,16 @@ class Moderation : Extension() {
                         value = arguments.messages.toString()
                         inline = false
                     }
+                    field {
+                        name = "User Notification:"
+                        value =
+                            if (dm != null) {
+                                "User notified with a direct message"
+                            } else {
+                                "Failed to notify user with a direct message"
+                            }
+                        inline = false
+                    }
 
                     footer {
                         text = "Requested by ${user.asUser().tag}"
@@ -223,7 +273,7 @@ class Moderation : Extension() {
                     timestamp = Clock.System.now()
                 }
 
-                guild?.unban(arguments.userArgument.id)
+                guild?.unban(userArg.id)
             }
         }
 
@@ -239,20 +289,28 @@ class Moderation : Extension() {
 
             action {
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+                val userArg = arguments.userArgument
 
-                if (guild?.getMember(arguments.userArgument.id)?.isBot == true) {
+                if (guild?.getMember(userArg.id)?.isBot == true) {
                     respond {
                         content = "Lol you can't kick me or other bots"
                     }
                     return@action
-                } else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole())} == true) {
+                } else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole())} == true) {
                     respond {
                         content = "Bruh don't try to kick a moderator"
                     }
                     return@action
                 }
 
-                guild?.kick(arguments.userArgument.id, "Requested by " + user.asUser().username)
+                val dm = ResponseHelper.userDMEmbed(
+                    userArg,
+                    "You have been kicked from ${guild?.fetchGuild()?.name}",
+                    "**Reason:**\n${arguments.reason}",
+                    null
+                )
+
+                guild?.kick(userArg.id, "Requested by " + user.asUser().username)
 
                 respond {
                     content = "Kicked User"
@@ -266,6 +324,16 @@ class Moderation : Extension() {
                     field {
                         name = "Reason"
                         value = arguments.reason
+                        inline = false
+                    }
+                    field {
+                        name = "User Notification:"
+                        value =
+                            if (dm != null) {
+                                "User notified with a direct message"
+                            } else {
+                                "Failed to notify user with a direct message"
+                            }
                         inline = false
                     }
                     footer {
@@ -333,7 +401,13 @@ class Moderation : Extension() {
 
                 respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
-                ResponseHelper.responseEmbedInChannel(actionLog, "Presence Changed", "Lily's presence has been set to ${arguments.presenceArgument}", DISCORD_BLACK, user.asUser())
+                ResponseHelper.responseEmbedInChannel(
+                    actionLog,
+                    "Presence Changed",
+                    "Lily's presence has been set to ${arguments.presenceArgument}",
+                    DISCORD_BLACK,
+                    user.asUser()
+                )
             }
         }
 
@@ -414,6 +488,13 @@ class Moderation : Extension() {
                     }
                 }
 
+                val dm = ResponseHelper.userDMEmbed(
+                    userArg,
+                    "You have been warned in ${guild?.fetchGuild()?.name}",
+                    "You were given ${arguments.warnPoints} points\nYour total is now ${Integer.parseInt(databasePoints).toString()}\n\n**Reason:**\n${arguments.reason}",
+                    null
+                )
+
                 respond {
                     content = "Warned User"
                 }
@@ -442,6 +523,16 @@ class Moderation : Extension() {
                         value = arguments.reason
                         inline = false
                     }
+                    field {
+                        name = "User notification"
+                        value =
+                            if (dm != null) {
+                                "User notified with a direct message"
+                            } else {
+                                "Failed to notify user with a direct message"
+                            }
+                        inline = false
+                    }
                     footer {
                         text = "Requested by ${user.asUser().tag}"
                         icon = user.asUser().avatar?.url
@@ -467,12 +558,21 @@ class Moderation : Extension() {
                 val userArg = arguments.userArgument
                 val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
 
-                if (guild?.getMember(userArg.id)?.isBot == true || guild?.getRole(MODERATORS)?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true) {
+                if (guild?.getMember(userArg.id)?.isBot == true || guild?.getRole(MODERATORS)
+                        ?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true
+                ) {
                     respond {
                         content = "You cannot timeout a moderator/bot!"
                     }
                     return@action
                 }
+
+                val dm = ResponseHelper.userDMEmbed(
+                    userArg,
+                    "You have been timed out in ${guild?.fetchGuild()?.name}",
+                    "**Duration:**\n${duration.toDiscord(TimestampType.Default) +  "(" + arguments.duration.toString().replace("PT", "") + ")"}\n**Reason:**\n${arguments.reason}",
+                    null
+                )
 
                 guild?.getMember(userArg.id)?.edit {
                     timeoutUntil = duration
@@ -499,6 +599,16 @@ class Moderation : Extension() {
                     field {
                         name = "Reason:"
                         value = arguments.reason
+                        inline = false
+                    }
+                    field {
+                        name = "User notification"
+                        value =
+                            if (dm != null) {
+                                "User notified with a direct message"
+                            } else {
+                                "Failed to notify user with a direct message "
+                            }
                         inline = false
                     }
                     footer {

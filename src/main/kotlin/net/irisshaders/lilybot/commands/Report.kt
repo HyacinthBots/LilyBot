@@ -11,6 +11,8 @@ import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.time.TimestampType
+import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
@@ -30,6 +32,7 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.MESSAGE_LOGS
 import net.irisshaders.lilybot.utils.MODERATORS
 import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
+import net.irisshaders.lilybot.utils.ResponseHelper
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -173,7 +176,13 @@ class Report : Extension() {
                                 respond {
                                     content = "Timed out user for 10 minutes"
                                 }
-                                quickTimeoutEmbed(actionlog, messageAuthor!!.asUser(), 30)
+                                ResponseHelper.userDMEmbed(
+                                    messageAuthor!!.asUser(),
+                                    "You have been timed out in ${guild?.fetchGuild()?.name}",
+                                    "**Duration:**\n10 minutes\n**Reason:**\nTimed-out via report",
+                                    null
+                                )
+                                quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 30)
                             }
                             "20-timeout" -> {
                                 guild?.getMember(messageAuthor!!.id)?.edit {
@@ -182,7 +191,13 @@ class Report : Extension() {
                                 respond {
                                     content = "Timed out user for 20 minutes"
                                 }
-                                quickTimeoutEmbed(actionlog, messageAuthor!!.asUser(), 30)
+                                ResponseHelper.userDMEmbed(
+                                    messageAuthor!!.asUser(),
+                                    "You have been timed out in ${guild?.fetchGuild()?.name}",
+                                    "**Duration:**\n20 minutes\n**Reason:**\nTimed-out via report",
+                                    null
+                                )
+                                quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 30)
                             }
                             "30-timeout" -> {
                                 guild?.getMember(messageAuthor!!.id)?.edit {
@@ -191,21 +206,47 @@ class Report : Extension() {
                                 respond {
                                     content = "Timed out user for 30 minutes"
                                 }
-                                quickTimeoutEmbed(actionlog, messageAuthor!!.asUser(), 30)
+                                ResponseHelper.userDMEmbed(
+                                    messageAuthor!!.asUser(),
+                                    "You have been timed out in ${guild?.fetchGuild()?.name}",
+                                    "**Duration:**\n30 minutes\n**Reason:**\nTimed-out via report",
+                                    null
+                                )
+                                quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 30)
                             }
                             "kick-user" -> {
-                                messageAuthor?.kick(reason = "Kicked via report")
+                                ResponseHelper.userDMEmbed(
+                                    messageAuthor!!.asUser(),
+                                    "You have been kicked from ${guild?.fetchGuild()?.name}",
+                                    "**Reason:**\nKicked via report",
+                                    null
+                                )
+                                messageAuthor.kick(reason = "Kicked via report")
                             }
                             "softban-user" -> {
-                                messageAuthor?.ban {
-                                    this.reason = "Banned via report."
+                                ResponseHelper.userDMEmbed(
+                                    messageAuthor!!.asUser(),
+                                    "You have been soft-banned from ${guild?.fetchGuild()?.name}",
+                                    "**Reason:**\nSoft-banned via report\n\nYou are free to rejoin without the need to be unbanned",
+                                    null
+                                )
+                                messageAuthor.ban {
+                                    this.reason = "Soft-Banned via report."
                                     this.deleteMessagesDays = 1
                                 }
-                                reportedMessage.getGuild().unban(messageAuthor!!.id, reason = "Softban")
+                                reportedMessage.getGuild().unban(messageAuthor.id, reason = "Softban")
                             }
-                            "ban-user" -> messageAuthor?.ban {
-                                this.reason = "Banned via report"
-                                this.deleteMessagesDays = 1
+                            "ban-user" -> {
+                                ResponseHelper.userDMEmbed(
+                                    messageAuthor!!.asUser(),
+                                    "You have been banned from ${guild?.fetchGuild()?.name}",
+                                    "**Reason:**\nBanned via report",
+                                    null
+                                )
+                                messageAuthor.ban {
+                                    this.reason = "Banned via report"
+                                    this.deleteMessagesDays = 1
+                                }
                             }
                         }
                     }
@@ -230,12 +271,8 @@ class Report : Extension() {
             }
             field {
                 name = "Reason"
-                value = "Timed out user for $duration minutes"
+                value = "Timed-out via report"
                 inline = false
-            }
-            footer {
-                text = "Requested by" + user.asUser().tag
-                icon = user.avatar?.url
             }
         }
     }
