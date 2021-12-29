@@ -12,7 +12,7 @@ if (environment == "debug") {
 
 appender("CONSOLE", ConsoleAppender) {
     encoder(PatternLayoutEncoder) {
-        pattern = "%d{yyyy-MM-dd HH:mm:ss:SSS Z} | %5level | %40.40logger{40} | %msg%n"
+        pattern = "%d{dd-MM-yyyy HH:mm:ss:SSS Z}| %boldCyan(%-30.-30thread) | %highlight(%-6level) | %boldGreen(%-35.35logger{0}) | %msg%n"
     }
 
     target = ConsoleTarget.SystemErr
