@@ -20,6 +20,7 @@ import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CONFIG_PATH
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.GUILD_ID
+import net.irisshaders.lilybot.utils.SENTRY_DSN
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import java.nio.file.Files
@@ -59,6 +60,14 @@ suspend fun main() {
                 detectionAction = DetectionAction.Kick
                 logChannelName = "anti-phishing-logs"
                 requiredCommandPermission = null
+            }
+
+            sentry {
+                if (SENTRY_DSN != null) {
+                    enable = true
+
+                    dsn = SENTRY_DSN
+                }
             }
         }
 

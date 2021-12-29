@@ -1,6 +1,7 @@
 package net.irisshaders.lilybot.utils
 
 import com.kotlindiscord.kord.extensions.utils.env
+import com.kotlindiscord.kord.extensions.utils.envOrNull
 import dev.kord.common.entity.Snowflake
 
 // Allows for easier imports of the secret magic needed
@@ -17,4 +18,5 @@ val SUPPORT_CHANNEL = Snowflake(env("SUPPORT_CHANNEL"))
 val JOIN_CHANNEL = Snowflake(env("JOIN_CHANNEL"))
 val GITHUB_OAUTH = env("GITHUB_OAUTH")
 val CONFIG_PATH = env("CONFIG_PATH")
+val SENTRY_DSN = envOrNull("SENTRY_DSN")
 const val JDBC_URL = "jdbc:sqlite:database.db"
