@@ -26,7 +26,7 @@ class JoinLeaveEvent : Extension() {
         event<MemberJoinEvent> {
             action {
                 val eventMember = event.member
-                val guildMemberCount = event.guild.fetchGuild().memberCount!!.plus(1)
+                val guildMemberCount = event.guild.fetchGuild().approximateMemberCount
                 val joinChannel = event.guild.getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
 
                 joinChannel.createEmbed {
@@ -53,7 +53,7 @@ class JoinLeaveEvent : Extension() {
         event<MemberLeaveEvent> {
             action {
                 val eventUser = event.user
-                val guildMemberCount = event.guild.fetchGuild().memberCount
+                val guildMemberCount = event.guild.fetchGuild().approximateMemberCount
                 val joinChannel = event.guild.getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
 
                 joinChannel.createEmbed {

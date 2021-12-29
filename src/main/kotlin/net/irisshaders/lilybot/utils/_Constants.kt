@@ -18,6 +18,3 @@ val JOIN_CHANNEL = Snowflake(env("JOIN_CHANNEL"))
 val GITHUB_OAUTH = env("GITHUB_OAUTH")
 val CONFIG_PATH = env("CONFIG_PATH")
 const val JDBC_URL = "jdbc:sqlite:database.db"
-
-// I don't want to do this in prod
-const val GUILD_NAME = "The Iris Project"

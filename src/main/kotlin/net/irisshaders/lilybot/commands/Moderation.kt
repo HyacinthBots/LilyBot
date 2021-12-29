@@ -17,11 +17,9 @@ import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.hasRole
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
-import dev.kord.common.DiscordTimestampStyle
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
-import dev.kord.common.toMessageFormat
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
@@ -491,7 +489,7 @@ class Moderation : Extension() {
                 val dm = ResponseHelper.userDMEmbed(
                     userArg,
                     "You have been warned in ${guild?.fetchGuild()?.name}",
-                    "You were given ${arguments.warnPoints} points\nYour total is now ${Integer.parseInt(databasePoints).toString()}\n\n**Reason:**\n${arguments.reason}",
+                    "You were given ${arguments.warnPoints} points\nYour total is now ${Integer.parseInt(databasePoints)}\n\n**Reason:**\n${arguments.reason}",
                     null
                 )
 
