@@ -15,7 +15,6 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.JOIN_CHANNEL
 import kotlin.time.ExperimentalTime
 
-
 /**
  * The join and leave logging for Members in the guild. More accurate join and leave times for users
  * @author NoComment1105

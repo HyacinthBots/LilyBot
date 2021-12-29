@@ -7,7 +7,13 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.*
+import com.kotlindiscord.kord.extensions.commands.converters.impl.int
+import com.kotlindiscord.kord.extensions.commands.converters.impl.string
+import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.user
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingCoalescingDuration
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -27,13 +33,22 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.rest.builder.message.create.embed
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.utils.*
+import net.irisshaders.lilybot.utils.FULLMODERATORS
+import net.irisshaders.lilybot.utils.MODERATORS
+import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
+import net.irisshaders.lilybot.utils.ADMIN
+import net.irisshaders.lilybot.utils.TRIALMODERATORS
+import net.irisshaders.lilybot.utils.ResponseHelper
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.select
@@ -113,7 +128,7 @@ class Moderation : Extension() {
                 ResponseHelper.responseEmbedInChannel(
                     actionLog,
                     "$messageAmount messages have been cleared.",
-                    "Action occured in ${textChannel.mention}",
+                    "Action occurred in ${textChannel.mention}",
                     DISCORD_BLACK,
                     user.asUser()
                 )

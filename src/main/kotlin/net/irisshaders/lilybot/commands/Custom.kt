@@ -3,7 +3,6 @@ package net.irisshaders.lilybot.commands
 import com.github.jezza.TomlArray
 import com.github.jezza.TomlTable
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
-import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.commands.application.slash.publicSubCommand
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
