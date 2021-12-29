@@ -62,7 +62,10 @@ class MessageEvents : Extension() {
 
                     field {
                         name = "Message Contents:"
-                        value = messageContent
+                        value =
+                            messageContent.ifEmpty {
+                                "Failed to get content of message\nMessage was likely from a Bot"
+                            }
                         inline = false
                     }
                     field {
