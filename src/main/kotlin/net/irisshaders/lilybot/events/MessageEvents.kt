@@ -145,7 +145,7 @@ class MessageEvents : Extension() {
                                                     builder.append(logBytes.decodeToString())
                                                     if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
                                                         category = "events.messageevents.loguploading.decodeGZ"
-                                                        message = "A GZ file was decoded"
+                                                        message = "Converting UTF-8 Log to usable string"
                                                     }
                                                 } else {
                                                     val bis = ByteArrayInputStream(logBytes)
