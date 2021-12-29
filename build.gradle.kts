@@ -29,6 +29,7 @@ dependencies {
 
     // Logging dependencies
     implementation(libs.groovy)
+    implementation(libs.jansi)
     implementation(libs.logback)
     implementation(libs.logging)
 
