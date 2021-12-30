@@ -35,7 +35,8 @@ and intrusive than helpful. Any Pull Requests that attempt to do this will be cl
 ### Making a Pull Request
 
 Your Pull Request should include a brief description of the changes it makes and link to any open issues which it
-resolves. You should also ensure that your code follows the outlined guidance above.
+resolves. You should also ensure that your code follows the outlined guidance above. On top of this, all PR's should be 
+targeting the `develop` branch and **not** `main`
 
 When adding new commands to the project, thoroughly explain why you would like said command to be added to the bot.
 
