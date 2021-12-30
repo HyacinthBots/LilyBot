@@ -51,6 +51,22 @@ class Github : Extension() {
                 description = "Look up an issue on a specific repository"
 
                 action {
+                    if (!arguments.repository.contains("/")) {
+                        sentry.breadcrumb(BreadcrumbType.Error) {
+                            category = "command.github.issue.InputCheck"
+                            message = "Input missing /"
+                        }
+                        respond {
+                            content = "ohno"
+                            ResponseHelper.failureEmbed(
+                                event.interaction.getChannel(),
+                                "Make sure your repository input is formatted like this:",
+                                "Format: `User/Repo` or `Org/Repo` \n For example: `IrisShaders/Iris`"
+                            )
+                        }
+                        return@action
+                    }
+
                     var issue: GHIssue?
 
                     try {
@@ -59,9 +75,9 @@ class Github : Extension() {
                             category = "command.github.issue.getIssue"
                             message = "Found issue"
                         }
-                    } catch (e: NumberFormatException) {
+                    } catch (e: Exception) {
                         val iterator: PagedIterator<GHIssue>? = github?.searchIssues()
-                            ?.q("${arguments.issue} repo: ${arguments.repository}")
+                            ?.q("${arguments.issue} repo:${arguments.repository}")
                             ?.order(GHDirection.DESC)
                             ?.list()
                             ?._iterator(1)
@@ -73,10 +89,17 @@ class Github : Extension() {
                                 category = "command.github.issue.getIssue"
                                 message = "Unable to find issue"
                             }
-                            throw Exception("Could not find specified issue in repo `${arguments.repository}`!")
+                            respond {
+                                content = "ohno"
+                                ResponseHelper.failureEmbed(
+                                    event.interaction.getChannel(),
+                                    "Invalid issue number. Make sure this issue exists!",
+                                    null
+                                )
+                            }
+                            return@action
                         }
-
-                        val num: Int = issue.number
+                        val num: Int = issue!!.number
                         issue = github?.getRepository(arguments.repository)?.getIssue(num)
                     }
                     respondPublic {
