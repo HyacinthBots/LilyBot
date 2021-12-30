@@ -47,7 +47,7 @@ class JoinLeaveEvent : Extension() {
                     footer {
                         text = "Member Count: $guildMemberCount"
                     }
-                    if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                    sentry.breadcrumb(BreadcrumbType.Info) {
                         category = "events.joinleaveevent.join"
                         message = "Member joined"
                         data["user"] = eventMember.tag
@@ -80,7 +80,7 @@ class JoinLeaveEvent : Extension() {
                         text = "Member count: $guildMemberCount"
                     }
 
-                    if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                    sentry.breadcrumb(BreadcrumbType.Info) {
                         category = "events.joinleaveevent.leave"
                         message = "Member Left"
                         data["user"] = eventUser.tag

@@ -55,11 +55,9 @@ class Github : Extension() {
 
                     try {
                         issue = github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
-                        if (sentry.adapter.enabled) {
-                            sentry.breadcrumb(BreadcrumbType.Info) {
-                                category = "command.github.issue.getIssue"
-                                message = "Found issue"
-                            }
+                        sentry.breadcrumb(BreadcrumbType.Info) {
+                            category = "command.github.issue.getIssue"
+                            message = "Found issue"
                         }
                     } catch (e: NumberFormatException) {
                         val iterator: PagedIterator<GHIssue>? = github?.searchIssues()
@@ -71,11 +69,9 @@ class Github : Extension() {
                         if (iterator!!.hasNext()) {
                             issue = iterator.next()
                         } else {
-                            if (sentry.adapter.enabled) {
-                                sentry.breadcrumb(BreadcrumbType.Error) {
-                                    category = "command.github.issue.getIssue"
-                                    message = "Unable to find issue"
-                                }
+                            sentry.breadcrumb(BreadcrumbType.Error) {
+                                category = "command.github.issue.getIssue"
+                                message = "Unable to find issue"
                             }
                             throw Exception("Could not find specified issue in repo `${arguments.repository}`!")
                         }
@@ -100,11 +96,9 @@ class Github : Extension() {
                                     merged = pull.isMerged
                                     draft = pull.isDraft
                                 } catch (ioException: IOException) {
-                                    if (sentry.adapter.enabled) {
-                                        sentry.breadcrumb(BreadcrumbType.Error) {
-                                            category = "command.github.issue.CheckPRStatus"
-                                            message = "Error initializing PR wtf"
-                                        }
+                                    sentry.breadcrumb(BreadcrumbType.Error) {
+                                        category = "command.github.issue.CheckPRStatus"
+                                        message = "Error initializing PR wtf"
                                     }
                                     ioException.printStackTrace()
                                     title = "Error!"
@@ -223,11 +217,9 @@ class Github : Extension() {
                 action {
 
                     if (!arguments.repository.contains("/")) {
-                        if (sentry.adapter.enabled) {
-                            sentry.breadcrumb(BreadcrumbType.Error) {
-                                category = "command.github.repository.InputCheck"
-                                message = "Input missing /"
-                            }
+                        sentry.breadcrumb(BreadcrumbType.Error) {
+                            category = "command.github.repository.InputCheck"
+                            message = "Input missing /"
                         }
                         respond {
                             content = "ohno"
@@ -240,18 +232,14 @@ class Github : Extension() {
 
                     try {
                         repo = github!!.getRepository(arguments.repository)
-                        if (sentry.adapter.enabled) {
-                            sentry.breadcrumb(BreadcrumbType.Info) {
-                                category = "command.github.repository.getRepository"
-                                message = "Repository found"
-                            }
+                        sentry.breadcrumb(BreadcrumbType.Info) {
+                            category = "command.github.repository.getRepository"
+                            message = "Repository found"
                         }
                     } catch (exception: Exception) {
-                        if (sentry.adapter.enabled) {
-                            sentry.breadcrumb(BreadcrumbType.Error) {
-                                category = "command.github.repository.getRepository"
-                                message = "Repository not found"
-                            }
+                        sentry.breadcrumb(BreadcrumbType.Error) {
+                            category = "command.github.repository.getRepository"
+                            message = "Repository not found"
                         }
                         respond {
                             content = "ohno"
@@ -312,18 +300,14 @@ class Github : Extension() {
 
                     try {
                         ghUser = github!!.getUser(arguments.username)
-                        if (sentry.adapter.enabled) {
-                            sentry.breadcrumb(BreadcrumbType.Info) {
-                                category = "command.github.user.getUser"
-                                message = "User found"
-                            }
+                        sentry.breadcrumb(BreadcrumbType.Info) {
+                            category = "command.github.user.getUser"
+                            message = "User found"
                         }
                     } catch (exception: GHFileNotFoundException) {
-                        if (sentry.adapter.enabled) {
-                            sentry.breadcrumb(BreadcrumbType.Error) {
-                                category = "command.github.user.getUser"
-                                message = "Unable to find user"
-                            }
+                        sentry.breadcrumb(BreadcrumbType.Error) {
+                            category = "command.github.user.getUser"
+                            message = "Unable to find user"
                         }
                         respond {
                             content = "ohno"
@@ -336,12 +320,11 @@ class Github : Extension() {
                         val isOrg: Boolean = ghUser?.type.equals("Organization")
 
                         if (!isOrg) {
-                            if (sentry.adapter.enabled) {
-                                sentry.breadcrumb(BreadcrumbType.Info) {
-                                    category = "command.github.user.isOrg"
-                                    message = "User is not Organisation"
-                                    data["isNotOrg"] = ghUser?.login
-                                }
+
+                            sentry.breadcrumb(BreadcrumbType.Info) {
+                                category = "command.github.user.isOrg"
+                                message = "User is not Organisation"
+                                data["isNotOrg"] = ghUser?.login
                             }
                             respond {
                                 embed {
@@ -393,12 +376,11 @@ class Github : Extension() {
                                 }
                             }
                         } else {
-                            if (sentry.adapter.enabled) {
-                                sentry.breadcrumb(BreadcrumbType.Info) {
-                                    category = "command.github.user.isOrg"
-                                    message = "User is Organisation"
-                                    data["isOrg"] = ghUser?.login
-                                }
+
+                            sentry.breadcrumb(BreadcrumbType.Info) {
+                                category = "command.github.user.isOrg"
+                                message = "User is Organisation"
+                                data["isOrg"] = ghUser?.login
                             }
                             val org: GHOrganization? = github?.getOrganization(ghUser?.login)
 

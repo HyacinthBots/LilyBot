@@ -81,7 +81,7 @@ class MessageEvents : Extension() {
                     }
                 }
 
-                if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                sentry.breadcrumb(BreadcrumbType.Info) {
                     category = "events.messageevents.MessageDeleted"
                     message = "A message was deleted"
                     data["content"] = messageContent.ifEmpty { "Failed to get content of message" }
@@ -118,7 +118,7 @@ class MessageEvents : Extension() {
                                     style = ButtonStyle.Primary
 
                                     action {
-                                        if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                                        sentry.breadcrumb(BreadcrumbType.Info) {
                                             category = "events.messageevents.loguploading.uploadAccept"
                                             message = "Upload accpeted"
                                         }
@@ -143,10 +143,6 @@ class MessageEvents : Extension() {
 
                                                 if (attachmentFileExtension != "gz") {
                                                     builder.append(logBytes.decodeToString())
-                                                    if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
-                                                        category = "events.messageevents.loguploading.decodeGZ"
-                                                        message = "Converting UTF-8 Log to usable string"
-                                                    }
                                                 } else {
                                                     val bis = ByteArrayInputStream(logBytes)
                                                     val gis = GZIPInputStream(bis)
@@ -178,7 +174,7 @@ class MessageEvents : Extension() {
                                                 uploadMessage.edit {
                                                     ResponseHelper.failureEmbed(event.interaction.getChannel(),"Failed to upload `$attachmentFileName` to Hastebin", e.toString())
                                                 }
-                                                if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Error) {
+                                                sentry.breadcrumb(BreadcrumbType.Error) {
                                                     category = "events.messageevnets.loguploading.UploadTask"
                                                     message = "Failed to upload a file to hastebin"
                                                 }
@@ -196,7 +192,7 @@ class MessageEvents : Extension() {
                                     action {
                                         if (event.interaction.user.id == eventMessage.author?.id) {
                                             confirmationMessage!!.delete()
-                                            if (sentry.adapter.enabled) sentry.breadcrumb(BreadcrumbType.Info) {
+                                            sentry.breadcrumb(BreadcrumbType.Info) {
                                                 category = "events.messagevents.loguploading.uploadDeny"
                                                 message = "Upload of log denied"
                                             }

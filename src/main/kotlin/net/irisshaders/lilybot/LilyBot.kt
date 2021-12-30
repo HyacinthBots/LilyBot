@@ -20,7 +20,6 @@ import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CONFIG_PATH
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.GUILD_ID
-import net.irisshaders.lilybot.utils.ENABLE_SENTRY
 import net.irisshaders.lilybot.utils.SENTRY_DSN
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -65,13 +64,7 @@ suspend fun main() {
 
 
             sentry {
-                if (ENABLE_SENTRY.toBoolean() && SENTRY_DSN != null) {
-
-                    enable = true
-                    dsn = SENTRY_DSN
-                } else {
-                    enable = false
-                }
+                enableIfDSN(SENTRY_DSN)
             }
         }
 
