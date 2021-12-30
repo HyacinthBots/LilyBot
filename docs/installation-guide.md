@@ -35,6 +35,7 @@ CONFIG_PATH=lily.toml
 JOIN_CHANNEL=JOIN_CHANNEL_ID
 SUPPORT_CHANNEL=SUPPORT_CHANNEL_ID
 GITHUB_OAUTH=GITHUB_OAUTH_TOKEN
+SENTRY_DSN=SENTRY_DSN or null if you don't want sentry integration
 ```
 
 To get the token for your bot, return to the Discord developers portal for your bot, got to the bot tab on the left sidebar, and under where it says TOKEN click copy. BE VERY CAREFUL TO NEVER SHARE THIS WITH ANYONE AS IT PROVIDES ACCESS TO YOUR BOT. If you ever do accidentally leak it, immediately head to that page and click the regenerate button.
@@ -79,7 +80,7 @@ help = ""
 title = ""
 description = ""
 ```
-Each different subcommand needs to be seperated into a different array with `[[command.subcommand]]`, simialr to how we intially defined commands. Each command also needs a help, title, and description. For example, Iris's Discord's rule 1 commmand is definied as
+Each different subcommand needs to be seperated into a different array with `[[command.subcommand]]`, similar to how we initially defined commands. Each command also needs a help, title, and description. For example, Iris's Discord's rule 1 command is defined as
 
 ```toml
 [[command.subcommand]]
