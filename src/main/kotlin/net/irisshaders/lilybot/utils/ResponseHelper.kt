@@ -41,13 +41,7 @@ object ResponseHelper {
      * @author Maximumpower55
      * @author NoComment1105
      */
-    suspend fun responseEmbedInChannel(
-        channel: MessageChannelBehavior,
-        embedTitle: String?,
-        embedDescription: String?,
-        embedColor: Color?,
-        requestedBy: User?
-    ): Message {
+    suspend fun responseEmbedInChannel(channel: MessageChannelBehavior, embedTitle: String?, embedDescription: String?, embedColor: Color?, requestedBy: User?): Message {
         return channel.createEmbed {
             if (embedTitle != null) title = embedTitle
             if (embedDescription != null) description = embedDescription
