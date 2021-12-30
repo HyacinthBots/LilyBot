@@ -24,8 +24,8 @@ repositories {
 dependencies {
 
     implementation(libs.kord.extensions)
-    implementation(libs.kotlin.stdlib)
     implementation(libs.kord.phishing)
+    implementation(libs.kotlin.stdlib)
 
     // Logging dependencies
     implementation(libs.groovy)
@@ -36,7 +36,6 @@ dependencies {
     // Tags
     implementation(libs.kotlinx.serialization)
     implementation(libs.kaml)
-    implementation(libs.jgit)
 
     // TOML reader
     implementation("com.github.jezza:toml:1.2")
@@ -45,9 +44,9 @@ dependencies {
     implementation("org.kohsuke:github-api:1.301")
 
     // Exposed
-    implementation("org.jetbrains.exposed:exposed-core:0.36.2")
-    implementation("org.jetbrains.exposed:exposed-dao:0.36.2")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.36.2")
+    implementation("org.jetbrains.exposed:exposed-core:0.37.3")
+    implementation("org.jetbrains.exposed:exposed-dao:0.37.3")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.37.3")
 
     // Hikari
     implementation("com.zaxxer:HikariCP:5.0.0")
