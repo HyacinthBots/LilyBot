@@ -11,6 +11,7 @@ import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
+import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.JOIN_CHANNEL
 import kotlin.time.ExperimentalTime
@@ -26,7 +27,7 @@ class JoinLeaveEvent : Extension() {
         event<MemberJoinEvent> {
             action {
                 val eventMember = event.member
-                val guildMemberCount = event.guild.fetchGuild().approximateMemberCount
+                val guildMemberCount = event.getGuild().members.count()
                 val joinChannel = event.guild.getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
 
                 joinChannel.createEmbed {
@@ -58,7 +59,7 @@ class JoinLeaveEvent : Extension() {
         event<MemberLeaveEvent> {
             action {
                 val eventUser = event.user
-                val guildMemberCount = event.guild.fetchGuild().approximateMemberCount
+                val guildMemberCount = event.getGuild().members.count()
                 val joinChannel = event.guild.getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
 
                 joinChannel.createEmbed {
