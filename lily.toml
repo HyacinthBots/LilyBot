@@ -9,7 +9,7 @@ name = "shader-config"
 help = "Informs the user of Shader Config issues."
 title = "You can't currently edit shader settings."
 description = """
-The shader configuration menu is currently in development, and is being privately tested among developers. The current iteration has many critical issues that we are not comfortable with releasing.
+The shader configuration menu is currently in development, and is being tested in a Patreon-only Beta program.
 • Progress updates can be found in <#774354933436645478>
 • Test builds, once available, can be found in <#883067831485366304>
 • Full releases will be announced in <#817181278931517453>
@@ -101,7 +101,7 @@ name = "shader-editing"
 help = "Informs the user about manual shader editing."
 title = "Manual shader editing is unsupported."
 description = """
-Due to Iris lacking shader configuration, some users have resorted to manually editing the files of the shader. This can cause hard-to-resolve issues for users, support team members, and shader developers. In addition, settings files are easily transferrable between versions whereas manual shader editing is not.
+Due to Iris's shader configuration currently being in Patreon-only Beta, some users have resorted to manually editing the files of the shader. This can cause hard-to-resolve issues for users, support team members, and shader developers. In addition, settings files are easily transferrable between versions whereas manual shader editing is not.
 No support will be provided by staff for problems that occur as a result of this process. Please refrain from recommending manual shader editing.
 The shader configuration menu is currently in development. Please use /shader-config for more information."""
 
