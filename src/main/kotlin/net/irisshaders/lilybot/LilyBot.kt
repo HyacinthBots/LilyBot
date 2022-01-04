@@ -11,10 +11,14 @@ import dev.kord.common.entity.PresenceStatus
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
-import net.irisshaders.lilybot.commands.*
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.events.JoinLeaveEvent
 import net.irisshaders.lilybot.events.MessageEvents
+import net.irisshaders.lilybot.extensions.commands.moderation.Moderation
+import net.irisshaders.lilybot.extensions.commands.moderation.Report
+import net.irisshaders.lilybot.extensions.commands.util.Custom
+import net.irisshaders.lilybot.extensions.commands.util.Github
+import net.irisshaders.lilybot.extensions.commands.util.Ping
 import net.irisshaders.lilybot.support.ThreadInviter
 import net.irisshaders.lilybot.utils.*
 import org.kohsuke.github.GitHub

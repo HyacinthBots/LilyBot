@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalTime::class)
 
-package net.irisshaders.lilybot.commands
+package net.irisshaders.lilybot.extensions.commands.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_YELLOW

@@ -1,4 +1,4 @@
-package net.irisshaders.lilybot.commands
+package net.irisshaders.lilybot.extensions.commands.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.commands.Arguments

@@ -1,4 +1,4 @@
-package net.irisshaders.lilybot.commands
+package net.irisshaders.lilybot.extensions.commands.util
 
 import com.github.jezza.TomlArray
 import com.github.jezza.TomlTable
