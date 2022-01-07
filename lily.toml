@@ -22,6 +22,12 @@ title = "How to get crash reports:"
 description = "Crash reports can be found in the `crash-reports` sub-directory in `.minecraft` on clients, or the crash-reports sub-directory of the server directory for servers. We're probably interested in the most recent file, which you can drag and drop into Discord."
 
 [[command]]
+name = "pbr"
+help = "Informs the user about PBR issues"
+title = "Iris doesn't currently support PBR."
+description = "Resource pack PBR support is a complicated feature to implement and our dev team currently have other priorities. Support will be coming in a future version. In the meantime, the Complementary shader pack has an integrated PBR (iPBR) that works with Iris."
+
+[[command]]
 name = "eta"
 help = "Informs the user of the ETA"
 title = "What's the ETA?!?"
