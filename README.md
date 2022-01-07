@@ -7,7 +7,7 @@
 
 ### Why?
 * Late in August 2021, Discord.py was discontinued. This is previously what the Iris Project's Discord bot was written in, So [NoComment](https://github.com/NoComment1105), [Miss Corruption](https://github.com/Miss-Corruption), [Maxigator](https://github.com/Maxigator) and [chalkyjeans](https://github.com/chalkyjeans) took on the task of rewriting the bot in JDA.
-* Then with need for features that JDA did not provide, another rewrite occured! This time [NoComment](https://github.com/NoComment1105), [Miss Corruption](https://github.com/Miss-Corruption), [Maximum](https://github.com/maximumpower55) and [IMS](https://github.com/IMS212), began rewiting in Kotlin, using the [Kord API](https://github.com/kordlib/kord) and [KordEx Extension Library](https://github.com/Kord-Extensions/kord-extensions)
+* Then with need for features that JDA did not provide, another rewrite occurred! This time [NoComment](https://github.com/NoComment1105), [Miss Corruption](https://github.com/Miss-Corruption), [Maximum](https://github.com/maximumpower55) and [IMS](https://github.com/IMS212), began rewriting in Kotlin, using the [Kord API](https://github.com/kordlib/kord) and [KordEx Extension Library](https://github.com/Kord-Extensions/kord-extensions)
 
 ### How can I use LilyBot in my own server!?
 Follow the in-depth [installation guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/installation-guide.md).
@@ -16,7 +16,7 @@ Follow the in-depth [installation guide](https://github.com/IrisShaders/LilyBot/
 ### What was used to write this bot and what does each thing do?
 * [Kord](https://github.com/kordlib/kord): The Kotlin API for Discord.
 * [KordEx](https://github.com/Kord-Extensions/kord-extensions): Integrated commands and extensions framework for Kord.
-* [JetBrains Exposed](https://github.com/JetBrains/Exposed): A Database library for storing various differnt things, such as warnings and mute timings
+* [JetBrains Exposed](https://github.com/JetBrains/Exposed): A Database library for storing various different things, such as warnings and mute timings
 * [Logback](https://github.com/qos-ch/logback): Removes some fake errors.
 * [Github-API](https://github.com/hub4j/github-api): The API for GitHub commands. Helps to produce the GitHub Repo, Issue and Profile embeds
 
