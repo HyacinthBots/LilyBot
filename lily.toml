@@ -9,7 +9,7 @@ name = "shader-config"
 help = "Informs the user of Shader Config issues."
 title = "You can't currently edit shader settings."
 description = """
-The shader configuration menu is currently in development, and is being tested in a Patreon-only beta program.
+The shader configuration menu is currently in development, and is being publicly tested.
 • Progress updates can be found in <#774354933436645478>
 • Test builds, once available, can be found in <#883067831485366304>
 • Full releases will be announced in <#817181278931517453>
@@ -20,6 +20,12 @@ name = "crash-report"
 help = "Informs the user of how to get a crash report."
 title = "How to get crash reports:"
 description = "Crash reports can be found in the `crash-reports` sub-directory in `.minecraft` on clients, or the crash-reports sub-directory of the server directory for servers. We're probably interested in the most recent file, which you can drag and drop into Discord."
+
+[[command]]
+name = "pbr"
+help = "Informs the user about PBR issues"
+title = "Iris doesn't currently support PBR."
+description = "Resource pack PBR support is a complicated feature to implement and our dev team currently have other priorities. Support will be coming in a future version. In the meantime, the Complementary shader pack has an integrated PBR (iPBR) that works with Iris."
 
 [[command]]
 name = "eta"
@@ -101,7 +107,7 @@ name = "shader-editing"
 help = "Informs the user about manual shader editing."
 title = "Manual shader editing is unsupported."
 description = """
-Due to Iris's shader configuration currently being in Patreon-only beta, some users have resorted to manually editing the files of the shader. This can cause hard-to-resolve issues for users, support team members, and shader developers. In addition, settings files are easily transferrable between versions whereas manual shader editing is not.
+Due to Iris's shader configuration currently being in Patreon-only beta, some users have resorted to manually editing the files of the shader. This can cause hard-to-resolve issues for users, support team members, and shader developers. In addition, settings files are easily transferable between versions whereas manual shader editing is not.
 No support will be provided by staff for problems that occur as a result of this process. Please refrain from recommending manual shader editing.
 The shader configuration menu is currently in development. Please use /shader-config for more information."""
 
