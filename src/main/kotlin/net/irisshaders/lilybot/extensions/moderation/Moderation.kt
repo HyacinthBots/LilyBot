@@ -78,7 +78,7 @@ class Moderation : Extension() {
                 val textChannel = channel as GuildMessageChannelBehavior
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.clear.getMessages"
+                    category = "extensions.moderation.Moderation.clear.getMessages"
                     message = "Gathering messages"
                     data["amount"] = messageAmount
                 }
@@ -90,27 +90,27 @@ class Moderation : Extension() {
                         it.printStackTrace()
                         println("error")
                         sentry.breadcrumb(BreadcrumbType.Error) {
-                            category = "commands.moderation.clear.getMessages"
+                            category = "extensions.moderation.Moderation.clear.getMessages"
                             message = "Error gathering message"
                         }
                     }.collect()
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.clear.getMessages"
+                    category = "extensions.moderation.Moderation.clear.getMessages"
                     message = "Messages gathered"
                     data["amount"] = messageHolder.size
                 }
 
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.clear.deleteMessages"
+                    category = "extensions.moderation.Moderation.clear.deleteMessages"
                     message = "Message Deleting Starting"
                 }
 
                 textChannel.bulkDelete(messageHolder)
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.clear.deleteMessages"
+                    category = "extensions.moderation.Moderation.clear.deleteMessages"
                     message = "Message Deleting finishing"
                     data["quantity"] = messageAmount
                 }
@@ -146,7 +146,7 @@ class Moderation : Extension() {
 
                 if (guild?.getMember(userArg.id)?.isBot == true) {
                     sentry.breadcrumb(BreadcrumbType.Error) {
-                        category = "commands.moderation.ban.checkIsBot"
+                        category = "extensions.moderation.Moderation.ban.checkIsBot"
                         message = "Lmao someone tried to ban a bot"
                         data["banTarget"] = userArg.tag
                     }
@@ -156,7 +156,7 @@ class Moderation : Extension() {
                     return@action
                 } else if (guild?.getRole(MODERATORS) ?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true) {
                     sentry.breadcrumb(BreadcrumbType.Error) {
-                        category = "commands.moderation.ban.checkIsMod"
+                        category = "extensions.moderation.Moderation.ban.checkIsMod"
                         message = "Lmao someone tried to ban a mod"
                         data["banTarget"] = userArg.tag
                     }
@@ -174,7 +174,7 @@ class Moderation : Extension() {
                 )
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.ban.banTask"
+                    category = "extensions.moderation.Moderation.ban.banTask"
                     message = "Running ban task"
                     data["banTarget"] = userArg.tag
                 }
@@ -185,7 +185,7 @@ class Moderation : Extension() {
                 })
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.ban.banTast"
+                    category = "extensions.moderation.Moderation.ban.banTast"
                     message = "Finished ban task"
                     data["banTarget"] = userArg.tag
                 }
@@ -245,7 +245,7 @@ class Moderation : Extension() {
                 val userArg = arguments.userArgument
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.unban.unbanTask"
+                    category = "extensions.moderation.Moderation.unban.unbanTask"
                     message = "Unbanning user"
                     data["unbanTarget"] = userArg.tag
                 }
@@ -253,7 +253,7 @@ class Moderation : Extension() {
                 guild?.unban(userArg.id)
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.unban.unbanTask"
+                    category = "extensions.moderation.Moderation.unban.unbanTask"
                     message = "Unban task complete"
                     data["unbanTarget"] = userArg.tag
                 }
@@ -289,7 +289,7 @@ class Moderation : Extension() {
 
                 if (guild?.getMember(userArg.id)?.isBot == true) {
                     sentry.breadcrumb(BreadcrumbType.Error) {
-                        category = "commands.moderation.soft-ban.checkIsBot"
+                        category = "extensions.moderation.Moderation.soft-ban.checkIsBot"
                         message = "Lmao someone tried to ban a bot"
                         data["banTarget"] = userArg.tag
                     }
@@ -299,7 +299,7 @@ class Moderation : Extension() {
                     return@action
                 } else if (guild?.getRole(MODERATORS) ?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true) {
                     sentry.breadcrumb(BreadcrumbType.Error) {
-                        category = "commands.moderation.soft-ban.checkIsMod"
+                        category = "extensions.moderation.Moderation.soft-ban.checkIsMod"
                         message = "Lmao someone tried to ban a mod"
                         data["banTarget"] = userArg.tag
                     }
@@ -317,7 +317,7 @@ class Moderation : Extension() {
                 )
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.soft-ban.banTask"
+                    category = "extensions.moderation.Moderation.soft-ban.banTask"
                     message = "Running ban task"
                     data["soft-banTarget"] = userArg.tag
                 }
@@ -328,7 +328,7 @@ class Moderation : Extension() {
                 })
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.soft-ban.banTask"
+                    category = "extensions.moderation.Moderation.soft-ban.banTask"
                     message = "Completed ban task"
                     data["soft-banTarget"] = userArg.tag
                 }
@@ -391,7 +391,7 @@ class Moderation : Extension() {
 
                 if (guild?.getMember(userArg.id)?.isBot == true) {
                     sentry.breadcrumb(BreadcrumbType.Error) {
-                        category = "commands.moderation.kick.checkIsBot"
+                        category = "extensions.moderation.Moderation.kick.checkIsBot"
                         message = "Lmao someone tried to kick a bot"
                         data["banTarget"] = userArg.tag
                     }
@@ -401,7 +401,7 @@ class Moderation : Extension() {
                     return@action
                 } else if (guild?.getRole(MODERATORS) ?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true) {
                     sentry.breadcrumb(BreadcrumbType.Error) {
-                        category = "commands.moderation.kick.checkIsMod"
+                        category = "extensions.moderation.Moderation.kick.checkIsMod"
                         message = "Lmao someone tried to kick a mod"
                         data["banTarget"] = userArg.tag
                     }
@@ -419,7 +419,7 @@ class Moderation : Extension() {
                 )
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.kick.kickTask"
+                    category = "extensions.moderation.Moderation.kick.kickTask"
                     message = "Running kick task"
                     data["kickTarget"] = userArg.tag
                 }
@@ -427,7 +427,7 @@ class Moderation : Extension() {
                 guild?.kick(userArg.id, "Requested by " + user.asUser().username)
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.kick.kickTask"
+                    category = "extensions.moderation.Moderation.kick.kickTask"
                     message = "Completed kick task"
                     data["kickTarget"] = userArg.tag
                 }
@@ -484,7 +484,7 @@ class Moderation : Extension() {
                         timestamp = Clock.System.now()
                     }
                     sentry.breadcrumb(BreadcrumbType.Info) {
-                        category = "commands.moderation.say.isEmbed"
+                        category = "extensions.moderation.Moderation.say.isEmbed"
                         message = "Say was used to create an embed"
                         data["content"] = arguments.messageArgument
                     }
@@ -493,7 +493,7 @@ class Moderation : Extension() {
                         content = arguments.messageArgument
                     }
                     sentry.breadcrumb(BreadcrumbType.Info) {
-                        category = "commands.moderation.say.isEmbed"
+                        category = "extensions.moderation.Moderation.say.isEmbed"
                         message = "Say was used to create an message"
                         data["content"] = arguments.messageArgument
                     }
@@ -540,7 +540,7 @@ class Moderation : Extension() {
                 )
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.presence.updatedPresence"
+                    category = "extensions.moderation.Moderation.updatedPresence"
                     message = "Presence update"
                     data["newPresence"] = arguments.presenceArgument
                 }
@@ -566,7 +566,7 @@ class Moderation : Extension() {
                         description = "Are you sure you would like to shut down?"
                     }
                     sentry.breadcrumb(BreadcrumbType.Info) {
-                        category = "commands.moderation.shutdown.shutdownTask"
+                        category = "extensions.moderation.Moderation.shutdown.shutdownTask"
                         message = "${user.asUser().tag} shutdown the bot"
                     }
 
@@ -706,7 +706,7 @@ class Moderation : Extension() {
                         content = "You cannot timeout a moderator/bot!"
                     }
                     sentry.breadcrumb(BreadcrumbType.Info) {
-                        category = "commands.moderation.timeout.isModOrBot"
+                        category = "extensions.moderation.Moderation.timeout.isModOrBot"
                         message = "Lmao someone tried to timeout a bot/moderator"
                         data["timeoutTarget"] = userArg.tag
                     }
@@ -721,7 +721,7 @@ class Moderation : Extension() {
                 )
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.timeout.timeoutTask"
+                    category = "extensions.moderation.Moderation.timeout.timeoutTask"
                     message = "Running Timeout task"
                     data["timeoutTarget"] = userArg.tag
                 }
@@ -731,7 +731,7 @@ class Moderation : Extension() {
                 }
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.timeout.timeoutTask"
+                    category = "extensions.moderation.Moderation.timeout.timeoutTask"
                     message = "Completed Timeout task"
                     data["timeoutTarget"] = userArg.tag
                 }
@@ -795,7 +795,7 @@ class Moderation : Extension() {
                 val userArg = arguments.userArgument
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.remove-timeout.remove-timeoutTask"
+                    category = "extensions.moderation.Moderation.remove-timeout.remove-timeoutTask"
                     message = "Running Remove Timeout task"
                     data["removeTimeoutTarget"] = userArg.tag
                 }
@@ -805,7 +805,7 @@ class Moderation : Extension() {
                 }
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "commands.moderation.remove-timeout.remove-timeoutTask"
+                    category = "extensions.moderation.Moderation.remove-timeout.remove-timeoutTask"
                     message = "Completed Remove Timeout task"
                     data["removeTimeoutTarget"] = userArg.tag
                 }

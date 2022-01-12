@@ -2,7 +2,6 @@
 
 package net.irisshaders.lilybot.support
 
-import com.kotlindiscord.kord.extensions.checks.isInThread
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.utils.delete
@@ -14,7 +13,6 @@ import dev.kord.core.behavior.reply
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.message.MessageCreateEvent
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.last
 import net.irisshaders.lilybot.utils.SUPPORT_CHANNEL
 import net.irisshaders.lilybot.utils.SUPPORT_TEAM
