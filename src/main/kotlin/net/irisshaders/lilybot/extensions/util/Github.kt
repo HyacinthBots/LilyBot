@@ -1,4 +1,4 @@
-package net.irisshaders.lilybot.extensions.commands.util
+package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.commands.Arguments
@@ -53,7 +53,7 @@ class Github : Extension() {
                 action {
                     if (!arguments.repository.contains("/")) {
                         sentry.breadcrumb(BreadcrumbType.Error) {
-                            category = "command.github.issue.InputCheck"
+                            category = "extensions.util.Github.issue.InputCheck"
                             message = "Input missing /"
                         }
                         respond {
@@ -72,7 +72,7 @@ class Github : Extension() {
                     try {
                         issue = github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
                         sentry.breadcrumb(BreadcrumbType.Info) {
-                            category = "command.github.issue.getIssue"
+                            category = "extensions.util.Github.issue.getIssue"
                             message = "Found issue"
                         }
                     } catch (e: Exception) {
@@ -86,7 +86,7 @@ class Github : Extension() {
                             issue = iterator.next()
                         } else {
                             sentry.breadcrumb(BreadcrumbType.Error) {
-                                category = "command.github.issue.getIssue"
+                                category = "extensions.util.Github.issue.getIssue"
                                 message = "Unable to find issue"
                             }
                             respond {
@@ -120,7 +120,7 @@ class Github : Extension() {
                                     draft = pull.isDraft
                                 } catch (ioException: IOException) {
                                     sentry.breadcrumb(BreadcrumbType.Error) {
-                                        category = "command.github.issue.CheckPRStatus"
+                                        category = "extensions.util.Github.issue.CheckPRStatus"
                                         message = "Error initializing PR wtf"
                                     }
                                     ioException.printStackTrace()
@@ -241,7 +241,7 @@ class Github : Extension() {
 
                     if (!arguments.repository.contains("/")) {
                         sentry.breadcrumb(BreadcrumbType.Error) {
-                            category = "command.github.repository.InputCheck"
+                            category = "extensions.util.Github.repository.InputCheck"
                             message = "Input missing /"
                         }
                         respond {
@@ -256,12 +256,12 @@ class Github : Extension() {
                     try {
                         repo = github!!.getRepository(arguments.repository)
                         sentry.breadcrumb(BreadcrumbType.Info) {
-                            category = "command.github.repository.getRepository"
+                            category = "extensions.util.Github.repository.getRepository"
                             message = "Repository found"
                         }
                     } catch (exception: Exception) {
                         sentry.breadcrumb(BreadcrumbType.Error) {
-                            category = "command.github.repository.getRepository"
+                            category = "extensions.util.Github.repository.getRepository"
                             message = "Repository not found"
                         }
                         respond {
@@ -324,12 +324,12 @@ class Github : Extension() {
                     try {
                         ghUser = github!!.getUser(arguments.username)
                         sentry.breadcrumb(BreadcrumbType.Info) {
-                            category = "command.github.user.getUser"
+                            category = "extensions.util.Github.user.getUser"
                             message = "User found"
                         }
                     } catch (exception: GHFileNotFoundException) {
                         sentry.breadcrumb(BreadcrumbType.Error) {
-                            category = "command.github.user.getUser"
+                            category = "extensions.util.Github.user.getUser"
                             message = "Unable to find user"
                         }
                         respond {
@@ -345,7 +345,7 @@ class Github : Extension() {
                         if (!isOrg) {
 
                             sentry.breadcrumb(BreadcrumbType.Info) {
-                                category = "command.github.user.isOrg"
+                                category = "extensions.util.Github.user.isOrg"
                                 message = "User is not Organisation"
                                 data["isNotOrg"] = ghUser?.login
                             }
@@ -401,7 +401,7 @@ class Github : Extension() {
                         } else {
 
                             sentry.breadcrumb(BreadcrumbType.Info) {
-                                category = "command.github.user.isOrg"
+                                category = "extensions.util.Github.user.isOrg"
                                 message = "User is Organisation"
                                 data["isOrg"] = ghUser?.login
                             }

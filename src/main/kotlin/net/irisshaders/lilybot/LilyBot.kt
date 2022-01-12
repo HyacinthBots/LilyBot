@@ -14,12 +14,13 @@ import mu.KotlinLogging
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.events.JoinLeaveEvent
 import net.irisshaders.lilybot.events.MessageEvents
-import net.irisshaders.lilybot.extensions.commands.moderation.Moderation
-import net.irisshaders.lilybot.extensions.commands.moderation.Report
-import net.irisshaders.lilybot.extensions.commands.util.Custom
-import net.irisshaders.lilybot.extensions.commands.util.Github
-import net.irisshaders.lilybot.extensions.commands.util.Ping
+import net.irisshaders.lilybot.extensions.moderation.Moderation
+import net.irisshaders.lilybot.extensions.moderation.Report
+import net.irisshaders.lilybot.extensions.util.CustomCommands
+import net.irisshaders.lilybot.extensions.util.Github
+import net.irisshaders.lilybot.extensions.util.Ping
 import net.irisshaders.lilybot.support.ThreadInviter
+import net.irisshaders.lilybot.extensions.util.ThreadModInviter
 import net.irisshaders.lilybot.utils.*
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -58,7 +59,8 @@ suspend fun main() {
             add(::JoinLeaveEvent)
             add(::MessageEvents)
             add(::Github)
-            add(::Custom)
+            add(::CustomCommands)
+            add(::ThreadModInviter)
 
             extPhishing {
                 appName = "Lily Bot"
