@@ -197,7 +197,7 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Banned a user"
-                    description = "${userArg.mention} has been banned!"
+                    description = "${userArg.mention} has been banned!\n${userArg.id} (${userArg.tag})"
 
                     field {
                         name = "Reason:"
@@ -265,7 +265,7 @@ class Moderation : Extension() {
                 ResponseHelper.responseEmbedInChannel(
                     actionLog,
                     "Unbanned a user",
-                    "${userArg.mention} has been unbanned!",
+                    "${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})",
                     DISCORD_GREEN,
                     user.asUser()
                 )
@@ -340,7 +340,7 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Soft-banned a user"
-                    description = "${userArg.mention} has been soft banned."
+                    description = "${userArg.mention} has been soft banned\n${userArg.id} (${userArg.tag})"
 
                     field {
                         name = "Reason:"
@@ -439,7 +439,7 @@ class Moderation : Extension() {
                 actionLog.createEmbed {
                     color = DISCORD_BLACK
                     title = "Kicked User"
-                    description = "Kicked ${arguments.userArgument.tag} from the Server"
+                    description = "Kicked ${userArg.mention} from the server\n${userArg.id} (${userArg.tag})"
 
                     field {
                         name = "Reason"
