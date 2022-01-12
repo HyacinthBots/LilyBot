@@ -1,4 +1,4 @@
-package net.irisshaders.lilybot.extensions.commands.util
+package net.irisshaders.lilybot.extensions.util
 
 import com.github.jezza.TomlArray
 import com.github.jezza.TomlTable
@@ -15,8 +15,8 @@ import net.irisshaders.lilybot.config
  * This class reads in the config TOML file and converts each array of info into a usable discord slash command
  * @author IMS212
  */
-class Custom : Extension() {
-    override var name = "custom"
+class CustomCommands : Extension() {
+    override var name = "customcommands"
 
 
     override suspend fun setup() {
