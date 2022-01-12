@@ -20,6 +20,7 @@ import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.Ping
 import net.irisshaders.lilybot.support.ThreadInviter
+import net.irisshaders.lilybot.extensions.util.ThreadModInviter
 import net.irisshaders.lilybot.utils.*
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -59,6 +60,7 @@ suspend fun main() {
             add(::MessageEvents)
             add(::Github)
             add(::CustomCommands)
+            add(::ThreadModInviter)
 
             extPhishing {
                 appName = "Lily Bot"

@@ -2,11 +2,13 @@
 
 package net.irisshaders.lilybot.support
 
+import com.kotlindiscord.kord.extensions.checks.isInThread
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.utils.delete
 import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.ArchiveDuration
+import dev.kord.common.entity.MessageType
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.channel.TextChannel
@@ -19,7 +21,7 @@ import net.irisshaders.lilybot.utils.SUPPORT_TEAM
 import kotlin.time.ExperimentalTime
 
 class ThreadInviter : Extension() {
-    override val name = "threads"
+    override val name = "supportthreads"
 
     override suspend fun setup() {
         /**
@@ -27,9 +29,10 @@ class ThreadInviter : Extension() {
          * @author IMS212
          */
         event<MessageCreateEvent> {
-            check {
-                failIf(event.message.channelId != SUPPORT_CHANNEL || event.member!!.id == kord.selfId)
-            }
+            check { failIf(event.message.channelId != SUPPORT_CHANNEL) }
+            check { failIf(event.member!!.id == kord.selfId) }
+            check { failIf(event.message.type == MessageType.ThreadCreated) } // Don't try and run this if the thread is manually created
+
             action {
                 var userThreadExists = false
                 var existingUserThread: TextChannelThread? = null
