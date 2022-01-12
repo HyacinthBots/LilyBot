@@ -534,7 +534,7 @@ class Moderation : Extension() {
                 ResponseHelper.responseEmbedInChannel(
                     actionLog,
                     "Presence Changed",
-                    "Lily's presence has been set to ${arguments.presenceArgument}",
+                    "Lily's presence has been set to `${arguments.presenceArgument}`",
                     DISCORD_BLACK,
                     user.asUser()
                 )
