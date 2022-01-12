@@ -26,6 +26,7 @@ import dev.kord.core.entity.Member
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.MessageChannel
+import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.MESSAGE_LOGS
 import net.irisshaders.lilybot.utils.MODERATORS
@@ -47,14 +48,14 @@ class Report : Extension() {
             locking = true // To prevent the command from being run more than once concurrently
 
             action {
-                val actionLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
+                val messageLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
                 val reportedMessage = event.interaction.getTarget()
                 val messageAuthor = reportedMessage.getAuthorAsMember()
 
                 respond {
                     content = "Message reported to staff"
                 }
-                createReport(user, actionLog, messageAuthor, reportedMessage)
+                createReport(user, messageLog, messageAuthor, reportedMessage)
             }
 
         }
@@ -65,7 +66,7 @@ class Report : Extension() {
             locking = true
 
             action {
-                val actionLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
+                val messageLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
                 val channel = (guild?.getChannel(Snowflake(arguments.message.split("/")[5])) as MessageChannel)
                 val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
                 val messageAuthor = reportedMessage.getAuthorAsMember()
@@ -73,22 +74,22 @@ class Report : Extension() {
                 respond {
                     content = "Message reported to staff"
                 }
-                createReport(user, actionLog, messageAuthor, reportedMessage)
+                createReport(user, messageLog, messageAuthor, reportedMessage)
             }
         }
     }
 
     private suspend fun createReport(
         user: UserBehavior,
-        actionLog: GuildMessageChannelBehavior,
+        messageLog: GuildMessageChannelBehavior,
         messageAuthor: Member?,
         reportedMessage: Message
     ) {
-        actionLog.createMessage {
-            content = "<@&${MODERATORS.value}>"
+        messageLog.createMessage {
+            content = "`<@&${MODERATORS.value}>`"
         }
 
-        actionLog.createEmbed {
+        messageLog.createEmbed {
             color = DISCORD_RED
             title = "Message reported"
             description = "A message was reported in ${reportedMessage.getChannel().mention}"
@@ -118,7 +119,12 @@ class Report : Extension() {
                     style = ButtonStyle.Danger
 
                     action {
-                        reportedMessage.delete(reason = "Deleted via report.")
+                        // TODO once modals become a thing, avoid just consuming this error
+                        try {
+                            reportedMessage.delete(reason = "Deleted via report.")
+                        } catch (e: RestRequestException) {
+                            messageLog.createMessage { content = "The message you tried to delete may have already been deleted!" }
+                        }
                     }
                 }
 
