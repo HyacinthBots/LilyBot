@@ -103,101 +103,113 @@ class MessageEvents : Extension() {
                     val attachmentFileExtension = attachmentFileName.substring(attachmentFileName.lastIndexOf(".") + 1)
 
                     if (attachmentFileExtension in LOG_FILE_EXTENSIONS) {
-                        var confirmationMessage: Message? = null
+                        val logBytes = attachment.download()
 
-                        confirmationMessage = ResponseHelper.responseEmbedInChannel(
-                            eventMessage.channel,
-                            "Do you want to upload this file to Hastebin?", 
-                            "Hastebin is a website that allows users to share plain text through public posts called “pastes.”\nIt's easier for the support team to view the file on Hastebin, do you want it to be uploaded?", 
-                            DISCORD_BLURPLE,
-                            eventMessage.author
-                        ).edit {
-                            components {
-                                ephemeralButton(row = 0) {
-                                    label = "Yes"
-                                    style = ButtonStyle.Primary
+                        val builder = StringBuilder()
 
-                                    action {
-                                        sentry.breadcrumb(BreadcrumbType.Info) {
-                                            category = "events.messageevents.loguploading.uploadAccept"
-                                            message = "Upload accpeted"
-                                        }
-                                        if (event.interaction.user.id == eventMessage.author?.id) {
-                                            confirmationMessage!!.delete()
+                        if (attachmentFileExtension != "gz") {
+                            builder.append(logBytes.decodeToString())
+                        } else {
+                            val bis = ByteArrayInputStream(logBytes)
+                            val gis = GZIPInputStream(bis)
 
-                                            val uploadMessage = eventMessage.channel.createEmbed {
-                                                color = DISCORD_BLURPLE
-                                                title = "Uploading `$attachmentFileName` to Hastebin..."
-                                                timestamp = Clock.System.now()
+                            builder.append(String(gis.readAllBytes()))
+                        }
 
-                                                footer {
-                                                    text = "Uploaded by ${eventMessage.author?.tag}"
-                                                    icon = eventMessage.author?.avatar?.url
-                                                }
+                        val necText = "at Not Enough Crashes";
+                        val indexOfnecText = builder.indexOf(necText);
+                        if (indexOfnecText != -1) {
+                            ResponseHelper.responseEmbedInChannel(
+                                eventMessage.channel,
+                                "Not Enough Crashes detected in logs",
+                                "Not Enough Crashes (NEC) is well know to cause issues and often makes the debugging process more difficult. Please remove NEC, recreate the issue, and resend the relevant files (ie. log or crash report) if the issue persists.",
+                                DISCORD_PINK,
+                                eventMessage.author
+                            )
+                        } else {
+                            var confirmationMessage: Message? = null
+
+                            confirmationMessage = ResponseHelper.responseEmbedInChannel(
+                                eventMessage.channel,
+                                "Do you want to upload this file to Hastebin?", 
+                                "Hastebin is a website that allows users to share plain text through public posts called “pastes.”\nIt's easier for the support team to view the file on Hastebin, do you want it to be uploaded?", 
+                                DISCORD_BLURPLE,
+                                eventMessage.author
+                            ).edit {
+                                components {
+                                    ephemeralButton(row = 0) {
+                                        label = "Yes"
+                                        style = ButtonStyle.Primary
+
+                                        action {
+                                            sentry.breadcrumb(BreadcrumbType.Info) {
+                                                category = "events.messageevents.loguploading.uploadAccept"
+                                                message = "Upload accpeted"
                                             }
+                                            if (event.interaction.user.id == eventMessage.author?.id) {
+                                                confirmationMessage!!.delete()
 
-                                            try {
-                                                val logBytes = attachment.download()
+                                                val uploadMessage = eventMessage.channel.createEmbed {
+                                                    color = DISCORD_BLURPLE
+                                                    title = "Uploading `$attachmentFileName` to Hastebin..."
+                                                    timestamp = Clock.System.now()
 
-                                                val builder = StringBuilder()
-
-                                                if (attachmentFileExtension != "gz") {
-                                                    builder.append(logBytes.decodeToString())
-                                                } else {
-                                                    val bis = ByteArrayInputStream(logBytes)
-                                                    val gis = GZIPInputStream(bis)
-
-                                                    builder.append(String(gis.readAllBytes()))
-                                                }
-
-                                                val response = postToHasteBin(builder.toString())
-
-                                                uploadMessage.edit {
-                                                    embed {
-                                                        color = DISCORD_BLURPLE
-                                                        title = "`$attachmentFileName` uploaded to Hastebin"
-                                                        timestamp = Clock.System.now()
-
-                                                        footer {
-                                                            text = "Uploaded by ${eventMessage.author?.tag}"
-                                                            icon = eventMessage.author?.avatar?.url
-                                                        }
-                                                    }
-
-                                                    actionRow {
-                                                        linkButton(response) {
-                                                            label = "Click here to view"
-                                                        }
+                                                    footer {
+                                                        text = "Uploaded by ${eventMessage.author?.tag}"
+                                                        icon = eventMessage.author?.avatar?.url
                                                     }
                                                 }
-                                            } catch (e: Exception) {
-                                                uploadMessage.edit {
-                                                    ResponseHelper.failureEmbed(event.interaction.getChannel(),"Failed to upload `$attachmentFileName` to Hastebin", e.toString())
+
+                                                try {
+                                                    val response = postToHasteBin(builder.toString())
+
+                                                    uploadMessage.edit {
+                                                        embed {
+                                                            color = DISCORD_BLURPLE
+                                                            title = "`$attachmentFileName` uploaded to Hastebin"
+                                                            timestamp = Clock.System.now()
+                                                        
+                                                            footer {
+                                                                text = "Uploaded by ${eventMessage.author?.tag}"
+                                                                icon = eventMessage.author?.avatar?.url
+                                                            }
+                                                        }
+                                                    
+                                                        actionRow {
+                                                            linkButton(response) {
+                                                                label = "Click here to view"
+                                                            }
+                                                        }
+                                                    }
+                                                } catch (e: Exception) {
+                                                    uploadMessage.edit {
+                                                        ResponseHelper.failureEmbed(event.interaction.getChannel(), "Failed to upload `$attachmentFileName` to Hastebin", e.toString())
+                                                    }
+                                                    sentry.breadcrumb(BreadcrumbType.Error) {
+                                                        category = "events.messageevnets.loguploading.UploadTask"
+                                                        message = "Failed to upload a file to hastebin"
+                                                    }
                                                 }
-                                                sentry.breadcrumb(BreadcrumbType.Error) {
-                                                    category = "events.messageevnets.loguploading.UploadTask"
-                                                    message = "Failed to upload a file to hastebin"
-                                                }
+                                            } else {
+                                                respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }
                                             }
-                                        } else {
-                                            respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }
                                         }
                                     }
-                                }
 
-                                ephemeralButton(row = 0) {
-                                    label = "No"
-                                    style = ButtonStyle.Secondary
+                                    ephemeralButton(row = 0) {
+                                        label = "No"
+                                        style = ButtonStyle.Secondary
 
-                                    action {
-                                        if (event.interaction.user.id == eventMessage.author?.id) {
-                                            confirmationMessage!!.delete()
-                                            sentry.breadcrumb(BreadcrumbType.Info) {
-                                                category = "events.messagevents.loguploading.uploadDeny"
-                                                message = "Upload of log denied"
+                                        action {
+                                            if (event.interaction.user.id == eventMessage.author?.id) {
+                                                confirmationMessage!!.delete()
+                                                sentry.breadcrumb(BreadcrumbType.Info) {
+                                                    category = "events.messagevents.loguploading.uploadDeny"
+                                                    message = "Upload of log denied"
+                                                }
+                                            } else {
+                                                respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }
                                             }
-                                        } else {
-                                            respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }
                                         }
                                     }
                                 }
