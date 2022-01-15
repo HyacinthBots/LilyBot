@@ -133,13 +133,13 @@ class MessageEvents : Extension() {
                                 eventMessage.channel,
                                 "Do you want to upload this file to Hastebin?", 
                                 "Hastebin is a website that allows users to share plain text through public posts called “pastes.”\nIt's easier for the support team to view the file on Hastebin, do you want it to be uploaded?", 
-                                DISCORD_BLURPLE,
+                                DISCORD_PINK,
                                 eventMessage.author
                             ).edit {
                                 components {
                                     ephemeralButton(row = 0) {
                                         label = "Yes"
-                                        style = ButtonStyle.Primary
+                                        style = ButtonStyle.Success
 
                                         action {
                                             sentry.breadcrumb(BreadcrumbType.Info) {
@@ -150,7 +150,7 @@ class MessageEvents : Extension() {
                                                 confirmationMessage!!.delete()
 
                                                 val uploadMessage = eventMessage.channel.createEmbed {
-                                                    color = DISCORD_BLURPLE
+                                                    color = DISCORD_PINK
                                                     title = "Uploading `$attachmentFileName` to Hastebin..."
                                                     timestamp = Clock.System.now()
 
@@ -165,7 +165,7 @@ class MessageEvents : Extension() {
 
                                                     uploadMessage.edit {
                                                         embed {
-                                                            color = DISCORD_BLURPLE
+                                                            color = DISCORD_PINK
                                                             title = "`$attachmentFileName` uploaded to Hastebin"
                                                             timestamp = Clock.System.now()
                                                         
@@ -198,7 +198,7 @@ class MessageEvents : Extension() {
 
                                     ephemeralButton(row = 0) {
                                         label = "No"
-                                        style = ButtonStyle.Secondary
+                                        style = ButtonStyle.Danger
 
                                         action {
                                             if (event.interaction.user.id == eventMessage.author?.id) {
