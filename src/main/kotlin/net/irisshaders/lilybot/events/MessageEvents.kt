@@ -191,7 +191,7 @@ class MessageEvents : Extension() {
                                                     }
                                                 }
                                             } else {
-                                                respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }
+                                                respond { content = "Only the uploader can use this menu." }
                                             }
                                         }
                                     }
@@ -208,7 +208,7 @@ class MessageEvents : Extension() {
                                                     message = "Upload of log denied"
                                                 }
                                             } else {
-                                                respond { content = "Only the uploader can use this menu, if you are the uploader and are experiencing issues, contact the Iris team." }
+                                                respond { content = "Only the uploader can use this menu." }
                                             }
                                         }
                                     }
