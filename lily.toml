@@ -16,6 +16,12 @@ The shader configuration menu is currently in development, and is being publicly
 Please do not ask for an ETA on this or any other feature."""
 
 [[command]]
+name = "nec"
+help = "Informs the user of issues with Not Enough Crashes."
+title = "Remove Not Enough Crashes from your mods folder."
+description = "Not Enough Crashes (NEC) is well know to cause issues and often makes the debugging process more difficult. A good alternative is Crafty Crashes (https://github.com/Chocohead/Crafty-Crashes/releases/tag/v1.0)\nIf you had previously sent a log or crash report please remove NEC, recreate the issue, and resend the relevant files if the issue persists."
+
+[[command]]
 name = "crash-report"
 help = "Informs the user of how to get a crash report."
 title = "How to get crash reports:"
