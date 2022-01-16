@@ -282,6 +282,9 @@ class Report : Extension() {
     }
 
     inner class ManualReportArgs : Arguments() {
-        val message by string("message", "Link to the message to report")
+        val message by string {
+            name = "message"
+            description = "Link to the message to report"
+        }
     }
 }
