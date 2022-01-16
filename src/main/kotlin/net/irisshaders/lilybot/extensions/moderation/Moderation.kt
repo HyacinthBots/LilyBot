@@ -13,7 +13,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingCoalescingDuration
+import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -835,48 +835,113 @@ class Moderation : Extension() {
 
 
     inner class ClearArgs : Arguments() {
-        val messages by int("messages", "Messages")
+        val messages by int {
+            name = "messages"
+            description = "Number of messages to delete"
+        }
     }
 
     inner class KickArgs : Arguments() {
-        val userArgument by user("kickUser", "Person to kick")
-        val reason by defaultingString("reason", "The reason for the Kick", "No Reason Provided")
+        val userArgument by user {
+            name = "kickUser"
+            description = "Person to kick"
+        }
+        val reason by defaultingString {
+            name = "reason"
+            description = "The reason for the Kick"
+            defaultValue = "No Reason Provided"
+        }
     }
 
     inner class BanArgs : Arguments() {
-        val userArgument by user("banUser", "Person to ban")
-        val messages by int("messages", "Messages")
-        val reason by defaultingString("reason", "The reason for the ban", "No Reason Provided")
+        val userArgument by user {
+            name = "banUser"
+            description = "Person to ban"
+        }
+        val messages by int {
+            name = "messages"
+            description = "Messages"
+        }
+        val reason by defaultingString {
+            name = "reason"
+            description = "The reason for the ban"
+            defaultValue = "No Reason Provided"
+        }
     }
 
     inner class UnbanArgs : Arguments() {
-        val userArgument by user("unbanUserId", "Person Unbanned")
+        val userArgument by user {
+            name = "unbanUserId"
+            description = "Person Unbanned"
+        }
     }
 
     inner class SoftBanArgs : Arguments() {
-        val userArgument by user("softBanUser", "Person to Soft ban")
-        val messages by defaultingInt("messages", "Messages", 3)
-        val reason by defaultingString("reason", "The reason for the ban", "No Reason Provided")
+        val userArgument by user {
+            name = "softBanUser"
+            description = "Person to Soft ban"
+        }
+        val messages by defaultingInt {
+            name = "messages"
+            description = "Messages"
+            defaultValue = 3
+        }
+        val reason by defaultingString {
+            name = "reason"
+            description = "The reason for the ban"
+            defaultValue = "No Reason Provided"
+        }
     }
 
     inner class SayArgs : Arguments() {
-        val messageArgument by string("message", "Message contents")
-        val embedMessage by boolean("embed", "Would you like to send as embed")
+        val messageArgument by string {
+            name = "message"
+            description = "Message contents"
+        }
+        val embedMessage by boolean {
+            name = "embed"
+            description = "Would you like to send as embed"
+        }
     }
 
     inner class PresenceArgs : Arguments() {
-        val presenceArgument by string("presence", "Lily's presence")
+        val presenceArgument by string {
+            name = "presence"
+            description = "Lily's presence"
+        }
     }
 
     inner class WarnArgs : Arguments() {
-        val userArgument by user("warnUser", "Person to Warn")
-        val warnPoints by defaultingInt("points", "Amount of points to add", 10)
-        val reason by defaultingString("reason", "Reason for Warn", "No Reason Provided")
+        val userArgument by user {
+            name = "warnUser"
+            description = "Person to Warn"
+        }
+        val warnPoints by defaultingInt {
+            name = "points"
+            description = "Amount of points to add"
+            defaultValue = 10
+        }
+        val reason by defaultingString {
+            name = "reason"
+            description = "Reason for Warn"
+            defaultValue = "No Reason Provided"
+        }
     }
 
     inner class TimeoutArgs : Arguments() {
-        val userArgument by user("timeoutUser", "Person to timeout")
-        val duration by defaultingCoalescingDuration("duration", "Duration of timeout", DateTimePeriod(0, 0, 0, 6, 0, 0, 0))
-        val reason by defaultingString("reason", "Reason for timeout", "No reason provided")
+        val userArgument by user {
+            name = "timeoutUser"
+            description = "Person to timeout"
+        }
+        val duration by coalescingDefaultingDuration {
+            name = "duration"
+            description = "Duration of timeout"
+            defaultValue = DateTimePeriod(0, 0, 0, 6, 0, 0, 0)
+        }
+        val reason by defaultingString {
+            name = "reason"
+            description = "Reason for timeout"
+            defaultValue = "No reason provided"
+        }
     }
 }
