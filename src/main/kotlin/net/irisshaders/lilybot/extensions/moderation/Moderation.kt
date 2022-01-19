@@ -184,7 +184,7 @@ class Moderation : Extension() {
                 }
 
                 guild?.ban(userArg.id, builder = {
-                    this.reason = "Requested by " + user.asUser().username
+                    this.reason = arguments.reason
                     this.deleteMessagesDays = arguments.messages
                 })
 
@@ -329,7 +329,7 @@ class Moderation : Extension() {
                 }
 
                 guild?.ban(userArg.id, builder = {
-                    this.reason = "Requested by ${user.asUser().username}"
+                    this.reason = "${arguments.reason} + **SOFT-BAN**"
                     this.deleteMessagesDays = arguments.messages
                 })
 
@@ -432,7 +432,7 @@ class Moderation : Extension() {
                     data["kickTarget"] = userArg.tag
                 }
 
-                guild?.kick(userArg.id, "Requested by " + user.asUser().username)
+                guild?.kick(userArg.id, arguments.reason)
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
                     category = "extensions.moderation.Moderation.kick.kickTask"
