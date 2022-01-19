@@ -189,7 +189,7 @@ class Moderation : Extension() {
                 })
 
                 sentry.breadcrumb(BreadcrumbType.Info) {
-                    category = "extensions.moderation.Moderation.ban.banTast"
+                    category = "extensions.moderation.Moderation.ban.banTask"
                     message = "Finished ban task"
                     data["banTarget"] = userArg.tag
                 }
