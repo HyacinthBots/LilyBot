@@ -48,7 +48,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:0.37.3")
 
     // Hikari
-    implementation("com.zaxxer:HikariCP:5.0.0")
+    implementation("com.zaxxer:HikariCP:5.0.1")
 
     // SQLite
     implementation("org.xerial:sqlite-jdbc:3.36.0.3")

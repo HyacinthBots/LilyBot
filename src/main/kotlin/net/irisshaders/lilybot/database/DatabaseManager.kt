@@ -36,7 +36,7 @@ object DatabaseManager {
 
     object Warn : Table("warn") {
         val id = text("id")
-        val points = text("points").nullable()
+        val points = integer("points").nullable()
 
         override val primaryKey = PrimaryKey(id)
     }

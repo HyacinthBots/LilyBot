@@ -49,6 +49,7 @@ import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
 import net.irisshaders.lilybot.utils.ADMIN
 import net.irisshaders.lilybot.utils.TRIALMODERATORS
 import net.irisshaders.lilybot.utils.ResponseHelper
+import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -623,22 +624,20 @@ class Moderation : Extension() {
             action {
                 val userArg = arguments.userArgument
                 val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
-                var databasePoints: String? = null
+                var databasePoints: Int? = null
 
                 newSuspendedTransaction {
                     DatabaseManager.Warn.insertIgnore {
                         it[id] = userArg.id.toString()
-                        it[points] = "0"
+                        it[points] = 0
                     }
 
                     databasePoints = DatabaseManager.Warn.select {
                         DatabaseManager.Warn.id eq userArg.id.toString()
                     }.single()[DatabaseManager.Warn.points]
 
-                    DatabaseManager.Warn.update {
-                        it[id] = id
-                        it[points] = (Integer.parseInt(databasePoints) + arguments.warnPoints).toString()
-                    }
+                    DatabaseManager.Warn.update ({ DatabaseManager.Warn.id eq userArg.id.toString() }) {
+                        with(SqlExpressionBuilder) { it.update(points, points.plus(arguments.warnPoints)) } }
 
                     databasePoints = DatabaseManager.Warn.select {
                         DatabaseManager.Warn.id eq userArg.id.toString()
@@ -648,7 +647,7 @@ class Moderation : Extension() {
                 val dm = ResponseHelper.userDMEmbed(
                     userArg,
                     "You have been warned in ${guild?.fetchGuild()?.name}",
-                    "You were given ${arguments.warnPoints} points\nYour total is now ${Integer.parseInt(databasePoints)}\n\n**Reason:**\n${arguments.reason}",
+                    "You were given ${arguments.warnPoints} points\nYour total is now $databasePoints\n\n**Reason:**\n${arguments.reason}",
                     null
                 )
 
