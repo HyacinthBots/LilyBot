@@ -55,6 +55,7 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
 import kotlin.system.exitProcess
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 @Suppress("DuplicatedCode")
@@ -398,7 +399,7 @@ class Moderation : Extension() {
                     sentry.breadcrumb(BreadcrumbType.Error) {
                         category = "extensions.moderation.Moderation.kick.checkIsBot"
                         message = "Lmao someone tried to kick a bot"
-                        data["banTarget"] = userArg.tag
+                        data["kickTarget"] = userArg.tag
                     }
                     respond {
                         content = "Lol you can't kick me or other bots"
@@ -410,7 +411,7 @@ class Moderation : Extension() {
                     sentry.breadcrumb(BreadcrumbType.Error) {
                         category = "extensions.moderation.Moderation.kick.checkIsMod"
                         message = "Lmao someone tried to kick a mod"
-                        data["banTarget"] = userArg.tag
+                        data["kickTarget"] = userArg.tag
                     }
                     respond {
                         content = "Bruh don't try to kick a moderator"
@@ -612,8 +613,9 @@ class Moderation : Extension() {
         /**
          * Warn Command
          * @author chalkyjeans
+         * @author Miss-Corruption
+         * @author NoComment1105
          */
-        // FIXME Fix this where points arent written to the correct place in the database table
         ephemeralSlashCommand(::WarnArgs) {
             name = "warn"
             description = "Warn a member for any infractions."
@@ -638,6 +640,21 @@ class Moderation : Extension() {
 
                     DatabaseManager.Warn.update ({ DatabaseManager.Warn.id eq userArg.id.toString() }) {
                         with(SqlExpressionBuilder) { it.update(points, points.plus(arguments.warnPoints)) } }
+
+                    if (databasePoints!! in (50..99)) {
+                        guild?.getMember(userArg.id)?.edit {
+                            timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+                        }
+                    } else if (databasePoints!! in (100..149)) {
+                        guild?.getMember(userArg.id)?.edit {
+                            timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+                        }
+                    } else if (databasePoints!! >= 150) {
+                        guild?.ban(userArg.id, builder = {
+                            this.reason = "Banned due to point accumulation"
+                            this.deleteMessagesDays = 0
+                        })
+                    }
 
                     databasePoints = DatabaseManager.Warn.select {
                         DatabaseManager.Warn.id eq userArg.id.toString()
