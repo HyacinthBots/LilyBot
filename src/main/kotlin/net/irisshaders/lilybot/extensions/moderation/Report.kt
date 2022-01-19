@@ -186,7 +186,7 @@ class Report : Extension() {
                                     "**Duration:**\n10 minutes\n**Reason:**\nTimed-out via report",
                                     null
                                 )
-                                quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 30)
+                                quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 10)
                             }
                             "20-timeout" -> {
                                 guild?.getMember(messageAuthor!!.id)?.edit {
@@ -201,7 +201,7 @@ class Report : Extension() {
                                     "**Duration:**\n20 minutes\n**Reason:**\nTimed-out via report",
                                     null
                                 )
-                                quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 30)
+                                quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 20)
                             }
                             "30-timeout" -> {
                                 guild?.getMember(messageAuthor!!.id)?.edit {
