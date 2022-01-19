@@ -49,6 +49,7 @@ import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
 import net.irisshaders.lilybot.utils.ADMIN
 import net.irisshaders.lilybot.utils.TRIALMODERATORS
 import net.irisshaders.lilybot.utils.ResponseHelper
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -636,7 +637,7 @@ class Moderation : Extension() {
                     }.single()[DatabaseManager.Warn.points]
 
                     DatabaseManager.Warn.update {
-                        it[id] = id
+                        id eq userArg.id.toString()
                         it[points] = (Integer.parseInt(databasePoints) + arguments.warnPoints).toString()
                     }
 
