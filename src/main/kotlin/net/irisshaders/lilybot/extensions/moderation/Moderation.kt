@@ -7,13 +7,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.int
-import com.kotlindiscord.kord.extensions.commands.converters.impl.string
-import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
-import com.kotlindiscord.kord.extensions.commands.converters.impl.user
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
-import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
+import com.kotlindiscord.kord.extensions.commands.converters.impl.*
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -33,26 +27,17 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.rest.builder.message.create.embed
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.utils.FULLMODERATORS
-import net.irisshaders.lilybot.utils.MODERATORS
-import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
-import net.irisshaders.lilybot.utils.ADMIN
-import net.irisshaders.lilybot.utils.TRIALMODERATORS
-import net.irisshaders.lilybot.utils.ResponseHelper
+import net.irisshaders.lilybot.utils.*
 import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.update
 import kotlin.system.exitProcess
 import kotlin.time.ExperimentalTime
 
@@ -154,7 +139,9 @@ class Moderation : Extension() {
                         content = "Lol you can't ban me or other bots"
                     }
                     return@action
-                } else if (guild?.getRole(MODERATORS) ?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true) {
+                } else if (guild?.getRole(MODERATORS)
+                        ?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
+                ) {
                     sentry.breadcrumb(BreadcrumbType.Error) {
                         category = "extensions.moderation.Moderation.ban.checkIsMod"
                         message = "Lmao someone tried to ban a mod"
@@ -297,7 +284,9 @@ class Moderation : Extension() {
                         content = "Lol you can't ban me or other bots"
                     }
                     return@action
-                } else if (guild?.getRole(MODERATORS) ?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true) {
+                } else if (guild?.getRole(MODERATORS)
+                        ?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
+                ) {
                     sentry.breadcrumb(BreadcrumbType.Error) {
                         category = "extensions.moderation.Moderation.soft-ban.checkIsMod"
                         message = "Lmao someone tried to ban a mod"
@@ -399,7 +388,9 @@ class Moderation : Extension() {
                         content = "Lol you can't kick me or other bots"
                     }
                     return@action
-                } else if (guild?.getRole(MODERATORS) ?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true) {
+                } else if (guild?.getRole(MODERATORS)
+                        ?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
+                ) {
                     sentry.breadcrumb(BreadcrumbType.Error) {
                         category = "extensions.moderation.Moderation.kick.checkIsMod"
                         message = "Lmao someone tried to kick a mod"
@@ -577,7 +568,13 @@ class Moderation : Extension() {
 
                             action {
                                 respond { content = "Shutting down..." }
-                                ResponseHelper.responseEmbedInChannel(actionLog, "Shutting Down!", null, DISCORD_RED, user.asUser())
+                                ResponseHelper.responseEmbedInChannel(
+                                    actionLog,
+                                    "Shutting Down!",
+                                    null,
+                                    DISCORD_RED,
+                                    user.asUser()
+                                )
                                 kord.shutdown()
                                 exitProcess(0)
                             }
@@ -623,10 +620,14 @@ class Moderation : Extension() {
                         DatabaseManager.Warn.id eq userArg.id.toString()
                     }.single()[DatabaseManager.Warn.points]
 
-                    DatabaseManager.Warn.replace {
+                    DatabaseManager.Warn.update {
                         it[id] = id
-                        it[points] = (arguments.warnPoints + Integer.parseInt(databasePoints)).toString()
+                        it[points] = (Integer.parseInt(databasePoints) + arguments.warnPoints).toString()
                     }
+
+                    databasePoints = DatabaseManager.Warn.select {
+                        DatabaseManager.Warn.id eq userArg.id.toString()
+                    }.single()[DatabaseManager.Warn.points]
                 }
 
                 val dm = ResponseHelper.userDMEmbed(
@@ -716,7 +717,10 @@ class Moderation : Extension() {
                 val dm = ResponseHelper.userDMEmbed(
                     userArg,
                     "You have been timed out in ${guild?.fetchGuild()?.name}",
-                    "**Duration:**\n${duration.toDiscord(TimestampType.Default) +  "(" + arguments.duration.toString().replace("PT", "") + ")"}\n**Reason:**\n${arguments.reason}",
+                    "**Duration:**\n${
+                        duration.toDiscord(TimestampType.Default) + "(" + arguments.duration.toString()
+                            .replace("PT", "") + ")"
+                    }\n**Reason:**\n${arguments.reason}",
                     null
                 )
 
@@ -752,7 +756,8 @@ class Moderation : Extension() {
                     }
                     field {
                         name = "Duration:"
-                        value = duration.toDiscord(TimestampType.Default) +  " (" + arguments.duration.toString().replace("PT", "") + ")"
+                        value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
+                            .replace("PT", "") + ")"
                         inline = false
                     }
                     field {
