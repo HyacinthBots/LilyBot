@@ -34,7 +34,6 @@ dependencies {
 
     // Tags
     implementation(libs.kotlinx.serialization)
-    implementation(libs.kaml)
 
     // TOML reader
     implementation("com.github.jezza:toml:1.2")
