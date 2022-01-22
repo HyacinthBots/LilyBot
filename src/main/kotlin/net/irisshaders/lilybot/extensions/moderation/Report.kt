@@ -86,7 +86,7 @@ class Report : Extension() {
         reportedMessage: Message
     ) {
         messageLog.createMessage {
-            content = "`<@&${MODERATORS.value}>`"
+            content = "<@&${MODERATORS.value}>"
         }
 
         messageLog.createEmbed {
