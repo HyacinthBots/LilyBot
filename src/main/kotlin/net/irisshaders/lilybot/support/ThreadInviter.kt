@@ -27,9 +27,10 @@ class ThreadInviter : Extension() {
          * @author IMS212
          */
         event<MessageCreateEvent> {
-            check { failIf(event.message.channelId != SUPPORT_CHANNEL) }
+			check { failIf(event.message.type == MessageType.ApplicationCommand)} // Don't try to create if the message is a slash command
+			check { failIf(event.message.type == MessageType.ThreadCreated || event.message.type == MessageType.ThreadStarterMessage) } // Don't try and run this if the thread is manually created
+			check { failIf(event.message.channelId != SUPPORT_CHANNEL) }
             check { failIf(event.member!!.id == kord.selfId) }
-            check { failIf(event.message.type == MessageType.ThreadCreated) } // Don't try and run this if the thread is manually created
 
             action {
                 var userThreadExists = false
