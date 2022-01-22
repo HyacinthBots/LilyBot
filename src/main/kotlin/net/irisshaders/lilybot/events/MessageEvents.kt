@@ -182,9 +182,6 @@ class MessageEvents : Extension() {
                                                         }
                                                     }
                                                 } catch (e: Exception) {
-                                                    uploadMessage.edit {
-                                                        ResponseHelper.failureEmbed(event.interaction.getChannel(), "Failed to upload `$attachmentFileName` to Hastebin", e.toString())
-                                                    }
                                                     sentry.breadcrumb(BreadcrumbType.Error) {
                                                         category = "events.messageevnets.loguploading.UploadTask"
                                                         message = "Failed to upload a file to hastebin"
