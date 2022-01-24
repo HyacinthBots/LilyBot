@@ -28,7 +28,7 @@ class JoinLeaveEvent : Extension() {
             action {
                 val eventMember = event.member
                 val guildMemberCount = event.getGuild().members.count()
-                val joinChannel = event.guild.getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
+                val joinChannel = event.getGuild().getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
 
                 joinChannel.createEmbed {
                     color = DISCORD_GREEN
@@ -60,7 +60,7 @@ class JoinLeaveEvent : Extension() {
             action {
                 val eventUser = event.user
                 val guildMemberCount = event.getGuild().members.count()
-                val joinChannel = event.guild.getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
+                val joinChannel = event.getGuild().getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
 
                 joinChannel.createEmbed {
                     color = DISCORD_RED
