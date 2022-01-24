@@ -32,9 +32,6 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.logging)
 
-    // Tags
-    implementation(libs.kotlinx.serialization)
-
     // TOML reader
     implementation("com.github.jezza:toml:1.2")
 
