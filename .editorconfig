@@ -16,8 +16,8 @@ ij_java_names_count_to_use_import_on_demand = 99999
 
 [*.kt]
 indent_style = tab
-ij_java_class_count_to_use_import_on_demand = 99999
-ij_java_names_count_to_use_import_on_demand = 99999
+ij_kotlin_name_count_to_use_star_import = 99999
+ij_kotlin_name_count_to_use_star_import_for_members = 9999
 
 [*.properties]
 indent_style = space
