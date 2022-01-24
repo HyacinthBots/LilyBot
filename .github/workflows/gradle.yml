@@ -25,7 +25,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build artifacts
-      run: ./gradlew build
+      run: ./gradlew build --stacktrace --parallel
     - name: Extract Current Branch name
       shell: bash
       # bash pattern expansion to grab branch name without slashes

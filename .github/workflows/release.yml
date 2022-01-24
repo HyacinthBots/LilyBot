@@ -30,7 +30,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Release Artifacts
-        run: ./gradlew build
+        run: ./gradlew build --stacktrace --parallel
       - name: Upload artifacts GitHub
         uses: AButler/upload-release-assets@v2.0
         with:
