@@ -19,9 +19,13 @@ import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.Ping
-import net.irisshaders.lilybot.support.ThreadInviter
 import net.irisshaders.lilybot.extensions.util.ThreadModInviter
-import net.irisshaders.lilybot.utils.*
+import net.irisshaders.lilybot.support.ThreadInviter
+import net.irisshaders.lilybot.utils.BOT_TOKEN
+import net.irisshaders.lilybot.utils.CONFIG_PATH
+import net.irisshaders.lilybot.utils.GITHUB_OAUTH
+import net.irisshaders.lilybot.utils.GUILD_ID
+import net.irisshaders.lilybot.utils.SENTRY_DSN
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import java.nio.file.Files
@@ -35,64 +39,64 @@ var github: GitHub? = null
 private val gitHubLogger = KotlinLogging.logger {}
 
 suspend fun main() {
-    val bot = ExtensibleBot(BOT_TOKEN) {
-        applicationCommands {
-            defaultGuild(GUILD_ID)
-        }
-        members {
-            fill(GUILD_ID)
-        }
-        intents {
-            +Intent.GuildMembers
-        }
+	val bot = ExtensibleBot(BOT_TOKEN) {
+		applicationCommands {
+			defaultGuild(GUILD_ID)
+		}
+		members {
+			fill(GUILD_ID)
+		}
+		intents {
+			+Intent.GuildMembers
+		}
 
-        chatCommands {
-            // Enable chat command handling
-            enabled = true
-        }
+		chatCommands {
+			// Enable chat command handling
+			enabled = true
+		}
 
-        extensions {
-            add(::Ping)
-            add(::Moderation)
-            add(::ThreadInviter)
-            add(::Report)
-            add(::JoinLeaveEvent)
-            add(::MessageEvents)
-            add(::Github)
-            add(::CustomCommands)
-            add(::ThreadModInviter)
+		extensions {
+			add(::Ping)
+			add(::Moderation)
+			add(::ThreadInviter)
+			add(::Report)
+			add(::JoinLeaveEvent)
+			add(::MessageEvents)
+			add(::Github)
+			add(::CustomCommands)
+			add(::ThreadModInviter)
 
-            extPhishing {
-                appName = "Lily Bot"
-                detectionAction = DetectionAction.Kick
-                logChannelName = "anti-phishing-logs"
-                requiredCommandPermission = null
-            }
+			extPhishing {
+				appName = "Lily Bot"
+				detectionAction = DetectionAction.Kick
+				logChannelName = "anti-phishing-logs"
+				requiredCommandPermission = null
+			}
 
 
-            sentry {
-                enableIfDSN(SENTRY_DSN)
-            }
-        }
+			sentry {
+				enableIfDSN(SENTRY_DSN)
+			}
+		}
 
-        hooks {
-            afterKoinSetup {
-                DatabaseManager.startDatabase()
-            }
-        }
-        presence {
-            status = PresenceStatus.Online
-            playing(config.get("activity") as String)
-        }
+		hooks {
+			afterKoinSetup {
+				DatabaseManager.startDatabase()
+			}
+		}
+		presence {
+			status = PresenceStatus.Online
+			playing(config.get("activity") as String)
+		}
 
-        try {
-            github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()
-            gitHubLogger.info("Logged into GitHub!")
-        } catch (exception: Exception) {
-            exception.printStackTrace()
-            gitHubLogger.error("Failed to log into GitHub!")
-            throw Exception(exception)
-        }
-    }
-    bot.start()
+		try {
+			github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()
+			gitHubLogger.info("Logged into GitHub!")
+		} catch (exception: Exception) {
+			exception.printStackTrace()
+			gitHubLogger.error("Failed to log into GitHub!")
+			throw Exception(exception)
+		}
+	}
+	bot.start()
 }

@@ -21,89 +21,89 @@ import kotlin.time.ExperimentalTime
  * [here](https://github.com/QuiltMC/cozy-discord/blob/root/LICENSE.md)
  */
 class ThreadModInviter : Extension() {
-    override val name = "moderatingthreads"
+	override val name = "moderatingthreads"
 
-    override suspend fun setup() {
-        event<ThreadChannelCreateEvent> {
-            check { failIf(event.channel.ownerId == kord.selfId) }
-            check { failIf(event.channel.member != null) } // To avoid running on thread join, rather than creation only
+	override suspend fun setup() {
+		event<ThreadChannelCreateEvent> {
+			check { failIf(event.channel.ownerId == kord.selfId) }
+			check { failIf(event.channel.member != null) } // To avoid running on thread join, rather than creation only
 
-            action {
-                if (event.channel.parentId == SUPPORT_CHANNEL) {
-                    val threadOwner = event.channel.owner.asUser()
+			action {
+				if (event.channel.parentId == SUPPORT_CHANNEL) {
+					val threadOwner = event.channel.owner.asUser()
 
-                    sentry.breadcrumb(BreadcrumbType.Info) {
-                        category = "extensions.util.threadmodinviter.ThreadCreation"
-                        message =
-                            "A thread was created by ${threadOwner.tag} in the support channel, not using the" +
-                                    "automatic system >:("
-                    }
+					sentry.breadcrumb(BreadcrumbType.Info) {
+						category = "extensions.util.threadmodinviter.ThreadCreation"
+						message =
+							"A thread was created by ${threadOwner.tag} in the support channel, not using the" +
+									"automatic system >:("
+					}
 
-                    val supportRole = event.channel.guild.getRole(SUPPORT_TEAM)
+					val supportRole = event.channel.guild.getRole(SUPPORT_TEAM)
 
-                    event.channel.withTyping {
-                        delay(2.seconds)
-                    }
+					event.channel.withTyping {
+						delay(2.seconds)
+					}
 
-                    val message = event.channel.createMessage(
-                        content = "Hello there! Cool thread, since you're in the support channel, I'll just grab" +
-                                " support team for ya"
-                    )
+					val message = event.channel.createMessage(
+						content = "Hello there! Cool thread, since you're in the support channel, I'll just grab" +
+								" support team for ya"
+					)
 
-                    event.channel.withTyping {
-                        delay(4.seconds)
-                    }
+					event.channel.withTyping {
+						delay(4.seconds)
+					}
 
-                    message.edit {
-                        content = "Oi, ${supportRole.mention}, get here and help this person!"
-                    }
+					message.edit {
+						content = "Oi, ${supportRole.mention}, get here and help this person!"
+					}
 
-                    event.channel.withTyping {
-                        delay(4.seconds)
-                    }
+					event.channel.withTyping {
+						delay(4.seconds)
+					}
 
-                    message.edit {
-                        content =
-                            "Welcome to your support thread, ${threadOwner.mention}, here is your thread :D\nNext" +
-                                    " time though, you can just send a message in <#$SUPPORT_CHANNEL> and I'll automatically" +
-                                    " make a thread for you ;D"
-                    }
+					message.edit {
+						content =
+							"Welcome to your support thread, ${threadOwner.mention}, here is your thread :D\nNext" +
+									" time though, you can just send a message in <#$SUPPORT_CHANNEL> and I'll automatically" +
+									" make a thread for you ;D"
+					}
 
-                } else {
-                    val threadOwner = event.channel.owner.asUser()
+				} else {
+					val threadOwner = event.channel.owner.asUser()
 
-                    sentry.breadcrumb(BreadcrumbType.Info) {
-                        category = "extensions.util.threadmodinviter.ThreadCreation"
-                        message = "A thread was created by ${threadOwner.tag}"
-                    }
+					sentry.breadcrumb(BreadcrumbType.Info) {
+						category = "extensions.util.threadmodinviter.ThreadCreation"
+						message = "A thread was created by ${threadOwner.tag}"
+					}
 
-                    val modRole = event.channel.guild.getRole(MODERATORS)
+					val modRole = event.channel.guild.getRole(MODERATORS)
 
-                    event.channel.withTyping {
-                        delay(2.seconds)
-                    }
-                    val message = event.channel.createMessage(
-                        content = "Hello there! Cool thread, lemme just grab the moderators so they can see how cool" +
-                                " this is"
-                    )
+					event.channel.withTyping {
+						delay(2.seconds)
+					}
+					val message = event.channel.createMessage(
+						content = "Hello there! Cool thread, lemme just grab the moderators so they can see how cool" +
+								" this is"
+					)
 
-                    event.channel.withTyping {
-                        delay(4.seconds)
-                    }
+					event.channel.withTyping {
+						delay(4.seconds)
+					}
 
-                    message.edit {
-                        content = "Oi, ${modRole.mention}, get here and see how cool this is!"
-                    }
+					message.edit {
+						content = "Oi, ${modRole.mention}, get here and see how cool this is!"
+					}
 
-                    event.channel.withTyping {
-                        delay(4.seconds)
-                    }
+					event.channel.withTyping {
+						delay(4.seconds)
+					}
 
-                    message.edit {
-                        content = "Welcome to your thread, ${threadOwner.mention}, here is your thread :D"
-                    }
-                }
-            }
-        }
-    }
+					message.edit {
+						content = "Welcome to your thread, ${threadOwner.mention}, here is your thread :D"
+					}
+				}
+			}
+		}
+	}
 }

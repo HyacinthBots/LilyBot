@@ -17,44 +17,44 @@ import kotlin.time.ExperimentalTime
 
 @Suppress("PrivatePropertyName")
 class Ping : Extension() {
-    override val name = "ping"
+	override val name = "ping"
 
-    override suspend fun setup() {
-        val actionLog = kord.getGuild(GUILD_ID)?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+	override suspend fun setup() {
+		val actionLog = kord.getGuild(GUILD_ID)?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 
-        /**
-         * Online notification
-         * @author IMS212
-         */
-        ResponseHelper.responseEmbedInChannel(actionLog, "Lily is now online!", null, DISCORD_GREEN, null)
+		/**
+		 * Online notification
+		 * @author IMS212
+		 */
+		ResponseHelper.responseEmbedInChannel(actionLog, "Lily is now online!", null, DISCORD_GREEN, null)
 
-        /**
-         * Ping Command
-         * @author IMS212
-         * @author NoComment1105
-         */
-        publicSlashCommand {  // Public slash commands have public responses
-            name = "ping"
-            description = "Am I alive?"
+		/**
+		 * Ping Command
+		 * @author IMS212
+		 * @author NoComment1105
+		 */
+		publicSlashCommand {  // Public slash commands have public responses
+			name = "ping"
+			description = "Am I alive?"
 
-            action {
-                val averagePing = this@Ping.kord.gateway.averagePing
+			action {
+				val averagePing = this@Ping.kord.gateway.averagePing
 
-                respond {
-                    embed {
-                        color = DISCORD_YELLOW
-                        title = "Pong!"
+				respond {
+					embed {
+						color = DISCORD_YELLOW
+						title = "Pong!"
 
-                        timestamp = Clock.System.now()
+						timestamp = Clock.System.now()
 
-                        field {
-                            name = "Your Ping with Lily is:"
-                            value = "**$averagePing**"
-                            inline = true
-                        }
-                    }
-                }
-            }
-        }
-    }
+						field {
+							name = "Your Ping with Lily is:"
+							value = "**$averagePing**"
+							inline = true
+						}
+					}
+				}
+			}
+		}
+	}
 }

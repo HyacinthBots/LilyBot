@@ -16,52 +16,64 @@ import net.irisshaders.lilybot.config
  * @author IMS212
  */
 class CustomCommands : Extension() {
-    override var name = "customcommands"
+	override var name = "customcommands"
 
 
-    override suspend fun setup() {
-        val commands: TomlArray = config.get("command") as TomlArray
-        for (cmds in commands) {
-            val cmd = cmds as TomlTable
-            addCommand(cmd.get("name") as String, cmd.getOrDefault("help", "A Lily bot command.") as String, cmd.getOrDefault("title", "No title") as String, cmd.getOrDefault("description", "") as String, cmd.get("subcommand") as TomlArray?)
-        }
-    }
+	override suspend fun setup() {
+		val commands: TomlArray = config.get("command") as TomlArray
+		for (cmds in commands) {
+			val cmd = cmds as TomlTable
+			addCommand(
+				cmd.get("name") as String,
+				cmd.getOrDefault("help", "A Lily bot command.") as String,
+				cmd.getOrDefault("title", "No title") as String,
+				cmd.getOrDefault("description", "") as String,
+				cmd.get("subcommand") as TomlArray?
+			)
+		}
+	}
 
-    private suspend fun addCommand(names: String, desc: String, cmdTitle: String, cmdValue: String, subCmds: TomlArray?) {
-        publicSlashCommand {
+	private suspend fun addCommand(
+		names: String,
+		desc: String,
+		cmdTitle: String,
+		cmdValue: String,
+		subCmds: TomlArray?
+	) {
+		publicSlashCommand {
 
-            name = names
-            description = desc
-            if (subCmds == null) {
-                action {
-                    respond {
-                        embed {
-                            color = DISCORD_BLURPLE
-                            title = cmdTitle
-                            description = cmdValue
-                            timestamp = Clock.System.now()
-                        }
-                    }
-                }
-            } else {
-                for (subs in subCmds) {
-                    val sub = subs as TomlTable
-                    publicSubCommand {
-                        name = sub.get("name") as String
-                        description = sub.getOrDefault("help", "A Lily bot command.") as String
-                        action {
-                            respond {
-                                embed {
-                                    color = DISCORD_BLURPLE
-                                    timestamp = Clock.System.now()
-                                    title = sub.getOrDefault("title", null) as String
-                                    description = sub.getOrDefault("description", "") as String
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+			name = names
+			description = desc
+			if (subCmds == null) {
+				action {
+					respond {
+						embed {
+							color = DISCORD_BLURPLE
+							title = cmdTitle
+							description = cmdValue
+							timestamp = Clock.System.now()
+						}
+					}
+				}
+			} else {
+				for (subs in subCmds) {
+					val sub = subs as TomlTable
+					publicSubCommand {
+						name = sub.get("name") as String
+						description = sub.getOrDefault("help", "A Lily bot command.") as String
+						action {
+							respond {
+								embed {
+									color = DISCORD_BLURPLE
+									timestamp = Clock.System.now()
+									title = sub.getOrDefault("title", null) as String
+									description = sub.getOrDefault("description", "") as String
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
