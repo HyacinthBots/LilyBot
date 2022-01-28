@@ -36,9 +36,3 @@ jobs:
         with:
           files: 'build/libs/*.jar'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Sentry Release
-        uses: getsentry/action-release@v1.1.6
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
