@@ -42,6 +42,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
+import mu.KotlinLogging
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.ADMIN
 import net.irisshaders.lilybot.utils.FULLMODERATORS
@@ -63,6 +64,8 @@ class Moderation : Extension() {
 	override val name = "moderation"
 
 	override suspend fun setup() {
+		val logger = KotlinLogging.logger { }
+
 		/**
 		 * Clear Command
 		 * @author IMS212
@@ -146,28 +149,20 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
-				if (guild?.getMember(userArg.id)?.isBot == true) {
-					sentry.breadcrumb(BreadcrumbType.Error) {
-						category = "extensions.moderation.Moderation.ban.checkIsBot"
-						message = "Lmao someone tried to ban a bot"
-						data["banTarget"] = userArg.tag
+				try {
+					if (guild?.getMember(userArg.id)?.isBot == true) {
+						respond {
+							content = "Lol you can't ban me or other bots"
+						}
+						return@action
+					} else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true) {
+						respond {
+							content = "Bruh don't try to ban a moderator"
+						}
+						return@action
 					}
-					respond {
-						content = "Lol you can't ban me or other bots"
-					}
-					return@action
-				} else if (guild?.getRole(MODERATORS)
-						?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
-				) {
-					sentry.breadcrumb(BreadcrumbType.Error) {
-						category = "extensions.moderation.Moderation.ban.checkIsMod"
-						message = "Lmao someone tried to ban a mod"
-						data["banTarget"] = userArg.tag
-					}
-					respond {
-						content = "Bruh don't try to ban a moderator"
-					}
-					return@action
+				} catch (exception: Exception) {
+					logger.warn("IsBot and moderator checks skipped on `Ban` due to error")
 				}
 
 				val dm = ResponseHelper.userDMEmbed(
@@ -177,22 +172,10 @@ class Moderation : Extension() {
 					null
 				)
 
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.ban.banTask"
-					message = "Running ban task"
-					data["banTarget"] = userArg.tag
-				}
-
 				guild?.ban(userArg.id, builder = {
 					this.reason = arguments.reason
 					this.deleteMessagesDays = arguments.messages
 				})
-
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.ban.banTask"
-					message = "Finished ban task"
-					data["banTarget"] = userArg.tag
-				}
 
 				respond {
 					content = "Banned a user"
@@ -248,19 +231,7 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.unban.unbanTask"
-					message = "Unbanning user"
-					data["unbanTarget"] = userArg.tag
-				}
-
 				guild?.unban(userArg.id)
-
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.unban.unbanTask"
-					message = "Unban task complete"
-					data["unbanTarget"] = userArg.tag
-				}
 
 				respond {
 					content = "Unbanned User"
@@ -291,28 +262,20 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
-				if (guild?.getMember(userArg.id)?.isBot == true) {
-					sentry.breadcrumb(BreadcrumbType.Error) {
-						category = "extensions.moderation.Moderation.soft-ban.checkIsBot"
-						message = "Lmao someone tried to ban a bot"
-						data["banTarget"] = userArg.tag
+				try {
+					if (guild?.getMember(userArg.id)?.isBot == true) {
+						respond {
+							content = "Lol you can't ban me or other bots"
+						}
+						return@action
+					} else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true) {
+						respond {
+							content = "Bruh don't try to ban a moderator"
+						}
+						return@action
 					}
-					respond {
-						content = "Lol you can't ban me or other bots"
-					}
-					return@action
-				} else if (guild?.getRole(MODERATORS)
-						?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
-				) {
-					sentry.breadcrumb(BreadcrumbType.Error) {
-						category = "extensions.moderation.Moderation.soft-ban.checkIsMod"
-						message = "Lmao someone tried to ban a mod"
-						data["banTarget"] = userArg.tag
-					}
-					respond {
-						content = "Bruh don't try to ban a moderator"
-					}
-					return@action
+				} catch (exception: Exception) {
+					logger.warn("IsBot and Moderator checks skipped on `Soft-Ban` due to error")
 				}
 
 				val dm = ResponseHelper.userDMEmbed(
@@ -322,22 +285,10 @@ class Moderation : Extension() {
 					null
 				)
 
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.soft-ban.banTask"
-					message = "Running ban task"
-					data["soft-banTarget"] = userArg.tag
-				}
-
 				guild?.ban(userArg.id, builder = {
 					this.reason = "${arguments.reason} + **SOFT-BAN**"
 					this.deleteMessagesDays = arguments.messages
 				})
-
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.soft-ban.banTask"
-					message = "Completed ban task"
-					data["soft-banTarget"] = userArg.tag
-				}
 
 				respond {
 					content = "Soft-Banned User"
@@ -395,28 +346,22 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
-				if (guild?.getMember(userArg.id)?.isBot == true) {
-					sentry.breadcrumb(BreadcrumbType.Error) {
-						category = "extensions.moderation.Moderation.kick.checkIsBot"
-						message = "Lmao someone tried to kick a bot"
-						data["kickTarget"] = userArg.tag
+				try {
+					if (guild?.getMember(userArg.id)?.isBot == true) {
+						respond {
+							content = "Lol you can't kick me or other bots"
+						}
+						return@action
+					} else if (guild?.getRole(MODERATORS)
+							?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
+					) {
+						respond {
+							content = "Bruh don't try to kick a moderator"
+						}
+						return@action
 					}
-					respond {
-						content = "Lol you can't kick me or other bots"
-					}
-					return@action
-				} else if (guild?.getRole(MODERATORS)
-						?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
-				) {
-					sentry.breadcrumb(BreadcrumbType.Error) {
-						category = "extensions.moderation.Moderation.kick.checkIsMod"
-						message = "Lmao someone tried to kick a mod"
-						data["kickTarget"] = userArg.tag
-					}
-					respond {
-						content = "Bruh don't try to kick a moderator"
-					}
-					return@action
+				} catch (exception: Exception) {
+					logger.warn("IsBot and Moderator checks skipped on `Kick` due to error")
 				}
 
 				val dm = ResponseHelper.userDMEmbed(
@@ -426,19 +371,7 @@ class Moderation : Extension() {
 					null
 				)
 
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.kick.kickTask"
-					message = "Running kick task"
-					data["kickTarget"] = userArg.tag
-				}
-
 				guild?.kick(userArg.id, arguments.reason)
-
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.kick.kickTask"
-					message = "Completed kick task"
-					data["kickTarget"] = userArg.tag
-				}
 
 				respond {
 					content = "Kicked User"
@@ -491,19 +424,9 @@ class Moderation : Extension() {
 						description = arguments.messageArgument
 						timestamp = Clock.System.now()
 					}
-					sentry.breadcrumb(BreadcrumbType.Info) {
-						category = "extensions.moderation.Moderation.say.isEmbed"
-						message = "Say was used to create an embed"
-						data["content"] = arguments.messageArgument
-					}
 				} else {
 					channel.createMessage {
 						content = arguments.messageArgument
-					}
-					sentry.breadcrumb(BreadcrumbType.Info) {
-						category = "extensions.moderation.Moderation.say.isEmbed"
-						message = "Say was used to create an message"
-						data["content"] = arguments.messageArgument
 					}
 				}
 
@@ -546,12 +469,6 @@ class Moderation : Extension() {
 					DISCORD_BLACK,
 					user.asUser()
 				)
-
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.updatedPresence"
-					message = "Presence update"
-					data["newPresence"] = arguments.presenceArgument
-				}
 			}
 		}
 
@@ -573,11 +490,6 @@ class Moderation : Extension() {
 						title = "Shutdown"
 						description = "Are you sure you would like to shut down?"
 					}
-					sentry.breadcrumb(BreadcrumbType.Info) {
-						category = "extensions.moderation.Moderation.shutdown.shutdownTask"
-						message = "${user.asUser().tag} shutdown the bot"
-					}
-
 					components {
 						ephemeralButton {
 							label = "Yes"
@@ -628,6 +540,24 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 				var databasePoints: Int? = null
 
+				try {
+					if (guild?.getMember(userArg.id)?.isBot == true) {
+						respond {
+							content = "Lol you can't warn me or other bots"
+						}
+						return@action
+					} else if (guild?.getRole(MODERATORS)
+							?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
+					) {
+						respond {
+							content = "Bruh don't try to warn a moderator"
+						}
+						return@action
+					}
+				} catch (exception: Exception) {
+					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
+				}
+
 				newSuspendedTransaction {
 					DatabaseManager.Warn.insertIgnore {
 						it[id] = userArg.id.toString()
@@ -672,6 +602,7 @@ class Moderation : Extension() {
 				respond {
 					content = "Warned User"
 				}
+
 				actionLog.createEmbed {
 					title = "Warning"
 					color = DISCORD_BLACK
@@ -732,18 +663,17 @@ class Moderation : Extension() {
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
 
-				if (guild?.getMember(userArg.id)?.isBot == true || guild?.getRole(MODERATORS)
-						?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true
-				) {
-					respond {
-						content = "You cannot timeout a moderator/bot!"
+				try {
+					if (guild?.getMember(userArg.id)?.isBot == true || guild?.getRole(MODERATORS)
+							?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true
+					) {
+						respond {
+							content = "You cannot timeout a moderator/bot!"
+						}
+						return@action
 					}
-					sentry.breadcrumb(BreadcrumbType.Info) {
-						category = "extensions.moderation.Moderation.timeout.isModOrBot"
-						message = "Lmao someone tried to timeout a bot/moderator"
-						data["timeoutTarget"] = userArg.tag
-					}
-					return@action
+				} catch (exception: Exception) {
+					logger.warn("IsBot and Moderator checks failed on `Timeout` due to error")
 				}
 
 				val dm = ResponseHelper.userDMEmbed(
@@ -756,20 +686,8 @@ class Moderation : Extension() {
 					null
 				)
 
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.timeout.timeoutTask"
-					message = "Running Timeout task"
-					data["timeoutTarget"] = userArg.tag
-				}
-
 				guild?.getMember(userArg.id)?.edit {
 					timeoutUntil = duration
-				}
-
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.timeout.timeoutTask"
-					message = "Completed Timeout task"
-					data["timeoutTarget"] = userArg.tag
 				}
 
 				respond {
@@ -831,20 +749,8 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.remove-timeout.remove-timeoutTask"
-					message = "Running Remove Timeout task"
-					data["removeTimeoutTarget"] = userArg.tag
-				}
-
 				guild?.getMember(userArg.id)?.edit {
 					timeoutUntil = null
-				}
-
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.remove-timeout.remove-timeoutTask"
-					message = "Completed Remove Timeout task"
-					data["removeTimeoutTarget"] = userArg.tag
 				}
 
 				respond {
