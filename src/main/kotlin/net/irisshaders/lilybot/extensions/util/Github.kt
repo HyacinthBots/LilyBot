@@ -8,13 +8,12 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
-import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.types.respondPublic
 import dev.kord.rest.builder.message.create.embed
 import io.ktor.utils.io.errors.*
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.github
-import net.irisshaders.lilybot.utils.ResponseHelper
 import org.kohsuke.github.GHDirection
 import org.kohsuke.github.GHFileNotFoundException
 import org.kohsuke.github.GHIssue
@@ -54,13 +53,12 @@ class Github : Extension() {
 							category = "extensions.util.Github.issue.InputCheck"
 							message = "Input missing /"
 						}
-						respond {
-							content = "ohno"
-							ResponseHelper.failureEmbed(
-								event.interaction.getChannel(),
-								"Make sure your repository input is formatted like this:",
-								"Format: `User/Repo` or `Org/Repo` \n For example: `IrisShaders/Iris`"
-							)
+						respondEphemeral {
+							ephemeral = true
+							embed {
+								title = "Make sure your repository input is formatted like this:"
+								description = "Format: `User/Repo` or `Org/Repo` \nFor example: `IrisShaders/Iris`"
+							}
 						}
 						return@action
 					}
@@ -87,13 +85,11 @@ class Github : Extension() {
 								category = "extensions.util.Github.issue.getIssue"
 								message = "Unable to find issue"
 							}
-							respond {
-								content = "ohno"
-								ResponseHelper.failureEmbed(
-									event.interaction.getChannel(),
-									"Invalid issue number. Make sure this issue exists!",
-									null
-								)
+							respondEphemeral {
+								ephemeral = true
+								embed {
+									title = "Invalid Issue number. Make sure this issue exists!"
+								}
 							}
 							return@action
 						}
@@ -244,13 +240,12 @@ class Github : Extension() {
 							category = "extensions.util.Github.repository.InputCheck"
 							message = "Input missing /"
 						}
-						respond {
-							content = "ohno"
-							ResponseHelper.failureEmbed(
-								event.interaction.getChannel(),
-								"Make sure your input is formatted like this:",
-								"Format: `User/Repo` or `Org/Repo` \n For example: `IrisShaders/Iris`"
-							)
+						respondEphemeral {
+							ephemeral = true
+							embed {
+								title = "Make sure your input is formatted like this:"
+								description = "Format: `User/Repo` or `Org/Repo`\nFor example: `IrisShaders/Iris`"
+							}
 						}
 						return@action
 					}
@@ -268,19 +263,17 @@ class Github : Extension() {
 							category = "extensions.util.Github.repository.getRepository"
 							message = "Repository not found"
 						}
-						respond {
-							content = "ohno"
-							ResponseHelper.failureEmbed(
-								event.interaction.getChannel(),
-								"Invalid repository name. Make sure this repository exists!",
-								null
-							)
+						respondEphemeral {
+							ephemeral = true
+							embed {
+								title = "Invalid repository name. Make sure this repository exists"
+							}
 						}
 						repo = null
 						return@action
 					}
 
-					respond {
+					respondPublic {
 						embed {
 							try {
 								title = "GitHub Repository Info for " + repo?.fullName
@@ -340,13 +333,11 @@ class Github : Extension() {
 							category = "extensions.util.Github.user.getUser"
 							message = "Unable to find user"
 						}
-						respond {
-							content = "ohno"
-							ResponseHelper.failureEmbed(
-								event.interaction.getChannel(),
-								"Invalid Username. Make sure this user exists",
-								null
-							)
+						respondEphemeral {
+							ephemeral = true
+							embed {
+								title = "Invalid Username. Make sure this user exists!"
+							}
 						}
 						return@action
 					}
@@ -361,7 +352,7 @@ class Github : Extension() {
 								message = "User is not Organisation"
 								data["isNotOrg"] = ghUser?.login
 							}
-							respond {
+							respondPublic {
 								embed {
 									title = "GitHub profile for " + ghUser?.login
 									url = "https://github.com/" + ghUser?.login
@@ -419,7 +410,7 @@ class Github : Extension() {
 							}
 							val org: GHOrganization? = github?.getOrganization(ghUser?.login)
 
-							respond {
+							respondPublic {
 								embed {
 									title = "GitHub profile for " + ghUser?.login
 									url = "https://github.com/" + ghUser?.login

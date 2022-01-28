@@ -68,7 +68,6 @@ suspend fun main() {
 				requiredCommandPermission = null
 			}
 
-
 			sentry {
 				enableIfDSN(SENTRY_DSN)
 			}
