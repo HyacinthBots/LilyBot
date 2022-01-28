@@ -134,6 +134,7 @@ class Moderation : Extension() {
 					}
 				} catch (exception: Exception) {
 					logger.warn("IsBot and moderator checks skipped on `Ban` due to error")
+					return@action
 				}
 
 				val dm = ResponseHelper.userDMEmbed(
@@ -247,6 +248,7 @@ class Moderation : Extension() {
 					}
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks skipped on `Soft-Ban` due to error")
+					return@action
 				}
 
 				val dm = ResponseHelper.userDMEmbed(
@@ -333,6 +335,7 @@ class Moderation : Extension() {
 					}
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks skipped on `Kick` due to error")
+					return@action
 				}
 
 				val dm = ResponseHelper.userDMEmbed(
@@ -527,6 +530,7 @@ class Moderation : Extension() {
 					}
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
+					return@action
 				}
 
 				newSuspendedTransaction {
@@ -645,6 +649,7 @@ class Moderation : Extension() {
 					}
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks failed on `Timeout` due to error")
+					return@action
 				}
 
 				val dm = ResponseHelper.userDMEmbed(
