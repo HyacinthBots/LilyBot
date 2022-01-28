@@ -98,7 +98,7 @@ class Report : Extension() {
 				name = "Message Content:"
 				value =
 					reportedMessage.content.ifEmpty {
-						"Failed to get content of message\nMessage was likely from a Bot"
+						"Failed to get content of message"
 					}
 				inline = true
 			}
