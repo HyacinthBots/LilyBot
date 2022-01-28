@@ -18,7 +18,6 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
@@ -82,43 +81,15 @@ class Moderation : Extension() {
 				val messageHolder = arrayListOf<Snowflake>()
 				val textChannel = channel as GuildMessageChannelBehavior
 
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.clear.getMessages"
-					message = "Gathering messages"
-					data["amount"] = messageAmount
-				}
-
 				channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100)).filterNotNull()
 					.onEach {
 						messageHolder.add(it.fetchMessage().id)
 					}.catch {
 						it.printStackTrace()
 						println("error")
-						sentry.breadcrumb(BreadcrumbType.Error) {
-							category = "extensions.moderation.Moderation.clear.getMessages"
-							message = "Error gathering message"
-						}
 					}.collect()
 
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.clear.getMessages"
-					message = "Messages gathered"
-					data["amount"] = messageHolder.size
-				}
-
-
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.clear.deleteMessages"
-					message = "Message Deleting Starting"
-				}
-
 				textChannel.bulkDelete(messageHolder)
-
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "extensions.moderation.Moderation.clear.deleteMessages"
-					message = "Message Deleting finishing"
-					data["quantity"] = messageAmount
-				}
 
 				respond {
 					content = "Messages Cleared"
