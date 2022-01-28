@@ -36,7 +36,7 @@ val configPath: Path = Paths.get(CONFIG_PATH)
 val config: TomlTable = Toml.from(Files.newInputStream(configPath))
 var github: GitHub? = null
 
-private val gitHubLogger = KotlinLogging.logger {}
+private val gitHubLogger = KotlinLogging.logger { }
 
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
@@ -48,11 +48,6 @@ suspend fun main() {
 		}
 		intents {
 			+Intent.GuildMembers
-		}
-
-		chatCommands {
-			// Enable chat command handling
-			enabled = true
 		}
 
 		extensions {
