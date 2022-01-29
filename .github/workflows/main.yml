@@ -1,11 +1,9 @@
-name: Build Only
+name: Build & Deploy
 
 on:
   push:
-    branches-ignore:
+    branches:
       - main
-
-  pull_request:
 
 jobs:
   build:
@@ -42,3 +40,14 @@ jobs:
         with:
           name: build-artifacts-${{ steps.ref.outputs.branch }}
           path: build/libs/*[0-9].jar
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+
+      - run: docker build -t ghcr.io/irisshaders/lilybot:latest .
+      - run: docker push ghcr.io/irisshaders/lilybot:latest
