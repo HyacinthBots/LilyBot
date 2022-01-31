@@ -13,10 +13,34 @@ version = "2.0.1"
 
 repositories {
     mavenCentral()
+    mavenLocal()
 
     maven {
         name = "Kotlin Discord"
         url = uri("https://maven.kotlindiscord.com/repository/maven-public/")
+    }
+
+    maven {
+        name = "Fabric"
+        url = uri("https://maven.fabricmc.net/")
+    }
+
+    maven {
+        name = "QuiltMC (Releases)"
+        url = uri("https://maven.quiltmc.org/repository/release/")
+    }
+
+    maven {
+        name = "QuiltMC (Snapshots)"
+        url = uri("https://maven.quiltmc.org/repository/snapshot/")
+    }
+
+    /*
+    Remove this when https://github.com/Kord-Extensions/kord-extensions/issues/133 is closed
+     */
+    maven {
+        name = "JitPack"
+        url = uri("https://jitpack.io")
     }
 }
 
@@ -24,6 +48,8 @@ dependencies {
 
     implementation(libs.kord.extensions)
     implementation(libs.kord.phishing)
+    implementation(libs.kord.mappings)
+
     implementation(libs.kotlin.stdlib)
 
     // Logging dependencies
@@ -66,14 +92,4 @@ tasks.jar {
             "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
         )
     }
-}
-
-// This is to fix an issue with pushing that I cannot seem to fix.
-tasks.create<Delete>("detekt") {
-
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
 }

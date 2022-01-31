@@ -5,6 +5,7 @@ package net.irisshaders.lilybot
 import com.github.jezza.Toml
 import com.github.jezza.TomlTable
 import com.kotlindiscord.kord.extensions.ExtensibleBot
+import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import dev.kord.common.entity.PresenceStatus
@@ -40,12 +41,15 @@ private val gitHubLogger = KotlinLogging.logger { }
 
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
+
 		applicationCommands {
 			defaultGuild(GUILD_ID)
 		}
+
 		members {
 			fill(GUILD_ID)
 		}
+
 		intents {
 			+Intent.GuildMembers
 		}
@@ -68,6 +72,8 @@ suspend fun main() {
 				requiredCommandPermission = null
 			}
 
+			extMappings { }
+
 			sentry {
 				enableIfDSN(SENTRY_DSN)
 			}
@@ -78,6 +84,7 @@ suspend fun main() {
 				DatabaseManager.startDatabase()
 			}
 		}
+
 		presence {
 			status = PresenceStatus.Online
 			playing(config.get("activity") as String)
