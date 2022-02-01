@@ -17,12 +17,12 @@ import net.irisshaders.lilybot.events.JoinLeaveEvent
 import net.irisshaders.lilybot.events.MessageEvents
 import net.irisshaders.lilybot.extensions.moderation.Moderation
 import net.irisshaders.lilybot.extensions.moderation.Report
+import net.irisshaders.lilybot.extensions.support.ThreadInviter
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.Ping
 import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.extensions.util.ThreadModInviter
-import net.irisshaders.lilybot.support.ThreadInviter
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CONFIG_PATH
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH

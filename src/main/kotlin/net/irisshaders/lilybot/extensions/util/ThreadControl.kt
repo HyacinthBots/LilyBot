@@ -9,7 +9,7 @@
 package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.publicSubCommand
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -30,7 +30,7 @@ class ThreadControl : Extension() {
 			name = "thread"
 			description = "The parent command for all /thread commands"
 
-			publicSubCommand(::ThreadRenameArgs) {
+			ephemeralSubCommand(::ThreadRenameArgs) {
 				name = "rename"
 				description = "Rename a thread!"
 
@@ -45,7 +45,9 @@ class ThreadControl : Extension() {
 
 							reason = "Renamed by ${member.tag}"
 						}
-						edit { content = "Thread Renamed!" }
+						edit {
+							content = "Thread Renamed!"
+						}
 
 						return@action
 					}
@@ -66,7 +68,7 @@ class ThreadControl : Extension() {
 				}
 			}
 
-			publicSubCommand(::ThreadArchiveArgs) {
+			ephemeralSubCommand(::ThreadArchiveArgs) {
 				name = "archive"
 				description = "Archive this thread"
 
