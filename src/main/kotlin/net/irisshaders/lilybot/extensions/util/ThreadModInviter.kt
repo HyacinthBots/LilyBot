@@ -1,3 +1,9 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 @file:OptIn(ExperimentalTime::class)
 
 package net.irisshaders.lilybot.extensions.util
@@ -15,11 +21,6 @@ import net.irisshaders.lilybot.utils.SUPPORT_TEAM
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
-/**
- * This system is borrowed and modified slightly from QuiltMC's discord bot [Cozy](https://github.com/QuiltMc/cozy-discord)
- * which is licensed under the Creative Commons CC0 1.0 Universal. You can view the license
- * [here](https://github.com/QuiltMC/cozy-discord/blob/root/LICENSE.md)
- */
 class ThreadModInviter : Extension() {
 	override val name = "moderatingthreads"
 
@@ -59,7 +60,7 @@ class ThreadModInviter : Extension() {
 					}
 
 					event.channel.withTyping {
-						delay(4.seconds)
+						delay(3.seconds)
 					}
 
 					message.edit {
