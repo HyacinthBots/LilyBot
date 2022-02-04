@@ -35,9 +35,6 @@ repositories {
         url = uri("https://maven.quiltmc.org/repository/snapshot/")
     }
 
-    /*
-    Remove this when https://github.com/Kord-Extensions/kord-extensions/issues/133 is closed
-     */
     maven {
         name = "JitPack"
         url = uri("https://jitpack.io")
