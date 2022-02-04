@@ -5,17 +5,6 @@
 activity = "Iris"
 
 [[command]]
-name = "shader-config"
-help = "Informs the user of Shader Config issues."
-title = "You can't currently edit shader settings."
-description = """
-The shader configuration menu is currently in development, and is being publicly tested.
-• Progress updates can be found in <#774354933436645478>
-• Test builds, once available, can be found in <#883067831485366304>
-• Full releases will be announced in <#817181278931517453>
-Please do not ask for an ETA on this or any other feature."""
-
-[[command]]
 name = "nec"
 help = "Informs the user of issues with Not Enough Crashes."
 title = "Remove Not Enough Crashes from your mods folder."
@@ -109,15 +98,6 @@ title = "Rule 9"
 description = "Do not recommend unofficial forks or ports of Iris to people in the support channels, and do not use the support channels to ask about forks or ports of Iris. We do not provide support for these forks or ports, and they've been a big source of headaches for our support team. Trying to circumvent this rule by telling people to move to DMs or to non-support channels to talk about these forks or ports is still a violation of this rule. This rule was created because people constantly recommended broken Iris forks to people who probably shouldn't be using them in the support channels."
 
 [[command]]
-name = "shader-editing"
-help = "Informs the user about manual shader editing."
-title = "Manual shader editing is unsupported."
-description = """
-Due to Iris's shader configuration currently being in Patreon-only beta, some users have resorted to manually editing the files of the shader. This can cause hard-to-resolve issues for users, support team members, and shader developers. In addition, settings files are easily transferable between versions whereas manual shader editing is not.
-No support will be provided by staff for problems that occur as a result of this process. Please refrain from recommending manual shader editing.
-The shader configuration menu is currently in development. Please use /shader-config for more information."""
-
-[[command]]
 name = "sodium"
 help = "Provides the user with information about Sodium."
 title = "Information About Sodium"
@@ -125,12 +105,6 @@ description = """
 Sodium is a Fabric mod created by JellySquid & CaffeineMC that allows Iris to get its stellar performance.
 
  Iris no longer bundles Sodium. The installer automatically downloads both Iris and Sodium. If you downloaded Iris independently, you need to download Sodium and place it in your mods folder along with Iris. You can download Sodium from (https://modrinth.com/mod/sodium)"""
-
-[[command]]
-name = "starline"
-help = "Informs the use of the lack of Starline support."
-title = "Starline is not supported."
-description = "Starline is an unofficial fork and not supported by us, please do not ask the support team for help with it."
 
 [[command]]
 name = "updatedrivers"
