@@ -103,6 +103,10 @@ class ThreadModInviter : Extension() {
 					message.edit {
 						content = "Welcome to your thread, ${threadOwner.mention}, here is your thread :D"
 					}
+
+					delay(10.seconds)
+
+					message.delete("Mods have been invited, message can go now!")
 				}
 			}
 		}
