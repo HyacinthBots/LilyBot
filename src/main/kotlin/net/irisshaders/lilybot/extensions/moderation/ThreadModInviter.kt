@@ -6,7 +6,7 @@
 
 @file:OptIn(ExperimentalTime::class)
 
-package net.irisshaders.lilybot.extensions.util
+package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
