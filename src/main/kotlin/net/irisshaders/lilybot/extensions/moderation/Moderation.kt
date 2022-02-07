@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
@@ -21,9 +22,9 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.hasRole
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.Permission
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
@@ -43,12 +44,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.utils.ADMIN
-import net.irisshaders.lilybot.utils.FULLMODERATORS
-import net.irisshaders.lilybot.utils.MODERATORS
 import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
 import net.irisshaders.lilybot.utils.ResponseHelper
-import net.irisshaders.lilybot.utils.TRIALMODERATORS
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
@@ -73,7 +70,7 @@ class Moderation : Extension() {
 			name = "clear"
 			description = "Clears messages."
 
-			allowRole(FULLMODERATORS)
+			check { hasPermission(Permission.ManageMessages) }
 
 			action {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -114,7 +111,7 @@ class Moderation : Extension() {
 			name = "ban"
 			description = "Bans a user."
 
-			allowRole(FULLMODERATORS)
+			check { hasPermission(Permission.BanMembers) }
 
 			action {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -124,11 +121,6 @@ class Moderation : Extension() {
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
 							content = "Lol you can't ban me or other bots"
-						}
-						return@action
-					} else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true) {
-						respond {
-							content = "Bruh don't try to ban a moderator"
 						}
 						return@action
 					}
@@ -196,7 +188,7 @@ class Moderation : Extension() {
 			name = "unban"
 			description = "Unbans a user"
 
-			allowRole(FULLMODERATORS)
+			check { hasPermission(Permission.BanMembers) }
 
 			action {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -227,7 +219,7 @@ class Moderation : Extension() {
 			name = "softban"
 			description = "Softbans a user"
 
-			allowRole(FULLMODERATORS)
+			check { hasPermission(Permission.BanMembers) }
 
 			action {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -237,11 +229,6 @@ class Moderation : Extension() {
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
 							content = "Lol you can't ban me or other bots"
-						}
-						return@action
-					} else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true) {
-						respond {
-							content = "Bruh don't try to ban a moderator"
 						}
 						return@action
 					}
@@ -311,7 +298,7 @@ class Moderation : Extension() {
 			name = "kick"
 			description = "Kicks a user."
 
-			allowRole(FULLMODERATORS)
+			check { hasPermission(Permission.KickMembers) }
 
 			action {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -321,13 +308,6 @@ class Moderation : Extension() {
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
 							content = "Lol you can't kick me or other bots"
-						}
-						return@action
-					} else if (guild?.getRole(MODERATORS)
-							?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
-					) {
-						respond {
-							content = "Bruh don't try to kick a moderator"
 						}
 						return@action
 					}
@@ -384,7 +364,7 @@ class Moderation : Extension() {
 			name = "say"
 			description = "Say something through Lily."
 
-			allowRole(FULLMODERATORS)
+			check { hasPermission(Permission.ModerateMembers) } // Idk wasn't sure
 
 			action {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -421,7 +401,7 @@ class Moderation : Extension() {
 			name = "set-status"
 			description = "Set Lily's current presence/status."
 
-			allowRole(FULLMODERATORS)
+			check { hasPermission(Permission.ModerateMembers) } // Idk wasn't sure
 
 			action {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -451,7 +431,7 @@ class Moderation : Extension() {
 			name = "shutdown"
 			description = "Shuts down the bot."
 
-			allowRole(ADMIN)
+			check { hasPermission(Permission.Administrator) }
 
 			action {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -503,8 +483,7 @@ class Moderation : Extension() {
 			name = "warn"
 			description = "Warn a member for any infractions."
 
-			allowRole(FULLMODERATORS)
-			allowRole(TRIALMODERATORS)
+			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
 				val userArg = arguments.userArgument
@@ -515,13 +494,6 @@ class Moderation : Extension() {
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
 							content = "Lol you can't warn me or other bots"
-						}
-						return@action
-					} else if (guild?.getRole(MODERATORS)
-							?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
-					) {
-						respond {
-							content = "Bruh don't try to warn a moderator"
 						}
 						return@action
 					}
@@ -626,8 +598,7 @@ class Moderation : Extension() {
 			name = "timeout"
 			description = "Timeout a user"
 
-			allowRole(FULLMODERATORS)
-			allowRole(TRIALMODERATORS)
+			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
@@ -635,11 +606,9 @@ class Moderation : Extension() {
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
 
 				try {
-					if (guild?.getMember(userArg.id)?.isBot == true || guild?.getRole(MODERATORS)
-							?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true
-					) {
+					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
-							content = "You cannot timeout a moderator/bot!"
+							content = "You cannot timeout a bot!"
 						}
 						return@action
 					}
@@ -713,8 +682,7 @@ class Moderation : Extension() {
 			name = "remove-timeout"
 			description = "Remove timeout on a user"
 
-			allowRole(FULLMODERATORS)
-			allowRole(TRIALMODERATORS)
+			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
 				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
