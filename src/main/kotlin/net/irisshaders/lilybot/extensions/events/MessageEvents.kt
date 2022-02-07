@@ -1,7 +1,7 @@
 @file:OptIn(ExperimentalTime::class)
 @file:Suppress("PrivatePropertyName", "BlockingMethodInNonBlockingContext")
 
-package net.irisshaders.lilybot.events
+package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.components.components
@@ -31,9 +31,7 @@ import net.irisshaders.lilybot.utils.ResponseHelper
 import net.irisshaders.lilybot.utils.SUPPORT_CHANNEL
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
-import kotlin.collections.forEach
 import kotlin.collections.set
-import kotlin.collections.setOf
 import kotlin.time.ExperimentalTime
 
 class MessageEvents : Extension() {
