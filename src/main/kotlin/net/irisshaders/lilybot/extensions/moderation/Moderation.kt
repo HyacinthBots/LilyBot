@@ -46,7 +46,7 @@ import mu.KotlinLogging
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
 import net.irisshaders.lilybot.utils.ResponseHelper
-import org.jetbrains.exposed.sql.SqlExpressionBuilder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -512,7 +512,7 @@ class Moderation : Extension() {
 					}.single()[DatabaseManager.Warn.points]
 
 					DatabaseManager.Warn.update({ DatabaseManager.Warn.id eq userArg.id.toString() }) {
-						with(SqlExpressionBuilder) { it.update(points, points.plus(arguments.warnPoints)) }
+						it.update(points, points.plus(arguments.warnPoints))
 					}
 
 					if (databasePoints!! in (50..99)) {

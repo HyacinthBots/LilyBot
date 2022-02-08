@@ -13,18 +13,19 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.events.JoinLeaveEvent
-import net.irisshaders.lilybot.events.MessageEvents
+import net.irisshaders.lilybot.extensions.events.JoinLeaveEvent
+import net.irisshaders.lilybot.extensions.events.MessageEvents
 import net.irisshaders.lilybot.extensions.moderation.Moderation
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.ThreadModInviter
 import net.irisshaders.lilybot.extensions.support.ThreadInviter
+import net.irisshaders.lilybot.extensions.util.Config
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.Ping
 import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
-import net.irisshaders.lilybot.utils.CONFIG_PATH
+import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.GUILD_ID
 import net.irisshaders.lilybot.utils.SENTRY_DSN
@@ -32,10 +33,8 @@ import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
-val configPath: Path = Paths.get(CONFIG_PATH)
-val config: TomlTable = Toml.from(Files.newInputStream(configPath))
+val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
 
 private val gitHubLogger = KotlinLogging.logger { }
@@ -56,6 +55,7 @@ suspend fun main() {
 		}
 
 		extensions {
+			add(::Config)
 			add(::Ping)
 			add(::Moderation)
 			add(::ThreadInviter)

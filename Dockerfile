@@ -4,14 +4,14 @@ RUN mkdir /bot
 RUN mkdir /data
 
 COPY build/libs/LilyBot-*-all.jar /usr/local/lib/LilyBot.jar
-COPY lily.toml /bot/lily.toml
+COPY commands.config.toml /bot/commands.config.toml
 
 # Only place env vars below that are fine to be publicised. Private stuff needs to be
 # applied deployment-side.
 # Also required: GITHUB_OAUTH, JDBC_URL
 # Optional: SENTRY_DSN
 
-ENV CONFIG_PATH=/bot/lily.toml
+ENV CONFIG_PATH=/bot/commands.config.toml
 ENV GUILD_ID=774352792659820594
 
 ENV JOIN_CHANNEL=774353381057495061
