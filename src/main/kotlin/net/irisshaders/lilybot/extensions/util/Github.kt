@@ -308,6 +308,11 @@ class Github : Extension() {
 									value = bytesToFriendly(repo.size)
 									inline = false
 								}
+								field {
+									name = "Language:"
+									value = repo.language.toString()
+									inline = false
+								}
 							} catch (ioException: IOException) {
 								ioException.printStackTrace()
 							}
