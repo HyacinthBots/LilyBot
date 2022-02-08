@@ -35,6 +35,15 @@ class ThreadControl : Extension() {
 				description = "Rename a thread!"
 
 				action {
+
+					@Suppress("DuplicatedCode")
+					if (channel.asChannel() !is ThreadChannel) {
+						edit {
+							content = "This isn't a thread :person_facepalming:"
+						}
+						return@action
+					}
+
 					val channel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
@@ -73,6 +82,15 @@ class ThreadControl : Extension() {
 				description = "Archive this thread"
 
 				action {
+
+					@Suppress("DuplicatedCode")
+					if (channel.asChannel() !is ThreadChannel) {
+						edit {
+							content = "This isn't a thread :person_facepalming:"
+						}
+						return@action
+					}
+
 					val channel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
