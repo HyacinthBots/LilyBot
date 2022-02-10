@@ -11,6 +11,8 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.nio.file.Files
 import java.nio.file.Path
+import java.sql.Connection
+import java.sql.SQLException
 
 /**
  * The Database system within the bot
@@ -69,5 +71,10 @@ object DatabaseManager {
 			SchemaUtils.createMissingTablesAndColumns(Warn)
 			SchemaUtils.createMissingTablesAndColumns(Config)
 		}
+	}
+
+	@Throws(SQLException::class)
+	fun getConnection(): Connection {
+		return dataSource.connection
 	}
 }
