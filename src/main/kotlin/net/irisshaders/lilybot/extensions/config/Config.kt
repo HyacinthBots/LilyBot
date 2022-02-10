@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalTime::class)
 
-package net.irisshaders.lilybot.extensions.util
+package net.irisshaders.lilybot.extensions.config
 
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
@@ -46,15 +46,13 @@ class Config : Extension() {
 					var alreadySet = false
 
 				    newSuspendedTransaction {
-						try {
+						alreadySet = try {
 							DatabaseManager.Config.select {
 								DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
 							}.single()[DatabaseManager.Config.guildId]
-							alreadySet = true
-							return@newSuspendedTransaction
+							true
 						} catch (e: NoSuchElementException) {
-							alreadySet = false
-							return@newSuspendedTransaction
+							false
 							// Swallow the error and return because we want to know this
 						}
 					}
@@ -79,8 +77,7 @@ class Config : Extension() {
 
 						respond { content = "Config Set for Guild ID: ${arguments.guildId.id}!" }
 
-						val actionLogChannel =
-							guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+						val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
 						ResponseHelper.responseEmbedInChannel(
 							actionLogChannel,
 							"Config Set!",

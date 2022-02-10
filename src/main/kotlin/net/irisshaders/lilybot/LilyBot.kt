@@ -13,13 +13,13 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.DatabaseManager
+import net.irisshaders.lilybot.extensions.config.Config
 import net.irisshaders.lilybot.extensions.events.JoinLeaveEvent
 import net.irisshaders.lilybot.extensions.events.MessageEvents
 import net.irisshaders.lilybot.extensions.moderation.Moderation
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.ThreadModInviter
 import net.irisshaders.lilybot.extensions.support.ThreadInviter
-import net.irisshaders.lilybot.extensions.util.Config
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.Ping
