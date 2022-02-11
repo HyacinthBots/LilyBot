@@ -29,10 +29,10 @@ class ThreadInviter : Extension() {
 		event<MessageCreateEvent> {
 			check { failIf(event.message.type == MessageType.ApplicationCommand) } // Don't try to create if the message is a slash command
 			check { failIf(event.message.type == MessageType.ThreadCreated || event.message.type == MessageType.ThreadStarterMessage) } // Don't try and run this if the thread is manually created
-			check { failIf(event.message.channelId != SUPPORT_CHANNEL) }
 			check { failIf(event.member!!.id == kord.selfId) }
 
 			action {
+				if (event.message.channelId != SUPPORT_CHANNEL) return@action
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel() as TextChannel

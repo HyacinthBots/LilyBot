@@ -11,6 +11,8 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.nio.file.Files
 import java.nio.file.Path
+import java.sql.Connection
+import java.sql.SQLException
 
 /**
  * The Database system within the bot
@@ -41,6 +43,18 @@ object DatabaseManager {
 		override val primaryKey = PrimaryKey(id)
 	}
 
+	object Config : Table("config") {
+		val guildId = text("guildId")
+		val moderatorsPing = text("moderatorsPing")
+		val modActionLog = text("modActionLog")
+		val messageLogs = text("messageLogs")
+		val joinChannel = text("joinChannel")
+		val supportChanel = text("supportChannel").nullable()
+		val supportTeam = text("supportTeam").nullable()
+
+		override val primaryKey = PrimaryKey(guildId)
+	}
+
 	object Components : Table("components") {
 		val componentId = text("componentId")
 		val roleId = text("roleId")
@@ -63,7 +77,12 @@ object DatabaseManager {
 		}
 
 		transaction {
-			SchemaUtils.createMissingTablesAndColumns(Warn, Components)
+			SchemaUtils.createMissingTablesAndColumns(Warn, Config, Components)
 		}
+	}
+
+	@Throws(SQLException::class)
+	fun getConnection(): Connection {
+		return dataSource.connection
 	}
 }

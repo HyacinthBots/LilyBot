@@ -13,7 +13,6 @@ version = "2.0.1"
 
 repositories {
     mavenCentral()
-    mavenLocal()
 
     maven {
         name = "Kotlin Discord"
@@ -55,25 +54,26 @@ dependencies {
     implementation(libs.logging)
 
     // TOML reader
-    implementation("com.github.jezza:toml:1.2")
+    implementation(libs.toml)
 
     // Github API
-    implementation("org.kohsuke:github-api:1.301")
+    implementation(libs.github.api)
 
     // Exposed
-    implementation("org.jetbrains.exposed:exposed-core:0.37.3")
-    implementation("org.jetbrains.exposed:exposed-dao:0.37.3")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.37.3")
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.dao)
+    implementation(libs.exposed.jdbc)
 
     // Hikari
-    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation(libs.hikari)
 
     // SQLite
-    implementation("org.xerial:sqlite-jdbc:3.36.0.3")
+    implementation(libs.sqlite.jdbc)
 }
 
 application {
     // This is deprecated, but the Shadow plugin requires it
+    @Suppress("DEPRECATION")
     mainClassName = "net.irisshaders.lilybot.LilyBotKt"
 }
 

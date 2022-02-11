@@ -28,10 +28,10 @@ import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.MESSAGE_LOGS
-import net.irisshaders.lilybot.utils.MODERATORS
-import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
+import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.ResponseHelper
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -39,6 +39,7 @@ import kotlin.time.ExperimentalTime
  * The message reporting feature in the bot
  * @author NoComment1105
  */
+@Suppress("DuplicatedCode")
 class Report : Extension() {
 	override val name = "report"
 
@@ -48,14 +49,41 @@ class Report : Extension() {
 			locking = true // To prevent the command from being run more than once concurrently
 
 			action {
-				val messageLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
-				val reportedMessage = event.interaction.getTarget()
-				val messageAuthor = reportedMessage.getAuthorAsMember()
+				var messageLogId: String? = null
+				var actionLogId: String? = null
+				var moderatorRole: String? = null
+				var error = false
+				newSuspendedTransaction {
+					try {
+						messageLogId = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.messageLogs]
 
-				respond {
-					content = "Message reported to staff"
+						actionLogId = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.modActionLog]
+
+						moderatorRole = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.moderatorsPing]
+					} catch (e: NoSuchElementException) {
+						error = true
+					}
 				}
-				createReport(user, messageLog, messageAuthor, reportedMessage)
+
+				if (!error) {
+					val messageLog = guild?.getChannel(Snowflake(messageLogId!!.toLong())) as GuildMessageChannelBehavior
+					val reportedMessage = event.interaction.getTarget()
+					val messageAuthor = reportedMessage.getAuthorAsMember()
+
+					respond {
+						content = "Message reported to staff"
+					}
+
+					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRole, actionLogId)
+				} else {
+					respond { content = "**Error:** Unable to access config for this guild! Please inform a member of staff!" }
+				}
 			}
 
 		}
@@ -66,15 +94,42 @@ class Report : Extension() {
 			locking = true
 
 			action {
-				val messageLog = guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
-				val channel = (guild?.getChannel(Snowflake(arguments.message.split("/")[5])) as MessageChannel)
-				val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
-				val messageAuthor = reportedMessage.getAuthorAsMember()
+				var messageLogId: String? = null
+				var actionLogId: String? = null
+				var moderatorRole: String? = null
+				var error = false
+				newSuspendedTransaction {
+					try {
+						messageLogId = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.messageLogs]
 
-				respond {
-					content = "Message reported to staff"
+						actionLogId = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.modActionLog]
+
+						moderatorRole = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.moderatorsPing]
+					} catch (e: NoSuchElementException) {
+						error = true
+					}
 				}
-				createReport(user, messageLog, messageAuthor, reportedMessage)
+
+				if (!error) {
+					val messageLog = guild?.getChannel(Snowflake(messageLogId!!.toLong())) as GuildMessageChannelBehavior
+					val channel = (guild?.getChannel(Snowflake(arguments.message.split("/")[5])) as MessageChannel)
+					val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
+					val messageAuthor = reportedMessage.getAuthorAsMember()
+
+					respond {
+						content = "Message reported to staff"
+					}
+
+					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRole, actionLogId)
+				} else {
+					respond { content = "**Error:** Unable to access config for this guild! Please inform a member of staff!" }
+				}
 			}
 		}
 	}
@@ -83,10 +138,12 @@ class Report : Extension() {
 		user: UserBehavior,
 		messageLog: GuildMessageChannelBehavior,
 		messageAuthor: Member?,
-		reportedMessage: Message
+		reportedMessage: Message,
+		moderatorRole: String?,
+		modActionLog: String?
 	) {
 		messageLog.createMessage {
-			content = "<@&${MODERATORS.value}>"
+			content = "<@&${moderatorRole!!.toLong()}>"
 		}
 
 		messageLog.createEmbed {
@@ -173,7 +230,7 @@ class Report : Extension() {
 						description = "Ban the user and delete their messages."
 					}
 					action {
-						val actionlog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+						val actionlog = guild?.getChannel(Snowflake(modActionLog!!.toLong())) as GuildMessageChannelBehavior
 						when (this.selected[0]) {
 							"10-timeout" -> {
 								guild?.getMember(messageAuthor!!.id)?.edit {
