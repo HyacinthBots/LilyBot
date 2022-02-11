@@ -23,14 +23,13 @@ import net.irisshaders.lilybot.extensions.support.ThreadInviter
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.Ping
+import net.irisshaders.lilybot.extensions.util.RoleMenu
 import net.irisshaders.lilybot.extensions.util.ThreadControl
-import net.irisshaders.lilybot.extensions.util.Utilities
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
+import net.irisshaders.lilybot.utils.GUILD_ID
 import net.irisshaders.lilybot.utils.SENTRY_DSN
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import java.nio.file.Files
@@ -44,20 +43,12 @@ private val gitHubLogger = KotlinLogging.logger { }
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 
-		hooks {
-			DatabaseManager.startDatabase()
-		}
-
 		applicationCommands {
-			enabled = true
+			defaultGuild(GUILD_ID)
 		}
 
 		members {
-			var guilds: Collection<String>? = null
-			newSuspendedTransaction {
-				guilds = DatabaseManager.Config.selectAll().map { it[DatabaseManager.Config.guildId] }
-			}
-			guilds?.let { fill(it) }
+			fill(GUILD_ID)
 		}
 
 		intents {
@@ -76,7 +67,7 @@ suspend fun main() {
 			add(::CustomCommands)
 			add(::ThreadModInviter)
 			add(::ThreadControl)
-			add(::Utilities)
+			add(::RoleMenu)
 
 			extPhishing {
 				appName = "Lily Bot"
@@ -89,6 +80,12 @@ suspend fun main() {
 
 			sentry {
 				enableIfDSN(SENTRY_DSN)
+			}
+		}
+
+		hooks {
+			afterKoinSetup {
+				DatabaseManager.startDatabase()
 			}
 		}
 
