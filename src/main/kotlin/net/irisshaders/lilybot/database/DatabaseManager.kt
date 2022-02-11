@@ -41,6 +41,14 @@ object DatabaseManager {
 		override val primaryKey = PrimaryKey(id)
 	}
 
+	object Components : Table("components") {
+		val componentId = text("componentId")
+		val roleId = text("roleId")
+		val addOrRemove = text("addOrRemove")
+
+		override val primaryKey = PrimaryKey(componentId)
+	}
+
 	fun startDatabase() {
 		try {
 			val database = Path.of("database.db")
@@ -56,6 +64,7 @@ object DatabaseManager {
 
 		transaction {
 			SchemaUtils.createMissingTablesAndColumns(Warn)
+			SchemaUtils.createMissingTablesAndColumns(Components)
 		}
 	}
 }
