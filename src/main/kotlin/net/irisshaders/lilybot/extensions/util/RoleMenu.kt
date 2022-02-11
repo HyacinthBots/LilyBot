@@ -1,6 +1,7 @@
 package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
@@ -15,8 +16,8 @@ import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
-import net.irisshaders.lilybot.utils.FULLMODERATORS
 import com.kotlindiscord.kord.extensions.utils.hasRole
+import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
@@ -38,7 +39,7 @@ class RoleMenu : Extension() {
 			name = "role-menu"
 			description = "Creates a menu that allows users to select a role."
 
-			allowRole(FULLMODERATORS)
+			check { hasPermission(Permission.ManageMessages) }
 
 			action {
 				val descriptionAppendix = "\n\nUse the button below to add/remove the ${arguments.role.mention} role."

@@ -63,8 +63,7 @@ object DatabaseManager {
 		}
 
 		transaction {
-			SchemaUtils.createMissingTablesAndColumns(Warn)
-			SchemaUtils.createMissingTablesAndColumns(Components)
+			SchemaUtils.createMissingTablesAndColumns(Warn, Components)
 		}
 	}
 }
