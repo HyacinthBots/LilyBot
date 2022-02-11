@@ -10,9 +10,9 @@ import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.GUILD_ID
-import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
 import net.irisshaders.lilybot.utils.ResponseHelper
+import net.irisshaders.lilybot.utils.TEST_GUILD_CHANNEL
+import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import kotlin.time.ExperimentalTime
 
 @Suppress("PrivatePropertyName")
@@ -20,7 +20,7 @@ class Ping : Extension() {
 	override val name = "ping"
 
 	override suspend fun setup() {
-		val actionLog = kord.getGuild(GUILD_ID)?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+		val actionLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(TEST_GUILD_CHANNEL) as GuildMessageChannelBehavior
 
 		/**
 		 * Online notification

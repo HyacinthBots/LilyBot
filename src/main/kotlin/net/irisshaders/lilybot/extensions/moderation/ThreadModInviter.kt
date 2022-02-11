@@ -10,7 +10,6 @@ package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.behavior.edit
@@ -62,17 +61,15 @@ class ThreadModInviter : Extension() {
 				}
 
 				if (!supportError) {
-					if (event.channel.parentId == Snowflake(supportChannel!!.toLong())) {
+					if (try {
+							event.channel.parentId == Snowflake(supportChannel!!)
+						} catch (e: NumberFormatException) {
+							false
+						}
+					) {
 						val threadOwner = event.channel.owner.asUser()
 
-						sentry.breadcrumb(BreadcrumbType.Info) {
-							category = "extensions.util.threadmodinviter.ThreadCreation"
-							message =
-								"A thread was created by ${threadOwner.tag} in the support channel, not using the" +
-										"automatic system >:("
-						}
-
-						val supportRole = event.channel.guild.getRole(Snowflake(supportTeamId!!.toString()))
+						val supportRole = event.channel.guild.getRole(Snowflake(supportTeamId!!))
 
 						event.channel.withTyping {
 							delay(2.seconds)
@@ -80,7 +77,7 @@ class ThreadModInviter : Extension() {
 
 						val message = event.channel.createMessage(
 							content = "Hello there! Cool thread, since you're in the support channel, I'll just grab" +
-									" support team for ya"
+									" support team for you..."
 						)
 
 						event.channel.withTyping {
@@ -88,7 +85,7 @@ class ThreadModInviter : Extension() {
 						}
 
 						message.edit {
-							content = "Oi, ${supportRole.mention}, get here and help this person!"
+							content = "${supportRole.mention}, could you help this person please!"
 						}
 
 						event.channel.withTyping {
@@ -96,50 +93,52 @@ class ThreadModInviter : Extension() {
 						}
 
 						message.edit {
-							content =
-								"Welcome to your support thread, ${threadOwner.mention}, here is your thread :D\nNext" +
-										" time though, you can just send a message in <#$supportChannel> and I'll automatically" +
-										" make a thread for you ;D"
-						}
-					}
-				} else if (!moderatorRoleError) {
-					if (event.channel.parentId != Snowflake(supportChannel!!.toLong())) {
-						val threadOwner = event.channel.owner.asUser()
-
-						sentry.breadcrumb(BreadcrumbType.Info) {
-							category = "extensions.util.threadmodinviter.ThreadCreation"
-							message = "A thread was created by ${threadOwner.tag}"
+							content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
+									" you can just send a message in <#$supportChannel> and I'll automatically make a" +
+									" thread for you"
 						}
 
-						val modRole = event.channel.guild.getRole(Snowflake(moderatorRole!!.toLong()))
+					} else if (!moderatorRoleError) {
+						if (
+							try {
+								event.channel.parentId != Snowflake(supportChannel!!)
+							} catch (e: NumberFormatException) {
+								false
+							}
+						) {
+							val threadOwner = event.channel.owner.asUser()
 
-						event.channel.withTyping {
-							delay(2.seconds)
+							val modRole = event.channel.guild.getRole(Snowflake(moderatorRole!!))
+
+							event.channel.withTyping {
+								delay(2.seconds)
+							}
+							val message = event.channel.createMessage(
+								content = "Hello there! Lemme just grab the moderators..."
+							)
+
+							event.channel.withTyping {
+								delay(4.seconds)
+							}
+
+							message.edit {
+								content = "${modRole.mention}, welcome to the thread!"
+							}
+
+							event.channel.withTyping {
+								delay(4.seconds)
+							}
+
+							message.edit {
+								content = "Welcome to your thread, ${threadOwner.mention}\nOnce you're finished, use" +
+										"`/thread archive` to close it. If you want to change the threads name, use" +
+										"`/thread rename` to do so"
+							}
+
+							delay(20.seconds)
+
+							message.delete("Mods have been invited, message can go now!")
 						}
-						val message = event.channel.createMessage(
-							content = "Hello there! Cool thread, lemme just grab the moderators so they can see how cool" +
-									" this is"
-						)
-
-						event.channel.withTyping {
-							delay(4.seconds)
-						}
-
-						message.edit {
-							content = "Oi, ${modRole.mention}, get here and see how cool this is!"
-						}
-
-						event.channel.withTyping {
-							delay(4.seconds)
-						}
-
-						message.edit {
-							content = "Welcome to your thread, ${threadOwner.mention}, here is your thread :D"
-						}
-
-						delay(10.seconds)
-
-						message.delete("Mods have been invited, message can go now!")
 					}
 				}
 			}

@@ -77,7 +77,7 @@ class Config : Extension() {
 
 						respond { content = "Config Set for Guild ID: ${arguments.guildId.id}!" }
 
-						val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+						val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 						ResponseHelper.responseEmbedInChannel(
 							actionLogChannel,
 							"Config Set!",
@@ -122,7 +122,7 @@ class Config : Extension() {
 
 					respond { content = "Cleared config for Guild ID: $guildConfig" }
 
-					val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+					val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					ResponseHelper.responseEmbedInChannel(
 						actionLogChannel,
 						"Config Cleared!",

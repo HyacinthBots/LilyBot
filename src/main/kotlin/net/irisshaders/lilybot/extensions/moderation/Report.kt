@@ -72,7 +72,7 @@ class Report : Extension() {
 				}
 
 				if (!error) {
-					val messageLog = guild?.getChannel(Snowflake(messageLogId!!.toLong())) as GuildMessageChannelBehavior
+					val messageLog = guild?.getChannel(Snowflake(messageLogId!!)) as GuildMessageChannelBehavior
 					val reportedMessage = event.interaction.getTarget()
 					val messageAuthor = reportedMessage.getAuthorAsMember()
 
@@ -117,7 +117,7 @@ class Report : Extension() {
 				}
 
 				if (!error) {
-					val messageLog = guild?.getChannel(Snowflake(messageLogId!!.toLong())) as GuildMessageChannelBehavior
+					val messageLog = guild?.getChannel(Snowflake(messageLogId!!)) as GuildMessageChannelBehavior
 					val channel = (guild?.getChannel(Snowflake(arguments.message.split("/")[5])) as MessageChannel)
 					val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
 					val messageAuthor = reportedMessage.getAuthorAsMember()
@@ -143,7 +143,7 @@ class Report : Extension() {
 		modActionLog: String?
 	) {
 		messageLog.createMessage {
-			content = "<@&${moderatorRole!!.toLong()}>"
+			content = "<@&${moderatorRole!!}>"
 		}
 
 		messageLog.createEmbed {
@@ -230,7 +230,7 @@ class Report : Extension() {
 						description = "Ban the user and delete their messages."
 					}
 					action {
-						val actionlog = guild?.getChannel(Snowflake(modActionLog!!.toLong())) as GuildMessageChannelBehavior
+						val actionlog = guild?.getChannel(Snowflake(modActionLog!!)) as GuildMessageChannelBehavior
 						when (this.selected[0]) {
 							"10-timeout" -> {
 								guild?.getMember(messageAuthor!!.id)?.edit {

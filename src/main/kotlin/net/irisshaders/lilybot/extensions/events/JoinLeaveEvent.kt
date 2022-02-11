@@ -6,14 +6,16 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.JOIN_CHANNEL
+import net.irisshaders.lilybot.database.DatabaseManager
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.time.ExperimentalTime
 
 /**
@@ -25,66 +27,90 @@ class JoinLeaveEvent : Extension() {
 
 	override suspend fun setup() {
 		event<MemberJoinEvent> {
+			@Suppress("DuplicatedCode")
 			action {
+				var joinChannelId: String? = null
+				var error = false
+
+				newSuspendedTransaction {
+					try {
+						joinChannelId = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq event.guild.id.toString()
+						}.single()[DatabaseManager.Config.joinChannel]
+					} catch (e: NoSuchElementException) {
+						error = true
+					}
+				}
+
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
-				val joinChannel = event.getGuild().getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
 
-				joinChannel.createEmbed {
-					color = DISCORD_GREEN
-					title = "User joined the server!"
-					timestamp = Clock.System.now()
+				if (!error) {
+					val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId!!)) as GuildMessageChannelBehavior
 
-					field {
-						name = "Welcome:"
-						value = eventMember.tag
-						inline = true
-					}
-					field {
-						name = "ID:"
-						value = eventMember.id.toString()
-						inline = false
-					}
-					footer {
-						text = "Member Count: $guildMemberCount"
-					}
-					sentry.breadcrumb(BreadcrumbType.Info) {
-						category = "events.joinleaveevent.join"
-						message = "Member joined"
-						data["user"] = eventMember.tag
+					joinChannel.createEmbed {
+						color = DISCORD_GREEN
+						title = "User joined the server!"
+						timestamp = Clock.System.now()
+
+						field {
+							name = "Welcome:"
+							value = eventMember.tag
+							inline = true
+						}
+						field {
+							name = "ID:"
+							value = eventMember.id.toString()
+							inline = false
+						}
+						footer {
+							text = "Member Count: $guildMemberCount"
+						}
 					}
 				}
 			}
 		}
 		event<MemberLeaveEvent> {
+			@Suppress("DuplicatedCode")
 			action {
+				var joinChannelId: String? = null
+				var error = false
+
+				newSuspendedTransaction {
+					try {
+						joinChannelId = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq event.guild.id.toString()
+						}.single()[DatabaseManager.Config.joinChannel]
+
+					} catch (e: NoSuchElementException) {
+						error = true
+					}
+				}
+
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
-				val joinChannel = event.getGuild().getChannel(JOIN_CHANNEL) as GuildMessageChannelBehavior
 
-				joinChannel.createEmbed {
-					color = DISCORD_RED
-					title = "User left the server!"
-					timestamp = Clock.System.now()
+				if (!error) {
+					val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId!!)) as GuildMessageChannelBehavior
 
-					field {
-						name = "Goodbye:"
-						value = eventUser.tag
-						inline = true
-					}
-					field {
-						name = "ID:"
-						value = eventUser.id.toString()
-						inline = false
-					}
-					footer {
-						text = "Member count: $guildMemberCount"
-					}
+					joinChannel.createEmbed {
+						color = DISCORD_RED
+						title = "User left the server!"
+						timestamp = Clock.System.now()
 
-					sentry.breadcrumb(BreadcrumbType.Info) {
-						category = "events.joinleaveevent.leave"
-						message = "Member Left"
-						data["user"] = eventUser.tag
+						field {
+							name = "Goodbye:"
+							value = eventUser.tag
+							inline = true
+						}
+						field {
+							name = "ID:"
+							value = eventUser.id.toString()
+							inline = false
+						}
+						footer {
+							text = "Member count: $guildMemberCount"
+						}
 					}
 				}
 			}

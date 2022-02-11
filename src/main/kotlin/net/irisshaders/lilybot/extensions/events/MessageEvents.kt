@@ -8,10 +8,10 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
@@ -26,12 +26,12 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.util.cio.*
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.MESSAGE_LOGS
+import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.ResponseHelper
-import net.irisshaders.lilybot.utils.SUPPORT_CHANNEL
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
-import kotlin.collections.set
 import kotlin.time.ExperimentalTime
 
 class MessageEvents : Extension() {
@@ -41,50 +41,62 @@ class MessageEvents : Extension() {
 
 	override suspend fun setup() {
 		/**
-		 * Log the deletion of messages to the guilds [MESSAGE_LOGS] channel
+		 * Log the deletion of messages to the guilds [DatabaseManager.Config.messageLogs] channel
 		 * @author NoComment1105
 		 */
 		event<MessageDeleteEvent> {
 			action {
-				// Ignore messages from Lily itself
-				if (event.message?.author?.id == kord.selfId) return@action
-				if (event.message?.channel !is ThreadChannel && event.message?.channel?.id == SUPPORT_CHANNEL) return@action
+				var supportChannel: String? = null
+				var messageLogs: String? = null
+				var error = false
 
-				val actionLog = event.guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
-				val messageContent = event.message?.asMessageOrNull()?.content.toString()
-				val eventMessage = event.message
-				val messageLocation = event.channel.id.value
+				newSuspendedTransaction {
+					try {
+						supportChannel = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq event.message!!.getGuild().id.toString()
+						}.single()[DatabaseManager.Config.supportChanel]
 
-				actionLog.createEmbed {
-					color = DISCORD_PINK
-					title = "Message Deleted"
-					description = "Location: <#$messageLocation>"
-					timestamp = Clock.System.now()
-
-					field {
-						name = "Message Contents:"
-						value =
-							messageContent.ifEmpty {
-								"Failed to get content of message\nMessage was likely from a Bot"
-							}
-						inline = false
-					}
-					field {
-						name = "Message Author:"
-						value = eventMessage?.author?.tag.toString()
-						inline = true
-					}
-					field {
-						name = "Author ID:"
-						value = eventMessage?.author?.id.toString()
-						inline = true
+						messageLogs = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq event.message!!.getGuild().id.toString()
+						}.single()[DatabaseManager.Config.messageLogs]
+					} catch (e: Exception) {
+						error = true
 					}
 				}
 
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "events.messageevents.MessageDeleted"
-					message = "A message was deleted"
-					data["content"] = messageContent.ifEmpty { "Failed to get content of message" }
+				// Ignore messages from Lily herself
+				if (supportChannel != null) {
+					check { failIf(event.message?.channel !is ThreadChannel && event.message?.channel?.id == Snowflake(supportChannel!!)) }
+				}
+				if (!error) {
+					if (event.message?.author?.id == kord.selfId) return@action
+					val actionLog = event.guild?.getChannel(Snowflake(messageLogs!!)) as GuildMessageChannelBehavior
+					val messageContent = event.message?.asMessageOrNull()?.content.toString()
+					val eventMessage = event.message
+					val messageLocation = event.channel.id.value
+
+					actionLog.createEmbed {
+						color = DISCORD_PINK
+						title = "Message Deleted"
+						description = "Location: <#$messageLocation>"
+						timestamp = Clock.System.now()
+
+						field {
+							name = "Message Contents:"
+							value = messageContent.ifEmpty { "Failed to get content of message" }
+							inline = false
+						}
+						field {
+							name = "Message Author:"
+							value = eventMessage?.author?.tag.toString()
+							inline = true
+						}
+						field {
+							name = "Author ID:"
+							value = eventMessage?.author?.id.toString()
+							inline = true
+						}
+					}
 				}
 			}
 		}
@@ -142,10 +154,6 @@ class MessageEvents : Extension() {
 										style = ButtonStyle.Success
 
 										action {
-											sentry.breadcrumb(BreadcrumbType.Info) {
-												category = "events.messageevents.loguploading.uploadAccept"
-												message = "Upload accpeted"
-											}
 											if (event.interaction.user.id == eventMessage.author?.id) {
 												confirmationMessage!!.delete()
 
@@ -182,10 +190,7 @@ class MessageEvents : Extension() {
 														}
 													}
 												} catch (e: Exception) {
-													sentry.breadcrumb(BreadcrumbType.Error) {
-														category = "events.messageevnets.loguploading.UploadTask"
-														message = "Failed to upload a file to hastebin"
-													}
+													// yum an exception :P
 												}
 											} else {
 												respond { content = "Only the uploader can use this menu." }
@@ -200,10 +205,6 @@ class MessageEvents : Extension() {
 										action {
 											if (event.interaction.user.id == eventMessage.author?.id) {
 												confirmationMessage!!.delete()
-												sentry.breadcrumb(BreadcrumbType.Info) {
-													category = "events.messagevents.loguploading.uploadDeny"
-													message = "Upload of log denied"
-												}
 											} else {
 												respond { content = "Only the uploader can use this menu." }
 											}

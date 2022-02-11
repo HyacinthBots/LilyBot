@@ -3,36 +3,26 @@
 package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
-import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
-import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
-import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
-import com.kotlindiscord.kord.extensions.components.components
-import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
-import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
-import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
@@ -50,7 +40,6 @@ import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
-import kotlin.system.exitProcess
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -85,7 +74,7 @@ class Moderation : Extension() {
 				}
 
 				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val messageAmount = arguments.messages
 					val messageHolder = arrayListOf<Snowflake>()
 					val textChannel = channel as GuildMessageChannelBehavior
@@ -143,7 +132,7 @@ class Moderation : Extension() {
 				}
 
 				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val userArg = arguments.userArgument
 
 					try {
@@ -236,7 +225,7 @@ class Moderation : Extension() {
 				}
 
 				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val userArg = arguments.userArgument
 
 					guild?.unban(userArg.id)
@@ -283,7 +272,7 @@ class Moderation : Extension() {
 				}
 
 				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val userArg = arguments.userArgument
 
 					try {
@@ -378,7 +367,7 @@ class Moderation : Extension() {
 				}
 
 				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val userArg = arguments.userArgument
 
 					try {
@@ -437,171 +426,6 @@ class Moderation : Extension() {
 		}
 
 		/**
-		 * Say Command
-		 * @author NoComment1105
-		 */
-		ephemeralSlashCommand(::SayArgs) {
-			name = "say"
-			description = "Say something through Lily."
-
-			check { hasPermission(Permission.ModerateMembers) } // Idk wasn't sure
-
-			action {
-				var actionLogId: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
-
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
-
-					if (arguments.embedMessage) {
-						channel.createEmbed {
-							color = DISCORD_BLURPLE
-							description = arguments.messageArgument
-							timestamp = Clock.System.now()
-						}
-					} else {
-						channel.createMessage {
-							content = arguments.messageArgument
-						}
-					}
-
-					respond { content = "Command used" }
-
-					ResponseHelper.responseEmbedInChannel(
-						actionLog,
-						"Message Sent",
-						"/say has been used to say ${arguments.messageArgument}.",
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
-				}
-			}
-		}
-
-		/**
-		 * Presence Command
-		 * @author IMS
-		 */
-		ephemeralSlashCommand(::PresenceArgs) {
-			name = "set-status"
-			description = "Set Lily's current presence/status."
-
-			check { hasPermission(Permission.ModerateMembers) } // Idk wasn't sure
-
-			action {
-				var actionLogId: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
-
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
-
-					this@ephemeralSlashCommand.kord.editPresence {
-						status = PresenceStatus.Online
-						playing(arguments.presenceArgument)
-					}
-
-					respond { content = "Presence set to `${arguments.presenceArgument}`" }
-
-					ResponseHelper.responseEmbedInChannel(
-						actionLog,
-						"Presence Changed",
-						"Lily's presence has been set to `${arguments.presenceArgument}`",
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
-				}
-			}
-		}
-
-		/**
-		 * Shutdown command
-		 * @author IMS212
-		 */
-		ephemeralSlashCommand {
-			name = "shutdown"
-			description = "Shuts down the bot."
-
-			check { hasPermission(Permission.Administrator) }
-
-			action {
-				var actionLogId: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
-
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
-
-					respond {
-						embed {
-							title = "Shutdown"
-							description = "Are you sure you would like to shut down?"
-						}
-						components {
-							ephemeralButton {
-								label = "Yes"
-								style = ButtonStyle.Success
-
-								action {
-									respond { content = "Shutting down..." }
-									ResponseHelper.responseEmbedInChannel(
-										actionLog,
-										"Shutting Down!",
-										null,
-										DISCORD_RED,
-										user.asUser()
-									)
-									kord.shutdown()
-									exitProcess(0)
-								}
-							}
-
-							ephemeralButton {
-								label = "No"
-								style = ButtonStyle.Danger
-
-								action {
-									respond { content = "Shutdown aborted." }
-								}
-							}
-						}
-					}
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
-				}
-			}
-		}
-
-		/**
 		 * Warn Command
 		 * @author chalkyjeans
 		 * @author Miss-Corruption
@@ -628,7 +452,7 @@ class Moderation : Extension() {
 
 				if (!error) {
 					val userArg = arguments.userArgument
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					var databasePoints: Int? = null
 
 					try {
@@ -656,24 +480,24 @@ class Moderation : Extension() {
 							it.update(points, points.plus(arguments.warnPoints))
 						}
 
-						if (databasePoints!! in (50..99)) {
-							guild?.getMember(userArg.id)?.edit {
-								timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
-							}
-						} else if (databasePoints!! in (100..149)) {
-							guild?.getMember(userArg.id)?.edit {
-								timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
-							}
-						} else if (databasePoints!! >= 150) {
-							guild?.ban(userArg.id, builder = {
-								this.reason = "Banned due to point accumulation"
-								this.deleteMessagesDays = 0
-							})
-						}
-
 						databasePoints = DatabaseManager.Warn.select {
 							DatabaseManager.Warn.id eq userArg.id.toString()
 						}.single()[DatabaseManager.Warn.points]
+					}
+
+					if (databasePoints!! in (50..99)) {
+						guild?.getMember(userArg.id)?.edit {
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+						}
+					} else if (databasePoints!! in (100..149)) {
+						guild?.getMember(userArg.id)?.edit {
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+						}
+					} else if (databasePoints!! >= 150) {
+						guild?.ban(userArg.id, builder = {
+							this.reason = "Banned due to point accumulation"
+							this.deleteMessagesDays = 0
+						})
 					}
 
 					val dm = ResponseHelper.userDMEmbed(
@@ -758,7 +582,7 @@ class Moderation : Extension() {
 				}
 
 				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val userArg = arguments.userArgument
 					val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
 
@@ -858,7 +682,7 @@ class Moderation : Extension() {
 				}
 
 				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!.toLong())) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val userArg = arguments.userArgument
 
 					guild?.getMember(userArg.id)?.edit {
@@ -948,24 +772,6 @@ class Moderation : Extension() {
 			name = "reason"
 			description = "The reason for the ban"
 			defaultValue = "No Reason Provided"
-		}
-	}
-
-	inner class SayArgs : Arguments() {
-		val messageArgument by string {
-			name = "message"
-			description = "Message contents"
-		}
-		val embedMessage by boolean {
-			name = "embed"
-			description = "Would you like to send as embed"
-		}
-	}
-
-	inner class PresenceArgs : Arguments() {
-		val presenceArgument by string {
-			name = "presence"
-			description = "Lily's presence"
 		}
 	}
 
