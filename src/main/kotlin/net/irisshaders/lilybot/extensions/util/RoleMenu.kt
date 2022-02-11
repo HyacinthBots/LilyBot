@@ -13,20 +13,19 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
-import dev.kord.common.entity.ButtonStyle
-import dev.kord.core.behavior.channel.createMessage
-import dev.kord.rest.builder.message.create.embed
 import com.kotlindiscord.kord.extensions.utils.hasRole
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.interaction.ButtonInteraction
 import dev.kord.core.event.interaction.InteractionCreateEvent
+import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -41,6 +40,7 @@ class RoleMenu : Extension() {
 
 			check { hasPermission(Permission.ManageMessages) }
 
+			@Suppress("DuplicatedCode")
 			action {
 				val descriptionAppendix = "\n\nUse the button below to add/remove the ${arguments.role.mention} role."
 
@@ -96,28 +96,43 @@ class RoleMenu : Extension() {
 					components.removeAll()
 
 					respond { content = "Role menu created." }
-					val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
-					actionLog.createEmbed {
-						color = DISCORD_BLACK
-						title = "Role menu created."
-						description =
-							"A role menu for the ${arguments.role.mention} role was created in ${targetChannel.mention}"
 
-						field {
-							name = "Embed title:"
-							value = arguments.title
-							inline = false
+					var actionLogId: String? = null
+					var error = false
+					try {
+						newSuspendedTransaction {
+							actionLogId = DatabaseManager.Config.select {
+								DatabaseManager.Config.guildId eq guild!!.id.toString()
+							}.single()[DatabaseManager.Config.modActionLog]
 						}
-						field {
-							name = "Embed description:"
-							value = arguments.description + descriptionAppendix
-							inline = false
+					} catch (e: NoSuchElementException) {
+						error = true
+					}
+
+					if (!error) {
+						val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+						actionLog.createEmbed {
+							color = DISCORD_BLACK
+							title = "Role menu created."
+							description =
+								"A role menu for the ${arguments.role.mention} role was created in ${targetChannel.mention}"
+
+							field {
+								name = "Embed title:"
+								value = arguments.title
+								inline = false
+							}
+							field {
+								name = "Embed description:"
+								value = arguments.description + descriptionAppendix
+								inline = false
+							}
+							footer {
+								text = "Requested by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
+							}
+							timestamp = Clock.System.now()
 						}
-						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-						timestamp = Clock.System.now()
 					}
 				}
 			}
