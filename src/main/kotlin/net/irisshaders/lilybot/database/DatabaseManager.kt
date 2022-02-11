@@ -42,6 +42,7 @@ object DatabaseManager {
 
 		override val primaryKey = PrimaryKey(id)
 	}
+
 	object Config : Table("config") {
 		val guildId = text("guildId")
 		val moderatorsPing = text("moderatorsPing")
@@ -52,6 +53,14 @@ object DatabaseManager {
 		val supportTeam = text("supportTeam").nullable()
 
 		override val primaryKey = PrimaryKey(guildId)
+	}
+
+	object Components : Table("components") {
+		val componentId = text("componentId")
+		val roleId = text("roleId")
+		val addOrRemove = text("addOrRemove")
+
+		override val primaryKey = PrimaryKey(componentId)
 	}
 
 	fun startDatabase() {
@@ -68,8 +77,7 @@ object DatabaseManager {
 		}
 
 		transaction {
-			SchemaUtils.createMissingTablesAndColumns(Warn)
-			SchemaUtils.createMissingTablesAndColumns(Config)
+			SchemaUtils.createMissingTablesAndColumns(Warn, Config, Components)
 		}
 	}
 
