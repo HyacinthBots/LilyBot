@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 object DatabaseHelper {
 
 	/**
-	 * Using the provided [guildId] and [column] a [value] or [error] will be returned from the
+	 * Using the provided [guildId] and [column] a value or error will be returned from the
 	 * config database
 	 *
 	 * @param guildId The ID of the guild the command was run in
@@ -34,7 +34,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [guildId] and nullable [column] a [value] or [error] will be returned from the
+	 * Using the provided [guildId] and nullable [column] a value or error will be returned from the
 	 * config database
 	 *
 	 * @param guildId The ID of the guild the command was run in
@@ -60,7 +60,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [componentId] and nullable [column] a [value] or [error] will be returned from the
+	 * Using the provided [componentId] and nullable [column] a value or error will be returned from the
 	 * config database
 	 *
 	 * @param componentId The ID of the component you're looking for.
