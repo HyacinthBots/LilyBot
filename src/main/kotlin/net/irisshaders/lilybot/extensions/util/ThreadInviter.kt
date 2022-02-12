@@ -24,9 +24,8 @@ import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
+import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
@@ -44,81 +43,63 @@ class ThreadInviter : Extension() {
 			check { failIf(event.message.author?.id == kord.selfId) }
 
 			action {
-				var supportTeam: String? = null
-				var supportChannel: String? = null
-				var error = false
-					newSuspendedTransaction {
-						try {
-							supportChannel = DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq event.guildId.toString()
-							}.single()[DatabaseManager.Config.supportChanel]
-						} catch (e: NoSuchElementException) {
-							error = true
-							return@newSuspendedTransaction
-						}
+				val supportTeam = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.supportTeam)
+				val supportChannel = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.supportChanel)
 
-						try {
-							supportTeam = DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq event.guildId.toString()
-							}.single()[DatabaseManager.Config.supportTeam]
-						} catch (e: NoSuchElementException) {
-							error = true
-							return@newSuspendedTransaction
-						}
+				if (supportTeam.equals("NoSuchElemementException") || supportChannel.equals("NoSuchElementException")) {
+					return@action
+				}
+				try {
+					if (event.message.channelId != Snowflake(supportChannel!!)) return@action
+				} catch (e: NumberFormatException) {
+					return@action
+				}
+
+				var userThreadExists = false
+				var existingUserThread: TextChannelThread? = null
+				val textChannel = event.message.getChannel() as TextChannel
+
+				//TODO: this is incredibly stupid, there has to be a better way to do this.
+				textChannel.activeThreads.collect {
+					if (it.name == "Support thread for " + event.member!!.asUser().username) {
+						userThreadExists = true
+						existingUserThread = it
+					}
+				}
+
+				if (userThreadExists) {
+					val response = event.message.respond {
+						content =
+							"You already have a thread, please talk about your issue in it. " + existingUserThread!!.mention
+					}
+					event.message.delete("User already has a thread")
+					response.delete(10000L, false)
+				} else {
+					val thread =
+						textChannel.startPublicThreadWithMessage(
+							event.message.id,
+							"Support thread for " + event.member!!.asUser().username,
+							ArchiveDuration.Hour
+						)
+					val editMessage = thread.createMessage("edit message")
+
+					editMessage.edit {
+						this.content =
+							event.member!!.asUser().mention + ", the " + event.getGuild()
+								?.getRole(Snowflake(supportTeam!!))?.mention + " will be with you shortly!"
 					}
 
-				if (!error) {
-					try {
-						if (event.message.channelId != Snowflake(supportChannel!!)) return@action
-					} catch (e: NumberFormatException) {
-						return@action
-					}
-					var userThreadExists = false
-					var existingUserThread: TextChannelThread? = null
-					val textChannel = event.message.getChannel() as TextChannel
-
-					//TODO: this is incredibly stupid, there has to be a better way to do this.
-					textChannel.activeThreads.collect {
-						if (it.name == "Support thread for " + event.member!!.asUser().username) {
-							userThreadExists = true
-							existingUserThread = it
-						}
+					if (textChannel.messages.last().author?.id == kord.selfId) {
+						textChannel.deleteMessage(
+							textChannel.messages.last().id,
+							"Automatic deletion of thread creation message"
+						)
 					}
 
-					if (userThreadExists) {
-						val response = event.message.respond {
-							content =
-								"You already have a thread, please talk about your issue in it. " + existingUserThread!!.mention
-						}
-						event.message.delete("User already has a thread")
-						response.delete(10000L, false)
-					} else {
-						val thread =
-							textChannel.startPublicThreadWithMessage(
-								event.message.id,
-								"Support thread for " + event.member!!.asUser().username,
-								ArchiveDuration.Hour
-							)
-						val editMessage = thread.createMessage("edit message")
-
-						editMessage.edit {
-							this.content =
-								event.member!!.asUser().mention + ", the " + event.getGuild()
-									?.getRole(Snowflake(supportTeam!!))?.mention + " will be with you shortly!"
-						}
-
-						if (textChannel.messages.last().author?.id == kord.selfId) {
-							textChannel.deleteMessage(
-								textChannel.messages.last().id,
-								"Automatic deletion of thread creation message"
-							)
-						}
-
-						val response = event.message.reply {
-							content = "A thread has been created for you: " + thread.mention
-						}
-						response.delete(10000L, false)
+					val response = event.message.reply {
+						content = "A thread has been created for you: " + thread.mention
 					}
+					response.delete(10000L, false)
 				}
 			}
 		}
@@ -136,32 +117,16 @@ class ThreadInviter : Extension() {
 
 			action {
 				var supportError = false
-				var supportChannel: String? = null
-				var supportTeamId: String? = null
-				newSuspendedTransaction {
-					try {
-						supportChannel = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq event.channel.guild.id.toString()
-						}.single()[DatabaseManager.Config.supportChanel]
-
-						supportTeamId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq event.channel.guild.id.toString()
-						}.single()[DatabaseManager.Config.supportTeam]
-
-					} catch (e: NoSuchElementException) {
-						supportError = true
-					}
-				}
 				var moderatorRoleError = false
-				var moderatorRole: String? = null
-				newSuspendedTransaction {
-					try {
-						moderatorRole = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq event.channel.guild.id.toString()
-						}.single()[DatabaseManager.Config.moderatorsPing]
-					} catch (e: NoSuchElementException) {
-						moderatorRoleError = true
-					}
+
+				val supportChannel = DatabaseHelper.selectInConfig(event.channel.guild.id, DatabaseManager.Config.supportChanel)
+				val supportTeamId = DatabaseHelper.selectInConfig(event.channel.guild.id, DatabaseManager.Config.supportTeam)
+				val moderatorRole = DatabaseHelper.selectInConfig(event.channel.guild.id, DatabaseManager.Config.moderatorsPing)
+
+				if (supportChannel.equals("NoSuchElementException") || supportTeamId.equals("NoSuchElementException")) {
+					supportError = true
+				} else if (moderatorRole.equals("NoSuchElementException")) {
+					moderatorRoleError = true
 				}
 
 				if (!supportError) {

@@ -22,12 +22,11 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.ResponseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.time.ExperimentalTime
 
 @Suppress("DuplicatedCode")
@@ -83,45 +82,36 @@ class Utilities : Extension() {
 			check { hasPermission(Permission.ModerateMembers) } // Wasn't sure about this
 
 			action {
-				var actionLogId: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-
-					if (arguments.embedMessage) {
-						channel.createEmbed {
-							color = DISCORD_BLURPLE
-							description = arguments.messageArgument
-							timestamp = Clock.System.now()
-						}
-					} else {
-						channel.createMessage {
-							content = arguments.messageArgument
-						}
-					}
-
-					respond { content = "Command used" }
-
-					ResponseHelper.responseEmbedInChannel(
-						actionLog,
-						"Message Sent",
-						"/say has been used to say ${arguments.messageArgument}.",
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				} else {
+				if (actionLogId.equals("NoSuchElementException")) {
 					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
+					return@action
 				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+
+				if (arguments.embedMessage) {
+					channel.createEmbed {
+						color = DISCORD_BLURPLE
+						description = arguments.messageArgument
+						timestamp = Clock.System.now()
+					}
+				} else {
+					channel.createMessage {
+						content = arguments.messageArgument
+					}
+				}
+
+				respond { content = "Command used" }
+
+				ResponseHelper.responseEmbedInChannel(
+					actionLog,
+					"Message Sent",
+					"/say has been used to say ${arguments.messageArgument}.",
+					DISCORD_BLACK,
+					user.asUser()
+				)
 			}
 		}
 
@@ -133,41 +123,32 @@ class Utilities : Extension() {
 			name = "set-status"
 			description = "Set Lily's current presence/status."
 
-			check { hasPermission(Permission.ModerateMembers) } // Idk wasn't sure
+			check { hasPermission(Permission.ModerateMembers) } // Wasn't sure here
 
 			action {
-				var actionLogId: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-
-					this@ephemeralSlashCommand.kord.editPresence {
-						status = PresenceStatus.Online
-						playing(arguments.presenceArgument)
-					}
-
-					respond { content = "Presence set to `${arguments.presenceArgument}`" }
-
-					ResponseHelper.responseEmbedInChannel(
-						actionLog,
-						"Presence Changed",
-						"Lily's presence has been set to `${arguments.presenceArgument}`",
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				} else {
+				if (actionLogId.equals("NoSuchElementException")) {
 					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
+					return@action
 				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+
+				this@ephemeralSlashCommand.kord.editPresence {
+					status = PresenceStatus.Online
+					playing(arguments.presenceArgument)
+				}
+
+				respond { content = "Presence set to `${arguments.presenceArgument}`" }
+
+				ResponseHelper.responseEmbedInChannel(
+					actionLog,
+					"Presence Changed",
+					"Lily's presence has been set to `${arguments.presenceArgument}`",
+					DISCORD_BLACK,
+					user.asUser()
+				)
 			}
 		}
 	}

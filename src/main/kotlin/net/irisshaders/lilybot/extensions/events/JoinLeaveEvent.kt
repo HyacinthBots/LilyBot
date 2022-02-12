@@ -13,9 +13,8 @@ import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.time.ExperimentalTime
 
 /**
@@ -27,90 +26,67 @@ class JoinLeaveEvent : Extension() {
 
 	override suspend fun setup() {
 		event<MemberJoinEvent> {
-			@Suppress("DuplicatedCode")
-			action {
-				var joinChannelId: String? = null
-				var error = false
 
-				newSuspendedTransaction {
-					try {
-						joinChannelId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq event.guild.id.toString()
-						}.single()[DatabaseManager.Config.joinChannel]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
+			action {
+				val joinChannelId: String? = DatabaseHelper.selectInConfig(event.guild.id, DatabaseManager.Config.joinChannel)
 
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				if (!error) {
-					val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId!!)) as GuildMessageChannelBehavior
+				if (joinChannelId.equals("NoSuchElementException")) return@action
 
-					joinChannel.createEmbed {
-						color = DISCORD_GREEN
-						title = "User joined the server!"
-						timestamp = Clock.System.now()
+				val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId!!)) as GuildMessageChannelBehavior
 
-						field {
-							name = "Welcome:"
-							value = eventMember.tag
-							inline = true
-						}
-						field {
-							name = "ID:"
-							value = eventMember.id.toString()
-							inline = false
-						}
-						footer {
-							text = "Member Count: $guildMemberCount"
-						}
+				joinChannel.createEmbed {
+					color = DISCORD_GREEN
+					title = "User joined the server!"
+					timestamp = Clock.System.now()
+
+					field {
+						name = "Welcome:"
+						value = eventMember.tag
+						inline = true
+					}
+					field {
+						name = "ID:"
+						value = eventMember.id.toString()
+						inline = false
+					}
+					footer {
+						text = "Member Count: $guildMemberCount"
 					}
 				}
 			}
 		}
 		event<MemberLeaveEvent> {
-			@Suppress("DuplicatedCode")
+
 			action {
-				var joinChannelId: String? = null
-				var error = false
-
-				newSuspendedTransaction {
-					try {
-						joinChannelId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq event.guild.id.toString()
-						}.single()[DatabaseManager.Config.joinChannel]
-
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
+				val joinChannelId = DatabaseHelper.selectInConfig(event.guild.id, DatabaseManager.Config.joinChannel)
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
-				if (!error) {
-					val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId!!)) as GuildMessageChannelBehavior
+				if (joinChannelId.equals("NoSuchElementException")) return@action
 
-					joinChannel.createEmbed {
-						color = DISCORD_RED
-						title = "User left the server!"
-						timestamp = Clock.System.now()
+				val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId!!)) as GuildMessageChannelBehavior
 
-						field {
-							name = "Goodbye:"
-							value = eventUser.tag
-							inline = true
-						}
-						field {
-							name = "ID:"
-							value = eventUser.id.toString()
-							inline = false
-						}
-						footer {
-							text = "Member count: $guildMemberCount"
-						}
+				joinChannel.createEmbed {
+					color = DISCORD_RED
+					title = "User left the server!"
+					timestamp = Clock.System.now()
+
+					field {
+						name = "Goodbye:"
+						value = eventUser.tag
+						inline = true
+					}
+					field {
+						name = "ID:"
+						value = eventUser.id.toString()
+						inline = false
+					}
+					footer {
+						text = "Member count: $guildMemberCount"
 					}
 				}
 			}

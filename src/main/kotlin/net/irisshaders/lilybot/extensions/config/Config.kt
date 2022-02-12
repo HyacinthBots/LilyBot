@@ -16,11 +16,11 @@ import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.ResponseHelper
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.time.ExperimentalTime
 
@@ -40,21 +40,10 @@ class Config : Extension() {
 				description = "Set the config"
 				action {
 					var actionLogId: String? = null
-					var alreadySet = false
+					val alreadySet: String? =
+						DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.guildId)
 
-				    newSuspendedTransaction {
-						alreadySet = try {
-							DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
-							}.single()[DatabaseManager.Config.guildId]
-							true
-						} catch (e: NoSuchElementException) {
-							false
-							// Swallow the error and return because we want to know this
-						}
-					}
-
-					if (!alreadySet) {
+					if (alreadySet.equals("NoSuchElementException")) {
 						newSuspendedTransaction {
 
 							DatabaseManager.Config.insertIgnore {
@@ -67,9 +56,7 @@ class Config : Extension() {
 								it[joinChannel] = arguments.joinChannel.id.toString()
 							}
 
-							actionLogId = DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
-							}.single()[DatabaseManager.Config.modActionLog]
+							actionLogId = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.modActionLog)
 						}
 
 						respond { content = "Config Set for Guild ID: ${arguments.guildId.id}!" }
@@ -91,28 +78,17 @@ class Config : Extension() {
 				name = "clear"
 				description = "Clear the config!"
 				action {
-					var guildConfig: String? = null
-					var actionLogId: String? = null
 					var error = false
 
-					newSuspendedTransaction {
-						try {
-							guildConfig = DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
-							}.single()[DatabaseManager.Config.guildId]
+					val guildConfig: String? = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.guildId)
+					val actionLogId: String? = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.modActionLog)
 
-							actionLogId = DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
-							}.single()[DatabaseManager.Config.modActionLog]
-						} catch (e: NoSuchElementException) {
-							respond {
-								content = "**Error:** There is no configuration set for this guild!"
-							}
-							error = true
+					if (guildConfig.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
+						respond {
+							content = "**Error:** There is no configuration set for this guild!"
 						}
+						return@action
 					}
-
-					if (error) return@action
 
 					newSuspendedTransaction {
 						try {
@@ -121,7 +97,7 @@ class Config : Extension() {
 							}
 						} catch (e: NoSuchElementException) {
 							// More of a sanity check, the action should've returned by
-							// this point of there was no configuration for the guild
+							// this point if there was no configuration for the guild
 							respond {
 								content = "**Error:** There is no configuration set for this guild!"
 							}

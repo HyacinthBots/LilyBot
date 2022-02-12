@@ -25,9 +25,9 @@ import dev.kord.core.entity.interaction.ButtonInteraction
 import dev.kord.core.event.interaction.InteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
 import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class RoleMenu : Extension() {
@@ -97,42 +97,32 @@ class RoleMenu : Extension() {
 
 					respond { content = "Role menu created." }
 
-					var actionLogId: String? = null
-					var error = false
-					try {
-						newSuspendedTransaction {
-							actionLogId = DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq guild!!.id.toString()
-							}.single()[DatabaseManager.Config.modActionLog]
-						}
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
+					val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 
-					if (!error) {
-						val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-						actionLog.createEmbed {
-							color = DISCORD_BLACK
-							title = "Role menu created."
-							description =
-								"A role menu for the ${arguments.role.mention} role was created in ${targetChannel.mention}"
+					if (actionLogId.equals("NoSuchElementException")) return@action
 
-							field {
-								name = "Embed title:"
-								value = arguments.title
-								inline = false
-							}
-							field {
-								name = "Embed description:"
-								value = arguments.description + descriptionAppendix
-								inline = false
-							}
-							footer {
-								text = "Requested by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
-							}
-							timestamp = Clock.System.now()
+					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+					actionLog.createEmbed {
+						color = DISCORD_BLACK
+						title = "Role menu created."
+						description =
+							"A role menu for the ${arguments.role.mention} role was created in ${targetChannel.mention}"
+
+						field {
+							name = "Embed title:"
+							value = arguments.title
+							inline = false
 						}
+						field {
+							name = "Embed description:"
+							value = arguments.description + descriptionAppendix
+							inline = false
+						}
+						footer {
+							text = "Requested by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
 					}
 				}
 			}
@@ -146,18 +136,9 @@ class RoleMenu : Extension() {
 				val guild = kord.getGuild(interaction.data.guildId.value!!)!!
 				val member = guild.getMember(interaction.user.id)
 
-				var roleId: String? = null
-				var addOrRemove: String? = null
+				val roleId = DatabaseHelper.selectInComponents(interaction.componentId, DatabaseManager.Components.roleId)
+				val addOrRemove = DatabaseHelper.selectInComponents(interaction.componentId, DatabaseManager.Components.addOrRemove)
 
-				newSuspendedTransaction {
-					roleId = DatabaseManager.Components.select {
-						DatabaseManager.Components.componentId eq interaction.componentId
-					}.single()[DatabaseManager.Components.roleId]
-
-					addOrRemove = DatabaseManager.Components.select {
-						DatabaseManager.Components.componentId eq interaction.componentId
-					}.single()[DatabaseManager.Components.addOrRemove]
-				}
 
 				val role = guild.getRole(Snowflake(roleId!!))
 

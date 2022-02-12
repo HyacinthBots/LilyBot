@@ -34,6 +34,7 @@ import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import mu.KotlinLogging
+import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.ResponseHelper
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
@@ -62,49 +63,42 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ManageMessages) }
 
 			action {
-				var actionLogId: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
-
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-					val messageAmount = arguments.messages
-					val messageHolder = arrayListOf<Snowflake>()
-					val textChannel = channel as GuildMessageChannelBehavior
-
-					channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100))
-						.filterNotNull()
-						.onEach {
-							messageHolder.add(it.fetchMessage().id)
-						}.catch {
-							it.printStackTrace()
-							println("error")
-						}.collect()
-
-					textChannel.bulkDelete(messageHolder)
-
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				if (actionLogId.equals("NoSuchElementException")) {
 					respond {
-						content = "Messages cleared"
+						content =
+							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
 					}
-
-					ResponseHelper.responseEmbedInChannel(
-						actionLog,
-						"$messageAmount messages have been cleared.",
-						"Action occurred in ${textChannel.mention}",
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
+					return@action
 				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val messageAmount = arguments.messages
+				val messageHolder = arrayListOf<Snowflake>()
+				val textChannel = channel as GuildMessageChannelBehavior
+
+				channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100))
+					.filterNotNull()
+					.onEach {
+						messageHolder.add(it.fetchMessage().id)
+					}.catch {
+						it.printStackTrace()
+						println("error")
+					}.collect()
+
+				textChannel.bulkDelete(messageHolder)
+
+				respond {
+					content = "Messages cleared"
+				}
+
+				ResponseHelper.responseEmbedInChannel(
+					actionLog,
+					"$messageAmount messages have been cleared.",
+					"Action occurred in ${textChannel.mention}",
+					DISCORD_BLACK,
+					user.asUser()
+				)
 			}
 		}
 
@@ -120,95 +114,84 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				var actionLogId: String? = null
-				var moderators: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-
-						moderators = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.moderatorsPing]
-					} catch (e: NoSuchElementException) {
-						error = true
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
 					}
+					return@action
 				}
 
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-					val userArg = arguments.userArgument
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val userArg = arguments.userArgument
+				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
-					try {
-						if (guild?.getMember(userArg.id)?.isBot == true) {
-							respond {
-								content = "You cannot ban bot users!"
+				try {
+					if (guild?.getMember(userArg.id)?.isBot == true) {
+						respond {
+							content = "You cannot ban bot users!"
+						}
+						return@action
+					} else if (Snowflake(moderators!!) in roles) {
+						respond {
+							content = "You cannot ban moderators!"
+						}
+						return@action
+					}
+				} catch (exception: Exception) {
+					logger.warn("IsBot and moderator checks skipped on `Ban` due to error")
+				}
+
+				val dm = ResponseHelper.userDMEmbed(
+					userArg,
+					"You have been banned from ${guild?.fetchGuild()?.name}",
+					"**Reason:**\n${arguments.reason}",
+					null
+				)
+
+				guild?.ban(userArg.id, builder = {
+					this.reason = arguments.reason
+					this.deleteMessagesDays = arguments.messages
+				})
+
+				respond {
+					content = "Banned a user"
+				}
+
+				actionLog.createEmbed {
+					color = DISCORD_BLACK
+					title = "Banned a user"
+					description = "${userArg.mention} has been banned!\n${userArg.id} (${userArg.tag})"
+
+					field {
+						name = "Reason:"
+						value = arguments.reason
+						inline = false
+					}
+					field {
+						name = "Days of messages deleted:"
+						value = arguments.messages.toString()
+						inline = false
+					}
+					field {
+						name = "User Notification:"
+						value =
+							if (dm != null) {
+								"User notified with a direct message"
+							} else {
+								"Failed to notify user with a direct message"
 							}
-							return@action
-						} else if (Snowflake(moderators!!) in roles) {
-							respond {
-								content = "You cannot ban moderators!"
-							}
-							return@action
-						}
-					} catch (exception: Exception) {
-						logger.warn("IsBot and moderator checks skipped on `Ban` due to error")
+						inline = false
 					}
 
-					val dm = ResponseHelper.userDMEmbed(
-						userArg,
-						"You have been banned from ${guild?.fetchGuild()?.name}",
-						"**Reason:**\n${arguments.reason}",
-						null
-					)
-
-					guild?.ban(userArg.id, builder = {
-						this.reason = arguments.reason
-						this.deleteMessagesDays = arguments.messages
-					})
-
-					respond {
-						content = "Banned a user"
+					footer {
+						text = "Requested by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
 					}
 
-					actionLog.createEmbed {
-						color = DISCORD_BLACK
-						title = "Banned a user"
-						description = "${userArg.mention} has been banned!\n${userArg.id} (${userArg.tag})"
-
-						field {
-							name = "Reason:"
-							value = arguments.reason
-							inline = false
-						}
-						field {
-							name = "Days of messages deleted:"
-							value = arguments.messages.toString()
-							inline = false
-						}
-						field {
-							name = "User Notification:"
-							value =
-								if (dm != null) {
-									"User notified with a direct message"
-								} else {
-									"Failed to notify user with a direct message"
-								}
-							inline = false
-						}
-
-						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-
-						timestamp = Clock.System.now()
-					}
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
+					timestamp = Clock.System.now()
 				}
 			}
 		}
@@ -224,39 +207,31 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				var actionLogId: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
-
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-					val userArg = arguments.userArgument
-
-					guild?.unban(userArg.id)
-
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				if (actionLogId.equals("NoSuchElementException")) {
 					respond {
-						content = "Unbanned User"
+						content =
+							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
 					}
-
-					ResponseHelper.responseEmbedInChannel(
-						actionLog,
-						"Unbanned a user",
-						"${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})",
-						DISCORD_GREEN,
-						user.asUser()
-					)
-
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
+					return@action
 				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val userArg = arguments.userArgument
+
+				guild?.unban(userArg.id)
+
+				respond {
+					content = "Unbanned User"
+				}
+
+				ResponseHelper.responseEmbedInChannel(
+					actionLog,
+					"Unbanned a user",
+					"${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})",
+					DISCORD_GREEN,
+					user.asUser()
+				)
 			}
 		}
 
@@ -271,98 +246,87 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				var actionLogId: String? = null
-				var moderators: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-
-						moderators = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.moderatorsPing]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
-
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-					val userArg = arguments.userArgument
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-
-					try {
-						if (guild?.getMember(userArg.id)?.isBot == true) {
-							respond {
-								content = "You cannot soft-ban bot users!"
-							}
-							return@action
-						} else if (Snowflake(moderators!!) in roles) {
-							respond {
-								content = "You cannot soft-ban moderators!"
-							}
-							return@action
-						}
-					} catch (exception: Exception) {
-						logger.warn("IsBot and Moderator checks skipped on `Soft-Ban` due to error")
-					}
-
-					val dm = ResponseHelper.userDMEmbed(
-						userArg,
-						"You have been soft-banned from ${guild?.fetchGuild()?.name}",
-						"**Reason:**\n${arguments.reason}\n\nYou are free to rejoin without the need to be unbanned",
-						null
-					)
-
-					guild?.ban(userArg.id, builder = {
-						this.reason = "${arguments.reason} + **SOFT-BAN**"
-						this.deleteMessagesDays = arguments.messages
-					})
-
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
 					respond {
-						content = "Soft-Banned User"
+						content =
+							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
 					}
-
-					actionLog.createEmbed {
-						color = DISCORD_BLACK
-						title = "Soft-banned a user"
-						description = "${userArg.mention} has been soft banned\n${userArg.id} (${userArg.tag})"
-
-						field {
-							name = "Reason:"
-							value = arguments.reason
-							inline = false
-						}
-						field {
-							name = "Days of messages deleted"
-							value = arguments.messages.toString()
-							inline = false
-						}
-						field {
-							name = "User Notification:"
-							value =
-								if (dm != null) {
-									"User notified with a direct message"
-								} else {
-									"Failed to notify user with a direct message"
-								}
-							inline = false
-						}
-
-						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-
-						timestamp = Clock.System.now()
-					}
-
-					guild?.unban(userArg.id)
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
+					return@action
 				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val userArg = arguments.userArgument
+				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
+
+				try {
+					if (guild?.getMember(userArg.id)?.isBot == true) {
+						respond {
+							content = "You cannot soft-ban bot users!"
+						}
+						return@action
+					} else if (Snowflake(moderators!!) in roles) {
+						respond {
+							content = "You cannot soft-ban moderators!"
+						}
+						return@action
+					}
+				} catch (exception: Exception) {
+					logger.warn("IsBot and Moderator checks skipped on `Soft-Ban` due to error")
+				}
+
+				val dm = ResponseHelper.userDMEmbed(
+					userArg,
+					"You have been soft-banned from ${guild?.fetchGuild()?.name}",
+					"**Reason:**\n${arguments.reason}\n\nYou are free to rejoin without the need to be unbanned",
+					null
+				)
+
+				guild?.ban(userArg.id, builder = {
+					this.reason = "${arguments.reason} + **SOFT-BAN**"
+					this.deleteMessagesDays = arguments.messages
+				})
+
+				respond {
+					content = "Soft-Banned User"
+				}
+
+				actionLog.createEmbed {
+					color = DISCORD_BLACK
+					title = "Soft-banned a user"
+					description = "${userArg.mention} has been soft banned\n${userArg.id} (${userArg.tag})"
+
+					field {
+						name = "Reason:"
+						value = arguments.reason
+						inline = false
+					}
+					field {
+						name = "Days of messages deleted"
+						value = arguments.messages.toString()
+						inline = false
+					}
+					field {
+						name = "User Notification:"
+						value =
+							if (dm != null) {
+								"User notified with a direct message"
+							} else {
+								"Failed to notify user with a direct message"
+							}
+						inline = false
+					}
+
+					footer {
+						text = "Requested by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
+					}
+
+					timestamp = Clock.System.now()
+				}
+
+				guild?.unban(userArg.id)
 			}
 		}
 
@@ -377,83 +341,72 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.KickMembers) }
 
 			action {
-				var actionLogId: String? = null
-				var moderators: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-
-						moderators = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.moderatorsPing]
-					} catch (e: NoSuchElementException) {
-						error = true
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
 					}
+					return@action
 				}
 
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-					val userArg = arguments.userArgument
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val userArg = arguments.userArgument
+				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
-					try {
-						if (guild?.getMember(userArg.id)?.isBot == true) {
-							respond {
-								content = "You cannot kick bot users!"
+				try {
+					if (guild?.getMember(userArg.id)?.isBot == true) {
+						respond {
+							content = "You cannot kick bot users!"
+						}
+						return@action
+					} else if (Snowflake(moderators!!) in roles) {
+						respond {
+							content = "You cannot kick moderators!"
+						}
+					}
+				} catch (exception: Exception) {
+					logger.warn("IsBot and Moderator checks skipped on `Kick` due to error")
+				}
+
+				val dm = ResponseHelper.userDMEmbed(
+					userArg,
+					"You have been kicked from ${guild?.fetchGuild()?.name}",
+					"**Reason:**\n${arguments.reason}",
+					null
+				)
+
+				guild?.kick(userArg.id, arguments.reason)
+
+				respond {
+					content = "Kicked User"
+				}
+
+				actionLog.createEmbed {
+					color = DISCORD_BLACK
+					title = "Kicked User"
+					description = "Kicked ${userArg.mention} from the server\n${userArg.id} (${userArg.tag})"
+
+					field {
+						name = "Reason"
+						value = arguments.reason
+						inline = false
+					}
+					field {
+						name = "User Notification:"
+						value =
+							if (dm != null) {
+								"User notified with a direct message"
+							} else {
+								"Failed to notify user with a direct message"
 							}
-							return@action
-						} else if (Snowflake(moderators!!) in roles) {
-							respond {
-								content = "You cannot kick moderators!"
-							}
-						}
-					} catch (exception: Exception) {
-						logger.warn("IsBot and Moderator checks skipped on `Kick` due to error")
+						inline = false
 					}
-
-					val dm = ResponseHelper.userDMEmbed(
-						userArg,
-						"You have been kicked from ${guild?.fetchGuild()?.name}",
-						"**Reason:**\n${arguments.reason}",
-						null
-					)
-
-					guild?.kick(userArg.id, arguments.reason)
-
-					respond {
-						content = "Kicked User"
+					footer {
+						text = "Requested By ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
 					}
-
-					actionLog.createEmbed {
-						color = DISCORD_BLACK
-						title = "Kicked User"
-						description = "Kicked ${userArg.mention} from the server\n${userArg.id} (${userArg.tag})"
-
-						field {
-							name = "Reason"
-							value = arguments.reason
-							inline = false
-						}
-						field {
-							name = "User Notification:"
-							value =
-								if (dm != null) {
-									"User notified with a direct message"
-								} else {
-									"Failed to notify user with a direct message"
-								}
-							inline = false
-						}
-						footer {
-							text = "Requested By ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-					}
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
 				}
 			}
 		}
@@ -471,132 +424,121 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				var actionLogId: String? = null
-				var moderators: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-
-						moderators = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.moderatorsPing]
-					} catch (e: NoSuchElementException) {
-						error = true
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
 					}
+					return@action
 				}
 
-				if (!error) {
-					val userArg = arguments.userArgument
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-					var databasePoints: Int? = null
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
+				val userArg = arguments.userArgument
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				var databasePoints: Int? = null
+				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
-					try {
-						if (guild?.getMember(userArg.id)?.isBot == true) {
-							respond {
-								content = "You cannot warn bot users!"
+				try {
+					if (guild?.getMember(userArg.id)?.isBot == true) {
+						respond {
+							content = "You cannot warn bot users!"
+						}
+						return@action
+					} else if (Snowflake(moderators!!) in roles) {
+						respond {
+							content = "You cannot warn moderators!"
+						}
+						return@action
+					}
+				} catch (exception: Exception) {
+					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
+				}
+
+				newSuspendedTransaction {
+					DatabaseManager.Warn.insertIgnore {
+						it[id] = userArg.id.toString()
+						it[points] = 0
+					}
+
+					databasePoints = DatabaseManager.Warn.select {
+						DatabaseManager.Warn.id eq userArg.id.toString()
+					}.single()[DatabaseManager.Warn.points]
+
+					DatabaseManager.Warn.update({ DatabaseManager.Warn.id eq userArg.id.toString() }) {
+						it.update(points, points.plus(arguments.warnPoints))
+					}
+
+					databasePoints = DatabaseManager.Warn.select {
+						DatabaseManager.Warn.id eq userArg.id.toString()
+					}.single()[DatabaseManager.Warn.points]
+				}
+
+				if (databasePoints!! in (50..99)) {
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+					}
+				} else if (databasePoints!! in (100..149)) {
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+					}
+				} else if (databasePoints!! >= 150) {
+					guild?.ban(userArg.id, builder = {
+						this.reason = "Banned due to point accumulation"
+						this.deleteMessagesDays = 0
+					})
+				}
+
+				val dm = ResponseHelper.userDMEmbed(
+					userArg,
+					"You have been warned in ${guild?.fetchGuild()?.name}",
+					"You were given ${arguments.warnPoints} points\nYour total is now $databasePoints\n\n**Reason:**\n${arguments.reason}",
+					null
+				)
+
+				respond {
+					content = "Warned User"
+				}
+
+				actionLog.createEmbed {
+					title = "Warning"
+					color = DISCORD_BLACK
+					timestamp = Clock.System.now()
+
+					field {
+						name = "User:"
+						value = "${userArg.tag} \n${userArg.id}"
+						inline = false
+					}
+					field {
+						name = "Total Points:"
+						value = databasePoints.toString()
+						inline = false
+					}
+					field {
+						name = "Points added:"
+						value = arguments.warnPoints.toString()
+						inline = false
+					}
+					field {
+						name = "Reason:"
+						value = arguments.reason
+						inline = false
+					}
+					field {
+						name = "User notification"
+						value =
+							if (dm != null) {
+								"User notified with a direct message"
+							} else {
+								"Failed to notify user with a direct message"
 							}
-							return@action
-						} else if (Snowflake(moderators!!) in roles) {
-							respond {
-								content = "You cannot warn moderators!"
-							}
-							return@action
-						}
-					} catch (exception: Exception) {
-						logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
+						inline = false
 					}
-
-					newSuspendedTransaction {
-						DatabaseManager.Warn.insertIgnore {
-							it[id] = userArg.id.toString()
-							it[points] = 0
-						}
-
-						databasePoints = DatabaseManager.Warn.select {
-							DatabaseManager.Warn.id eq userArg.id.toString()
-						}.single()[DatabaseManager.Warn.points]
-
-						DatabaseManager.Warn.update({ DatabaseManager.Warn.id eq userArg.id.toString() }) {
-							it.update(points, points.plus(arguments.warnPoints))
-						}
-
-						databasePoints = DatabaseManager.Warn.select {
-							DatabaseManager.Warn.id eq userArg.id.toString()
-						}.single()[DatabaseManager.Warn.points]
+					footer {
+						text = "Requested by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
 					}
-
-					if (databasePoints!! in (50..99)) {
-						guild?.getMember(userArg.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
-						}
-					} else if (databasePoints!! in (100..149)) {
-						guild?.getMember(userArg.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
-						}
-					} else if (databasePoints!! >= 150) {
-						guild?.ban(userArg.id, builder = {
-							this.reason = "Banned due to point accumulation"
-							this.deleteMessagesDays = 0
-						})
-					}
-
-					val dm = ResponseHelper.userDMEmbed(
-						userArg,
-						"You have been warned in ${guild?.fetchGuild()?.name}",
-						"You were given ${arguments.warnPoints} points\nYour total is now $databasePoints\n\n**Reason:**\n${arguments.reason}",
-						null
-					)
-
-					respond {
-						content = "Warned User"
-					}
-
-					actionLog.createEmbed {
-						title = "Warning"
-						color = DISCORD_BLACK
-						timestamp = Clock.System.now()
-
-						field {
-							name = "User:"
-							value = "${userArg.tag} \n${userArg.id}"
-							inline = false
-						}
-						field {
-							name = "Total Points:"
-							value = databasePoints.toString()
-							inline = false
-						}
-						field {
-							name = "Points added:"
-							value = arguments.warnPoints.toString()
-							inline = false
-						}
-						field {
-							name = "Reason:"
-							value = arguments.reason
-							inline = false
-						}
-						field {
-							name = "User notification"
-							value =
-								if (dm != null) {
-									"User notified with a direct message"
-								} else {
-									"Failed to notify user with a direct message"
-								}
-							inline = false
-						}
-						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-					}
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
 				}
 			}
 		}
@@ -613,101 +555,90 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				var actionLogId: String? = null
-				var moderators: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-
-						moderators = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.moderatorsPing]
-					} catch (e: NoSuchElementException) {
-						error = true
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
 					}
+					return@action
 				}
 
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-					val userArg = arguments.userArgument
-					val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val userArg = arguments.userArgument
+				val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
+				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
-					try {
-						if (guild?.getMember(userArg.id)?.isBot == true) {
-							respond {
-								content = "You cannot timeout a bot!"
+				try {
+					if (guild?.getMember(userArg.id)?.isBot == true) {
+						respond {
+							content = "You cannot timeout a bot!"
+						}
+						return@action
+					} else if (Snowflake(moderators!!) in roles) {
+						respond {
+							content = "You cannot timeout a moderator!"
+						}
+						return@action
+					}
+				} catch (exception: Exception) {
+					logger.warn("IsBot and Moderator checks failed on `Timeout` due to error")
+				}
+
+				val dm = ResponseHelper.userDMEmbed(
+					userArg,
+					"You have been timed out in ${guild?.fetchGuild()?.name}",
+					"**Duration:**\n${
+						duration.toDiscord(TimestampType.Default) + "(" + arguments.duration.toString()
+							.replace("PT", "") + ")"
+					}\n**Reason:**\n${arguments.reason}",
+					null
+				)
+
+				guild?.getMember(userArg.id)?.edit {
+					timeoutUntil = duration
+				}
+
+				respond {
+					content = "Timed out ${userArg.id}"
+				}
+
+				actionLog.createEmbed {
+					title = "Timeout"
+					color = DISCORD_BLACK
+					timestamp = Clock.System.now()
+
+					field {
+						name = "User:"
+						value = "${userArg.tag} \n${userArg.id}"
+						inline = false
+					}
+					field {
+						name = "Duration:"
+						value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
+							.replace("PT", "") + ")"
+						inline = false
+					}
+					field {
+						name = "Reason:"
+						value = arguments.reason
+						inline = false
+					}
+					field {
+						name = "User notification"
+						value =
+							if (dm != null) {
+								"User notified with a direct message"
+							} else {
+								"Failed to notify user with a direct message "
 							}
-							return@action
-						} else if (Snowflake(moderators!!) in roles) {
-							respond {
-								content = "You cannot timeout a moderator!"
-							}
-							return@action
-						}
-					} catch (exception: Exception) {
-						logger.warn("IsBot and Moderator checks failed on `Timeout` due to error")
+						inline = false
 					}
-
-					val dm = ResponseHelper.userDMEmbed(
-						userArg,
-						"You have been timed out in ${guild?.fetchGuild()?.name}",
-						"**Duration:**\n${
-							duration.toDiscord(TimestampType.Default) + "(" + arguments.duration.toString()
-								.replace("PT", "") + ")"
-						}\n**Reason:**\n${arguments.reason}",
-						null
-					)
-
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = duration
+					footer {
+						text = "Requested by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
 					}
-
-					respond {
-						content = "Timed out ${userArg.id}"
-					}
-
-					actionLog.createEmbed {
-						title = "Timeout"
-						color = DISCORD_BLACK
-						timestamp = Clock.System.now()
-
-						field {
-							name = "User:"
-							value = "${userArg.tag} \n${userArg.id}"
-							inline = false
-						}
-						field {
-							name = "Duration:"
-							value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
-								.replace("PT", "") + ")"
-							inline = false
-						}
-						field {
-							name = "Reason:"
-							value = arguments.reason
-							inline = false
-						}
-						field {
-							name = "User notification"
-							value =
-								if (dm != null) {
-									"User notified with a direct message"
-								} else {
-									"Failed to notify user with a direct message "
-								}
-							inline = false
-						}
-						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-					}
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
 				}
 			}
 		}
@@ -724,47 +655,40 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				var actionLogId: String? = null
-				var error = false
-				newSuspendedTransaction {
-					try {
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq guild?.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
-					} catch (e: NoSuchElementException) {
-						error = true
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				if (actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
 					}
+					return@action
 				}
 
-				if (!error) {
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-					val userArg = arguments.userArgument
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val userArg = arguments.userArgument
 
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = null
+				guild?.getMember(userArg.id)?.edit {
+					timeoutUntil = null
+				}
+
+				respond {
+					content = "Removed timeout on ${userArg.id}"
+				}
+
+				actionLog.createEmbed {
+					title = "Remove Timeout"
+					color = DISCORD_BLACK
+					timestamp = Clock.System.now()
+
+					field {
+						name = "User:"
+						value = "${userArg.tag} \n${userArg.id}"
+						inline = false
 					}
-
-					respond {
-						content = "Removed timeout on ${userArg.id}"
+					footer {
+						text = "Requested by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
 					}
-
-					actionLog.createEmbed {
-						title = "Remove Timeout"
-						color = DISCORD_BLACK
-						timestamp = Clock.System.now()
-
-						field {
-							name = "User:"
-							value = "${userArg.tag} \n${userArg.id}"
-							inline = false
-						}
-						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-					}
-				} else {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
 				}
 			}
 		}

@@ -20,9 +20,8 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
+import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.time.ExperimentalTime
 
 class ThreadControl : Extension() {
@@ -40,18 +39,6 @@ class ThreadControl : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					var moderators: String? = null
-					var error = false
-					try {
-						newSuspendedTransaction {
-							moderators = DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq guild!!.id.toString()
-							}.single()[DatabaseManager.Config.moderatorsPing]
-						}
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-
 					if (channel.asChannel() !is ThreadChannel) {
 						edit {
 							content = "This isn't a thread :person_facepalming:"
@@ -63,38 +50,41 @@ class ThreadControl : Extension() {
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					if (!error) {
-						if (Snowflake(moderators!!) in roles) {
-							channel.edit {
-								name = arguments.newThreadName
-
-								reason = "Renamed by ${member.tag}"
-							}
-							edit {
-								content = "Thread Renamed!"
-							}
-
-							return@action
+					val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+					if (moderators.equals("NoSuchElementException")) {
+						respond {
+							content =
+								"**Error:** Unable to access config for this guild! Please inform a member of staff!"
 						}
+						return@action
+					}
 
-						if (channel.ownerId != user.id) {
-							edit { content = "**Error:** This is not your thread!" }
-
-							return@action
-						}
-
+					if (Snowflake(moderators!!) in roles) {
 						channel.edit {
 							name = arguments.newThreadName
 
 							reason = "Renamed by ${member.tag}"
 						}
-
-						edit { content = "Thread Renamed." }
-					} else {
-						respond {
-							content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
+						edit {
+							content = "Thread Renamed!"
 						}
+
+						return@action
 					}
+
+					if (channel.ownerId != user.id) {
+						edit { content = "**Error:** This is not your thread!" }
+
+						return@action
+					}
+
+					channel.edit {
+						name = arguments.newThreadName
+
+						reason = "Renamed by ${member.tag}"
+					}
+
+					edit { content = "Thread Renamed." }
 				}
 			}
 
@@ -104,18 +94,6 @@ class ThreadControl : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					var moderators: String? = null
-					var error = false
-					try {
-						newSuspendedTransaction {
-							moderators = DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq guild!!.id.toString()
-							}.single()[DatabaseManager.Config.moderatorsPing]
-						}
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-
 					if (channel.asChannel() !is ThreadChannel) {
 						edit {
 							content = "This isn't a thread :person_facepalming:"
@@ -127,50 +105,53 @@ class ThreadControl : Extension() {
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					if (!error) {
-						if (Snowflake(moderators!!) in roles) {
-							channel.edit {
-								this.archived = true
-								this.locked = arguments.lock
-
-								reason = "Archived by ${user.asUser().tag}"
-							}
-
-							edit {
-								content = "Thread archived"
-
-								if (arguments.lock) content += " and locked"
-
-								content += "!"
-							}
-
-							return@action
+					val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+					if (moderators.equals("NoSuchElementException")) {
+						respond {
+							content =
+								"**Error:** Unable to access config for this guild! Please inform a member of staff!"
 						}
+						return@action
+					}
 
-						if (channel.ownerId != user.id) {
-							edit { content = "This is not your thread!" }
-
-							return@action
-						}
-
-						if (channel.isArchived) {
-							edit { content = "**Error:** This channel is already archived!" }
-
-							return@action
-						}
-
+					if (Snowflake(moderators!!) in roles) {
 						channel.edit {
-							archived = true
+							this.archived = true
+							this.locked = arguments.lock
 
 							reason = "Archived by ${user.asUser().tag}"
 						}
 
-						edit { content = "Thread archived!" }
-					} else {
-						respond {
-							content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
+						edit {
+							content = "Thread archived"
+
+							if (arguments.lock) content += " and locked"
+
+							content += "!"
 						}
+
+						return@action
 					}
+
+					if (channel.ownerId != user.id) {
+						edit { content = "This is not your thread!" }
+
+						return@action
+					}
+
+					if (channel.isArchived) {
+						edit { content = "**Error:** This channel is already archived!" }
+
+						return@action
+					}
+
+					channel.edit {
+						archived = true
+
+						reason = "Archived by ${user.asUser().tag}"
+					}
+
+					edit { content = "Thread archived!" }
 				}
 			}
 		}
