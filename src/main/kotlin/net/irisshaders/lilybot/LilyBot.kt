@@ -70,15 +70,15 @@ suspend fun main() {
 
 		extensions {
 			add(::Config)
-			add(::Moderation)
-			add(::ThreadInviter)
-			add(::Report)
+			add(::CustomCommands)
+			add(::Github)
 			add(::JoinLeaveEvent)
 			add(::MessageEvents)
-			add(::Github)
-			add(::CustomCommands)
-			add(::ThreadControl)
+			add(::Moderation)
+			add(::Report)
 			add(::RoleMenu)
+			add(::ThreadControl)
+			add(::ThreadInviter)
 			add(::Utilities)
 
 			extPhishing {
