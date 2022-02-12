@@ -10,6 +10,6 @@ val GITHUB_OAUTH = env("GITHUB_OAUTH")
 val SENTRY_DSN = envOrNull("SENTRY_DSN")
 val TEST_GUILD_ID = Snowflake(env("TEST_GUILD_ID"))
 val TEST_GUILD_CHANNEL = Snowflake(env("TEST_GUILD_CHANNEL"))
+val CUSTOM_COMMANDS_PATH = env("CUSTOM_COMMANDS_PATH")
 
-const val CUSTOM_COMMANDS_PATH = "commands.toml"
 const val JDBC_URL = "jdbc:sqlite:database.db"

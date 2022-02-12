@@ -128,8 +128,8 @@ class MessageEvents : Extension() {
 							builder.append(String(gis.readAllBytes()))
 						}
 
-						val necText = "at Not Enough Crashes";
-						val indexOfnecText = builder.indexOf(necText);
+						val necText = "at Not Enough Crashes"
+						val indexOfnecText = builder.indexOf(necText)
 						if (indexOfnecText != -1) {
 							ResponseHelper.responseEmbedInChannel(
 								eventMessage.channel,
@@ -190,7 +190,9 @@ class MessageEvents : Extension() {
 														}
 													}
 												} catch (e: Exception) {
-													// yum an exception :P
+													// Just swallow this exception
+													// If something has gone wrong here, something is wrong
+													// somewhere else, so it's probably fine
 												}
 											} else {
 												respond { content = "Only the uploader can use this menu." }

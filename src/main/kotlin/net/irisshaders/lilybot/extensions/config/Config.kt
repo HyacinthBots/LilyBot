@@ -17,14 +17,11 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.database.DatabaseManager.getConnection
 import net.irisshaders.lilybot.utils.ResponseHelper
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import java.sql.Connection
-import java.sql.PreparedStatement
-import java.sql.SQLException
 import kotlin.time.ExperimentalTime
 
 class Config : Extension() {
@@ -80,13 +77,13 @@ class Config : Extension() {
 						val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 						ResponseHelper.responseEmbedInChannel(
 							actionLogChannel,
-							"Config Set!",
-							"An admin has set a config for this guild!",
+							"Configuration set!",
+							"An administrator has set a config for this guild!",
 							null,
 							user.asUser()
 						)
 					} else {
-						respond { content = "Your config is already set, clear it first before updating!" }
+						respond { content = "Your configuration is already set, clear it first before updating!" }
 					}
 				}
 			}
@@ -96,37 +93,51 @@ class Config : Extension() {
 				action {
 					var guildConfig: String? = null
 					var actionLogId: String? = null
+					var error = false
 
 					newSuspendedTransaction {
-						guildConfig = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
-						}.single()[DatabaseManager.Config.guildId]
+						try {
+							guildConfig = DatabaseManager.Config.select {
+								DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
+							}.single()[DatabaseManager.Config.guildId]
 
-						actionLogId = DatabaseManager.Config.select {
-							DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
-						}.single()[DatabaseManager.Config.modActionLog]
+							actionLogId = DatabaseManager.Config.select {
+								DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
+							}.single()[DatabaseManager.Config.modActionLog]
+						} catch (e: NoSuchElementException) {
+							respond {
+								content = "**Error:** There is no configuration set for this guild!"
+							}
+							error = true
+						}
 					}
 
-					// Yes I did write raw SQL, even though we're using exposed.
-					// No I won't change it, exposed is clapped for removing stuff from the db
-					try {
-						val connection: Connection = getConnection()
-						val ps: PreparedStatement = connection.prepareStatement("DELETE FROM config WHERE guildId = ?")
-						ps.setString(1, guildConfig)
-						ps.executeUpdate()
-					} catch (e: SQLException) {
-						respond { content = "An error occurred in updating the Database. Please report this!" }
-						e.printStackTrace()
-						return@action
+					if (error) return@action
+
+					newSuspendedTransaction {
+						try {
+							DatabaseManager.Config.deleteWhere {
+								DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
+							}
+						} catch (e: NoSuchElementException) {
+							// More of a sanity check, the action should've returned by
+							// this point of there was no configuration for the guild
+							respond {
+								content = "**Error:** There is no configuration set for this guild!"
+							}
+							error = true
+						}
 					}
+
+					if (error) return@action
 
 					respond { content = "Cleared config for Guild ID: $guildConfig" }
 
 					val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					ResponseHelper.responseEmbedInChannel(
 						actionLogChannel,
-						"Config Cleared!",
-						"An admin has cleared the config for this guild!",
+						"Configuration cleared!",
+						"An administrator has cleared the configuration for this guild!",
 						null,
 						user.asUser()
 					)
@@ -149,7 +160,7 @@ class Config : Extension() {
 		}
 		val messageLogs by channel {
 			name = "messageLogs"
-			description = "Your Messsage Logs Channel"
+			description = "Your Message Logs Channel"
 		}
 		val joinChannel by channel {
 			name = "joinChannel"

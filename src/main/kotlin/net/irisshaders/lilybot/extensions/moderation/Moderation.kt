@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
@@ -91,7 +92,7 @@ class Moderation : Extension() {
 					textChannel.bulkDelete(messageHolder)
 
 					respond {
-						content = "Messages Cleared"
+						content = "Messages cleared"
 					}
 
 					ResponseHelper.responseEmbedInChannel(
@@ -120,12 +121,17 @@ class Moderation : Extension() {
 
 			action {
 				var actionLogId: String? = null
+				var moderators: String? = null
 				var error = false
 				newSuspendedTransaction {
 					try {
 						actionLogId = DatabaseManager.Config.select {
 							DatabaseManager.Config.guildId eq guild?.id.toString()
 						}.single()[DatabaseManager.Config.modActionLog]
+
+						moderators = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.moderatorsPing]
 					} catch (e: NoSuchElementException) {
 						error = true
 					}
@@ -134,11 +140,17 @@ class Moderation : Extension() {
 				if (!error) {
 					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val userArg = arguments.userArgument
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 					try {
 						if (guild?.getMember(userArg.id)?.isBot == true) {
 							respond {
-								content = "Lol you can't ban me or other bots"
+								content = "You cannot ban bot users!"
+							}
+							return@action
+						} else if (Snowflake(moderators!!) in roles) {
+							respond {
+								content = "You cannot ban moderators!"
 							}
 							return@action
 						}
@@ -260,12 +272,17 @@ class Moderation : Extension() {
 
 			action {
 				var actionLogId: String? = null
+				var moderators: String? = null
 				var error = false
 				newSuspendedTransaction {
 					try {
 						actionLogId = DatabaseManager.Config.select {
 							DatabaseManager.Config.guildId eq guild?.id.toString()
 						}.single()[DatabaseManager.Config.modActionLog]
+
+						moderators = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.moderatorsPing]
 					} catch (e: NoSuchElementException) {
 						error = true
 					}
@@ -274,11 +291,17 @@ class Moderation : Extension() {
 				if (!error) {
 					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val userArg = arguments.userArgument
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 					try {
 						if (guild?.getMember(userArg.id)?.isBot == true) {
 							respond {
-								content = "Lol you can't ban me or other bots"
+								content = "You cannot soft-ban bot users!"
+							}
+							return@action
+						} else if (Snowflake(moderators!!) in roles) {
+							respond {
+								content = "You cannot soft-ban moderators!"
 							}
 							return@action
 						}
@@ -355,12 +378,17 @@ class Moderation : Extension() {
 
 			action {
 				var actionLogId: String? = null
+				var moderators: String? = null
 				var error = false
 				newSuspendedTransaction {
 					try {
 						actionLogId = DatabaseManager.Config.select {
 							DatabaseManager.Config.guildId eq guild?.id.toString()
 						}.single()[DatabaseManager.Config.modActionLog]
+
+						moderators = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.moderatorsPing]
 					} catch (e: NoSuchElementException) {
 						error = true
 					}
@@ -369,13 +397,18 @@ class Moderation : Extension() {
 				if (!error) {
 					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val userArg = arguments.userArgument
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 					try {
 						if (guild?.getMember(userArg.id)?.isBot == true) {
 							respond {
-								content = "Lol you can't kick me or other bots"
+								content = "You cannot kick bot users!"
 							}
 							return@action
+						} else if (Snowflake(moderators!!) in roles) {
+							respond {
+								content = "You cannot kick moderators!"
+							}
 						}
 					} catch (exception: Exception) {
 						logger.warn("IsBot and Moderator checks skipped on `Kick` due to error")
@@ -439,12 +472,17 @@ class Moderation : Extension() {
 
 			action {
 				var actionLogId: String? = null
+				var moderators: String? = null
 				var error = false
 				newSuspendedTransaction {
 					try {
 						actionLogId = DatabaseManager.Config.select {
 							DatabaseManager.Config.guildId eq guild?.id.toString()
 						}.single()[DatabaseManager.Config.modActionLog]
+
+						moderators = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.moderatorsPing]
 					} catch (e: NoSuchElementException) {
 						error = true
 					}
@@ -454,11 +492,17 @@ class Moderation : Extension() {
 					val userArg = arguments.userArgument
 					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					var databasePoints: Int? = null
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 					try {
 						if (guild?.getMember(userArg.id)?.isBot == true) {
 							respond {
-								content = "Lol you can't warn me or other bots"
+								content = "You cannot warn bot users!"
+							}
+							return@action
+						} else if (Snowflake(moderators!!) in roles) {
+							respond {
+								content = "You cannot warn moderators!"
 							}
 							return@action
 						}
@@ -570,12 +614,17 @@ class Moderation : Extension() {
 
 			action {
 				var actionLogId: String? = null
+				var moderators: String? = null
 				var error = false
 				newSuspendedTransaction {
 					try {
 						actionLogId = DatabaseManager.Config.select {
 							DatabaseManager.Config.guildId eq guild?.id.toString()
 						}.single()[DatabaseManager.Config.modActionLog]
+
+						moderators = DatabaseManager.Config.select {
+							DatabaseManager.Config.guildId eq guild?.id.toString()
+						}.single()[DatabaseManager.Config.moderatorsPing]
 					} catch (e: NoSuchElementException) {
 						error = true
 					}
@@ -585,11 +634,17 @@ class Moderation : Extension() {
 					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 					val userArg = arguments.userArgument
 					val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 					try {
 						if (guild?.getMember(userArg.id)?.isBot == true) {
 							respond {
 								content = "You cannot timeout a bot!"
+							}
+							return@action
+						} else if (Snowflake(moderators!!) in roles) {
+							respond {
+								content = "You cannot timeout a moderator!"
 							}
 							return@action
 						}
