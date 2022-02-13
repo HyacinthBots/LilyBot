@@ -1,7 +1,7 @@
 [versions]
 kotlin = "1.6.10"  # Note: Plugin versions must be updated in the settings.gradle.kts too
 
-groovy = "4.0.0"
+groovy = "3.0.9"
 kord-extensions = "1.5.2-RC1"
 logging = "2.1.21"
 logback = "1.2.8"
@@ -12,7 +12,7 @@ hikaricp = "5.0.1"
 sqlite-jdbc = "3.36.0.3"
 
 [libraries]
-groovy = { module = "org.apache.groovy:groovy", version.ref = "groovy" }
+groovy = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 kord-extensions = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
 kord-phishing = { module = "com.kotlindiscord.kord.extensions:extra-phishing", version.ref = "kord-extensions" }
 kord-mappings = { module = "com.kotlindiscord.kord.extensions:extra-mappings", version.ref = "kord-extensions"}
