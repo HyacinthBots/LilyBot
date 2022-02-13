@@ -60,9 +60,11 @@ class Moderation : Extension() {
 			name = "clear"
 			description = "Clears messages."
 
+			// Require message managing permissions to run this command
 			check { hasPermission(Permission.ManageMessages) }
 
 			action {
+				// Try to get the action log from the config, if none is set return a NoSuchElementException
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 				if (actionLogId.equals("NoSuchElementException")) {
 					respond {
@@ -77,6 +79,8 @@ class Moderation : Extension() {
 				val messageHolder = arrayListOf<Snowflake>()
 				val textChannel = channel as GuildMessageChannelBehavior
 
+				// Get the specified amount of messages into an
+				// Array List of Snowflakes, and delete them
 				channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100))
 					.filterNotNull()
 					.onEach {
@@ -111,9 +115,11 @@ class Moderation : Extension() {
 			name = "ban"
 			description = "Bans a user."
 
+			// Require the Ban Member permission
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
+				// Try to get the action log and moderators from config. NoSuchElementException if it fails
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
 				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
@@ -126,24 +132,29 @@ class Moderation : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
+				// Get all the members roles into a List of snowflakes
 				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Check if the user is a bot and fail
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
 							content = "You cannot ban bot users!"
 						}
 						return@action
+					// If the moderators role is found in hte roles list, fail
 					} else if (Snowflake(moderators!!) in roles) {
 						respond {
 							content = "You cannot ban moderators!"
 						}
 						return@action
 					}
+				// In the case of any exceptions that crop up
 				} catch (exception: Exception) {
 					logger.warn("IsBot and moderator checks skipped on `Ban` due to error")
 				}
 
+				// DM the user before the ban task is run, to avoid error, null if fails
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been banned from ${guild?.fetchGuild()?.name}",
@@ -151,6 +162,7 @@ class Moderation : Extension() {
 					null
 				)
 
+				// Run the ban task
 				guild?.ban(userArg.id, builder = {
 					this.reason = arguments.reason
 					this.deleteMessagesDays = arguments.messages
@@ -204,9 +216,12 @@ class Moderation : Extension() {
 			name = "unban"
 			description = "Unbans a user"
 
+			// Require Ban Members permission, only this check
+			// to avoid your everyday user from unbanning people
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
+				// Try to get the action log from config, in case of NoSuchElementException, fail
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 				if (actionLogId.equals("NoSuchElementException")) {
 					respond {
@@ -219,6 +234,7 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
+				// Unban the user
 				guild?.unban(userArg.id)
 
 				respond {
@@ -240,12 +256,14 @@ class Moderation : Extension() {
 		 * @author NoComment1105
 		 */
 		ephemeralSlashCommand(::SoftBanArgs) {
-			name = "softban"
-			description = "Softbans a user"
+			name = "soft-ban"
+			description = "Soft-bans a user"
 
+			// Requires Ban Members Permission
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
+				// Try to get the action log and moderators from config. NoSuchElementException if failure
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
 				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
@@ -258,24 +276,29 @@ class Moderation : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
+				// Gather users roles into a List of Snowflakes
 				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Check if the user is a bot and return
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
 							content = "You cannot soft-ban bot users!"
 						}
 						return@action
+					// Check if the moderator role is in the roles list and return
 					} else if (Snowflake(moderators!!) in roles) {
 						respond {
 							content = "You cannot soft-ban moderators!"
 						}
 						return@action
 					}
+				// In case of any extra errors
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks skipped on `Soft-Ban` due to error")
 				}
 
+				// DM the user before the ban task is run
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been soft-banned from ${guild?.fetchGuild()?.name}",
@@ -283,6 +306,7 @@ class Moderation : Extension() {
 					null
 				)
 
+				// Ban the user, mark it as a soft-ban clearly
 				guild?.ban(userArg.id, builder = {
 					this.reason = "${arguments.reason} + **SOFT-BAN**"
 					this.deleteMessagesDays = arguments.messages
@@ -326,6 +350,7 @@ class Moderation : Extension() {
 					timestamp = Clock.System.now()
 				}
 
+				// Unban the user, as you're supposed to in soft-ban
 				guild?.unban(userArg.id)
 			}
 		}
@@ -338,9 +363,11 @@ class Moderation : Extension() {
 			name = "kick"
 			description = "Kicks a user."
 
+			// Require Kick Members permission
 			check { hasPermission(Permission.KickMembers) }
 
 			action {
+				// Try to get the action log and moderators from config. NoSuchElementException if failure
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
 				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
@@ -353,14 +380,17 @@ class Moderation : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
+				// Get the users roles into a List of Snowflake
 				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// If the user is a bot, fail
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
 							content = "You cannot kick bot users!"
 						}
 						return@action
+					// If the moderators role is in the roles list, return
 					} else if (Snowflake(moderators!!) in roles) {
 						respond {
 							content = "You cannot kick moderators!"
@@ -370,6 +400,7 @@ class Moderation : Extension() {
 					logger.warn("IsBot and Moderator checks skipped on `Kick` due to error")
 				}
 
+				// DM the user about if before the kick
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been kicked from ${guild?.fetchGuild()?.name}",
@@ -377,6 +408,7 @@ class Moderation : Extension() {
 					null
 				)
 
+				// Run the kick task
 				guild?.kick(userArg.id, arguments.reason)
 
 				respond {
@@ -421,9 +453,11 @@ class Moderation : Extension() {
 			name = "warn"
 			description = "Warn a member for any infractions."
 
+			// Require the ModerateMembers permission
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
+				// Try to get the action log and moderators from config. NoSuchElementException if failure
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
 				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
@@ -437,43 +471,52 @@ class Moderation : Extension() {
 				val userArg = arguments.userArgument
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				var databasePoints: Int? = null
+				// Get the users roles into a List of Snowflakes
 				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// If the user is a bot, return
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
 							content = "You cannot warn bot users!"
 						}
 						return@action
+					// If the moderators role is in roles. return
 					} else if (Snowflake(moderators!!) in roles) {
 						respond {
 							content = "You cannot warn moderators!"
 						}
 						return@action
 					}
+				// Just to catch any errors in the checks
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
 				}
 
 				newSuspendedTransaction {
+					// Insert the user into the database with 0 points. If they are not already in the database
 					DatabaseManager.Warn.insertIgnore {
 						it[id] = userArg.id.toString()
 						it[points] = 0
 					}
 
+					// Select the users point count and assign it to a variable
 					databasePoints = DatabaseManager.Warn.select {
 						DatabaseManager.Warn.id eq userArg.id.toString()
 					}.single()[DatabaseManager.Warn.points]
 
+					// Update the point of a user with the specified amount
 					DatabaseManager.Warn.update({ DatabaseManager.Warn.id eq userArg.id.toString() }) {
 						it.update(points, points.plus(arguments.warnPoints))
 					}
 
+					// We'll get the user's updated points
 					databasePoints = DatabaseManager.Warn.select {
 						DatabaseManager.Warn.id eq userArg.id.toString()
 					}.single()[DatabaseManager.Warn.points]
 				}
 
+				// Check the points amount, before running sanctions
 				if (databasePoints!! in (50..99)) {
 					guild?.getMember(userArg.id)?.edit {
 						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
@@ -489,6 +532,7 @@ class Moderation : Extension() {
 					})
 				}
 
+				// DM the user about the warning
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been warned in ${guild?.fetchGuild()?.name}",
@@ -552,9 +596,11 @@ class Moderation : Extension() {
 			name = "timeout"
 			description = "Timeout a user"
 
+			// Requires Moderate Members permission
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
+				// Try to get the action log and moderators from config. NoSuchElementException if failure
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
 				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
@@ -568,24 +614,29 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
+				// Get the users roles into a List of Snowflakes
 				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Fail if the user is a bot
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
 							content = "You cannot timeout a bot!"
 						}
 						return@action
+					// If the moderators role is in roles list, fail
 					} else if (Snowflake(moderators!!) in roles) {
 						respond {
 							content = "You cannot timeout a moderator!"
 						}
 						return@action
 					}
+				// To catch any errors in checking
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks failed on `Timeout` due to error")
 				}
 
+				// DM the user about it
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been timed out in ${guild?.fetchGuild()?.name}",
@@ -596,6 +647,7 @@ class Moderation : Extension() {
 					null
 				)
 
+				// Run the timeout task
 				guild?.getMember(userArg.id)?.edit {
 					timeoutUntil = duration
 				}
@@ -652,9 +704,11 @@ class Moderation : Extension() {
 			name = "remove-timeout"
 			description = "Remove timeout on a user"
 
+			// Requires Moderate Members permission
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
+				// Try to get the action log from config. NoSuchElementException if failure
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 				if (actionLogId.equals("NoSuchElementException")) {
 					respond {
@@ -667,6 +721,7 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
+				// Set timeout to null, or no timeout
 				guild?.getMember(userArg.id)?.edit {
 					timeoutUntil = null
 				}

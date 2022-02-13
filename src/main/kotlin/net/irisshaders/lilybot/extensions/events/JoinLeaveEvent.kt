@@ -24,15 +24,20 @@ import kotlin.time.ExperimentalTime
 class JoinLeaveEvent : Extension() {
 	override val name = "joinleaveevent"
 
+	@Suppress("DuplicatedCode")
 	override suspend fun setup() {
 		event<MemberJoinEvent> {
 
 			action {
-				val joinChannelId: String? = DatabaseHelper.selectInConfig(event.guild.id, DatabaseManager.Config.joinChannel)
+				// Try to get the join channel ID from the database
+				val joinChannelId = DatabaseHelper.selectInConfig(event.guild.id, DatabaseManager.Config.joinChannel)
 
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
+				// If the database has nothing in it for join channel, return
+				// This should only happen if no config was set at all, it's not
+				// a nullable field
 				if (joinChannelId.equals("NoSuchElementException")) return@action
 
 				val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId!!)) as GuildMessageChannelBehavior
@@ -61,11 +66,15 @@ class JoinLeaveEvent : Extension() {
 		event<MemberLeaveEvent> {
 
 			action {
+				// Try to get the join channel ID from the database
 				val joinChannelId = DatabaseHelper.selectInConfig(event.guild.id, DatabaseManager.Config.joinChannel)
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
+				// If the database has nothing in it for join channel, return
+				// This should only happen if no config was set at all, it's not
+				// a nullable field
 				if (joinChannelId.equals("NoSuchElementException")) return@action
 
 				val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId!!)) as GuildMessageChannelBehavior

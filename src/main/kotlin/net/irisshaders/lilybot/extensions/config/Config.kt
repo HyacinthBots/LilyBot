@@ -33,6 +33,7 @@ class Config : Extension() {
 			name = "config"
 			description = "Configuration set up commands!"
 
+			// We only want admins doing this, not your average moderator
 			check { hasPermission(Permission.Administrator) }
 
 			ephemeralSubCommand(::Config) {
@@ -40,9 +41,12 @@ class Config : Extension() {
 				description = "Set the config"
 				action {
 					var actionLogId: String? = null
-					val alreadySet: String? =
-						DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.guildId)
+					// Try to select the guild from the database, with either return NoSuchElementException,
+					//  or the guild id
+					val alreadySet = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.guildId)
 
+					// If the database is empty, there is nothing set for this guild, so we move ahead with
+					// adding config else we inform the config is already set
 					if (alreadySet.equals("NoSuchElementException")) {
 						newSuspendedTransaction {
 
@@ -56,6 +60,7 @@ class Config : Extension() {
 								it[joinChannel] = arguments.joinChannel.id.toString()
 							}
 
+							// Once inserted to the database we get the mod action log, so we can print a message to it
 							actionLogId = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.modActionLog)
 						}
 
@@ -77,9 +82,14 @@ class Config : Extension() {
 			ephemeralSubCommand(::Clear) {
 				name = "clear"
 				description = "Clear the config!"
+
+				// We only want admins doing this, not your average moderator
+				check { hasPermission(Permission.Administrator) }
+
 				action {
 					var error = false
 
+					// Try to get the guild ID and action log ID. NoSuchElement means no config set
 					val guildConfig: String? = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.guildId)
 					val actionLogId: String? = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.modActionLog)
 
@@ -87,6 +97,7 @@ class Config : Extension() {
 						respond {
 							content = "**Error:** There is no configuration set for this guild!"
 						}
+						// Return to avoid the database trying to delete things that don't exist
 						return@action
 					}
 
@@ -105,6 +116,8 @@ class Config : Extension() {
 						}
 					}
 
+					// Use error to decide whether to return. More of a sanity check,
+					// the previous one should have caught the NoSuchElementException
 					if (error) return@action
 
 					respond { content = "Cleared config for Guild ID: $guildConfig" }

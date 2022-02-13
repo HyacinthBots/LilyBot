@@ -48,7 +48,7 @@ class Report : Extension() {
 			locking = true // To prevent the command from being run more than once concurrently
 
 			action {
-
+				// Try to get the action log, message log and moderators from config. NoSuchElementException if failure
 				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.messageLogs)
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 				val moderatorRole = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
@@ -72,6 +72,7 @@ class Report : Extension() {
 					content = "Message reported to staff"
 				}
 
+				// Call the create report function with the provided information
 				createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRole, actionLogId)
 			}
 
@@ -83,6 +84,7 @@ class Report : Extension() {
 			locking = true
 
 			action {
+				// Try to get the action log, message log and moderators from config. NoSuchElementException if failure
 				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.messageLogs)
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 				val moderatorRole = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
@@ -99,6 +101,7 @@ class Report : Extension() {
 				}
 
 				val messageLog = guild?.getChannel(Snowflake(messageLogId!!)) as GuildMessageChannelBehavior
+				// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
 				val channel = (guild?.getChannel(Snowflake(arguments.message.split("/")[5])) as MessageChannel)
 				val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
 				val messageAuthor = reportedMessage.getAuthorAsMember()
@@ -107,6 +110,7 @@ class Report : Extension() {
 					content = "Message reported to staff"
 				}
 
+				// Create a report with the provided information
 				createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRole, actionLogId)
 			}
 		}
@@ -194,11 +198,11 @@ class Report : Extension() {
 						description = "Kick the user from the server."
 					}
 					option(
-						label = "Softban the user.",
-						value = "softban-user",
+						label = "Soft-ban the user.",
+						value = "soft-ban-user",
 					)
 					{
-						description = "Softban the user and delete all their messages."
+						description = "Soft-ban the user and delete all their messages."
 					}
 					option(
 						label = "Ban the user.",
@@ -264,7 +268,7 @@ class Report : Extension() {
 								)
 								messageAuthor.kick(reason = "Kicked via report")
 							}
-							"softban-user" -> {
+							"soft-ban-user" -> {
 								ResponseHelper.userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been soft-banned from ${guild?.fetchGuild()?.name}",
@@ -275,7 +279,7 @@ class Report : Extension() {
 									this.reason = "Soft-Banned via report."
 									this.deleteMessagesDays = 1
 								}
-								reportedMessage.getGuild().unban(messageAuthor.id, reason = "Softban")
+								reportedMessage.getGuild().unban(messageAuthor.id, reason = "Soft-ban")
 							}
 							"ban-user" -> {
 								ResponseHelper.userDMEmbed(

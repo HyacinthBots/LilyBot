@@ -45,16 +45,24 @@ class MessageEvents : Extension() {
 		 */
 		event<MessageDeleteEvent> {
 			action {
+				// Try to get the support channel and message logs channel
 				val supportChannel = DatabaseHelper.selectInConfig(event.message!!.getGuild().id, DatabaseManager.Config.supportChanel)
 				val messageLogs = DatabaseHelper.selectInConfig(event.message!!.getGuild().id, DatabaseManager.Config.messageLogs)
 
+				// Despite support channel being nullable, this should only return if
+				// there is no config set for the guild
 				if (supportChannel.equals("NoSuchElementException") || messageLogs.equals("NoSuchElementException")) return@action
 
-				// Ignore messages from Lily herself
+				// This is the check for whether the guild has configured a support channel
 				if (supportChannel != null) {
+					// Check if the channel is not a thread, and that it is in the supprot channel, providing it exists
 					check { failIf(event.message?.channel !is ThreadChannel && event.message?.channel?.id == Snowflake(supportChannel)) }
+				} else {
+					// No support so we check if it's not a thread
+					check { failIf(event.message?.channel !is ThreadChannel) }
 				}
 
+				// Ignore messages from Lily herself
 				if (event.message?.author?.id == kord.selfId) return@action
 
 				val actionLog = event.guild?.getChannel(Snowflake(messageLogs!!)) as GuildMessageChannelBehavior
@@ -94,7 +102,7 @@ class MessageEvents : Extension() {
 		 */
 		event<MessageCreateEvent> {
 			action {
-				val eventMessage = event.message.asMessageOrNull()
+				val eventMessage = event.message.asMessageOrNull() // Get the message
 
 				eventMessage.attachments.forEach { attachment ->
 					val attachmentFileName = attachment.filename
@@ -106,14 +114,18 @@ class MessageEvents : Extension() {
 						val builder = StringBuilder()
 
 						if (attachmentFileExtension != "gz") {
+							// If the file is not a gz log, just decode
 							builder.append(logBytes.decodeToString())
 						} else {
+							// If the file is a gz log, we convert to a byte array,
+							// and unzip
 							val bis = ByteArrayInputStream(logBytes)
 							val gis = GZIPInputStream(bis)
 
 							builder.append(String(gis.readAllBytes()))
 						}
 
+						// Ask the user to remove NEC to ease the debugging on staff
 						val necText = "at Not Enough Crashes"
 						val indexOfnecText = builder.indexOf(necText)
 						if (indexOfnecText != -1) {
@@ -125,6 +137,7 @@ class MessageEvents : Extension() {
 								eventMessage.author
 							)
 						} else {
+							// Ask the user if they're ok with uploading their log to a paste site
 							var confirmationMessage: Message? = null
 
 							confirmationMessage = ResponseHelper.responseEmbedInChannel(
@@ -140,7 +153,9 @@ class MessageEvents : Extension() {
 										style = ButtonStyle.Success
 
 										action {
+											// Make sure only the log uploaded can confirm this
 											if (event.interaction.user.id == eventMessage.author?.id) {
+												// Delete the confirmation and prceed to upload
 												confirmationMessage!!.delete()
 
 												val uploadMessage = eventMessage.channel.createEmbed {
