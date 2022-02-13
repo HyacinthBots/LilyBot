@@ -59,10 +59,10 @@ class Config : Extension() {
 								it[supportChanel] = arguments.supportChannel?.id.toString()
 								it[joinChannel] = arguments.joinChannel.id.toString()
 							}
-
-							// Once inserted to the database we get the mod action log, so we can print a message to it
-							actionLogId = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.modActionLog)
 						}
+
+						// Once inserted to the database we get the mod action log, so we can print a message to it
+						actionLogId = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.modActionLog)
 
 						respond { content = "Config Set for Guild ID: ${arguments.guildId.id}!" }
 

@@ -162,6 +162,8 @@ class Moderation : Extension() {
 					null
 				)
 
+				guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // remove timeout incase they were timedout when banned
+
 				// Run the ban task
 				guild?.ban(userArg.id, builder = {
 					this.reason = arguments.reason
@@ -233,10 +235,15 @@ class Moderation : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
+				val bans = guild!!.bans.toList().map { it.userId }
 
 				// Unban the user
-				guild?.unban(userArg.id)
-
+				if (userArg.id in bans) {
+					guild?.unban(userArg.id)
+				} else {
+					respond { content = "**Error:** User is not banned" }
+					return@action
+				}
 				respond {
 					content = "Unbanned User"
 				}
@@ -305,6 +312,8 @@ class Moderation : Extension() {
 					"**Reason:**\n${arguments.reason}\n\nYou are free to rejoin without the need to be unbanned",
 					null
 				)
+
+				guild?.getMember(userArg.id)?.edit { timeoutUntil = null }
 
 				// Ban the user, mark it as a soft-ban clearly
 				guild?.ban(userArg.id, builder = {
@@ -516,22 +525,6 @@ class Moderation : Extension() {
 					}.single()[DatabaseManager.Warn.points]
 				}
 
-				// Check the points amount, before running sanctions
-				if (databasePoints!! in (50..99)) {
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
-					}
-				} else if (databasePoints!! in (100..149)) {
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
-					}
-				} else if (databasePoints!! >= 150) {
-					guild?.ban(userArg.id, builder = {
-						this.reason = "Banned due to point accumulation"
-						this.deleteMessagesDays = 0
-					})
-				}
-
 				// DM the user about the warning
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
@@ -539,6 +532,68 @@ class Moderation : Extension() {
 					"You were given ${arguments.warnPoints} points\nYour total is now $databasePoints\n\n**Reason:**\n${arguments.reason}",
 					null
 				)
+
+				// Check the points amount, before running sanctions
+				if (databasePoints!! in (75..124)) {
+					ResponseHelper.userDMEmbed(
+						userArg,
+						"You have been timed-out in ${guild!!.fetchGuild().name}",
+						"You have accumulated too many warn points, and have hence been given a 3 hour timeout",
+						DISCORD_BLACK
+					)
+
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+					}
+
+					ResponseHelper.responseEmbedInChannel(
+						actionLog,
+						"Timeout",
+						"${userArg.mention} has been timed-out for 3 hours due to point accumulation\n${userArg.id} (${userArg.tag})",
+						DISCORD_BLACK,
+						user.asUser()
+					)
+				} else if (databasePoints!! in (125..199)) {
+					ResponseHelper.userDMEmbed(
+						userArg,
+						"You have been timed-out in ${guild!!.fetchGuild().name}",
+						"You have accumulated too many warn points, and have hence been given a 12 hour timeout",
+						DISCORD_BLACK
+					)
+
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+					}
+
+					ResponseHelper.responseEmbedInChannel(
+						actionLog,
+						"Timeout",
+						"${userArg.mention} has been timed-out for 12 hours due to point accumulation\n${userArg.id} (${userArg.tag})",
+						DISCORD_BLACK,
+						user.asUser()
+					)
+				} else if (databasePoints!! >= 200) {
+					guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // Remove timeout incase they were timed out when banned
+					ResponseHelper.userDMEmbed(
+						userArg,
+						"You have been banned from ${guild!!.fetchGuild().name}",
+						"You have accumulated too many warn points, and have hence been banned",
+						DISCORD_BLACK
+					)
+
+					guild?.ban(userArg.id, builder = {
+						this.reason = "Banned due to point accumulation"
+						this.deleteMessagesDays = 0
+					})
+
+					ResponseHelper.responseEmbedInChannel(
+						actionLog,
+						"User Banned!",
+						"${userArg.mention} has been banned due to point accumulation\n${userArg.id} (${userArg.tag})",
+						DISCORD_BLACK,
+						user.asUser()
+					)
+				}
 
 				respond {
 					content = "Warned User"

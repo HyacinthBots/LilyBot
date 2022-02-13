@@ -25,9 +25,9 @@ import dev.kord.core.entity.interaction.ButtonInteraction
 import dev.kord.core.event.interaction.InteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
 import org.jetbrains.exposed.sql.insertIgnore
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class RoleMenu : Extension() {
@@ -97,32 +97,41 @@ class RoleMenu : Extension() {
 
 					respond { content = "Role menu created." }
 
-					val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-
-					if (actionLogId.equals("NoSuchElementException")) return@action
-
-					val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-					actionLog.createEmbed {
-						color = DISCORD_BLACK
-						title = "Role menu created."
-						description =
-							"A role menu for the ${arguments.role.mention} role was created in ${targetChannel.mention}"
-
-						field {
-							name = "Embed title:"
-							value = arguments.title
-							inline = false
+					var actionLogId: String? = null
+					var error = false
+					try {
+						newSuspendedTransaction {
+							actionLogId = DatabaseManager.Config.select {
+								DatabaseManager.Config.guildId eq guild!!.id.toString()
+							}.single()[DatabaseManager.Config.modActionLog]
 						}
-						field {
-							name = "Embed description:"
-							value = arguments.description + descriptionAppendix
-							inline = false
+					} catch (e: NoSuchElementException) {
+						error = true
+					}
+					if (!error) {
+						val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+						actionLog.createEmbed {
+							color = DISCORD_BLACK
+							title = "Role menu created."
+							description =
+								"A role menu for the ${arguments.role.mention} role was created in ${targetChannel.mention}"
+
+							field {
+								name = "Embed title:"
+								value = arguments.title
+								inline = false
+							}
+							field {
+								name = "Embed description:"
+								value = arguments.description + descriptionAppendix
+								inline = false
+							}
+							footer {
+								text = "Requested by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
+							}
+							timestamp = Clock.System.now()
 						}
-						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-						timestamp = Clock.System.now()
 					}
 				}
 			}
@@ -136,23 +145,47 @@ class RoleMenu : Extension() {
 				val guild = kord.getGuild(interaction.data.guildId.value!!)!!
 				val member = guild.getMember(interaction.user.id)
 
-				val roleId = DatabaseHelper.selectInComponents(interaction.componentId, DatabaseManager.Components.roleId)
-				val addOrRemove = DatabaseHelper.selectInComponents(interaction.componentId, DatabaseManager.Components.addOrRemove)
+				var roleId: String? = null
+				var addOrRemove: String? = null
+				var error = false
 
+				newSuspendedTransaction {
+					try {
+						roleId = DatabaseManager.Components.select {
+							DatabaseManager.Components.componentId eq interaction.componentId
+						}.single()[DatabaseManager.Components.roleId]
 
-				val role = guild.getRole(Snowflake(roleId!!))
-
-				if (addOrRemove == "add") {
-					if (!member.hasRole(role)) {
-						member.addRole(role.id)
-						interaction.respondEphemeral {content = "Added the ${role.mention} role."}
+						addOrRemove = DatabaseManager.Components.select {
+							DatabaseManager.Components.componentId eq interaction.componentId
+						}.single()[DatabaseManager.Components.addOrRemove]
+					} catch (e: NoSuchElementException) {
+						error = true
 					}
-					else if (member.hasRole(role)) { interaction.respondEphemeral {content = "You already have the ${role.mention} role so it can't be added. If you don't, please contact a staff member."} }
-				} else if (addOrRemove == "remove") {
-					if (!member.hasRole(role)) { interaction.respondEphemeral {content = "You don't have the ${role.mention} role so it can't be removed. If you do, please contact a staff member."} }
-					else if (member.hasRole(role)) {
-						member.removeRole(role.id)
-						interaction.respondEphemeral {content = "Removed the ${role.mention} role."}
+				}
+
+				if (!error) {
+					val role = guild.getRole(Snowflake(roleId!!))
+
+					if (addOrRemove == "add") {
+						if (!member.hasRole(role)) {
+							member.addRole(role.id)
+							interaction.respondEphemeral { content = "Added the ${role.mention} role." }
+						} else if (member.hasRole(role)) {
+							interaction.respondEphemeral {
+								content =
+									"You already have the ${role.mention} role so it can't be added. If you don't, please contact a staff member."
+							}
+						}
+					} else if (addOrRemove == "remove") {
+						if (!member.hasRole(role)) {
+							interaction.respondEphemeral {
+								content =
+									"You don't have the ${role.mention} role so it can't be removed. If you do, please contact a staff member."
+							}
+						} else if (member.hasRole(role)) {
+							member.removeRole(role.id)
+							interaction.respondEphemeral { content = "Removed the ${role.mention} role." }
+						}
 					}
 				}
 			}

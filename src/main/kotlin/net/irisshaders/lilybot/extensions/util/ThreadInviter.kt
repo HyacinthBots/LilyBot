@@ -43,6 +43,7 @@ class ThreadInviter : Extension() {
 			check { failIf(event.message.author?.id == kord.selfId) }
 
 			action {
+				if (event.guildId == null) return@action
 				val supportTeam = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.supportTeam)
 				val supportChannel = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.supportChanel)
 
@@ -145,7 +146,7 @@ class ThreadInviter : Extension() {
 						}
 
 						val message = event.channel.createMessage(
-							content = "Hello there! Cool thread, since you're in the support channel, I'll just grab" +
+							content = "Hello there! Since you're in the support channel, I'll just grab" +
 									" support team for you..."
 						)
 
