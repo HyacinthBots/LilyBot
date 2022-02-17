@@ -114,18 +114,18 @@ class MessageEvents : Extension() {
 						val builder = StringBuilder()
 
 						if (attachmentFileExtension != "gz") {
-							// If the file is not a gz log, just decode
+							// If the file is not a gz log, we just decode it
 							builder.append(logBytes.decodeToString())
 						} else {
-							// If the file is a gz log, we convert to a byte array,
-							// and unzip
+							// If the file is a gz log, we convert it to a byte array,
+							// and unzip it
 							val bis = ByteArrayInputStream(logBytes)
 							val gis = GZIPInputStream(bis)
 
 							builder.append(String(gis.readAllBytes()))
 						}
 
-						// Ask the user to remove NEC to ease the debugging on staff
+						// Ask the user to remove NEC to ease the debugging on the support team
 						val necText = "at Not Enough Crashes"
 						val indexOfnecText = builder.indexOf(necText)
 						if (indexOfnecText != -1) {
@@ -155,7 +155,7 @@ class MessageEvents : Extension() {
 										action {
 											// Make sure only the log uploaded can confirm this
 											if (event.interaction.user.id == eventMessage.author?.id) {
-												// Delete the confirmation and prceed to upload
+												// Delete the confirmation and proceed to upload
 												confirmationMessage!!.delete()
 
 												val uploadMessage = eventMessage.channel.createEmbed {
