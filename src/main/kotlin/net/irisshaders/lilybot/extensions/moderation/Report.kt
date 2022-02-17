@@ -51,12 +51,12 @@ class Report : Extension() {
 				// Try to get the action log, message log and moderators from config. NoSuchElementException if failure
 				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.messageLogs)
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				val moderatorRole = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
 
 				if (
 					messageLogId.equals("NoSuchElementException") ||
 					actionLogId.equals("NoSuchElementException") ||
-					moderatorRole.equals("NoSuchElementException")
+					moderatorRoleId.equals("NoSuchElementException")
 				) {
 					respond {
 						content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
@@ -73,7 +73,7 @@ class Report : Extension() {
 				}
 
 				// Call the create report function with the provided information
-				createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRole, actionLogId)
+				createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRoleId, actionLogId)
 			}
 
 		}
@@ -267,6 +267,7 @@ class Report : Extension() {
 									null
 								)
 								messageAuthor.kick(reason = "Kicked via report")
+								quickLogEmbed("Kicked a User", actionlog, messageAuthor.asUser())
 							}
 							"soft-ban-user" -> {
 								ResponseHelper.userDMEmbed(
@@ -280,6 +281,7 @@ class Report : Extension() {
 									this.deleteMessagesDays = 1
 								}
 								reportedMessage.getGuild().unban(messageAuthor.id, reason = "Soft-ban")
+								quickLogEmbed("Soft-Banned a User", actionlog, messageAuthor.asUser())
 							}
 							"ban-user" -> {
 								ResponseHelper.userDMEmbed(
@@ -292,6 +294,7 @@ class Report : Extension() {
 									this.reason = "Banned via report"
 									this.deleteMessagesDays = 1
 								}
+								quickLogEmbed("Banned a user!", actionlog, messageAuthor.asUser())
 							}
 						}
 					}
@@ -317,6 +320,23 @@ class Report : Extension() {
 			field {
 				name = "Reason"
 				value = "Timed-out via report"
+				inline = false
+			}
+		}
+	}
+
+	private suspend fun quickLogEmbed(moderationAction: String, actionLog: GuildMessageChannelBehavior, user: User): Message {
+		return actionLog.createEmbed {
+			title = moderationAction
+
+			field {
+				name = "User"
+				value = "${user.tag}\n${user.id}"
+				inline = false
+			}
+			field {
+				name = "Reason"
+				value = "Via report"
 				inline = false
 			}
 		}

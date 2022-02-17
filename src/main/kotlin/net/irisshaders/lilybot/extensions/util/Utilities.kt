@@ -27,6 +27,9 @@ import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.ResponseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
+import org.jetbrains.exposed.sql.insertIgnore
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.update
 import kotlin.time.ExperimentalTime
 
 @Suppress("DuplicatedCode")
@@ -138,6 +141,17 @@ class Utilities : Extension() {
 				this@ephemeralSlashCommand.kord.editPresence {
 					status = PresenceStatus.Online
 					playing(arguments.presenceArgument)
+				}
+
+				newSuspendedTransaction {
+					DatabaseManager.Utilities.insertIgnore {
+						it[status] = "status"
+						it[statusMessage] = arguments.presenceArgument
+					}
+
+					DatabaseManager.Utilities.update( { DatabaseManager.Utilities.status eq "status" } ) {
+						it[statusMessage] = arguments.presenceArgument
+					}
 				}
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }

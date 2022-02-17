@@ -69,7 +69,7 @@ class Moderation : Extension() {
 				if (actionLogId.equals("NoSuchElementException")) {
 					respond {
 						content =
-							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
 					}
 					return@action
 				}
@@ -125,7 +125,7 @@ class Moderation : Extension() {
 				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
 					respond {
 						content =
-							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
 					}
 					return@action
 				}
@@ -142,7 +142,7 @@ class Moderation : Extension() {
 							content = "You cannot ban bot users!"
 						}
 						return@action
-					// If the moderators role is found in hte roles list, fail
+					// If the moderators role is found in the roles list, fail
 					} else if (Snowflake(moderators!!) in roles) {
 						respond {
 							content = "You cannot ban moderators!"
@@ -228,7 +228,7 @@ class Moderation : Extension() {
 				if (actionLogId.equals("NoSuchElementException")) {
 					respond {
 						content =
-							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
 					}
 					return@action
 				}
@@ -245,7 +245,7 @@ class Moderation : Extension() {
 					return@action
 				}
 				respond {
-					content = "Unbanned User"
+					content = "Unbanned user"
 				}
 
 				ResponseHelper.responseEmbedInChannel(
@@ -276,7 +276,7 @@ class Moderation : Extension() {
 				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
 					respond {
 						content =
-							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
 					}
 					return@action
 				}
@@ -382,7 +382,7 @@ class Moderation : Extension() {
 				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
 					respond {
 						content =
-							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
 					}
 					return@action
 				}
@@ -409,7 +409,7 @@ class Moderation : Extension() {
 					logger.warn("IsBot and Moderator checks skipped on `Kick` due to error")
 				}
 
-				// DM the user about if before the kick
+				// DM the user about it before the kick
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been kicked from ${guild?.fetchGuild()?.name}",
@@ -472,7 +472,7 @@ class Moderation : Extension() {
 				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
 					respond {
 						content =
-							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
 					}
 					return@action
 				}
@@ -490,7 +490,7 @@ class Moderation : Extension() {
 							content = "You cannot warn bot users!"
 						}
 						return@action
-					// If the moderators role is in roles. return
+					// If the moderators role is in roles, return
 					} else if (Snowflake(moderators!!) in roles) {
 						respond {
 							content = "You cannot warn moderators!"
@@ -661,7 +661,7 @@ class Moderation : Extension() {
 				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
 					respond {
 						content =
-							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
 					}
 					return@action
 				}
@@ -768,7 +768,7 @@ class Moderation : Extension() {
 				if (actionLogId.equals("NoSuchElementException")) {
 					respond {
 						content =
-							"**Error:** Unable to access config for this guild! Please inform a member of staff!"
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
 					}
 					return@action
 				}

@@ -28,8 +28,10 @@ import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.SENTRY_DSN
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import java.nio.file.Files
@@ -96,8 +98,24 @@ suspend fun main() {
 		}
 
 		presence {
-			status = PresenceStatus.Online
-			playing(config.get("activity") as String)
+			var setStatus: String? = null
+			transaction {
+				setStatus = try {
+					DatabaseManager.Utilities.select {
+						DatabaseManager.Utilities.status eq "status"
+					}.single()[DatabaseManager.Utilities.statusMessage]
+				} catch (e: NoSuchElementException) {
+					"NoSuchElementException"
+				}
+			}
+
+			if (setStatus.equals("NoSuchElementException")) {
+				status = PresenceStatus.Online
+				playing("Iris")
+			} else {
+				status = PresenceStatus.Online
+				playing(setStatus!!)
+			}
 		}
 
 		try {

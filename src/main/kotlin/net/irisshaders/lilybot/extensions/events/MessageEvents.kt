@@ -45,25 +45,14 @@ class MessageEvents : Extension() {
 		 */
 		event<MessageDeleteEvent> {
 			action {
-				// Try to get the support channel and message logs channel
-				val supportChannel = DatabaseHelper.selectInConfig(event.message!!.getGuild().id, DatabaseManager.Config.supportChanel)
+				// Try to get the  message logs channel
 				val messageLogs = DatabaseHelper.selectInConfig(event.message!!.getGuild().id, DatabaseManager.Config.messageLogs)
 
-				// Despite support channel being nullable, this should only return if
-				// there is no config set for the guild
-				if (supportChannel.equals("NoSuchElementException") || messageLogs.equals("NoSuchElementException")) return@action
+				if (messageLogs.equals("NoSuchElementException")) return@action
 
-				// This is the check for whether the guild has configured a support channel
-				if (supportChannel != null) {
-					// Check if the channel is not a thread, and that it is in the supprot channel, providing it exists
-					check { failIf(event.message?.channel !is ThreadChannel && event.message?.channel?.id == Snowflake(supportChannel)) }
-				} else {
-					// No support so we check if it's not a thread
-					check { failIf(event.message?.channel !is ThreadChannel) }
+				check { failIf(event.message?.channel !is ThreadChannel ||
+						event.message?.author?.isBot == true)
 				}
-
-				// Ignore messages from Lily herself
-				if (event.message?.author?.id == kord.selfId) return@action
 
 				val actionLog = event.guild?.getChannel(Snowflake(messageLogs!!)) as GuildMessageChannelBehavior
 				val messageContent = event.message?.asMessageOrNull()?.content.toString()
@@ -153,7 +142,7 @@ class MessageEvents : Extension() {
 										style = ButtonStyle.Success
 
 										action {
-											// Make sure only the log uploaded can confirm this
+											// Make sure only the log uploader can confirm this
 											if (event.interaction.user.id == eventMessage.author?.id) {
 												// Delete the confirmation and proceed to upload
 												confirmationMessage!!.delete()

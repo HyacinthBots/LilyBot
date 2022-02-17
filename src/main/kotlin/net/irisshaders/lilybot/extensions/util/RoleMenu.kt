@@ -28,7 +28,7 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.DatabaseManager
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.transactions.transaction
 
 class RoleMenu : Extension() {
     override val name = "rolemenu"
@@ -65,7 +65,7 @@ class RoleMenu : Extension() {
 							style = ButtonStyle.Success
 							id = arguments.role.name + "add"
 
-							newSuspendedTransaction {
+							transaction {
 								DatabaseManager.Components.insertIgnore {
 									it[componentId] = arguments.role.name + "add"
 									it[roleId] = arguments.role.id.toString()
@@ -81,7 +81,7 @@ class RoleMenu : Extension() {
 							style = ButtonStyle.Danger
 							id = arguments.role.name + "remove"
 
-							newSuspendedTransaction {
+							transaction {
 								DatabaseManager.Components.insertIgnore {
 									it[componentId] = arguments.role.name + "remove"
 									it[roleId] = arguments.role.id.toString()
@@ -100,7 +100,7 @@ class RoleMenu : Extension() {
 					var actionLogId: String? = null
 					var error = false
 					try {
-						newSuspendedTransaction {
+						transaction {
 							actionLogId = DatabaseManager.Config.select {
 								DatabaseManager.Config.guildId eq guild!!.id.toString()
 							}.single()[DatabaseManager.Config.modActionLog]
@@ -149,7 +149,7 @@ class RoleMenu : Extension() {
 				var addOrRemove: String? = null
 				var error = false
 
-				newSuspendedTransaction {
+				transaction {
 					try {
 						roleId = DatabaseManager.Components.select {
 							DatabaseManager.Components.componentId eq interaction.componentId
