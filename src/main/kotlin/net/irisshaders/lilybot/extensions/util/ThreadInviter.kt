@@ -45,7 +45,7 @@ class ThreadInviter : Extension() {
 			action {
 				if (event.guildId == null) return@action
 				val supportTeam = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.supportTeam)
-				val supportChannel = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.supportChanel)
+				val supportChannel = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.supportChannel)
 
 				if (supportTeam.equals("NoSuchElemementException") || supportChannel.equals("NoSuchElementException")) {
 					return@action
@@ -120,7 +120,7 @@ class ThreadInviter : Extension() {
 				var supportError = false
 				var moderatorRoleError = false
 
-				val supportChannel = DatabaseHelper.selectInConfig(event.channel.guild.id, DatabaseManager.Config.supportChanel)
+				val supportChannel = DatabaseHelper.selectInConfig(event.channel.guild.id, DatabaseManager.Config.supportChannel)
 				val supportTeamId = DatabaseHelper.selectInConfig(event.channel.guild.id, DatabaseManager.Config.supportTeam)
 				val moderatorRole = DatabaseHelper.selectInConfig(event.channel.guild.id, DatabaseManager.Config.moderatorsPing)
 

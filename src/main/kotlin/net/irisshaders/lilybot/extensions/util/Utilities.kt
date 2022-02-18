@@ -129,6 +129,12 @@ class Utilities : Extension() {
 			check { hasPermission(Permission.ModerateMembers) } // Wasn't sure here
 
 			action {
+				// Lock this command to the two administrators of the Iris Project, to avoid poeple constantly trying to change it
+				if (user.id.value.toLong() != 462348944173957120 || user.id.value.toLong() != 366702774403989504) {
+					respond { content = "You do not have permission to do this!" }
+					return@action
+				}
+
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 
 				if (actionLogId.equals("NoSuchElementException")) {

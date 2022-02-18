@@ -56,7 +56,7 @@ class Config : Extension() {
 								it[supportTeam] = arguments.supportTeam?.id.toString()
 								it[modActionLog] = arguments.modActionLog.id.toString()
 								it[messageLogs] = arguments.messageLogs.id.toString()
-								it[supportChanel] = arguments.supportChannel?.id.toString()
+								it[supportChannel] = arguments.supportChannel?.id.toString()
 								it[joinChannel] = arguments.joinChannel.id.toString()
 							}
 						}

@@ -47,7 +47,7 @@ object DatabaseManager {
 		val modActionLog = text("modActionLog")
 		val messageLogs = text("messageLogs")
 		val joinChannel = text("joinChannel")
-		val supportChanel = text("supportChannel").nullable()
+		val supportChannel = text("supportChannel").nullable()
 		val supportTeam = text("supportTeam").nullable()
 
 		override val primaryKey = PrimaryKey(guildId)
