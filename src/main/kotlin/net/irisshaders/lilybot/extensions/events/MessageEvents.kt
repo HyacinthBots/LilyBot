@@ -54,6 +54,8 @@ class MessageEvents : Extension() {
 						event.message?.author?.isBot == true)
 				}
 
+				if (event.message?.author?.id == kord.selfId) return@action
+
 				val actionLog = event.guild?.getChannel(Snowflake(messageLogs!!)) as GuildMessageChannelBehavior
 				val messageContent = event.message?.asMessageOrNull()?.content.toString()
 				val eventMessage = event.message
