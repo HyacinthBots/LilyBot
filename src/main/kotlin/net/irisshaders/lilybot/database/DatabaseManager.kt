@@ -70,7 +70,7 @@ object DatabaseManager {
 
 	fun startDatabase() {
 		try {
-			val database = Path.of("database.db")
+			val database = Path.of("/data/database.db")
 
 			if (Files.notExists(database)) {
 				Files.createFile(database)
