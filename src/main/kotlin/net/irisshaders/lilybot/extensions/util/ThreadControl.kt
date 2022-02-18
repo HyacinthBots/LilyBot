@@ -15,10 +15,13 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.edit
+import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
-import net.irisshaders.lilybot.utils.MODERATORS
+import net.irisshaders.lilybot.database.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseManager
 import kotlin.time.ExperimentalTime
 
 class ThreadControl : Extension() {
@@ -34,9 +37,8 @@ class ThreadControl : Extension() {
 				name = "rename"
 				description = "Rename a thread!"
 
+				@Suppress("DuplicatedCode")
 				action {
-
-					@Suppress("DuplicatedCode")
 					if (channel.asChannel() !is ThreadChannel) {
 						edit {
 							content = "This isn't a thread :person_facepalming:"
@@ -48,7 +50,16 @@ class ThreadControl : Extension() {
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					if (MODERATORS in roles) {
+					val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+					if (moderators.equals("NoSuchElementException")) {
+						respond {
+							content =
+								"**Error:** Unable to access config for this guild! Please inform a member of staff!"
+						}
+						return@action
+					}
+
+					if (Snowflake(moderators!!) in roles) {
 						channel.edit {
 							name = arguments.newThreadName
 
@@ -81,9 +92,8 @@ class ThreadControl : Extension() {
 				name = "archive"
 				description = "Archive this thread"
 
+				@Suppress("DuplicatedCode")
 				action {
-
-					@Suppress("DuplicatedCode")
 					if (channel.asChannel() !is ThreadChannel) {
 						edit {
 							content = "This isn't a thread :person_facepalming:"
@@ -95,7 +105,16 @@ class ThreadControl : Extension() {
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					if (MODERATORS in roles) {
+					val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+					if (moderators.equals("NoSuchElementException")) {
+						respond {
+							content =
+								"**Error:** Unable to access config for this guild! Please inform a member of staff!"
+						}
+						return@action
+					}
+
+					if (Snowflake(moderators!!) in roles) {
 						channel.edit {
 							this.archived = true
 							this.locked = arguments.lock

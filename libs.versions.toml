@@ -5,6 +5,11 @@ groovy = "3.0.9"
 kord-extensions = "1.5.2-RC1"
 logging = "2.1.21"
 logback = "1.2.8"
+toml-reader = "1.2"
+github-api = "1.301"
+exposed = "0.37.3"
+hikaricp = "5.0.1"
+sqlite-jdbc = "3.36.0.3"
 
 [libraries]
 groovy = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
@@ -14,3 +19,10 @@ kord-mappings = { module = "com.kotlindiscord.kord.extensions:extra-mappings", v
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logging = { module = "io.github.microutils:kotlin-logging", version.ref = "logging" }
+toml = { module = "com.github.jezza:toml", version.ref = "toml-reader"}
+github-api = { module = "org.kohsuke:github-api", version.ref = "github-api"}
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp"}
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc"}

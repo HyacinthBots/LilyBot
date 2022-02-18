@@ -1,17 +1,17 @@
 @file:OptIn(ExperimentalTime::class)
 @file:Suppress("PrivatePropertyName", "BlockingMethodInNonBlockingContext")
 
-package net.irisshaders.lilybot.events
+package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
@@ -26,14 +26,11 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.util.cio.*
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.MESSAGE_LOGS
+import net.irisshaders.lilybot.database.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.utils.ResponseHelper
-import net.irisshaders.lilybot.utils.SUPPORT_CHANNEL
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
-import kotlin.collections.forEach
-import kotlin.collections.set
-import kotlin.collections.setOf
 import kotlin.time.ExperimentalTime
 
 class MessageEvents : Extension() {
@@ -43,16 +40,21 @@ class MessageEvents : Extension() {
 
 	override suspend fun setup() {
 		/**
-		 * Log the deletion of messages to the guilds [MESSAGE_LOGS] channel
+		 * Log the deletion of messages to the guilds [DatabaseManager.Config.messageLogs] channel
 		 * @author NoComment1105
 		 */
 		event<MessageDeleteEvent> {
 			action {
-				// Ignore messages from Lily itself
-				if (event.message?.author?.id == kord.selfId) return@action
-				if (event.message?.channel !is ThreadChannel && event.message?.channel?.id == SUPPORT_CHANNEL) return@action
+				// Try to get the  message logs channel
+				val messageLogs = DatabaseHelper.selectInConfig(event.message!!.getGuild().id, DatabaseManager.Config.messageLogs)
 
-				val actionLog = event.guild?.getChannel(MESSAGE_LOGS) as GuildMessageChannelBehavior
+				if (messageLogs.equals("NoSuchElementException")) return@action
+
+				check { failIf(event.message?.channel !is ThreadChannel ||
+						event.message?.author?.isBot == true)
+				}
+
+				val actionLog = event.guild?.getChannel(Snowflake(messageLogs!!)) as GuildMessageChannelBehavior
 				val messageContent = event.message?.asMessageOrNull()?.content.toString()
 				val eventMessage = event.message
 				val messageLocation = event.channel.id.value
@@ -65,10 +67,7 @@ class MessageEvents : Extension() {
 
 					field {
 						name = "Message Contents:"
-						value =
-							messageContent.ifEmpty {
-								"Failed to get content of message\nMessage was likely from a Bot"
-							}
+						value = messageContent.ifEmpty { "Failed to get content of message" }
 						inline = false
 					}
 					field {
@@ -82,12 +81,6 @@ class MessageEvents : Extension() {
 						inline = true
 					}
 				}
-
-				sentry.breadcrumb(BreadcrumbType.Info) {
-					category = "events.messageevents.MessageDeleted"
-					message = "A message was deleted"
-					data["content"] = messageContent.ifEmpty { "Failed to get content of message" }
-				}
 			}
 		}
 
@@ -98,7 +91,7 @@ class MessageEvents : Extension() {
 		 */
 		event<MessageCreateEvent> {
 			action {
-				val eventMessage = event.message.asMessageOrNull()
+				val eventMessage = event.message.asMessageOrNull() // Get the message
 
 				eventMessage.attachments.forEach { attachment ->
 					val attachmentFileName = attachment.filename
@@ -110,16 +103,20 @@ class MessageEvents : Extension() {
 						val builder = StringBuilder()
 
 						if (attachmentFileExtension != "gz") {
+							// If the file is not a gz log, we just decode it
 							builder.append(logBytes.decodeToString())
 						} else {
+							// If the file is a gz log, we convert it to a byte array,
+							// and unzip it
 							val bis = ByteArrayInputStream(logBytes)
 							val gis = GZIPInputStream(bis)
 
 							builder.append(String(gis.readAllBytes()))
 						}
 
-						val necText = "at Not Enough Crashes";
-						val indexOfnecText = builder.indexOf(necText);
+						// Ask the user to remove NEC to ease the debugging on the support team
+						val necText = "at Not Enough Crashes"
+						val indexOfnecText = builder.indexOf(necText)
 						if (indexOfnecText != -1) {
 							ResponseHelper.responseEmbedInChannel(
 								eventMessage.channel,
@@ -129,6 +126,7 @@ class MessageEvents : Extension() {
 								eventMessage.author
 							)
 						} else {
+							// Ask the user if they're ok with uploading their log to a paste site
 							var confirmationMessage: Message? = null
 
 							confirmationMessage = ResponseHelper.responseEmbedInChannel(
@@ -144,11 +142,9 @@ class MessageEvents : Extension() {
 										style = ButtonStyle.Success
 
 										action {
-											sentry.breadcrumb(BreadcrumbType.Info) {
-												category = "events.messageevents.loguploading.uploadAccept"
-												message = "Upload accpeted"
-											}
+											// Make sure only the log uploader can confirm this
 											if (event.interaction.user.id == eventMessage.author?.id) {
+												// Delete the confirmation and proceed to upload
 												confirmationMessage!!.delete()
 
 												val uploadMessage = eventMessage.channel.createEmbed {
@@ -184,10 +180,9 @@ class MessageEvents : Extension() {
 														}
 													}
 												} catch (e: Exception) {
-													sentry.breadcrumb(BreadcrumbType.Error) {
-														category = "events.messageevnets.loguploading.UploadTask"
-														message = "Failed to upload a file to hastebin"
-													}
+													// Just swallow this exception
+													// If something has gone wrong here, something is wrong
+													// somewhere else, so it's probably fine
 												}
 											} else {
 												respond { content = "Only the uploader can use this menu." }
@@ -202,10 +197,6 @@ class MessageEvents : Extension() {
 										action {
 											if (event.interaction.user.id == eventMessage.author?.id) {
 												confirmationMessage!!.delete()
-												sentry.breadcrumb(BreadcrumbType.Info) {
-													category = "events.messagevents.loguploading.uploadDeny"
-													message = "Upload of log denied"
-												}
 											} else {
 												respond { content = "Only the uploader can use this menu." }
 											}

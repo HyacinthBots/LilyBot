@@ -3,58 +3,45 @@
 package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
-import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
-import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
-import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
-import com.kotlindiscord.kord.extensions.components.components
-import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.hasRole
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
-import dev.kord.common.entity.ButtonStyle
-import dev.kord.common.entity.PresenceStatus
+import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import mu.KotlinLogging
+import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.utils.ADMIN
-import net.irisshaders.lilybot.utils.FULLMODERATORS
-import net.irisshaders.lilybot.utils.MODERATORS
-import net.irisshaders.lilybot.utils.MOD_ACTION_LOG
 import net.irisshaders.lilybot.utils.ResponseHelper
-import net.irisshaders.lilybot.utils.TRIALMODERATORS
-import org.jetbrains.exposed.sql.SqlExpressionBuilder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
-import kotlin.system.exitProcess
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -73,15 +60,29 @@ class Moderation : Extension() {
 			name = "clear"
 			description = "Clears messages."
 
-			allowRole(FULLMODERATORS)
+			// Require message managing permissions to run this command
+			check { hasPermission(Permission.ManageMessages) }
 
 			action {
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+				// Try to get the action log from the config, if none is set return a NoSuchElementException
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				if (actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
+					return@action
+				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val messageAmount = arguments.messages
 				val messageHolder = arrayListOf<Snowflake>()
 				val textChannel = channel as GuildMessageChannelBehavior
 
-				channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100)).filterNotNull()
+				// Get the specified amount of messages into an
+				// Array List of Snowflakes, and delete them
+				channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100))
+					.filterNotNull()
 					.onEach {
 						messageHolder.add(it.fetchMessage().id)
 					}.catch {
@@ -92,7 +93,7 @@ class Moderation : Extension() {
 				textChannel.bulkDelete(messageHolder)
 
 				respond {
-					content = "Messages Cleared"
+					content = "Messages cleared"
 				}
 
 				ResponseHelper.responseEmbedInChannel(
@@ -114,28 +115,46 @@ class Moderation : Extension() {
 			name = "ban"
 			description = "Bans a user."
 
-			allowRole(FULLMODERATORS)
+			// Require the Ban Member permission
+			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+				// Try to get the action log and moderators from config. NoSuchElementException if it fails
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
+					return@action
+				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
+				// Get all the members roles into a List of snowflakes
+				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Check if the user is a bot and fail
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
-							content = "Lol you can't ban me or other bots"
+							content = "You cannot ban bot users!"
 						}
 						return@action
-					} else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true) {
+					// If the moderators role is found in the roles list, fail
+					} else if (Snowflake(moderators!!) in roles) {
 						respond {
-							content = "Bruh don't try to ban a moderator"
+							content = "You cannot ban moderators!"
 						}
 						return@action
 					}
+				// In the case of any exceptions that crop up
 				} catch (exception: Exception) {
 					logger.warn("IsBot and moderator checks skipped on `Ban` due to error")
 				}
 
+				// DM the user before the ban task is run, to avoid error, null if fails
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been banned from ${guild?.fetchGuild()?.name}",
@@ -143,6 +162,9 @@ class Moderation : Extension() {
 					null
 				)
 
+				guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // remove timeout incase they were timedout when banned
+
+				// Run the ban task
 				guild?.ban(userArg.id, builder = {
 					this.reason = arguments.reason
 					this.deleteMessagesDays = arguments.messages
@@ -196,16 +218,34 @@ class Moderation : Extension() {
 			name = "unban"
 			description = "Unbans a user"
 
-			allowRole(FULLMODERATORS)
+			// Require Ban Members permission, only this check
+			// to avoid your everyday user from unbanning people
+			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+				// Try to get the action log from config, in case of NoSuchElementException, fail
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				if (actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
+					return@action
+				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
+				val bans = guild!!.bans.toList().map { it.userId }
 
-				guild?.unban(userArg.id)
-
+				// Unban the user
+				if (userArg.id in bans) {
+					guild?.unban(userArg.id)
+				} else {
+					respond { content = "**Error:** User is not banned" }
+					return@action
+				}
 				respond {
-					content = "Unbanned User"
+					content = "Unbanned user"
 				}
 
 				ResponseHelper.responseEmbedInChannel(
@@ -215,7 +255,6 @@ class Moderation : Extension() {
 					DISCORD_GREEN,
 					user.asUser()
 				)
-
 			}
 		}
 
@@ -224,31 +263,49 @@ class Moderation : Extension() {
 		 * @author NoComment1105
 		 */
 		ephemeralSlashCommand(::SoftBanArgs) {
-			name = "softban"
-			description = "Softbans a user"
+			name = "soft-ban"
+			description = "Soft-bans a user"
 
-			allowRole(FULLMODERATORS)
+			// Requires Ban Members Permission
+			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+				// Try to get the action log and moderators from config. NoSuchElementException if failure
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
+					return@action
+				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
+				// Gather users roles into a List of Snowflakes
+				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Check if the user is a bot and return
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
-							content = "Lol you can't ban me or other bots"
+							content = "You cannot soft-ban bot users!"
 						}
 						return@action
-					} else if (guild?.getRole(MODERATORS)?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true) {
+					// Check if the moderator role is in the roles list and return
+					} else if (Snowflake(moderators!!) in roles) {
 						respond {
-							content = "Bruh don't try to ban a moderator"
+							content = "You cannot soft-ban moderators!"
 						}
 						return@action
 					}
+				// In case of any extra errors
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks skipped on `Soft-Ban` due to error")
 				}
 
+				// DM the user before the ban task is run
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been soft-banned from ${guild?.fetchGuild()?.name}",
@@ -256,6 +313,9 @@ class Moderation : Extension() {
 					null
 				)
 
+				guild?.getMember(userArg.id)?.edit { timeoutUntil = null }
+
+				// Ban the user, mark it as a soft-ban clearly
 				guild?.ban(userArg.id, builder = {
 					this.reason = "${arguments.reason} + **SOFT-BAN**"
 					this.deleteMessagesDays = arguments.messages
@@ -299,6 +359,7 @@ class Moderation : Extension() {
 					timestamp = Clock.System.now()
 				}
 
+				// Unban the user, as you're supposed to in soft-ban
 				guild?.unban(userArg.id)
 			}
 		}
@@ -311,30 +372,44 @@ class Moderation : Extension() {
 			name = "kick"
 			description = "Kicks a user."
 
-			allowRole(FULLMODERATORS)
+			// Require Kick Members permission
+			check { hasPermission(Permission.KickMembers) }
 
 			action {
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+				// Try to get the action log and moderators from config. NoSuchElementException if failure
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
+					return@action
+				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
+				// Get the users roles into a List of Snowflake
+				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// If the user is a bot, fail
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
-							content = "Lol you can't kick me or other bots"
+							content = "You cannot kick bot users!"
 						}
 						return@action
-					} else if (guild?.getRole(MODERATORS)
-							?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
-					) {
+					// If the moderators role is in the roles list, return
+					} else if (Snowflake(moderators!!) in roles) {
 						respond {
-							content = "Bruh don't try to kick a moderator"
+							content = "You cannot kick moderators!"
 						}
-						return@action
 					}
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks skipped on `Kick` due to error")
 				}
 
+				// DM the user about it before the kick
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been kicked from ${guild?.fetchGuild()?.name}",
@@ -342,6 +417,7 @@ class Moderation : Extension() {
 					null
 				)
 
+				// Run the kick task
 				guild?.kick(userArg.id, arguments.reason)
 
 				respond {
@@ -377,123 +453,6 @@ class Moderation : Extension() {
 		}
 
 		/**
-		 * Say Command
-		 * @author NoComment1105
-		 */
-		ephemeralSlashCommand(::SayArgs) {
-			name = "say"
-			description = "Say something through Lily."
-
-			allowRole(FULLMODERATORS)
-
-			action {
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
-
-				if (arguments.embedMessage) {
-					channel.createEmbed {
-						color = DISCORD_BLURPLE
-						description = arguments.messageArgument
-						timestamp = Clock.System.now()
-					}
-				} else {
-					channel.createMessage {
-						content = arguments.messageArgument
-					}
-				}
-
-				respond { content = "Command used" }
-
-				ResponseHelper.responseEmbedInChannel(
-					actionLog,
-					"Message Sent",
-					"/say has been used to say ${arguments.messageArgument}.",
-					DISCORD_BLACK,
-					user.asUser()
-				)
-			}
-		}
-
-		/**
-		 * Presence Command
-		 * @author IMS
-		 */
-		ephemeralSlashCommand(::PresenceArgs) {
-			name = "set-status"
-			description = "Set Lily's current presence/status."
-
-			allowRole(FULLMODERATORS)
-
-			action {
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
-
-				this@ephemeralSlashCommand.kord.editPresence {
-					status = PresenceStatus.Online
-					playing(arguments.presenceArgument)
-				}
-
-				respond { content = "Presence set to `${arguments.presenceArgument}`" }
-
-				ResponseHelper.responseEmbedInChannel(
-					actionLog,
-					"Presence Changed",
-					"Lily's presence has been set to `${arguments.presenceArgument}`",
-					DISCORD_BLACK,
-					user.asUser()
-				)
-			}
-		}
-
-		/**
-		 * Shutdown command
-		 * @author IMS212
-		 */
-		ephemeralSlashCommand {
-			name = "shutdown"
-			description = "Shuts down the bot."
-
-			allowRole(ADMIN)
-
-			action {
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
-
-				respond {
-					embed {
-						title = "Shutdown"
-						description = "Are you sure you would like to shut down?"
-					}
-					components {
-						ephemeralButton {
-							label = "Yes"
-							style = ButtonStyle.Success
-
-							action {
-								respond { content = "Shutting down..." }
-								ResponseHelper.responseEmbedInChannel(
-									actionLog,
-									"Shutting Down!",
-									null,
-									DISCORD_RED,
-									user.asUser()
-								)
-								kord.shutdown()
-								exitProcess(0)
-							}
-						}
-
-						ephemeralButton {
-							label = "No"
-							style = ButtonStyle.Danger
-
-							action {
-								respond { content = "Shutdown aborted." }
-							}
-						}
-					}
-				}
-			}
-		}
-
-		/**
 		 * Warn Command
 		 * @author chalkyjeans
 		 * @author Miss-Corruption
@@ -503,72 +462,138 @@ class Moderation : Extension() {
 			name = "warn"
 			description = "Warn a member for any infractions."
 
-			allowRole(FULLMODERATORS)
-			allowRole(TRIALMODERATORS)
+			// Require the ModerateMembers permission
+			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
+				// Try to get the action log and moderators from config. NoSuchElementException if failure
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
+					return@action
+				}
+
 				val userArg = arguments.userArgument
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				var databasePoints: Int? = null
+				// Get the users roles into a List of Snowflakes
+				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// If the user is a bot, return
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
-							content = "Lol you can't warn me or other bots"
+							content = "You cannot warn bot users!"
 						}
 						return@action
-					} else if (guild?.getRole(MODERATORS)
-							?.let { guild?.getMember(arguments.userArgument.id)?.hasRole(it.asRole()) } == true
-					) {
+					// If the moderators role is in roles, return
+					} else if (Snowflake(moderators!!) in roles) {
 						respond {
-							content = "Bruh don't try to warn a moderator"
+							content = "You cannot warn moderators!"
 						}
 						return@action
 					}
+				// Just to catch any errors in the checks
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
 				}
 
 				newSuspendedTransaction {
+					// Insert the user into the database with 0 points. If they are not already in the database
 					DatabaseManager.Warn.insertIgnore {
 						it[id] = userArg.id.toString()
 						it[points] = 0
 					}
 
+					// Select the users point count and assign it to a variable
 					databasePoints = DatabaseManager.Warn.select {
 						DatabaseManager.Warn.id eq userArg.id.toString()
 					}.single()[DatabaseManager.Warn.points]
 
+					// Update the point of a user with the specified amount
 					DatabaseManager.Warn.update({ DatabaseManager.Warn.id eq userArg.id.toString() }) {
-						with(SqlExpressionBuilder) { it.update(points, points.plus(arguments.warnPoints)) }
+						it.update(points, points.plus(arguments.warnPoints))
 					}
 
-					if (databasePoints!! in (50..99)) {
-						guild?.getMember(userArg.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
-						}
-					} else if (databasePoints!! in (100..149)) {
-						guild?.getMember(userArg.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
-						}
-					} else if (databasePoints!! >= 150) {
-						guild?.ban(userArg.id, builder = {
-							this.reason = "Banned due to point accumulation"
-							this.deleteMessagesDays = 0
-						})
-					}
-
+					// We'll get the user's updated points
 					databasePoints = DatabaseManager.Warn.select {
 						DatabaseManager.Warn.id eq userArg.id.toString()
 					}.single()[DatabaseManager.Warn.points]
 				}
 
+				// DM the user about the warning
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been warned in ${guild?.fetchGuild()?.name}",
 					"You were given ${arguments.warnPoints} points\nYour total is now $databasePoints\n\n**Reason:**\n${arguments.reason}",
 					null
 				)
+
+				// Check the points amount, before running sanctions
+				if (databasePoints!! in (75..124)) {
+					ResponseHelper.userDMEmbed(
+						userArg,
+						"You have been timed-out in ${guild!!.fetchGuild().name}",
+						"You have accumulated too many warn points, and have hence been given a 3 hour timeout",
+						DISCORD_BLACK
+					)
+
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+					}
+
+					ResponseHelper.responseEmbedInChannel(
+						actionLog,
+						"Timeout",
+						"${userArg.mention} has been timed-out for 3 hours due to point accumulation\n${userArg.id} (${userArg.tag})",
+						DISCORD_BLACK,
+						user.asUser()
+					)
+				} else if (databasePoints!! in (125..199)) {
+					ResponseHelper.userDMEmbed(
+						userArg,
+						"You have been timed-out in ${guild!!.fetchGuild().name}",
+						"You have accumulated too many warn points, and have hence been given a 12 hour timeout",
+						DISCORD_BLACK
+					)
+
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+					}
+
+					ResponseHelper.responseEmbedInChannel(
+						actionLog,
+						"Timeout",
+						"${userArg.mention} has been timed-out for 12 hours due to point accumulation\n${userArg.id} (${userArg.tag})",
+						DISCORD_BLACK,
+						user.asUser()
+					)
+				} else if (databasePoints!! >= 200) {
+					guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // Remove timeout incase they were timed out when banned
+					ResponseHelper.userDMEmbed(
+						userArg,
+						"You have been banned from ${guild!!.fetchGuild().name}",
+						"You have accumulated too many warn points, and have hence been banned",
+						DISCORD_BLACK
+					)
+
+					guild?.ban(userArg.id, builder = {
+						this.reason = "Banned due to point accumulation"
+						this.deleteMessagesDays = 0
+					})
+
+					ResponseHelper.responseEmbedInChannel(
+						actionLog,
+						"User Banned!",
+						"${userArg.mention} has been banned due to point accumulation\n${userArg.id} (${userArg.tag})",
+						DISCORD_BLACK,
+						user.asUser()
+					)
+				}
 
 				respond {
 					content = "Warned User"
@@ -626,27 +651,47 @@ class Moderation : Extension() {
 			name = "timeout"
 			description = "Timeout a user"
 
-			allowRole(FULLMODERATORS)
-			allowRole(TRIALMODERATORS)
+			// Requires Moderate Members permission
+			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+				// Try to get the action log and moderators from config. NoSuchElementException if failure
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
+					return@action
+				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
+				// Get the users roles into a List of Snowflakes
+				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
-					if (guild?.getMember(userArg.id)?.isBot == true || guild?.getRole(MODERATORS)
-							?.let { guild?.getMember(userArg.id)?.hasRole(it.asRole()) } == true
-					) {
+					// Fail if the user is a bot
+					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
-							content = "You cannot timeout a moderator/bot!"
+							content = "You cannot timeout a bot!"
+						}
+						return@action
+					// If the moderators role is in roles list, fail
+					} else if (Snowflake(moderators!!) in roles) {
+						respond {
+							content = "You cannot timeout a moderator!"
 						}
 						return@action
 					}
+				// To catch any errors in checking
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks failed on `Timeout` due to error")
 				}
 
+				// DM the user about it
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been timed out in ${guild?.fetchGuild()?.name}",
@@ -657,6 +702,7 @@ class Moderation : Extension() {
 					null
 				)
 
+				// Run the timeout task
 				guild?.getMember(userArg.id)?.edit {
 					timeoutUntil = duration
 				}
@@ -713,13 +759,24 @@ class Moderation : Extension() {
 			name = "remove-timeout"
 			description = "Remove timeout on a user"
 
-			allowRole(FULLMODERATORS)
-			allowRole(TRIALMODERATORS)
+			// Requires Moderate Members permission
+			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLog = guild?.getChannel(MOD_ACTION_LOG) as GuildMessageChannelBehavior
+				// Try to get the action log from config. NoSuchElementException if failure
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				if (actionLogId.equals("NoSuchElementException")) {
+					respond {
+						content =
+							"**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
+					return@action
+				}
+
+				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
+				// Set timeout to null, or no timeout
 				guild?.getMember(userArg.id)?.edit {
 					timeoutUntil = null
 				}
@@ -804,24 +861,6 @@ class Moderation : Extension() {
 			name = "reason"
 			description = "The reason for the ban"
 			defaultValue = "No Reason Provided"
-		}
-	}
-
-	inner class SayArgs : Arguments() {
-		val messageArgument by string {
-			name = "message"
-			description = "Message contents"
-		}
-		val embedMessage by boolean {
-			name = "embed"
-			description = "Would you like to send as embed"
-		}
-	}
-
-	inner class PresenceArgs : Arguments() {
-		val presenceArgument by string {
-			name = "presence"
-			description = "Lily's presence"
 		}
 	}
 
