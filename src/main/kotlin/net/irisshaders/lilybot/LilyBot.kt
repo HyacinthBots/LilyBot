@@ -29,8 +29,6 @@ import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.SENTRY_DSN
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -54,16 +52,8 @@ suspend fun main() {
 		}
 
 		members {
-			var guildIds: Collection<String>? = null
-			try {
-			    newSuspendedTransaction {
-					guildIds = DatabaseManager.Config.selectAll().map { it[DatabaseManager.Config.guildId] }
-				}
-			} catch (e: NumberFormatException) {
-				// oh well, just wait for some configs to be added
-				return@members
-			}
-			guildIds?.let { fill(it) }
+			lockMemberRequests = true
+			all()
 		}
 
 		intents {
