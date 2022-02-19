@@ -126,15 +126,9 @@ class Utilities : Extension() {
 			name = "set-status"
 			description = "Set Lily's current presence/status."
 
-			check { hasPermission(Permission.ModerateMembers) } // Wasn't sure here
+			check { hasPermission(Permission.Administrator) }
 
 			action {
-				// Lock this command to the two administrators of the Iris Project, to avoid poeple constantly trying to change it
-				if (user.id.value.toLong() != 462348944173957120) {
-					respond { content = "You do not have permission to do this!" }
-					return@action
-				}
-
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 
 				if (actionLogId.equals("NoSuchElementException")) {
