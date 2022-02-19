@@ -12,4 +12,4 @@ val TEST_GUILD_ID = Snowflake(env("TEST_GUILD_ID"))
 val TEST_GUILD_CHANNEL = Snowflake(env("TEST_GUILD_CHANNEL"))
 val CUSTOM_COMMANDS_PATH = env("CUSTOM_COMMANDS_PATH")
 
-const val JDBC_URL = "jdbc:sqlite:database.db"
+const val JDBC_URL = "jdbc:sqlite:./data/database.db"
