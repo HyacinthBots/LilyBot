@@ -3,7 +3,7 @@
 /.idea
 *.iml
 .env
-database.db
+data/database.db
 /bin/
 /.vscode/
 /.linkie-cache/**

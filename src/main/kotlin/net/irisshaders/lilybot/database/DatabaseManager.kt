@@ -2,15 +2,13 @@ package net.irisshaders.lilybot.database
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.utils.io.errors.*
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.JDBC_URL
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.nio.file.Files
-import java.nio.file.Path
+import java.sql.DriverManager
 
 /**
  * The Database system within the bot
@@ -69,17 +67,7 @@ object DatabaseManager {
 	}
 
 	fun startDatabase() {
-		try {
-			val database = Path.of("/data/database.db")
-
-			if (Files.notExists(database)) {
-				Files.createFile(database)
-
-				logger.info("Created database file.")
-			}
-		} catch (e: IOException) {
-			e.printStackTrace()
-		}
+		DriverManager.getConnection(JDBC_URL)
 
 		transaction {
 			SchemaUtils.createMissingTablesAndColumns(Warn, Config, Components, Utilities)
