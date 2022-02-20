@@ -45,19 +45,20 @@ class MessageEvents : Extension() {
 		event<MessageDeleteEvent> {
 			action {
 				// Try to get the  message logs channel
-				val messageLogs: String? = DatabaseHelper.selectInConfig(event.message!!.getGuild().id, DatabaseManager.Config.messageLogs)
+				val messageLogId: String? = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.messageLogs)
 
-				check { failIf(event.message?.author?.isBot == true) }
-				check { failIf { messageLogs.equals("NoSuchElementException") } }
+				// This uses return@action because events are triggered on bot startup
+				if (messageLogId == "NoSuchElementException" || messageLogId == null) { return@action }
 
-				if (event.message?.author?.id == kord.selfId) return@action
+				check { failIf(event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) }
 
-				val actionLog = event.guild?.getChannel(Snowflake(messageLogs.toString())) as GuildMessageChannelBehavior
+				val guild = kord.getGuild(event.guildId!!)
+				val messageLogChannel = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior
 				val messageContent = event.message?.asMessageOrNull()?.content.toString()
 				val eventMessage = event.message
 				val messageLocation = event.channel.id.value
 
-				actionLog.createEmbed {
+				messageLogChannel.createEmbed {
 					color = DISCORD_PINK
 					title = "Message Deleted"
 					description = "Location: <#$messageLocation>"
