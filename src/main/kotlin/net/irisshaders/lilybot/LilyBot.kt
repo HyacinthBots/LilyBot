@@ -43,10 +43,6 @@ private val gitHubLogger = KotlinLogging.logger { }
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 
-		hooks {
-			DatabaseManager.startDatabase()
-		}
-
 		applicationCommands {
 			enabled = true
 		}
@@ -84,6 +80,12 @@ suspend fun main() {
 
 			sentry {
 				enableIfDSN(SENTRY_DSN)
+			}
+		}
+
+		hooks {
+			afterKoinSetup {
+				DatabaseManager.startDatabase()
 			}
 		}
 
