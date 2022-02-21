@@ -81,13 +81,15 @@ class Moderation : Extension() {
 
 				// Get the specified amount of messages into an
 				// Array List of Snowflakes, and delete them
+				channel.getMessagesAround(channel.messages.last().id, Integer.min(messageAmount, 100))
+
 				channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100))
 					.filterNotNull()
 					.onEach {
 						messageHolder.add(it.fetchMessage().id)
 					}.catch {
 						it.printStackTrace()
-						println("error")
+						logger.error("Error in the clear command")
 					}.collect()
 
 				textChannel.bulkDelete(messageHolder)
