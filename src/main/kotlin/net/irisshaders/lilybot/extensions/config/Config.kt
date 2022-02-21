@@ -6,7 +6,6 @@ import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
-import com.kotlindiscord.kord.extensions.commands.converters.impl.guild
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
 import com.kotlindiscord.kord.extensions.commands.converters.impl.role
@@ -39,11 +38,12 @@ class Config : Extension() {
 			ephemeralSubCommand(::Config) {
 				name = "set"
 				description = "Set the config"
+
 				action {
-					var actionLogId: String? = null
+					val actionLogId: String?
 					// Try to select the guild from the database, with either return NoSuchElementException,
 					//  or the guild id
-					val alreadySet = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.guildId)
+					val alreadySet = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.guildId)
 
 					// If the database is empty, there is nothing set for this guild, so we move ahead with
 					// adding config else we inform the config is already set
@@ -51,7 +51,7 @@ class Config : Extension() {
 						newSuspendedTransaction {
 
 							DatabaseManager.Config.insertIgnore {
-								it[guildId] = arguments.guildId.id.toString()
+								it[guildId] = guild!!.id.toString()
 								it[moderatorsPing] = arguments.moderatorPing.id.toString()
 								it[supportTeam] = arguments.supportTeam?.id.toString()
 								it[modActionLog] = arguments.modActionLog.id.toString()
@@ -62,9 +62,9 @@ class Config : Extension() {
 						}
 
 						// Once inserted to the database we get the mod action log, so we can print a message to it
-						actionLogId = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.modActionLog)
+						actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 
-						respond { content = "Config Set for Guild ID: ${arguments.guildId.id}!" }
+						respond { content = "Config Set for Guild ID: ${guild!!.id}!" }
 
 						val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 						ResponseHelper.responseEmbedInChannel(
@@ -79,7 +79,7 @@ class Config : Extension() {
 					}
 				}
 			}
-			ephemeralSubCommand(::Clear) {
+			ephemeralSubCommand {
 				name = "clear"
 				description = "Clear the config!"
 
@@ -90,8 +90,8 @@ class Config : Extension() {
 					var error = false
 
 					// Try to get the guild ID and action log ID. NoSuchElement means no config set
-					val guildConfig: String? = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.guildId)
-					val actionLogId: String? = DatabaseHelper.selectInConfig(arguments.guildId.id, DatabaseManager.Config.modActionLog)
+					val guildConfig: String? = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.guildId)
+					val actionLogId: String? = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
 
 					if (guildConfig.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
 						respond {
@@ -104,7 +104,7 @@ class Config : Extension() {
 					newSuspendedTransaction {
 						try {
 							DatabaseManager.Config.deleteWhere {
-								DatabaseManager.Config.guildId eq arguments.guildId.id.toString()
+								DatabaseManager.Config.guildId eq guild!!.id.toString()
 							}
 						} catch (e: NoSuchElementException) {
 							// More of a sanity check, the action should've returned by
@@ -135,10 +135,6 @@ class Config : Extension() {
 		}
 	}
 	inner class Config : Arguments() {
-		val guildId by guild {
-			name = "guildId"
-			description = "The ID of your guild"
-		}
 		val moderatorPing by role {
 			name = "moderatorRole"
 			description = "Your Moderator role"
@@ -162,12 +158,6 @@ class Config : Extension() {
 		val supportChannel by optionalChannel {
 			name = "supportChannel"
 			description = "Your Support Channel"
-		}
-	}
-	inner class Clear : Arguments() {
-		val guildId by guild {
-			name = "guildId"
-			description = "The ID of your guild"
 		}
 	}
 }
