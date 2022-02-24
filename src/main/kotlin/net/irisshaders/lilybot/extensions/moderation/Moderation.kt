@@ -23,6 +23,7 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
+import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
@@ -134,10 +135,10 @@ class Moderation : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
-				// Get all the members roles into a List of snowflakes
-				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Get all the members roles into a List of snowflakes
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// Check if the user is a bot and fail
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
@@ -164,7 +165,11 @@ class Moderation : Extension() {
 					null
 				)
 
-				guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // remove timeout incase they were timedout when banned
+				try {
+					guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // remove timeout if they had a timeout when banned
+				} catch (e: EntityNotFoundException) {
+					logger.info("Unable to find user! Skipping timeout removal")
+				}
 
 				// Run the ban task
 				guild?.ban(userArg.id, builder = {
