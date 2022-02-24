@@ -23,6 +23,7 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
+import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
@@ -134,10 +135,10 @@ class Moderation : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
-				// Get all the members roles into a List of snowflakes
-				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Get all the members roles into a List of snowflakes
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// Check if the user is a bot and fail
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
@@ -164,7 +165,11 @@ class Moderation : Extension() {
 					null
 				)
 
-				guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // remove timeout incase they were timedout when banned
+				try {
+					guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // remove timeout if they had a timeout when banned
+				} catch (e: EntityNotFoundException) {
+					logger.info("Unable to find user! Skipping timeout removal")
+				}
 
 				// Run the ban task
 				guild?.ban(userArg.id, builder = {
@@ -285,10 +290,10 @@ class Moderation : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
-				// Gather users roles into a List of Snowflakes
-				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Gather users roles into a List of Snowflakes
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// Check if the user is a bot and return
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
@@ -391,10 +396,10 @@ class Moderation : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
-				// Get the users roles into a List of Snowflake
-				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Get the users roles into a List of Snowflake
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// If the user is a bot, fail
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
@@ -482,10 +487,10 @@ class Moderation : Extension() {
 				val userArg = arguments.userArgument
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				var databasePoints: Int? = null
-				// Get the users roles into a List of Snowflakes
-				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Get the users roles into a List of Snowflakes
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// If the user is a bot, return
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
@@ -671,10 +676,10 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
-				// Get the users roles into a List of Snowflakes
-				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Get the users roles into a List of Snowflakes
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// Fail if the user is a bot
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
