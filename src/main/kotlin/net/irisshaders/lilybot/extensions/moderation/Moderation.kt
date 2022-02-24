@@ -290,10 +290,10 @@ class Moderation : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
-				// Gather users roles into a List of Snowflakes
-				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Gather users roles into a List of Snowflakes
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// Check if the user is a bot and return
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
@@ -396,10 +396,10 @@ class Moderation : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
-				// Get the users roles into a List of Snowflake
-				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Get the users roles into a List of Snowflake
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// If the user is a bot, fail
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
@@ -487,10 +487,10 @@ class Moderation : Extension() {
 				val userArg = arguments.userArgument
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				var databasePoints: Int? = null
-				// Get the users roles into a List of Snowflakes
-				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Get the users roles into a List of Snowflakes
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// If the user is a bot, return
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
@@ -676,10 +676,10 @@ class Moderation : Extension() {
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
-				// Get the users roles into a List of Snowflakes
-				val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 
 				try {
+					// Get the users roles into a List of Snowflakes
+					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// Fail if the user is a bot
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond {
