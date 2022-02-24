@@ -56,7 +56,6 @@ class MessageEvents : Extension() {
 				val messageLogChannel = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior
 				val messageContent = event.message?.asMessageOrNull()?.content.toString()
 				val eventMessage = event.message
-				val attachments = eventMessage?.attachments
 				val messageLocation = event.channel.id.value
 
 				messageLogChannel.createEmbed {
@@ -70,9 +69,9 @@ class MessageEvents : Extension() {
 						value = messageContent.ifEmpty { "Failed to get content of message" }
 						inline = false
 					}
-					if (attachments != null && attachments.isNotEmpty()) {
+					if (eventMessage?.attachments != null && eventMessage.attachments.isNotEmpty()) {
 						val attachmentUrls = StringBuilder()
-						for (attachment in attachments) {
+						for (attachment in eventMessage.attachments) {
 							attachmentUrls.append(attachment.data.url + "\n")
 						}
 						field {
