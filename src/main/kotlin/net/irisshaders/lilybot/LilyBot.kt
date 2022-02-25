@@ -29,8 +29,6 @@ import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.SENTRY_DSN
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -45,25 +43,13 @@ private val gitHubLogger = KotlinLogging.logger { }
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 
-		hooks {
-			DatabaseManager.startDatabase()
-		}
-
 		applicationCommands {
 			enabled = true
 		}
 
 		members {
-			var guildIds: Collection<String>? = null
-			try {
-			    newSuspendedTransaction {
-					guildIds = DatabaseManager.Config.selectAll().map { it[DatabaseManager.Config.guildId] }
-				}
-			} catch (e: NumberFormatException) {
-				// oh well, just wait for some configs to be added
-				return@members
-			}
-			guildIds?.let { fill(it) }
+			lockMemberRequests = true
+			all()
 		}
 
 		intents {
@@ -94,6 +80,12 @@ suspend fun main() {
 
 			sentry {
 				enableIfDSN(SENTRY_DSN)
+			}
+		}
+
+		hooks {
+			afterKoinSetup {
+				DatabaseManager.startDatabase()
 			}
 		}
 

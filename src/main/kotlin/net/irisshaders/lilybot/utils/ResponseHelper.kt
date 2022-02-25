@@ -20,8 +20,7 @@ object ResponseHelper {
      * @param embedColor The color to set the embed to. If null, the embed will be coloured black.
      * @param requestedBy The user that requested the embed. If null, the footer will be empty.
      * @return An embed in the channel
-     * @author Maximumpower55
-     * @author NoComment1105
+     * @author Maximumpower55, NoComment1105
      */
     suspend fun responseEmbedInChannel(channel: MessageChannelBehavior, embedTitle: String?, embedDescription: String?, embedColor: Color?, requestedBy: User?): Message {
         return channel.createEmbed {
