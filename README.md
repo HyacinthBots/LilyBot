@@ -13,8 +13,8 @@
 * Then with need for features that JDA did not provide, another rewrite occurred! This time [NoComment](https://github.com/NoComment1105), [Miss Corruption](https://github.com/Miss-Corruption), [Maximum](https://github.com/maximumpower55) and [IMS](https://github.com/IMS212), began rewriting in Kotlin, using the [Kord API](https://github.com/kordlib/kord) and [KordEx Extension Library](https://github.com/Kord-Extensions/kord-extensions)
 * In early 2022, we decided to expand the scope of LilyBot to be usable in other servers.
 
-### How can I use LilyBot in my own server!?
-Follow the in-depth [installation guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/installation-guide.md).
+### How can I use LilyBot myself!?
+Follow our in-depth [installation guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/installation-guide.md).
 
 ### What was used to write this bot and what does each thing do?
 * [Kord](https://github.com/kordlib/kord), the Kotlin API for Discord.
