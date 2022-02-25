@@ -9,7 +9,6 @@ These are commands for the maintenance of LilyBot. They can only be run by serve
 Name: `config set`
 
 Arguments:
-* `guildId` - ID of the guild to set a config for - Guild ID
 * `moderatorRole` - Moderator role that will be pinged for reports - Role
 * `modActionLog` - Channel for embeds created by mod actions to be sent - Channel
 * `messageLogs` - Channel for deleted messages to be logged - Channel
@@ -17,15 +16,14 @@ Arguments:
 * `supportChannel` - Channel for the support auto-threading system to be used in - Optional Channel
 * `supportTeamRole` - The role to be added to any threads created in the `supportchannel` - Optional Role
 
-Result: Sets a configuration in the database for `guildId`.
+Result: Sets a configuration for the guild executed in.
 
 ### Clear Config
 Name: `config clear`
 
-Arguments:
-* `guildId` - ID of the guild to clear the config for - Guild ID
+Arguments:None
 
-Result: Clears the configuration for `guildId`.
+Result: Clears the configuration for the guild executed in.
 
 ### Presence
 Name: `set-status`
@@ -38,7 +36,9 @@ Result: Lily's "Now Playing:" status is set to `presence`.
 ## Moderation Commands
 These commands are for use by moderators.
 They utilize built-in permission checks.
-All moderation commands are logged to the action log.
+All moderation commands are logged to the action-log established in the config.
+A Direct Message is sent to the target user containing the sanction they received and the provided reason.
+If Lily fails to DM them, this failure will be noted in the action-log embed.
 
 ### Clear
 Name: `clear`
@@ -62,7 +62,7 @@ Name: `ban`
 
 Arguments:
 * `banUser` – Person to ban - User
-* `messages` - Number of days of messages to delete - Integer (default 1)
+* `messages` - Number of days of messages to delete - Integer
 * `reason` - Reason for the ban - Optional String
 
 Result: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last `messages` day(s).
@@ -132,7 +132,7 @@ Arguments:
 
 Result: Creates a menu with buttons to add and remove `role` in `channel` along with an `color` colored embed with description `description` and title `title`.
 
-### Say
+### Say (MODS ONLY)
 Name: `say`
 
 Arguments:
@@ -174,7 +174,7 @@ Name: `thread archive`
 Arguments:
 * `lock` - If the thread executed in should be locked - Boolean (default: false)
 
-Result: Archives the thread executed in if executed by a moderator or the thread owner. Locks the thread if executed by a moderator and `lock` is true.
+Result: Archives the thread executed in **if executed by a moderator or the thread owner**. Locks the thread if executed by a moderator and `lock` is true.
 
 ### Rename Thread
 Name: `thread rename`
@@ -182,4 +182,4 @@ Name: `thread rename`
 Arguments:
 * `newName` - New name for the thread executed in - String
 
-Result: Renames the thread executed in if executed by a moderator or the thread owner.
+Result: Renames the thread executed in **if executed by a moderator or the thread owner**.

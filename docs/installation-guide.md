@@ -4,7 +4,7 @@ Here is an in depth guide on how to set up Lily. If you have issues with this gu
 ## Adding the official lily instance to your server
 If you simply want to utilize all the great features Lily has to offer in your server without modification, this is the section of the guide for you.
 
-Currently, Lily is not a fully public bot. If you want to add her to your server, please contact `IMS#7902` on Discord. He will provide you with a link for inviting Lily to your server.
+Currently, Lily is not a fully public bot. If you want to add her to your server, please contact `IMS#7902` or `NoComment#6411` on Discord. They will provide you with a link for inviting Lily to your server.
 
 Once you've received this link, simply open it in your browser. You may need to log into your Discord account. You should then select the server you want to add Lily to (you'll need to be an administrator in that server) and click `Authorize`.
 
@@ -22,7 +22,13 @@ If you don't already have them, you will need to install [Java](https://adoptium
 
 Head over to the [Discord Developer Portal](https://discord.com/developers/applications) and press the "New Application" button in the top right corner.
 
-Give your application a name and press create. Then, head to the bot tab on the left and click "Add Bot". Click "Yes, do it!" Once you have your bot, scroll down and make sure that the "PRESENCE INTENT", "SERVER MEMBERS INTENT", and "MESSAGE CONTENT INTENT" switches are all toggled to on. Once that's done, go to the OAuth2 tab on the left sidebar, scroll down to the checkboxes, and select the ones for "bot" and "applications.commands". Copy the URL, enter it into your browser, select the server(s) you want to add your Lily to, and click authorize. If everything worked correctly, your Lily instance should appear in the members list of that server.
+Give your application a name and press create. Then, head to the bot tab on the left and click "Add Bot". Click "Yes, do it!"
+Once you have your bot, head to the bot tab on the left sidebar and make sure that `PRESENCE INTENT`, `SERVER MEMBERS INTENT`, and `MESSAGE CONTENT INTENT` switches are all toggled to on.
+Then, select the OAuth2 tab and make sure that the scopes and permissions selected match the image below.
+![OAuth2example](resources/OAuth2example.png)
+
+Copy the URL generated, enter it into your browser, select the server(s) you want to add your Lily to, and click authorize.
+If everything worked correctly, your Lily instance should appear in the members list of that server.
 
 ### Step 3 - Clone the repository
 
@@ -38,6 +44,7 @@ CUSTOM_COMMANDS_PATH=commands.toml
 TEST_GUILD_ID=GUILD_ID
 TEST_GUILD_CHANNEL=CHANNEL_ID
 GITHUB_OAUTH=GITHUB_OAUTH_TOKEN or null if you don't want GitHub commands
+JDBC_URL=jdbc:sqlite:<path to where the database should go> This is optional and defaults to ./data in the root directory.
 SENTRY_DSN=SENTRY_DSN or null if you don't want sentry integration
 ```
 
