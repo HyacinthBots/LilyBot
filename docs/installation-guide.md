@@ -25,7 +25,7 @@ Head over to the [Discord Developer Portal](https://discord.com/developers/appli
 Give your application a name and press create. Then, head to the bot tab on the left and click "Add Bot". Click "Yes, do it!"
 Once you have your bot, head to the bot tab on the left sidebar and make sure that `PRESENCE INTENT`, `SERVER MEMBERS INTENT`, and `MESSAGE CONTENT INTENT` switches are all toggled to on.
 Then, select the OAuth2 tab and make sure that the scopes and permissions selected match the image below.
-![OAuth2example](resources/OAuth2example.png)
+![oauth2example](resources/oauth2example.png)
 
 Copy the URL generated, enter it into your browser, select the server(s) you want to add your Lily to, and click authorize.
 If everything worked correctly, your Lily instance should appear in the members list of that server.
