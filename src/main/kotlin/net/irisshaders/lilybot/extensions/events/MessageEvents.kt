@@ -69,6 +69,17 @@ class MessageEvents : Extension() {
 						value = messageContent.ifEmpty { "Failed to get content of message" }
 						inline = false
 					}
+					if (eventMessage?.attachments != null && eventMessage.attachments.isNotEmpty()) {
+						val attachmentUrls = StringBuilder()
+						for (attachment in eventMessage.attachments) {
+							attachmentUrls.append(attachment.data.url + "\n")
+						}
+						field {
+							name = "Attachments:"
+							value = attachmentUrls.trim().toString()
+							inline = false
+						}
+					}
 					field {
 						name = "Message Author:"
 						value = eventMessage?.author?.tag.toString()
