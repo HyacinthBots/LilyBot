@@ -1,12 +1,3 @@
----
-name: Pull request
-about: Use this template if you're creating a pull request.
-title: ''
-labels: enhancement
-assignees: ''
----
-
-
 ### Preface
 
 Please read our [Contributor Guidelines](https://github.com/IrisShaders/LilyBot/blob/main/CONTRIBUTING.md) before
