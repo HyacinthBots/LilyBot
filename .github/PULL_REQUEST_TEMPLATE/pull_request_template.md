@@ -1,8 +1,8 @@
 ---
-name: Bug fix
-about: Use this template if you're creating a pull request which fixes another bug or issue
+name: Pull request
+about: Use this template if you're creating a pull request.
 title: ''
-labels: bug-fix enhancement
+labels: enhancement
 assignees: ''
 ---
 
