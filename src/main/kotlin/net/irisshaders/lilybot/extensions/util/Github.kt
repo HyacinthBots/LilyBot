@@ -35,7 +35,7 @@ class Github : Extension() {
 
 	override suspend fun setup() {
 		/**
-		 * GitHub Issue Command
+		 * GitHub Commands
 		 * @author NoComment1105
 		 * Java version author: chalkyjeans
 		 */
@@ -308,10 +308,12 @@ class Github : Extension() {
 									value = bytesToFriendly(repo.size)
 									inline = false
 								}
-								field {
-									name = "Language:"
-									value = repo.language.toString()
-									inline = false
+								if (repo.language != null) {
+									field {
+										name = "Language:"
+										value = repo.language.toString()
+										inline = false
+									}
 								}
 							} catch (ioException: IOException) {
 								ioException.printStackTrace()
@@ -320,6 +322,7 @@ class Github : Extension() {
 					}
 				}
 			}
+
 			publicSubCommand(::UserArgs) {
 				name = "user"
 				description = "Search github for a User/Organisation"
