@@ -1,5 +1,5 @@
 @file:OptIn(ExperimentalTime::class)
-@file:Suppress("PrivatePropertyName", "BlockingMethodInNonBlockingContext")
+
 
 package net.irisshaders.lilybot.extensions.events
 
@@ -35,6 +35,7 @@ import kotlin.time.ExperimentalTime
 class MessageEvents : Extension() {
 	override val name = "messageevents"
 
+	@Suppress("PrivatePropertyName")
 	private val LOG_FILE_EXTENSIONS = setOf("log", "gz", "txt")
 
 	override suspend fun setup() {

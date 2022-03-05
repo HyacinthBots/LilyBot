@@ -26,6 +26,8 @@ import dev.kord.core.entity.Member
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.MessageChannel
+import dev.kord.core.exception.EntityNotFoundException
+import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.DatabaseHelper
@@ -65,17 +67,27 @@ class Report : Extension() {
 				}
 
 				val messageLog = guild?.getChannel(Snowflake(messageLogId!!)) as GuildMessageChannelBehavior
-				val reportedMessage = event.interaction.getTarget()
-				val messageAuthor = reportedMessage.getAuthorAsMember()
+				try {
+					val reportedMessage = event.interaction.getTarget()
+					val messageAuthor = reportedMessage.getAuthorAsMember()
 
-				respond {
-					content = "Message reported to staff"
+					respond {
+						content = "Message reported to staff"
+					}
+
+					// Call the create report function with the provided information
+					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRoleId, actionLogId)
+
+				} catch (e: KtorRequestException) {
+					respond {
+						content = "Sorry, I can't properly access this message, could you ping the moderators instead please? Thanks!"
+					}
+				} catch (e: EntityNotFoundException) {
+					respond {
+						content = "Sorry, I can't find this message... Could you ping the moderators instead please? Thanks!"
+					}
 				}
-
-				// Call the create report function with the provided information
-				createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRoleId, actionLogId)
 			}
-
 		}
 
 		ephemeralSlashCommand(::ManualReportArgs) {
@@ -101,17 +113,29 @@ class Report : Extension() {
 				}
 
 				val messageLog = guild?.getChannel(Snowflake(messageLogId!!)) as GuildMessageChannelBehavior
-				// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
-				val channel = (guild?.getChannel(Snowflake(arguments.message.split("/")[5])) as MessageChannel)
-				val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
-				val messageAuthor = reportedMessage.getAuthorAsMember()
 
-				respond {
-					content = "Message reported to staff"
+				try {
+					// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
+					val channel = (guild?.getChannel(Snowflake(arguments.message.split("/")[5])) as MessageChannel)
+					val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
+					val messageAuthor = reportedMessage.getAuthorAsMember()
+
+					respond {
+						content = "Message reported to staff"
+					}
+
+					// Create a report with the provided information
+					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRole, actionLogId)
+
+				} catch (e: KtorRequestException) {
+					respond {
+						content = "Sorry, I can't properly access this message, could you ping the moderators instead please? Thanks!"
+					}
+				} catch (e: EntityNotFoundException) {
+					respond {
+						content = "Sorry, I can't find this message... Could you ping the moderators instead please? Thanks!"
+					}
 				}
-
-				// Create a report with the provided information
-				createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRole, actionLogId)
 			}
 		}
 	}

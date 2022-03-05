@@ -24,6 +24,7 @@ import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
 import dev.kord.core.exception.EntityNotFoundException
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
@@ -698,6 +699,18 @@ class Moderation : Extension() {
 					logger.warn("IsBot and Moderator checks failed on `Timeout` due to error")
 				}
 
+				try {
+					// Run the timeout task
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = duration
+					}
+				} catch (e: KtorRequestException) {
+					respond {
+						content = "Sorry, I can't timeout this person! Try doing the timeout manually instead!"
+					}
+				}
+
+				// Send the DM after the timeout task, in case Lily doesn't have required permissions
 				// DM the user about it
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
@@ -708,11 +721,6 @@ class Moderation : Extension() {
 					}\n**Reason:**\n${arguments.reason}",
 					null
 				)
-
-				// Run the timeout task
-				guild?.getMember(userArg.id)?.edit {
-					timeoutUntil = duration
-				}
 
 				respond {
 					content = "Timed out ${userArg.id}"
