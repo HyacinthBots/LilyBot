@@ -50,7 +50,7 @@ class MessageEvents : Extension() {
 				// This uses return@action because events are triggered on bot startup
 				if (messageLogId == "NoSuchElementException" || messageLogId == null) { return@action }
 
-				check { failIf(event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) }
+				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
 
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLogChannel = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior
