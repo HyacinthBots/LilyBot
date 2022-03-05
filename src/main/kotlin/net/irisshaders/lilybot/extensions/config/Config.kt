@@ -32,12 +32,12 @@ class Config : Extension() {
 			name = "config"
 			description = "Configuration set up commands!"
 
-			// We only want admins doing this, not your average moderator
-			check { hasPermission(Permission.Administrator) }
-
 			ephemeralSubCommand(::Config) {
 				name = "set"
 				description = "Set the config"
+
+				// We only want admins doing this, not your average moderator
+				check { hasPermission(Permission.Administrator) }
 
 				action {
 					val actionLogId: String?

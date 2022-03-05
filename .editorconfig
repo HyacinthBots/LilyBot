@@ -3,16 +3,10 @@ root = true
 [*]
 charset = utf-8
 end_of_line = lf
-insert_final_newline = true
 tab_width = 4
 
 [*.gradle]
 indent_style = tab
-
-[*.java]
-indent_style = tab
-ij_java_class_count_to_use_import_on_demand = 99999 # Require imports of 99999 classes before * imports happen
-ij_java_names_count_to_use_import_on_demand = 99999
 
 [*.kt]
 indent_style = tab
