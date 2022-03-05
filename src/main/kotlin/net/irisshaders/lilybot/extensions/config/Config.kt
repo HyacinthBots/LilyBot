@@ -49,7 +49,6 @@ class Config : Extension() {
 					// adding config else we inform the config is already set
 					if (alreadySet.equals("NoSuchElementException")) {
 						newSuspendedTransaction {
-
 							DatabaseManager.Config.insertIgnore {
 								it[guildId] = guild!!.id.toString()
 								it[moderatorsPing] = arguments.moderatorPing.id.toString()
@@ -134,6 +133,7 @@ class Config : Extension() {
 			}
 		}
 	}
+
 	inner class Config : Arguments() {
 		val moderatorPing by role {
 			name = "moderatorRole"

@@ -63,6 +63,7 @@ class JoinLeaveEvent : Extension() {
 				}
 			}
 		}
+
 		event<MemberLeaveEvent> {
 
 			action {

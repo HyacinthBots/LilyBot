@@ -8,8 +8,8 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
+import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.types.respondEphemeral
-import com.kotlindiscord.kord.extensions.types.respondPublic
 import dev.kord.rest.builder.message.create.embed
 import io.ktor.utils.io.errors.*
 import kotlinx.datetime.Clock
@@ -85,6 +85,7 @@ class Github : Extension() {
 								category = "extensions.util.Github.issue.getIssue"
 								message = "Unable to find issue"
 							}
+
 							respondEphemeral {
 								ephemeral = true
 								embed {
@@ -96,7 +97,8 @@ class Github : Extension() {
 						val num: Int = issue!!.number
 						issue = github?.getRepository(arguments.repository)?.getIssue(num)
 					}
-					respondPublic {
+
+					respond {
 						embed {
 
 							val open: Boolean = issue?.state == GHIssueState.OPEN
@@ -132,7 +134,6 @@ class Github : Extension() {
 							}
 
 							field {
-
 								if (issue.body != null) {
 									value = if (issue.body.length > 400) {
 										issue.body.substring(0, 399) + "..."
@@ -219,10 +220,15 @@ class Github : Extension() {
 							} catch (ioException: IOException) {
 								ioException.printStackTrace()
 							}
+
 							footer {
-								text = "Requested by: " + user.asUser().tag
-								icon = user.asUser().avatar?.url
+								text =
+									if (merged) "Merged"
+									else if (!open) "Closed"
+									else if (draft) "Draft"
+									else "Open"
 							}
+
 							timestamp = Clock.System.now()
 						}
 					}
@@ -273,7 +279,7 @@ class Github : Extension() {
 						return@action
 					}
 
-					respondPublic {
+					respond {
 						embed {
 							try {
 								title = "GitHub Repository Info for " + repo?.fullName
@@ -360,7 +366,7 @@ class Github : Extension() {
 								message = "User is not Organisation"
 								data["isNotOrg"] = ghUser?.login
 							}
-							respondPublic {
+							respond {
 								embed {
 									title = "GitHub profile for " + ghUser?.login
 									url = "https://github.com/" + ghUser?.login
@@ -418,7 +424,7 @@ class Github : Extension() {
 							}
 							val org: GHOrganization? = github?.getOrganization(ghUser?.login)
 
-							respondPublic {
+							respond {
 								embed {
 									title = "GitHub profile for " + ghUser?.login
 									url = "https://github.com/" + ghUser?.login
