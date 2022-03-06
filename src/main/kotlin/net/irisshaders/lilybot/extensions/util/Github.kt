@@ -15,6 +15,7 @@ import io.ktor.utils.io.errors.*
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.github
 import org.kohsuke.github.GHDirection
+import org.kohsuke.github.GHException
 import org.kohsuke.github.GHFileNotFoundException
 import org.kohsuke.github.GHIssue
 import org.kohsuke.github.GHIssueState
@@ -78,7 +79,20 @@ class Github : Extension() {
 							?.list()
 							?._iterator(1)
 
-						if (iterator!!.hasNext()) {
+						// Run a quick check on the iterator, in case the repository owner org/user doesn't exist
+						try {
+							iterator!!.hasNext()
+						} catch (e: GHException) {
+							respondEphemeral {
+								ephemeral = true
+								embed {
+									title = "Unable to access repository, make sure this repository exists!"
+								}
+							}
+							return@action
+						}
+
+						if (iterator.hasNext()) {
 							issue = iterator.next()
 						} else {
 							sentry.breadcrumb(BreadcrumbType.Error) {
@@ -94,6 +108,7 @@ class Github : Extension() {
 							}
 							return@action
 						}
+
 						val num: Int = issue!!.number
 						issue = github?.getRepository(arguments.repository)?.getIssue(num)
 					}
