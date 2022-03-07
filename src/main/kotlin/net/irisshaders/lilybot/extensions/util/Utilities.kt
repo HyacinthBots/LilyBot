@@ -21,6 +21,7 @@ import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
@@ -82,7 +83,7 @@ class Utilities : Extension() {
 			name = "say"
 			description = "Say something through Lily."
 
-			check { hasPermission(Permission.ModerateMembers) } // Wasn't sure about this
+			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
@@ -94,19 +95,24 @@ class Utilities : Extension() {
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 
-				if (arguments.embedMessage) {
-					channel.createEmbed {
-						color = DISCORD_BLURPLE
-						description = arguments.messageArgument
-						timestamp = Clock.System.now()
+				try {
+					if (arguments.embedMessage) {
+						channel.createEmbed {
+							color = DISCORD_BLURPLE
+							description = arguments.messageArgument
+							timestamp = Clock.System.now()
+						}
+					} else {
+						channel.createMessage {
+							content = arguments.messageArgument
+						}
 					}
-				} else {
-					channel.createMessage {
-						content = arguments.messageArgument
-					}
+				} catch (e:KtorRequestException) {
+					respond { content = "Lily does not have permission to send messages in this channel." }
+					return@action
 				}
 
-				respond { content = "Command used" }
+				respond { content = "Message sent." }
 
 				ResponseHelper.responseEmbedInChannel(
 					actionLog,
