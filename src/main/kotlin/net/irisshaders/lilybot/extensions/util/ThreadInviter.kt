@@ -38,7 +38,7 @@ class ThreadInviter : Extension() {
 		 * @author IMS212
 		 */
 		event<MessageCreateEvent> {
-			check { failIf(event.message.type == MessageType.ApplicationCommand) } // Don't try to create if the message is a slash command
+			check { failIf(event.message.type == MessageType.ChatInputCommand) } // Don't try to create if the message is a slash command
 			check { failIf(event.message.type == MessageType.ThreadCreated || event.message.type == MessageType.ThreadStarterMessage) } // Don't try and run this if the thread is manually created
 			check { failIf(event.message.author?.id == kord.selfId) }
 
@@ -201,7 +201,7 @@ class ThreadInviter : Extension() {
 
 							message.edit {
 								content = "Welcome to your thread, ${threadOwner.mention}\nOnce you're finished, use" +
-										"`/thread archive` to close it. If you want to change the threads name, use" +
+										"`/thread archive` to close it. If you want to change the thread name, use" +
 										"`/thread rename` to do so"
 							}
 
