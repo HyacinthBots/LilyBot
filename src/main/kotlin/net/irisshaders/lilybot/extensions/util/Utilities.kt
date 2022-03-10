@@ -8,7 +8,8 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -18,9 +19,11 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.database.DatabaseManager
@@ -82,7 +85,7 @@ class Utilities : Extension() {
 			name = "say"
 			description = "Say something through Lily."
 
-			check { hasPermission(Permission.ModerateMembers) } // Wasn't sure about this
+			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
@@ -93,25 +96,35 @@ class Utilities : Extension() {
 				}
 
 				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-
-				if (arguments.embedMessage) {
-					channel.createEmbed {
-						color = DISCORD_BLURPLE
-						description = arguments.messageArgument
-						timestamp = Clock.System.now()
-					}
+				val targetChannel: MessageChannelBehavior = if (arguments.targetChannel == null) {
+					channel
 				} else {
-					channel.createMessage {
-						content = arguments.messageArgument
-					}
+					guild?.getChannel(arguments.targetChannel!!.id) as MessageChannelBehavior
 				}
 
-				respond { content = "Command used" }
+				try {
+					if (arguments.embedMessage) {
+						targetChannel.createEmbed {
+							color = DISCORD_BLURPLE
+							description = arguments.messageArgument
+							timestamp = Clock.System.now()
+						}
+					} else {
+						targetChannel.createMessage {
+							content = arguments.messageArgument
+						}
+					}
+				} catch (e:KtorRequestException) {
+					respond { content = "Lily does not have permission to send messages in this channel." }
+					return@action
+				}
+
+				respond { content = "Message sent." }
 
 				ResponseHelper.responseEmbedInChannel(
 					actionLog,
 					"Message Sent",
-					"/say has been used to say ${arguments.messageArgument}.",
+					"/say has been used to say ${arguments.messageArgument} in ${targetChannel.mention}",
 					DISCORD_BLACK,
 					user.asUser()
 				)
@@ -172,9 +185,14 @@ class Utilities : Extension() {
 			name = "message"
 			description = "Message contents"
 		}
-		val embedMessage by boolean {
+		val targetChannel by optionalChannel {
+			name = "channel"
+			description = "The channel you want to send the message in"
+		}
+		val embedMessage by defaultingBoolean {
 			name = "embed"
 			description = "Would you like to send as embed"
+			defaultValue = false
 		}
 	}
 

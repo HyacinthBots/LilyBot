@@ -55,7 +55,6 @@ class Github : Extension() {
 							message = "Input missing /"
 						}
 						respondEphemeral {
-							ephemeral = true
 							embed {
 								title = "Make sure your repository input is formatted like this:"
 								description = "Format: `User/Repo` or `Org/Repo` \nFor example: `IrisShaders/Iris`"
@@ -84,7 +83,6 @@ class Github : Extension() {
 							iterator!!.hasNext()
 						} catch (e: GHException) {
 							respondEphemeral {
-								ephemeral = true
 								embed {
 									title = "Unable to access repository, make sure this repository exists!"
 								}
@@ -101,7 +99,6 @@ class Github : Extension() {
 							}
 
 							respondEphemeral {
-								ephemeral = true
 								embed {
 									title = "Invalid Issue number. Make sure this issue exists!"
 								}
@@ -235,16 +232,6 @@ class Github : Extension() {
 							} catch (ioException: IOException) {
 								ioException.printStackTrace()
 							}
-
-							footer {
-								text =
-									if (merged) "Merged"
-									else if (!open) "Closed"
-									else if (draft) "Draft"
-									else "Open"
-							}
-
-							timestamp = Clock.System.now()
 						}
 					}
 				}
@@ -262,7 +249,6 @@ class Github : Extension() {
 							message = "Input missing /"
 						}
 						respondEphemeral {
-							ephemeral = true
 							embed {
 								title = "Make sure your input is formatted like this:"
 								description = "Format: `User/Repo` or `Org/Repo`\nFor example: `IrisShaders/Iris`"
@@ -285,7 +271,6 @@ class Github : Extension() {
 							message = "Repository not found"
 						}
 						respondEphemeral {
-							ephemeral = true
 							embed {
 								title = "Invalid repository name. Make sure this repository exists"
 							}
@@ -363,7 +348,6 @@ class Github : Extension() {
 							message = "Unable to find user"
 						}
 						respondEphemeral {
-							ephemeral = true
 							embed {
 								title = "Invalid Username. Make sure this user exists!"
 							}
