@@ -185,14 +185,14 @@ class Utilities : Extension() {
 			name = "message"
 			description = "Message contents"
 		}
+		val targetChannel by optionalChannel {
+			name = "channel"
+			description = "The channel you want to send the message in"
+		}
 		val embedMessage by defaultingBoolean {
 			name = "embed"
 			description = "Would you like to send as embed"
 			defaultValue = false
-		}
-		val targetChannel by optionalChannel {
-			name = "channel"
-			description = "The channel you want to send the message in"
 		}
 	}
 
