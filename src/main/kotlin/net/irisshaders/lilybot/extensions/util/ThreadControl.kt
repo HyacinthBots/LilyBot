@@ -20,8 +20,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import kotlin.time.ExperimentalTime
 
 class ThreadControl : Extension() {
@@ -50,16 +49,15 @@ class ThreadControl : Extension() {
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
-					if (moderators.equals("NoSuchElementException")) {
-						respond {
-							content =
-								"**Error:** Unable to access config for this guild! Please inform a member of staff!"
-						}
+					// Try to get the moderator ping role from the config.
+					// If a config is not set, inform the user and return@action
+					val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+					if (moderatorRoleId == null) {
+						respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
 						return@action
 					}
 
-					if (Snowflake(moderators!!) in roles) {
+					if (Snowflake(moderatorRoleId) in roles) {
 						channel.edit {
 							name = arguments.newThreadName
 
@@ -105,16 +103,15 @@ class ThreadControl : Extension() {
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
-					if (moderators.equals("NoSuchElementException")) {
-						respond {
-							content =
-								"**Error:** Unable to access config for this guild! Please inform a member of staff!"
-						}
+					// Try to get the moderator ping role from the config.
+					// If a config is not set, inform the user and return@action
+					val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+					if (moderatorRoleId == null) {
+						respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
 						return@action
 					}
 
-					if (Snowflake(moderators!!) in roles) {
+					if (Snowflake(moderatorRoleId) in roles) {
 						channel.edit {
 							this.archived = true
 							this.locked = arguments.lock

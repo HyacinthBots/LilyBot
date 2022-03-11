@@ -59,16 +59,8 @@ dependencies {
     // Github API
     implementation(libs.github.api)
 
-    // Exposed
-    implementation(libs.exposed.core)
-    implementation(libs.exposed.dao)
-    implementation(libs.exposed.jdbc)
-
-    // Hikari
-    implementation(libs.hikari)
-
-    // SQLite
-    implementation(libs.sqlite.jdbc)
+    // KMongo
+    implementation(libs.kmongo)
 }
 
 application {

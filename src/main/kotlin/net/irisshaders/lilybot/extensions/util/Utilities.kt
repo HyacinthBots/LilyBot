@@ -25,14 +25,10 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ResponseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.update
 import kotlin.time.ExperimentalTime
 
 @Suppress("DuplicatedCode")
@@ -88,14 +84,14 @@ class Utilities : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
 
-				if (actionLogId.equals("NoSuchElementException")) {
+				if (actionLogId == null) {
 					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
 				val targetChannel: MessageChannelBehavior = if (arguments.targetChannel == null) {
 					channel
 				} else {
@@ -142,30 +138,31 @@ class Utilities : Extension() {
 			check { hasPermission(Permission.Administrator) }
 
 			action {
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
 
-				if (actionLogId.equals("NoSuchElementException")) {
+				if (actionLogId == null) {
 					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
 
 				this@ephemeralSlashCommand.kord.editPresence {
 					status = PresenceStatus.Online
 					playing(arguments.presenceArgument)
 				}
 
-				newSuspendedTransaction {
-					DatabaseManager.Utilities.insertIgnore {
-						it[status] = "status"
-						it[statusMessage] = arguments.presenceArgument
-					}
-
-					DatabaseManager.Utilities.update( { DatabaseManager.Utilities.status eq "status" } ) {
-						it[statusMessage] = arguments.presenceArgument
-					}
-				}
+				// todo fix this
+//				newSuspendedTransaction {
+//					DatabaseManager.Utilities.insertIgnore {
+//						it[status] = "status"
+//						it[statusMessage] = arguments.presenceArgument
+//					}
+//
+//					DatabaseManager.Utilities.update( { DatabaseManager.Utilities.status eq "status" } ) {
+//						it[statusMessage] = arguments.presenceArgument
+//					}
+//				}
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
 

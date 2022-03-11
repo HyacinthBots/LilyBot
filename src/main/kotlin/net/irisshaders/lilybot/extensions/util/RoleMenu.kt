@@ -25,10 +25,6 @@ import dev.kord.core.entity.interaction.ButtonInteraction
 import dev.kord.core.event.interaction.InteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseManager
-import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
 
 class RoleMenu : Extension() {
     override val name = "rolemenu"
@@ -65,13 +61,14 @@ class RoleMenu : Extension() {
 							style = ButtonStyle.Success
 							id = arguments.role.name + "add"
 
-							transaction {
-								DatabaseManager.Components.insertIgnore {
-									it[componentId] = arguments.role.name + "add"
-									it[roleId] = arguments.role.id.toString()
-									it[addOrRemove] = "add"
-								}
-							}
+							// todo fix this
+//							transaction {
+//								DatabaseManager.Components.insertIgnore {
+//									it[componentId] = arguments.role.name + "add"
+//									it[roleId] = arguments.role.id.toString()
+//									it[addOrRemove] = "add"
+//								}
+//							}
 
 							action { }
 						}
@@ -81,13 +78,14 @@ class RoleMenu : Extension() {
 							style = ButtonStyle.Danger
 							id = arguments.role.name + "remove"
 
-							transaction {
-								DatabaseManager.Components.insertIgnore {
-									it[componentId] = arguments.role.name + "remove"
-									it[roleId] = arguments.role.id.toString()
-									it[addOrRemove] = "remove"
-								}
-							}
+							// todo fix this
+//							transaction {
+//								DatabaseManager.Components.insertIgnore {
+//									it[componentId] = arguments.role.name + "remove"
+//									it[roleId] = arguments.role.id.toString()
+//									it[addOrRemove] = "remove"
+//								}
+//							}
 
 							action { }
 						}
@@ -99,15 +97,16 @@ class RoleMenu : Extension() {
 
 					var actionLogId: String? = null
 					var error = false
-					try {
-						transaction {
-							actionLogId = DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq guild!!.id.toString()
-							}.single()[DatabaseManager.Config.modActionLog]
-						}
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
+					// todo fix this
+//					try {
+//						transaction {
+//							actionLogId = DatabaseManager.Config.select {
+//								DatabaseManager.Config.guildId eq guild!!.id.toString()
+//							}.single()[DatabaseManager.Config.modActionLog]
+//						}
+//					} catch (e: NoSuchElementException) {
+//						error = true
+//					}
 					if (!error) {
 						val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
 						actionLog.createEmbed {
@@ -149,19 +148,20 @@ class RoleMenu : Extension() {
 				var addOrRemove: String? = null
 				var error = false
 
-				transaction {
-					try {
-						roleId = DatabaseManager.Components.select {
-							DatabaseManager.Components.componentId eq interaction.componentId
-						}.single()[DatabaseManager.Components.roleId]
-
-						addOrRemove = DatabaseManager.Components.select {
-							DatabaseManager.Components.componentId eq interaction.componentId
-						}.single()[DatabaseManager.Components.addOrRemove]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-				}
+				// todo fix this
+//				transaction {
+//					try {
+//						roleId = DatabaseManager.Components.select {
+//							DatabaseManager.Components.componentId eq interaction.componentId
+//						}.single()[DatabaseManager.Components.roleId]
+//
+//						addOrRemove = DatabaseManager.Components.select {
+//							DatabaseManager.Components.componentId eq interaction.componentId
+//						}.single()[DatabaseManager.Components.addOrRemove]
+//					} catch (e: NoSuchElementException) {
+//						error = true
+//					}
+//				}
 
 				if (!error) {
 					val role = guild.getRole(Snowflake(roleId!!))

@@ -24,8 +24,7 @@ import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
@@ -44,21 +43,20 @@ class ThreadInviter : Extension() {
 
 			action {
 				if (event.guildId == null) return@action
-				val supportTeam = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.supportTeam)
-				val supportChannel = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.supportChannel)
+				// Try to get the moderator ping role from the config. If a config is not set, return@action
+				val moderatorRoleId = DatabaseHelper.selectInConfig(event.guildId.toString(), "moderatorsPing")
+				if (moderatorRoleId == null) { return@action }
 
-				if (supportTeam.equals("NoSuchElemementException") || supportChannel.equals("NoSuchElementException")) {
-					return@action
-				}
-				try {
-					if (event.message.channelId != Snowflake(supportChannel!!)) return@action
-				} catch (e: NumberFormatException) {
-					return@action
-				}
+				val supportTeam = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportTeam")
+				val supportChannel = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportChannel")
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel() as TextChannel
+
+				if (textChannel != event.getGuild()?.getChannel(Snowflake(supportChannel))) {
+					return@action
+				}
 
 				//TODO: this is incredibly stupid, there has to be a better way to do this.
 				textChannel.activeThreads.collect {
@@ -87,7 +85,7 @@ class ThreadInviter : Extension() {
 					editMessage.edit {
 						this.content =
 							event.member!!.asUser().mention + ", the " + event.getGuild()
-								?.getRole(Snowflake(supportTeam!!))?.mention + " will be with you shortly!"
+								?.getRole(Snowflake(supportTeam))?.mention + " will be with you shortly!"
 					}
 
 					if (textChannel.messages.last().author?.id == kord.selfId) {
@@ -117,29 +115,24 @@ class ThreadInviter : Extension() {
 			check { failIf(event.channel.member != null) } // To avoid running on thread join, rather than creation only
 
 			action {
-				var supportError = false
-				var moderatorRoleError = false
+				if (event.channel.guildId == null) return@action
+				// Try to get the moderator ping role from the config. If a config is not set, return@action
+				val moderatorRoleId = DatabaseHelper.selectInConfig(event.channel.guildId.toString(), "moderatorsPing")
+				if (moderatorRoleId == null) { return@action }
 
-				val supportChannel = DatabaseHelper.selectInConfig(event.channel.guild.id, DatabaseManager.Config.supportChannel)
-				val supportTeamId = DatabaseHelper.selectInConfig(event.channel.guild.id, DatabaseManager.Config.supportTeam)
-				val moderatorRole = DatabaseHelper.selectInConfig(event.channel.guild.id, DatabaseManager.Config.moderatorsPing)
+				val supportTeam = DatabaseHelper.selectInConfig(event.channel.guildId.toString(), "supportTeam")
+				val supportChannel = DatabaseHelper.selectInConfig(event.channel.guildId.toString(), "supportChannel")
 
-				if (supportChannel.equals("NoSuchElementException") || supportTeamId.equals("NoSuchElementException")) {
-					supportError = true
-				} else if (moderatorRole.equals("NoSuchElementException")) {
-					moderatorRoleError = true
-				}
-
-				if (!supportError) {
+				if (supportTeam != null) {
 					if (try {
-							event.channel.parentId == Snowflake(supportChannel!!)
+							event.channel.parentId == Snowflake(supportChannel)
 						} catch (e: NumberFormatException) {
 							false
 						}
 					) {
 						val threadOwner = event.channel.owner.asUser()
 
-						val supportRole = event.channel.guild.getRole(Snowflake(supportTeamId!!))
+						val supportRole = event.channel.guild.getRole(Snowflake(supportTeam))
 
 						event.channel.withTyping {
 							delay(2.seconds)
@@ -168,17 +161,17 @@ class ThreadInviter : Extension() {
 									" thread for you"
 						}
 
-					} else if (!moderatorRoleError) {
+					} else if (moderatorRoleId != null) {
 						if (
 							try {
-								event.channel.parentId != Snowflake(supportChannel!!)
+								event.channel.parentId != Snowflake(supportChannel)
 							} catch (e: NumberFormatException) {
 								false
 							}
 						) {
 							val threadOwner = event.channel.owner.asUser()
 
-							val modRole = event.channel.guild.getRole(Snowflake(moderatorRole!!))
+							val modRole = event.channel.guild.getRole(Snowflake(moderatorRoleId))
 
 							event.channel.withTyping {
 								delay(2.seconds)

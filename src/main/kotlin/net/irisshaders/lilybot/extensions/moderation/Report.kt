@@ -30,8 +30,7 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ResponseHelper
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -50,23 +49,17 @@ class Report : Extension() {
 			locking = true // To prevent the command from being run more than once concurrently
 
 			action {
-				// Try to get the action log, message log and moderators from config. NoSuchElementException if failure
-				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.messageLogs)
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				// Try to get the action log, message log and moderators from config
+				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "messageLogs")
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
 
-				if (
-					messageLogId.equals("NoSuchElementException") ||
-					actionLogId.equals("NoSuchElementException") ||
-					moderatorRoleId.equals("NoSuchElementException")
-				) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
-					}
+				if (messageLogId == null || actionLogId == null || moderatorRoleId == null) {
+					respond { content = "**Error:** Unable to access config for this guild! Please inform a member of staff!" }
 					return@action
 				}
 
-				val messageLog = guild?.getChannel(Snowflake(messageLogId!!)) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior
 				try {
 					val reportedMessage = event.interaction.getTarget()
 					val messageAuthor = reportedMessage.getAuthorAsMember()
@@ -96,23 +89,17 @@ class Report : Extension() {
 			locking = true
 
 			action {
-				// Try to get the action log, message log and moderators from config. NoSuchElementException if failure
-				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.messageLogs)
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				val moderatorRole = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				// Try to get the action log, message log and moderators from config
+				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "messageLogs")
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
 
-				if (
-					messageLogId.equals("NoSuchElementException") ||
-					actionLogId.equals("NoSuchElementException") ||
-					moderatorRole.equals("NoSuchElementException")
-				) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
-					}
+				if (messageLogId == null || actionLogId == null || moderatorRoleId == null) {
+					respond { content = "**Error:** Unable to access config for this guild! Please inform a member of staff!" }
 					return@action
 				}
 
-				val messageLog = guild?.getChannel(Snowflake(messageLogId!!)) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior
 
 				try {
 					// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
@@ -125,7 +112,7 @@ class Report : Extension() {
 					}
 
 					// Create a report with the provided information
-					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRole, actionLogId)
+					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRoleId, actionLogId)
 
 				} catch (e: KtorRequestException) {
 					respond {

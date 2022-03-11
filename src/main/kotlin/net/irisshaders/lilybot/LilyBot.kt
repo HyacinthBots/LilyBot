@@ -12,7 +12,6 @@ import dev.kord.common.entity.PresenceStatus
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
-import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.extensions.config.Config
 import net.irisshaders.lilybot.extensions.events.JoinLeaveEvent
 import net.irisshaders.lilybot.extensions.events.MessageEvents
@@ -28,15 +27,19 @@ import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.SENTRY_DSN
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
+import org.litote.kmongo.coroutine.coroutine
+import org.litote.kmongo.reactivestreams.KMongo
 import java.nio.file.Files
 import java.nio.file.Path
 
 val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
+
+// mongo stuff
+val client = KMongo.createClient().coroutine //use coroutine extension
+val database = client.getDatabase("LilyBot") //normal java driver usage
 
 private val gitHubLogger = KotlinLogging.logger { }
 
@@ -83,31 +86,10 @@ suspend fun main() {
 			}
 		}
 
-		hooks {
-			afterKoinSetup {
-				DatabaseManager.startDatabase()
-			}
-		}
+		// todo note that you actually need to start the database seperately
 
 		presence {
-			var setStatus: String? = null
-			transaction {
-				setStatus = try {
-					DatabaseManager.Utilities.select {
-						DatabaseManager.Utilities.status eq "status"
-					}.single()[DatabaseManager.Utilities.statusMessage]
-				} catch (e: NoSuchElementException) {
-					"NoSuchElementException"
-				}
-			}
-
-			if (setStatus.equals("NoSuchElementException")) {
-				status = PresenceStatus.Online
-				playing("Iris")
-			} else {
-				status = PresenceStatus.Online
-				playing(setStatus!!)
-			}
+			//todo fix this
 		}
 
 		try {

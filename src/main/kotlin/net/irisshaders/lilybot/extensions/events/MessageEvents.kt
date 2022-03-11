@@ -20,13 +20,12 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageDeleteEvent
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
-import io.ktor.client.*
+import io.ktor.client.* //todo nuke these star imports
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.util.cio.*
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ResponseHelper
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
@@ -40,18 +39,17 @@ class MessageEvents : Extension() {
 
 	override suspend fun setup() {
 		/**
-		 * Log the deletion of messages to the guilds [DatabaseManager.Config.messageLogs] channel
+		 * Logs deleted messages in a guild to the message log channel designated in the config for that guild
 		 * @author NoComment1105
 		 */
 		event<MessageDeleteEvent> {
 			action {
-				// Try to get the  message logs channel
-				val messageLogId: String? = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.messageLogs)
-
-				// This uses return@action because events are triggered on bot startup
-				if (messageLogId == "NoSuchElementException" || messageLogId == null) { return@action }
-
 				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
+
+				// Try to get the message logs channel
+				val messageLogId: String =
+					DatabaseHelper.selectInConfig(event.guildId.toString(), "messageLogs")
+				if (messageLogId == null) return@action
 
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLogChannel = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior

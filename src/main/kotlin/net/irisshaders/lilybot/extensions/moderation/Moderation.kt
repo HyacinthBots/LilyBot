@@ -36,14 +36,8 @@ import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import mu.KotlinLogging
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ResponseHelper
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
-import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.update
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -66,23 +60,19 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ManageMessages) }
 
 			action {
-				// Try to get the action log from the config, if none is set return a NoSuchElementException
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				if (actionLogId.equals("NoSuchElementException")) {
-					respond {
-						content =
-							"**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
+				// Try to get the action log from the config. If a config is not set, inform the user and return@action
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				if (actionLogId == null) {
+					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
 				val messageAmount = arguments.messages
 				val messageHolder = arrayListOf<Snowflake>()
 				val textChannel = channel as GuildMessageChannelBehavior
 
-				// Get the specified amount of messages into an
-				// Array List of Snowflakes, and delete them
+				// Get the specified amount of messages into an array list of Snowflakes and delete them
 				channel.getMessagesAround(channel.messages.last().id, Integer.min(messageAmount, 100))
 
 				channel.getMessagesBefore(channel.messages.last().id, Integer.min(messageAmount, 100))
@@ -123,18 +113,16 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				// Try to get the action log and moderators from config. NoSuchElementException if it fails
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
-				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
-					respond {
-						content =
-							"**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
+				// Try to get the action log and moderator ping role from the config.
+				// If a config is not set, inform the user and return@action
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+				if (actionLogId == null || moderatorRoleId == null) {
+					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				try {
@@ -142,15 +130,11 @@ class Moderation : Extension() {
 					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
 					// Check if the user is a bot and fail
 					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond {
-							content = "You cannot ban bot users!"
-						}
+						respond { content = "You cannot ban bot users!" }
 						return@action
-					// If the moderators role is found in the roles list, fail
-					} else if (Snowflake(moderators!!) in roles) {
-						respond {
-							content = "You cannot ban moderators!"
-						}
+					// If the moderator ping role is found in the roles list, fail
+					} else if (Snowflake(moderatorRoleId) in roles) {
+						respond { content = "You cannot ban moderators!" }
 						return@action
 					}
 				// In the case of any exceptions that crop up
@@ -231,17 +215,14 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				// Try to get the action log from config, in case of NoSuchElementException, fail
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				if (actionLogId.equals("NoSuchElementException")) {
-					respond {
-						content =
-							"**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
+				// Try to get the action log from the config. If a config is not set, inform the user and return@action
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				if (actionLogId == null) {
+					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 				val bans = guild!!.bans.toList().map { it.userId }
 
@@ -278,18 +259,16 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				// Try to get the action log and moderators from config. NoSuchElementException if failure
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
-				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
-					respond {
-						content =
-							"**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
+				// Try to get the action log and moderator ping role from the config.
+				// If a config is not set, inform the user and return@action
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+				if (actionLogId == null || moderatorRoleId == null) {
+					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				try {
@@ -302,7 +281,7 @@ class Moderation : Extension() {
 						}
 						return@action
 					// Check if the moderator role is in the roles list and return
-					} else if (Snowflake(moderators!!) in roles) {
+					} else if (Snowflake(moderatorRoleId) in roles) {
 						respond {
 							content = "You cannot soft-ban moderators!"
 						}
@@ -384,18 +363,16 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.KickMembers) }
 
 			action {
-				// Try to get the action log and moderators from config. NoSuchElementException if failure
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
-				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
-					respond {
-						content =
-							"**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
+				// Try to get the action log and moderator ping role from the config.
+				// If a config is not set, inform the user and return@action
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+				if (actionLogId == null || moderatorRoleId == null) {
+					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				try {
@@ -407,8 +384,8 @@ class Moderation : Extension() {
 							content = "You cannot kick bot users!"
 						}
 						return@action
-					// If the moderators role is in the roles list, return
-					} else if (Snowflake(moderators!!) in roles) {
+					// If the moderator ping role is in the roles list, return
+					} else if (Snowflake(moderatorRoleId) in roles) {
 						respond {
 							content = "You cannot kick moderators!"
 						}
@@ -474,20 +451,17 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				// Try to get the action log and moderators from config. NoSuchElementException if failure
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
-				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
-					respond {
-						content =
-							"**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
+				// Try to get the action log and moderator ping role from the config.
+				// If a config is not set, inform the user and return@action
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+				if (actionLogId == null || moderatorRoleId == null) {
+					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
 					return@action
 				}
 
 				val userArg = arguments.userArgument
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-				var databasePoints: Int? = null
+				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
 
 				try {
 					// Get the users roles into a List of Snowflakes
@@ -498,8 +472,8 @@ class Moderation : Extension() {
 							content = "You cannot warn bot users!"
 						}
 						return@action
-					// If the moderators role is in roles, return
-					} else if (Snowflake(moderators!!) in roles) {
+					// If the moderator ping role is in roles, return
+					} else if (Snowflake(moderatorRoleId) in roles) {
 						respond {
 							content = "You cannot warn moderators!"
 						}
@@ -510,28 +484,10 @@ class Moderation : Extension() {
 					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
 				}
 
-				newSuspendedTransaction {
-					// Insert the user into the database with 0 points. If they are not already in the database
-					DatabaseManager.Warn.insertIgnore {
-						it[id] = userArg.id.toString()
-						it[points] = 0
-					}
-
-					// Select the users point count and assign it to a variable
-					databasePoints = DatabaseManager.Warn.select {
-						DatabaseManager.Warn.id eq userArg.id.toString()
-					}.single()[DatabaseManager.Warn.points]
-
-					// Update the point of a user with the specified amount
-					DatabaseManager.Warn.update({ DatabaseManager.Warn.id eq userArg.id.toString() }) {
-						it.update(points, points.plus(arguments.warnPoints))
-					}
-
-					// We'll get the user's updated points
-					databasePoints = DatabaseManager.Warn.select {
-						DatabaseManager.Warn.id eq userArg.id.toString()
-					}.single()[DatabaseManager.Warn.points]
-				}
+				val oldPoints = DatabaseHelper.selectInWarn(userArg.id.toString(), guild!!.id.toString())
+				val newPoints = oldPoints!!.plus(arguments.warnPoints)
+				DatabaseHelper.putInWarn(userArg.id.toString(), guild!!.id.toString(), newPoints)
+				val databasePoints = DatabaseHelper.selectInWarn(userArg.id.toString(), guild!!.id.toString())!!
 
 				// DM the user about the warning
 				val dm = ResponseHelper.userDMEmbed(
@@ -542,7 +498,7 @@ class Moderation : Extension() {
 				)
 
 				// Check the points amount, before running sanctions
-				if (databasePoints!! in (75..124)) {
+				if (databasePoints in (75..124)) {
 					ResponseHelper.userDMEmbed(
 						userArg,
 						"You have been timed-out in ${guild!!.fetchGuild().name}",
@@ -561,7 +517,7 @@ class Moderation : Extension() {
 						DISCORD_BLACK,
 						user.asUser()
 					)
-				} else if (databasePoints!! in (125..199)) {
+				} else if (databasePoints in (125..199)) {
 					ResponseHelper.userDMEmbed(
 						userArg,
 						"You have been timed-out in ${guild!!.fetchGuild().name}",
@@ -580,8 +536,8 @@ class Moderation : Extension() {
 						DISCORD_BLACK,
 						user.asUser()
 					)
-				} else if (databasePoints!! >= 200) {
-					guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // Remove timeout incase they were timed out when banned
+				} else if (databasePoints >= 200) {
+					guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // Remove timeout in case they were timed out when banned
 					ResponseHelper.userDMEmbed(
 						userArg,
 						"You have been banned from ${guild!!.fetchGuild().name}",
@@ -663,18 +619,16 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				// Try to get the action log and moderators from config. NoSuchElementException if failure
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
-				if (moderators.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
-					respond {
-						content =
-							"**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
+				// Try to get the action log and moderator ping role from the config.
+				// If a config is not set, inform the user and return@action
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+				if (actionLogId == null || moderatorRoleId == null) {
+					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
 
@@ -687,8 +641,8 @@ class Moderation : Extension() {
 							content = "You cannot timeout a bot!"
 						}
 						return@action
-					// If the moderators role is in roles list, fail
-					} else if (Snowflake(moderators!!) in roles) {
+					// If the moderator ping role is in roles list, fail
+					} else if (Snowflake(moderatorRoleId) in roles) {
 						respond {
 							content = "You cannot timeout a moderator!"
 						}
@@ -778,17 +732,14 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				// Try to get the action log from config. NoSuchElementException if failure
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				if (actionLogId.equals("NoSuchElementException")) {
-					respond {
-						content =
-							"**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
+				// Try to get the action log from the config. If a config is not set, inform the user and return@action
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				if (actionLogId == null) {
+					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				// Set timeout to null, or no timeout
