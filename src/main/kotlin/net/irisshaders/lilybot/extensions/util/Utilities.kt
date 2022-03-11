@@ -152,17 +152,7 @@ class Utilities : Extension() {
 					playing(arguments.presenceArgument)
 				}
 
-				// todo fix this
-//				newSuspendedTransaction {
-//					DatabaseManager.Utilities.insertIgnore {
-//						it[status] = "status"
-//						it[statusMessage] = arguments.presenceArgument
-//					}
-//
-//					DatabaseManager.Utilities.update( { DatabaseManager.Utilities.status eq "status" } ) {
-//						it[statusMessage] = arguments.presenceArgument
-//					}
-//				}
+				DatabaseHelper.putInStatus(arguments.presenceArgument)
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
 

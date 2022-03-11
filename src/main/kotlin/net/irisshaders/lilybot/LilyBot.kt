@@ -27,6 +27,7 @@ import net.irisshaders.lilybot.extensions.util.ThreadInviter
 import net.irisshaders.lilybot.extensions.util.Utilities
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.SENTRY_DSN
 import org.bson.UuidRepresentation
@@ -98,7 +99,11 @@ suspend fun main() {
 		// todo note that you actually need to start the database seperately
 
 		presence {
-			//todo fix this
+			if (DatabaseHelper.getStatus() != null) {
+				playing(DatabaseHelper.getStatus()!!)
+			} else {
+				playing("Iris")
+			}
 		}
 
 		try {

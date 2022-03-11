@@ -54,7 +54,12 @@ class Config : Extension() {
 
 						DatabaseHelper.putInConfig(newConfig)
 
-					} else { respond { content = "Config Set for Guild ID: ${guild!!.id}!" } }
+						respond { content = "Config Set for Guild ID: ${guild!!.id}!" }
+
+					} else {
+						respond { content = "**Error:** There is already a configuration set for this guild!" }
+						return@action
+					}
 
 					// Log the config being set in the action log
 					val actionLogChannel = guild?.getChannel(arguments.modActionLog.id) as GuildMessageChannelBehavior

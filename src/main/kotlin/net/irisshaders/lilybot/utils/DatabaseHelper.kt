@@ -135,6 +135,31 @@ object DatabaseHelper {
 		collection.deleteOne(ComponentData:: componentId eq newComponent.componentId)
 		collection.insertOne(newComponent)
 	}
+
+	/**
+	 * Add the given [newStatus] to the database
+	 *
+	 * @param [newStatus] The new status you wish to set
+	 * @author NoComment1105
+	 */
+	suspend fun putInStatus(newStatus: String) {
+		runBlocking {
+			val collection = database.getCollection<StatusData>()
+			collection.deleteOne(StatusData::status eq newStatus)
+			collection.insertOne(StatusData(newStatus))
+		}
+	}
+
+	fun getStatus(): String? {
+		var currentStatus: StatusData?
+		runBlocking {
+			val collection = database.getCollection<StatusData>()
+			currentStatus = collection.findOne("status")
+		}
+		return if (currentStatus != null) {
+			currentStatus!!.status
+		} else null
+	}
 }
 
 //todo switch literally every data type here from string to something that makes more sense
@@ -149,8 +174,18 @@ data class ConfigData (
 	val supportTeam: String?,
 )
 
-data class WarnData (val userId: String, val guildId: String, val points: Int)
+data class WarnData (
+	val userId: String,
+	val guildId: String,
+	val points: Int
+)
 
-data class ComponentData (val componentId: String, val roleId: String, val addOrRemove: String)
+data class ComponentData (
+	val componentId: String,
+	val roleId: String,
+	val addOrRemove: String
+)
 
-data class StatusData (val status: String)
+data class StatusData (
+	val status: String
+)
