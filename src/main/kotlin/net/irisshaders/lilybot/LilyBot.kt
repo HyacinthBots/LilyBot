@@ -8,7 +8,6 @@ import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
-import dev.kord.common.entity.PresenceStatus
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
@@ -101,5 +100,6 @@ suspend fun main() {
 			throw Exception(exception)
 		}
 	}
+
 	bot.start()
 }
