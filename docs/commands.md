@@ -32,6 +32,7 @@ Arguments:
 * `presence` - Value for Lily's status - String
 
 Result: Lily's "Now Playing:" status is set to `presence`.
+This command can only be executed in the test guild specified in your `.env` file.
 
 ## Moderation Commands
 These commands are for use by moderators.

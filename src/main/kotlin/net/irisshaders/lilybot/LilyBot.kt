@@ -41,16 +41,15 @@ import java.nio.file.Path
 val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
 
+// Connect to the database
 private val settings = MongoClientSettings
 	.builder()
 	.uuidRepresentation(UuidRepresentation.STANDARD)
 	.applyConnectionString(ConnectionString(env("DATABASE_URL")))
 	.build()
 
-private val client = KMongo.createClient(settings).coroutine //use coroutine extension
-
+private val client = KMongo.createClient(settings).coroutine
 val database = client.getDatabase("LilyBot")
-
 private val gitHubLogger = KotlinLogging.logger { }
 
 suspend fun main() {
@@ -96,11 +95,9 @@ suspend fun main() {
 			}
 		}
 
-		// todo note that you actually need to start the database seperately
-
 		presence {
-			if (DatabaseHelper.getStatus() != null) {
-				playing(DatabaseHelper.getStatus()!!)
+			if (DatabaseHelper.selectInStatus() != null) {
+				playing(DatabaseHelper.selectInStatus()!!)
 			} else {
 				playing("Iris")
 			}

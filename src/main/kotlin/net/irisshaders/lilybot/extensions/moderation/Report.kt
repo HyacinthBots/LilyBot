@@ -65,7 +65,7 @@ class Report : Extension() {
 					val messageAuthor = reportedMessage.getAuthorAsMember()
 
 					respond {
-						content = "Message reported to staff"
+						content = "Message reported to staff."
 					}
 
 					// Call the create report function with the provided information
@@ -73,11 +73,11 @@ class Report : Extension() {
 
 				} catch (e: KtorRequestException) {
 					respond {
-						content = "Sorry, I can't properly access this message, could you ping the moderators instead please? Thanks!"
+						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 					}
 				} catch (e: EntityNotFoundException) {
 					respond {
-						content = "Sorry, I can't find this message... Could you ping the moderators instead please? Thanks!"
+						content = "Sorry, I can't find this message. Please ping the moderators instead."
 					}
 				}
 			}
@@ -116,11 +116,11 @@ class Report : Extension() {
 
 				} catch (e: KtorRequestException) {
 					respond {
-						content = "Sorry, I can't properly access this message, could you ping the moderators instead please? Thanks!"
+						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 					}
 				} catch (e: EntityNotFoundException) {
 					respond {
-						content = "Sorry, I can't find this message... Could you ping the moderators instead please? Thanks!"
+						content = "Sorry, I can't find this message. Please ping the moderators instead."
 					}
 				}
 			}
@@ -135,9 +135,7 @@ class Report : Extension() {
 		moderatorRole: String?,
 		modActionLog: String?
 	) {
-		messageLog.createMessage {
-			content = "<@&${moderatorRole!!}>"
-		}
+		messageLog.createMessage { content = "<@&${moderatorRole!!}>" }
 
 		messageLog.createEmbed {
 			color = DISCORD_RED
@@ -355,7 +353,7 @@ class Report : Extension() {
 
 	inner class ManualReportArgs : Arguments() {
 		val message by string {
-			name = "message-link"
+			name = "messageLink"
 			description = "Link to the message to report"
 		}
 	}

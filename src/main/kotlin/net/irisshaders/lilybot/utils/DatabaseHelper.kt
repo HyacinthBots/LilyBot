@@ -137,6 +137,23 @@ object DatabaseHelper {
 	}
 
 	/**
+	 * Gets Lily's status from the database
+	 *
+	 * @return null or the set status in the database
+	 * @author NoComment1105
+	 */
+	fun selectInStatus(): String? {
+		var currentStatus: StatusData?
+		runBlocking {
+			val collection = database.getCollection<StatusData>()
+			currentStatus = collection.findOne("status")
+		}
+		return if (currentStatus != null) {
+			currentStatus!!.status
+		} else null
+	}
+
+	/**
 	 * Add the given [newStatus] to the database
 	 *
 	 * @param [newStatus] The new status you wish to set
@@ -148,23 +165,6 @@ object DatabaseHelper {
 			collection.deleteOne(StatusData::status eq newStatus)
 			collection.insertOne(StatusData(newStatus))
 		}
-	}
-
-	/**
-	 * Gets the status from the database
-	 *
-	 * @return null or the set status in the database
-	 * @author NoComment1105
-	 */
-	fun getStatus(): String? {
-		var currentStatus: StatusData?
-		runBlocking {
-			val collection = database.getCollection<StatusData>()
-			currentStatus = collection.findOne("status")
-		}
-		return if (currentStatus != null) {
-			currentStatus!!.status
-		} else null
 	}
 }
 

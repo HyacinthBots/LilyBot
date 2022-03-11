@@ -609,7 +609,8 @@ class Moderation : Extension() {
 		/**
 		 * Timeout command
 		 *
-		 * @author NoComment/IMS
+		 * @author NoComment1105
+		 * @author IMS212
 		 */
 		ephemeralSlashCommand(::TimeoutArgs) {
 			name = "timeout"
@@ -722,7 +723,7 @@ class Moderation : Extension() {
 		/**
 		 * Timeout removal command
 		 *
-		 * @author IMS
+		 * @author IMS212
 		 */
 		ephemeralSlashCommand(::UnbanArgs) {
 			name = "remove-timeout"

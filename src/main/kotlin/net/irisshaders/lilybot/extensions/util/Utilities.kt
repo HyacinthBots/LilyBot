@@ -26,8 +26,8 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.ResponseHelper
-import net.irisshaders.lilybot.utils.TEST_GUILD_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import kotlin.time.ExperimentalTime
 
@@ -36,7 +36,7 @@ class Utilities : Extension() {
 	override val name = "utilities"
 
 	override suspend fun setup() {
-		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(TEST_GUILD_CHANNEL) as GuildMessageChannelBehavior
+		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
 
 		/**
 		 * Online notification
@@ -134,6 +134,8 @@ class Utilities : Extension() {
 		ephemeralSlashCommand(::PresenceArgs) {
 			name = "set-status"
 			description = "Set Lily's current presence/status."
+
+			check { failIf { guildId != TEST_GUILD_ID } } // lock this command to the testing guild
 
 			check { hasPermission(Permission.Administrator) }
 

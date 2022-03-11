@@ -26,17 +26,13 @@ class JoinLeaveEvent : Extension() {
 	@Suppress("DuplicatedCode")
 	override suspend fun setup() {
 		event<MemberJoinEvent> {
-
 			action {
-				// Try to get the join channel ID from the database
+				// Try to get the join channel ID from the database and return@action if null
 				val joinChannelId = DatabaseHelper.selectInConfig(event.guildId.toString(), "joinChannel")
+					?: return@action
 
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
-
-				// If the database has nothing in it for join channel, return
-				// This should only happen if no config is set, it's not a nullable field
-				if (joinChannelId == null) return@action
 
 				val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId)) as GuildMessageChannelBehavior
 
@@ -63,17 +59,13 @@ class JoinLeaveEvent : Extension() {
 		}
 
 		event<MemberLeaveEvent> {
-
 			action {
-				// Try to get the join channel ID from the database
+				// Try to get the join channel ID from the database and return@action if null
 				val joinChannelId = DatabaseHelper.selectInConfig(event.guildId.toString(), "joinChannel")
+					?: return@action
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
-
-				// If the database has nothing in it for join channel, return
-				// This should only happen if no config is set, it's not a nullable field
-				if (joinChannelId == null) return@action
 
 				val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId)) as GuildMessageChannelBehavior
 

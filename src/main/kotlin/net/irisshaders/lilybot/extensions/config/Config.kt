@@ -38,7 +38,7 @@ class Config : Extension() {
 				check { hasPermission(Permission.Administrator) }
 
 				action {
-					// If an action log ID exists, set the config
+					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
 
 					if (DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog") == null) {
@@ -80,7 +80,7 @@ class Config : Extension() {
 				check { hasPermission(Permission.Administrator) }
 
 				action {
-					// If an action log ID doesn't exist, inform the user their config isn't set.
+					// If an action log ID esists, inform the user their config isn't set.
 					// Otherwise, clear the config.
 					if (DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog") == null) {
 						respond { content = "**Error:** There is no configuration set for this guild!" }
