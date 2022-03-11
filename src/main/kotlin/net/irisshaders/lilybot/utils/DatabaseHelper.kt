@@ -19,7 +19,7 @@ object DatabaseHelper {
 
 	// todo write javadocs for all of these
 
-	suspend fun selectInConfig(inputGuildId: String, inputColumn: String): String {
+	suspend fun selectInConfig(inputGuildId: String, inputColumn: String): String? {
 		var selectedConfig: ConfigData?
 
 		runBlocking {
@@ -35,7 +35,7 @@ object DatabaseHelper {
 			"joinChannel" -> selectedConfig!!.joinChannel
 			"supportChannel" -> selectedConfig!!.supportChannel
 			"supportTeam" -> selectedConfig!!.supportTeam
-			else -> "Major error" // todo fix error processing
+			else -> null // todo fix error processing (Nocomment switched to null to fix a todo elsewhere :> )
 		}
 	}
 

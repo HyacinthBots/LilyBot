@@ -20,10 +20,10 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageDeleteEvent
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
-import io.ktor.client.* //todo nuke these star imports
+import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.util.cio.*
+import io.ktor.util.*
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ResponseHelper
@@ -48,8 +48,7 @@ class MessageEvents : Extension() {
 
 				// Try to get the message logs channel
 				val messageLogId: String =
-					DatabaseHelper.selectInConfig(event.guildId.toString(), "messageLogs")
-				if (messageLogId == null) return@action
+					DatabaseHelper.selectInConfig(event.guildId.toString(), "messageLogs") ?: return@action
 
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLogChannel = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior

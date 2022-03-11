@@ -14,8 +14,8 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import net.irisshaders.lilybot.utils.ConfigData
-import net.irisshaders.lilybot.utils.ResponseHelper
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.ResponseHelper
 
 class Config : Extension() {
 
@@ -41,9 +41,8 @@ class Config : Extension() {
 					// If an action log ID exists, set the config
 					// Otherwise, inform the user their config is already set
 
-					//todo there must be some way to make this not always null
 					if (DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog") == null) {
-						val newConfig: ConfigData = ConfigData(
+						val newConfig = ConfigData(
 							guild!!.id.toString(),
 							arguments.moderatorPing.id.toString(),
 							arguments.modActionLog.id.toString(),
