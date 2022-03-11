@@ -43,9 +43,6 @@ class ThreadInviter : Extension() {
 
 			action {
 				if (event.guildId == null) return@action
-				// Try to get the moderator ping role from the config. If a config is not set, return@action
-				val moderatorRoleId = DatabaseHelper.selectInConfig(event.guildId.toString(), "moderatorsPing")
-				if (moderatorRoleId == null) { return@action }
 
 				val supportTeam = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportTeam")
 				val supportChannel = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportChannel")
@@ -54,7 +51,7 @@ class ThreadInviter : Extension() {
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel() as TextChannel
 
-				if (textChannel != event.getGuild()?.getChannel(Snowflake(supportChannel))) {
+				if (supportChannel != null && textChannel != event.getGuild()?.getChannel(Snowflake(supportChannel))) {
 					return@action
 				}
 
@@ -74,6 +71,7 @@ class ThreadInviter : Extension() {
 					event.message.delete("User already has a thread")
 					response.delete(10000L, false)
 				} else {
+					if (supportTeam == null) return@action
 					val thread =
 						textChannel.startPublicThreadWithMessage(
 							event.message.id,
@@ -115,15 +113,13 @@ class ThreadInviter : Extension() {
 			check { failIf(event.channel.member != null) } // To avoid running on thread join, rather than creation only
 
 			action {
-				if (event.channel.guildId == null) return@action
 				// Try to get the moderator ping role from the config. If a config is not set, return@action
 				val moderatorRoleId = DatabaseHelper.selectInConfig(event.channel.guildId.toString(), "moderatorsPing")
-				if (moderatorRoleId == null) { return@action }
 
 				val supportTeam = DatabaseHelper.selectInConfig(event.channel.guildId.toString(), "supportTeam")
 				val supportChannel = DatabaseHelper.selectInConfig(event.channel.guildId.toString(), "supportChannel")
 
-				if (supportTeam != null) {
+				if (supportTeam != null && supportChannel != null) {
 					if (try {
 							event.channel.parentId == Snowflake(supportChannel)
 						} catch (e: NumberFormatException) {
