@@ -8,6 +8,9 @@ import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
+import com.kotlindiscord.kord.extensions.utils.env
+import com.mongodb.ConnectionString
+import com.mongodb.MongoClientSettings
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
@@ -26,6 +29,7 @@ import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.SENTRY_DSN
+import org.bson.UuidRepresentation
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import org.litote.kmongo.coroutine.coroutine
@@ -36,9 +40,15 @@ import java.nio.file.Path
 val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
 
-// mongo stuff
-val client = KMongo.createClient().coroutine //use coroutine extension
-val database = client.getDatabase("LilyBot") //normal java driver usage
+private val settings = MongoClientSettings
+	.builder()
+	.uuidRepresentation(UuidRepresentation.STANDARD)
+	.applyConnectionString(ConnectionString(env("DATABASE_URL")))
+	.build()
+
+private val client = KMongo.createClient(settings).coroutine //use coroutine extension
+
+val database = client.getDatabase("LilyBot")
 
 private val gitHubLogger = KotlinLogging.logger { }
 
