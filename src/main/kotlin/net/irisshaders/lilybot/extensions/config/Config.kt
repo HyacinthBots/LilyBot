@@ -52,7 +52,7 @@ class Config : Extension() {
 							arguments.supportChannel?.id.toString(),
 						)
 
-						DatabaseHelper.setConfig(guild!!.id.toString(), newConfig)
+						DatabaseHelper.putInConfig(newConfig)
 
 					} else { respond { content = "Config Set for Guild ID: ${guild!!.id}!" } }
 

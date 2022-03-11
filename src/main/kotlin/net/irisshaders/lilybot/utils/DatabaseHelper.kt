@@ -31,22 +31,21 @@ object DatabaseHelper {
 			"joinChannel" -> selectedConfig!!.joinChannel
 			"supportChannel" -> selectedConfig!!.supportChannel
 			"supportTeam" -> selectedConfig!!.supportTeam
-			else -> null // todo fix error processing (Nocomment switched to null to fix a todo elsewhere :> )
+			else -> null // todo check that returning null on an error works
 		}
 	}
 
 	/**
-	 * A new config based on the given [newConfig] will be set for the provided [inputGuildId]
+	 * Adds the given [newConfig] to the database
 	 *
-	 * @param inputGuildId The ID of the guild the command was run in
 	 * @param newConfig The new config values you want to set
 	 * @author tempest15
 	 */
-	suspend fun setConfig(inputGuildId: String, newConfig: ConfigData) {
+	suspend fun putInConfig(newConfig: ConfigData) {
 		runBlocking {
 			val collection = database.getCollection<ConfigData>()
-			collection.deleteOne(ConfigData:: guildId eq inputGuildId)
-			collection.insertOne(newConfig) // todo this might not actually override old ones
+			collection.deleteOne(ConfigData:: guildId eq newConfig.guildId)
+			collection.insertOne(newConfig)
 		}
 	}
 
@@ -95,14 +94,46 @@ object DatabaseHelper {
 	 * @author tempest15
 	 */
 	suspend fun putInWarn(inputUserId: String, inputGuildId: String, inputPointValue: Int) {
-		var selectedUserInGuild: WarnData?
-
 		runBlocking {
 			val collection = database.getCollection<WarnData>()
-			selectedUserInGuild = collection.findOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 			collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 			collection.insertOne(WarnData(inputUserId, inputGuildId, inputPointValue))
 		}
+	}
+
+	/**
+	 * Using the provided [inputComponentId] and [inputColumn] a value or null will be returned from the database
+	 *
+	 * @param inputComponentId The ID of the component the event was triggered with
+	 * @param inputColumn The config value associated with that component that you want
+	 * @return null or the result from the database
+	 * @author tempest15
+	 */
+	suspend fun selectInComponents(inputComponentId: String, inputColumn: String): String? {
+		var selectedComponent: ComponentData?
+		runBlocking {
+			val collection = database.getCollection<ComponentData>()
+			selectedComponent = collection.findOne(ComponentData:: componentId eq inputComponentId)
+		}
+
+		return when (inputColumn) {
+			"componentId" -> selectedComponent!!.componentId
+			"roleId" -> selectedComponent!!.roleId
+			"addOrRemove" -> selectedComponent!!.addOrRemove
+			else -> null  // todo check that returning null on an error works
+		}
+	}
+
+	/**
+	 * Add the given [newComponent] to the database
+	 *
+	 * @param [newComponent] The data for the component to be added
+	 * @author tempest15
+	 */
+	suspend fun putInComponents(newComponent: ComponentData) {
+		val collection = database.getCollection<ComponentData>()
+		collection.deleteOne(ComponentData:: componentId eq newComponent.componentId)
+		collection.insertOne(newComponent)
 	}
 }
 
@@ -114,12 +145,12 @@ data class ConfigData (
 	val modActionLog: String,
 	val messageLogs: String,
 	val joinChannel: String,
-	val supportChannel: String,
-	val supportTeam: String,
+	val supportChannel: String?,
+	val supportTeam: String?,
 )
 
 data class WarnData (val userId: String, val guildId: String, val points: Int)
 
-data class ComponentsData (val componentId: String, val roleId: String, val addOrRemove: String)
+data class ComponentData (val componentId: String, val roleId: String, val addOrRemove: String)
 
 data class StatusData (val status: String)
