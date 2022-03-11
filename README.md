@@ -41,5 +41,5 @@ Follow our in-depth [installation guide](https://github.com/IrisShaders/LilyBot/
 ![GitHub contributors](https://img.shields.io/github/contributors/IrisShaders/LilyBot?label=Total%20Contributors)
 
 <a href="https://github.com/IrisShaders/LilyBot/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=IrisShaders/LilyBot" />
+  <img src="https://contrib.rocks/image?repo=IrisShaders/LilyBot" alt="The LilyBot contributors" />
 </a>

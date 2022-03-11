@@ -11,5 +11,3 @@ val SENTRY_DSN = envOrNull("SENTRY_DSN")
 val TEST_GUILD_ID = Snowflake(env("TEST_GUILD_ID"))
 val TEST_GUILD_CHANNEL = Snowflake(env("TEST_GUILD_CHANNEL"))
 val CUSTOM_COMMANDS_PATH = env("CUSTOM_COMMANDS_PATH")
-
-val JDBC_URL = envOrNull("JDBC_URL") ?: "jdbc:sqlite:./data/database.db"

@@ -150,6 +150,12 @@ object DatabaseHelper {
 		}
 	}
 
+	/**
+	 * Get's the status from the database
+	 *
+	 * @return null or the set status in the database
+	 * @author NoComment1105
+	 */
 	fun getStatus(): String? {
 		var currentStatus: StatusData?
 		runBlocking {
