@@ -83,7 +83,7 @@ object DatabaseHelper {
 		return if (selectedUserInGuild != null) {
 			selectedUserInGuild!!.points
 		} else {
-			null
+			0
 		}
 	}
 
