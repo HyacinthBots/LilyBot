@@ -8,7 +8,6 @@ import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
-import com.kotlindiscord.kord.extensions.utils.env
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import dev.kord.gateway.Intent
@@ -29,6 +28,7 @@ import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
+import net.irisshaders.lilybot.utils.MONGO_URI
 import net.irisshaders.lilybot.utils.SENTRY_DSN
 import org.bson.UuidRepresentation
 import org.kohsuke.github.GitHub
@@ -45,7 +45,7 @@ var github: GitHub? = null
 private val settings = MongoClientSettings
 	.builder()
 	.uuidRepresentation(UuidRepresentation.STANDARD)
-	.applyConnectionString(ConnectionString(env("DATABASE_URL")))
+	.applyConnectionString(ConnectionString(MONGO_URI)) //todo make sure this actually works
 	.build()
 
 private val client = KMongo.createClient(settings).coroutine
