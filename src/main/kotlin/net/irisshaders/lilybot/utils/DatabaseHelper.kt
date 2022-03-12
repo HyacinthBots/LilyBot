@@ -170,28 +170,28 @@ object DatabaseHelper {
 //todo switch literally every data type here from string to something that makes more sense
 
 data class ConfigData (
-	val guildId: String,
-	val moderatorsPing: String,
-	val modActionLog: String,
-	val messageLogs: String,
-	val joinChannel: String,
+	val guildId: String?,
+	val moderatorsPing: String?,
+	val modActionLog: String?,
+	val messageLogs: String?,
+	val joinChannel: String?,
 	val supportChannel: String?,
 	val supportTeam: String?,
 )
 
 data class WarnData (
-	val userId: String,
-	val guildId: String,
-	val points: Int
+	val userId: String?,
+	val guildId: String?,
+	val points: Int?
 )
 
 data class ComponentData (
-	val componentId: String,
-	val roleId: String,
-	val addOrRemove: String
+	val componentId: String?,
+	val roleId: String?,
+	val addOrRemove: String?
 )
 
 data class StatusData (
-	val key: String, // this is just so we can find the status and should always be set to "LilyStatus"
-	val status: String
+	val key: String?, // this is just so we can find the status and should always be set to "LilyStatus"
+	val status: String?
 )

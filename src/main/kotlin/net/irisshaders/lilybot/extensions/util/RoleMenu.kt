@@ -136,12 +136,20 @@ class RoleMenu : Extension() {
 				val guild = kord.getGuild(interaction.data.guildId.value!!)!!
 				val member = guild.getMember(interaction.user.id)
 
-				val roleId: String? = DatabaseHelper.selectInComponents(interaction.componentId, "roleId")
-				val addOrRemove: String? = DatabaseHelper.selectInComponents(interaction.componentId, "addOrRemove")
+				// this is  a very dirty fix, so it doesn't conflict with log uploading
+				var roleId: String?
+				var addOrRemove: String?
+				try {
+					roleId = DatabaseHelper.selectInComponents(interaction.componentId, "roleId")
+					addOrRemove = DatabaseHelper.selectInComponents(interaction.componentId, "addOrRemove")
 
-				if (roleId == null || addOrRemove == null) {return@action}
+				} catch (e: java.lang.NullPointerException) {
+					return@action
+				}
 
-				val role = guild.getRole(Snowflake(roleId))
+				if (roleId == "null" || addOrRemove == "null") {return@action}
+
+				val role = guild.getRole(Snowflake(roleId!!))
 
 				if (addOrRemove == "add") {
 					if (!member.hasRole(role)) {

@@ -47,13 +47,13 @@ class ThreadInviter : Extension() {
 				val supportChannelId = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportChannel")
 
 				// you have to check as a string apparently
-				if (supportChannelId == "null" || supportTeamId == "null") {return@action}
+				if (supportChannelId == null || supportTeamId == null) {return@action}
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel() as TextChannel
 				val guild = event.getGuild()
-				val supportChannel = guild?.getChannel(Snowflake(supportChannelId!!)) as MessageChannelBehavior
+				val supportChannel = guild?.getChannel(Snowflake(supportChannelId)) as MessageChannelBehavior
 
 				// fail if the message is not in the support channel
 				if (textChannel != supportChannel) { return@action }
@@ -85,7 +85,7 @@ class ThreadInviter : Extension() {
 					editMessage.edit {
 						this.content =
 							event.member!!.asUser().mention + ", the " + event.getGuild()
-								?.getRole(Snowflake(supportTeamId!!))?.mention + " will be with you shortly!"
+								?.getRole(Snowflake(supportTeamId))?.mention + " will be with you shortly!"
 					}
 
 					if (textChannel.messages.last().author?.id == kord.selfId) {
