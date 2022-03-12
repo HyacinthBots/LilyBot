@@ -6,7 +6,7 @@ When opening issues, please make sure that you include as much information as ap
 [stacktrace](https://stackoverflow.com/questions/3988788/what-is-a-stack-trace-and-how-can-i-use-it-to-debug-my-application-errors)
 of what went wrong. This can be attached as a file, or uploaded to a [GitHub Gist](https://gist.github.com/).
 * If your issue is a bug or otherwise unexpected behavior, explain what happened and what you expected to happen.
-* If you're having trouble setting the bot up, we recommend joining the [Iris Discord server](https://discord.gg/jQJnav2jPu) as we will be able to provide more dynamic support there.
+* If you're having trouble setting the bot up, we recommend joining [our discord](https://discord.gg/hy2329fcTZ) as we will be able to provide more dynamic support there.
 
 ## Pull Requests
 
@@ -21,8 +21,7 @@ By submitting changes to the repository, you are hereby agreeing that:
 which would pose issues for inclusion or distribution under the above license.
 
 If you do not agree with these terms, please do not submit contributions to this repository. If you have any questions
-about these terms, feel free to join the [Iris Discord server](https://discord.gg/jQJnav2jPu) and ask any questions that
-you may have in the the `lilybot-development` channel.
+about these terms, feel free to join [our discord](https://discord.gg/hy2329fcTZ) and ask any questions that you may have.
 
 ### Code Style
 

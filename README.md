@@ -12,7 +12,8 @@
 
 ## Links
 * **Visit [our website](https://irisshaders.net) for downloads and pretty screenshots!**
-* Visit [our Discord server](https://discord.gg/jQJnav2jPu) to chat about Iris projects (such as LilyBot) and get support!
+* Visit [Iris's Discord](https://discord.gg/hy2329fcTZ) to chat about Iris projects and join our amazing community.
+* Visit [our discord](https://discord.gg/hy2329fcTZ) to watch the development of LilyBot and get support.
 * Visit [Coderbot's Patreon page](https://www.patreon.com/coderbot) to support the continued development of Iris projects!
 
 ### Why?
