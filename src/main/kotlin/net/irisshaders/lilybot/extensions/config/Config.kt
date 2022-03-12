@@ -48,8 +48,8 @@ class Config : Extension() {
 							arguments.modActionLog.id.toString(),
 							arguments.messageLogs.id.toString(),
 							arguments.joinChannel.id.toString(),
-							arguments.supportTeam?.id.toString(),
 							arguments.supportChannel?.id.toString(),
+							arguments.supportTeam?.id.toString(),
 						)
 
 						DatabaseHelper.putInConfig(newConfig)
@@ -80,16 +80,13 @@ class Config : Extension() {
 				check { hasPermission(Permission.Administrator) }
 
 				action {
-					// If an action log ID esists, inform the user their config isn't set.
+					// If an action log ID resists, inform the user their config isn't set.
 					// Otherwise, clear the config.
 					if (DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog") == null) {
 						respond { content = "**Error:** There is no configuration set for this guild!" }
 						return@action // Return to avoid the database trying to delete things that don't exist
 					} else {
-						DatabaseHelper.clearConfig(guild!!.id.toString())
-
 						respond { content = "Cleared config for Guild ID: ${guild!!.id}" }
-
 						// Log the config being cleared to the action log
 						val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
 						val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
@@ -100,6 +97,9 @@ class Config : Extension() {
 							null,
 							user.asUser()
 						)
+
+						// clear the config (do this last)
+						DatabaseHelper.clearConfig(guild!!.id.toString())
 					}
 				}
 			}

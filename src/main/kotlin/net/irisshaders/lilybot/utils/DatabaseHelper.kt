@@ -20,8 +20,9 @@ object DatabaseHelper {
 
 		runBlocking {
 			val collection = database.getCollection<ConfigData>()
-			selectedConfig = collection.findOne(ConfigData::guildId eq inputGuildId)!!
+			selectedConfig = collection.findOne(ConfigData::guildId eq inputGuildId)
 		}
+		if (selectedConfig ==  null) {return  null}
 
 		return when (inputColumn) {
 			"guildId" -> selectedConfig!!.guildId
@@ -142,15 +143,13 @@ object DatabaseHelper {
 	 * @return null or the set status in the database
 	 * @author NoComment1105
 	 */
-	fun selectInStatus(): String? {
-		var currentStatus: StatusData?
+	fun selectInStatus(): String {
+		val selectedStatus: StatusData?
 		runBlocking {
 			val collection = database.getCollection<StatusData>()
-			currentStatus = collection.findOne("status")
+			selectedStatus = collection.findOne(StatusData::key eq "LilyStatus")
 		}
-		return if (currentStatus != null) {
-			currentStatus!!.status
-		} else null
+		return selectedStatus?.status ?: "Iris"
 	}
 
 	/**
@@ -162,8 +161,8 @@ object DatabaseHelper {
 	suspend fun putInStatus(newStatus: String) {
 		runBlocking {
 			val collection = database.getCollection<StatusData>()
-			collection.deleteOne(StatusData::status eq newStatus)
-			collection.insertOne(StatusData(newStatus))
+			collection.deleteOne(StatusData::key eq "LilyStatus")
+			collection.insertOne(StatusData("LilyStatus", newStatus))
 		}
 	}
 }
@@ -193,5 +192,6 @@ data class ComponentData (
 )
 
 data class StatusData (
+	val key: String, // this is just so we can find the status and should always be set to "LilyStatus"
 	val status: String
 )
