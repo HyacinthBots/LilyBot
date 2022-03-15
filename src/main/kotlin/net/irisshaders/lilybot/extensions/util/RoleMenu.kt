@@ -66,7 +66,7 @@ class RoleMenu : Extension() {
 
 							val newComponent = ComponentData(
 								arguments.role.name + "add",
-								arguments.role.id.toString(),
+								arguments.role.id,
 								"add"
 							)
 							DatabaseHelper.putInComponents(newComponent)
@@ -81,7 +81,7 @@ class RoleMenu : Extension() {
 
 							val newComponent = ComponentData(
 								arguments.role.name + "remove",
-								arguments.role.id.toString(),
+								arguments.role.id,
 								"remove"
 							)
 							DatabaseHelper.putInComponents(newComponent)
@@ -94,13 +94,16 @@ class RoleMenu : Extension() {
 
 					respond { content = "Role menu created." }
 
-					// Try to get the action log from the config. If a config is not set, inform the user and return@action
-					val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+					// Try to get the action log from the config.
+					// If a config is not set, inform the user and return@action
+					val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 					if (actionLogId == null) {
-						respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
+						respond {
+							content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+						}
 						return@action
 					}
-					val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 					actionLog.createEmbed {
 						color = DISCORD_BLACK
@@ -137,19 +140,21 @@ class RoleMenu : Extension() {
 				val member = guild.getMember(interaction.user.id)
 
 				// this is  a very dirty fix, so it doesn't conflict with log uploading
-				var roleId: String?
+				var roleId: Snowflake?
 				var addOrRemove: String?
 				try {
-					roleId = DatabaseHelper.selectInComponents(interaction.componentId, "roleId")
-					addOrRemove = DatabaseHelper.selectInComponents(interaction.componentId, "addOrRemove")
+					roleId = DatabaseHelper.selectInComponents(interaction.componentId,
+						"roleId") as Snowflake?
+					addOrRemove = DatabaseHelper.selectInComponents(interaction.componentId,
+						"addOrRemove") as String?
 
 				} catch (e: NullPointerException) {
 					return@action
 				}
 
-				if (roleId == "null" || addOrRemove == "null") {return@action}
+				if (roleId == null || addOrRemove == null) {return@action}
 
-				val role = guild.getRole(Snowflake(roleId!!))
+				val role = guild.getRole(roleId)
 
 				if (addOrRemove == "add") {
 					if (!member.hasRole(role)) {
@@ -158,14 +163,16 @@ class RoleMenu : Extension() {
 					} else if (member.hasRole(role)) {
 						interaction.respondEphemeral {
 							content =
-								"You already have the ${role.mention} role so it can't be added. If you don't, please contact a staff member."
+								"You already have the ${role.mention} role so it can't be added. " +
+										"If you don't, please contact a staff member."
 						}
 					}
 				} else if (addOrRemove == "remove") {
 					if (!member.hasRole(role)) {
 						interaction.respondEphemeral {
 							content =
-								"You don't have the ${role.mention} role so it can't be removed. If you do, please contact a staff member."
+								"You don't have the ${role.mention} role so it can't be removed. " +
+										"If you do, please contact a staff member."
 						}
 					} else if (member.hasRole(role)) {
 						member.removeRole(role.id)

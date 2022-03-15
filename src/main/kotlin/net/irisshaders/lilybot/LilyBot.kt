@@ -96,7 +96,7 @@ suspend fun main() {
 			}
 		}
 
-		presence { playing(DatabaseHelper.selectInStatus()) }
+		presence { playing("Iris") } //DatabaseHelper.selectInStatus()
 
 		try {
 			github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()

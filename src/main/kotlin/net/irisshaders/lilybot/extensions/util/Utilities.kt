@@ -17,7 +17,6 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.PresenceStatus
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
@@ -84,14 +83,14 @@ class Utilities : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 
 				if (actionLogId == null) {
 					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val targetChannel: MessageChannelBehavior = if (arguments.targetChannel == null) {
 					channel
 				} else {
@@ -144,14 +143,14 @@ class Utilities : Extension() {
 					return@action
 				}
 
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 
 				if (actionLogId == null) {
 					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId)) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 				this@ephemeralSlashCommand.kord.editPresence {
 					status = PresenceStatus.Online

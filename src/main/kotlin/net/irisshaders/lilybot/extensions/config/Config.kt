@@ -41,15 +41,15 @@ class Config : Extension() {
 					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
 
-					if (DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog") == null) {
+					if (DatabaseHelper.selectInConfig(guild!!.id, "modActionLog") == null) {
 						val newConfig = ConfigData(
-							guild!!.id.toString(),
-							arguments.moderatorPing.id.toString(),
-							arguments.modActionLog.id.toString(),
-							arguments.messageLogs.id.toString(),
-							arguments.joinChannel.id.toString(),
-							arguments.supportChannel?.id.toString(),
-							arguments.supportTeam?.id.toString(),
+							guild!!.id,
+							arguments.moderatorPing.id,
+							arguments.modActionLog.id,
+							arguments.messageLogs.id,
+							arguments.joinChannel.id,
+							arguments.supportChannel?.id,
+							arguments.supportTeam?.id,
 						)
 
 						DatabaseHelper.putInConfig(newConfig)
@@ -82,14 +82,14 @@ class Config : Extension() {
 				action {
 					// If an action log ID resists, inform the user their config isn't set.
 					// Otherwise, clear the config.
-					if (DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog") == null) {
+					if (DatabaseHelper.selectInConfig(guild!!.id, "modActionLog") == null) {
 						respond { content = "**Error:** There is no configuration set for this guild!" }
 						return@action // Return to avoid the database trying to delete things that don't exist
 					} else {
 						respond { content = "Cleared config for Guild ID: ${guild!!.id}" }
 						// Log the config being cleared to the action log
-						val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
-						val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+						val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
+						val actionLogChannel = guild?.getChannel(actionLogId!!) as GuildMessageChannelBehavior
 						ResponseHelper.responseEmbedInChannel(
 							actionLogChannel,
 							"Configuration cleared!",
@@ -99,7 +99,7 @@ class Config : Extension() {
 						)
 
 						// clear the config (do this last)
-						DatabaseHelper.clearConfig(guild!!.id.toString())
+						DatabaseHelper.clearConfig(guild!!.id)
 					}
 				}
 			}

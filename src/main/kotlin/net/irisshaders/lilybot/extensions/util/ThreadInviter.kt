@@ -14,7 +14,6 @@ import com.kotlindiscord.kord.extensions.utils.delete
 import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.ArchiveDuration
 import dev.kord.common.entity.MessageType
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.behavior.edit
@@ -56,8 +55,8 @@ class ThreadInviter : Extension() {
 					|| event.message.getChannel() is NewsChannelThread } }
 
 			action {
-				val supportTeamId = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportTeam")
-				val supportChannelId = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportChannel")
+				val supportTeamId = DatabaseHelper.selectInConfig(event.guildId!!, "supportTeam")
+				val supportChannelId = DatabaseHelper.selectInConfig(event.guildId!!, "supportChannel")
 
 				if (supportChannelId == null || supportTeamId == null) { return@action }
 
@@ -65,7 +64,7 @@ class ThreadInviter : Extension() {
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel() as TextChannel
 				val guild = event.getGuild()
-				val supportChannel = guild?.getChannel(Snowflake(supportChannelId)) as MessageChannelBehavior
+				val supportChannel = guild?.getChannel(supportChannelId) as MessageChannelBehavior
 
 				// fail if the message is not in the support channel
 				if (textChannel != supportChannel) { return@action }
@@ -81,7 +80,8 @@ class ThreadInviter : Extension() {
 				if (userThreadExists) {
 					val response = event.message.respond {
 						content =
-							"You already have a thread, please talk about your issue in it. " + existingUserThread!!.mention
+							"You already have a thread, please talk about your issue " +
+									"in it. " + existingUserThread!!.mention
 					}
 					event.message.delete("User already has a thread")
 					response.delete(10000L, false)
@@ -97,7 +97,7 @@ class ThreadInviter : Extension() {
 					editMessage.edit {
 						this.content =
 							event.member!!.asUser().mention + ", the " + event.getGuild()
-								?.getRole(Snowflake(supportTeamId))?.mention + " will be with you shortly!"
+								?.getRole(supportTeamId)?.mention + " will be with you shortly!"
 					}
 
 					if (textChannel.messages.last().author?.id == kord.selfId) {
@@ -124,25 +124,27 @@ class ThreadInviter : Extension() {
 		 */
 		event<ThreadChannelCreateEvent> {
 			check { failIf(event.channel.ownerId == kord.selfId) }
-			check { failIf(event.channel.member != null) } // To avoid running on thread join, rather than creation only
+			// To avoid running on thread join, rather than creation only
+			check { failIf(event.channel.member != null) }
 
 			action {
 				// Try to get the moderator ping role from the config. If a config is not set, return@action
-				val moderatorRoleId = DatabaseHelper.selectInConfig(event.channel.guildId.toString(), "moderatorsPing")
+				val moderatorRoleId = DatabaseHelper.selectInConfig(event.channel.guildId, "moderatorsPing")
 
-				val supportTeamId = DatabaseHelper.selectInConfig(event.channel.guildId.toString(), "supportTeam")
-				val supportChannelId = DatabaseHelper.selectInConfig(event.channel.guildId.toString(), "supportChannel")
+				val supportTeamId = DatabaseHelper.selectInConfig(event.channel.guildId, "supportTeam")
+				val supportChannelId = DatabaseHelper.selectInConfig(event.channel.guildId,
+					"supportChannel")
 
 				if (supportTeamId != null && supportChannelId != null) {
 					if (try {
-							event.channel.parentId == Snowflake(supportChannelId)
+							event.channel.parentId == supportChannelId
 						} catch (e: NumberFormatException) {
 							false
 						}
 					) {
 						val threadOwner = event.channel.owner.asUser()
 
-						val supportRole = event.channel.guild.getRole(Snowflake(supportTeamId))
+						val supportRole = event.channel.guild.getRole(supportTeamId)
 
 						event.channel.withTyping {
 							delay(2.seconds)
@@ -167,21 +169,21 @@ class ThreadInviter : Extension() {
 
 						message.edit {
 							content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
-									" you can just send a message in <#$supportChannelId> and I'll automatically make a" +
-									" thread for you"
+									" you can just send a message in <#$supportChannelId> and I'll automatically " +
+									"make a thread for you"
 						}
 
 					} else if (moderatorRoleId != null) {
 						if (
 							try {
-								event.channel.parentId != Snowflake(supportChannelId)
+								event.channel.parentId != supportChannelId
 							} catch (e: NumberFormatException) {
 								false
 							}
 						) {
 							val threadOwner = event.channel.owner.asUser()
 
-							val modRole = event.channel.guild.getRole(Snowflake(moderatorRoleId))
+							val modRole = event.channel.guild.getRole((moderatorRoleId))
 
 							event.channel.withTyping {
 								delay(2.seconds)

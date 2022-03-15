@@ -50,16 +50,16 @@ class Report : Extension() {
 
 			action {
 				// Try to get the action log, message log and moderators from config
-				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "messageLogs")
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, "messageLogs")
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
+				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
 
 				if (messageLogId == null || actionLogId == null || moderatorRoleId == null) {
 					respond { content = "**Error:** Unable to access config for this guild! Please inform a member of staff!" }
 					return@action
 				}
 
-				val messageLog = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				try {
 					val reportedMessage = event.interaction.getTarget()
 					val messageAuthor = reportedMessage.getAuthorAsMember()
@@ -90,16 +90,16 @@ class Report : Extension() {
 
 			action {
 				// Try to get the action log, message log and moderators from config
-				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "messageLogs")
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, "messageLogs")
+				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
+				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
 
 				if (messageLogId == null || actionLogId == null || moderatorRoleId == null) {
 					respond { content = "**Error:** Unable to access config for this guild! Please inform a member of staff!" }
 					return@action
 				}
 
-				val messageLog = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 
 				try {
 					// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
@@ -132,10 +132,10 @@ class Report : Extension() {
 		messageLog: GuildMessageChannelBehavior,
 		messageAuthor: Member?,
 		reportedMessage: Message,
-		moderatorRole: String?,
-		modActionLog: String?
+		moderatorRole: Snowflake,
+		modActionLog: Snowflake
 	) {
-		messageLog.createMessage { content = "<@&${moderatorRole!!}>" }
+		messageLog.createMessage { content = "<@&${moderatorRole}>" }
 
 		messageLog.createEmbed {
 			color = DISCORD_RED
@@ -221,7 +221,7 @@ class Report : Extension() {
 						description = "Ban the user and delete their messages."
 					}
 					action {
-						val actionLog = guild?.getChannel(Snowflake(modActionLog!!)) as GuildMessageChannelBehavior
+						val actionLog = guild?.getChannel(modActionLog) as GuildMessageChannelBehavior
 						when (this.selected[0]) {
 							"10-timeout" -> {
 								guild?.getMember(messageAuthor!!.id)?.edit {

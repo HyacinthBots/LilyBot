@@ -6,7 +6,6 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
@@ -28,13 +27,13 @@ class JoinLeaveEvent : Extension() {
 		event<MemberJoinEvent> {
 			action {
 				// Try to get the join channel ID from the database and return@action if null
-				val joinChannelId = DatabaseHelper.selectInConfig(event.guildId.toString(), "joinChannel")
+				val joinChannelId = DatabaseHelper.selectInConfig(event.guildId, "joinChannel")
 					?: return@action
 
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId)) as GuildMessageChannelBehavior
+				val joinChannel = event.getGuild().getChannel(joinChannelId) as GuildMessageChannelBehavior
 
 				joinChannel.createEmbed {
 					color = DISCORD_GREEN
@@ -61,13 +60,13 @@ class JoinLeaveEvent : Extension() {
 		event<MemberLeaveEvent> {
 			action {
 				// Try to get the join channel ID from the database and return@action if null
-				val joinChannelId = DatabaseHelper.selectInConfig(event.guildId.toString(), "joinChannel")
+				val joinChannelId = DatabaseHelper.selectInConfig(event.guildId, "joinChannel")
 					?: return@action
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId)) as GuildMessageChannelBehavior
+				val joinChannel = event.getGuild().getChannel(joinChannelId) as GuildMessageChannelBehavior
 
 				joinChannel.createEmbed {
 					color = DISCORD_RED

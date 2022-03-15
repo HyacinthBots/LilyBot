@@ -19,4 +19,4 @@ logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logging = { module = "io.github.microutils:kotlin-logging", version.ref = "logging" }
 toml = { module = "com.github.jezza:toml", version.ref = "toml-reader"}
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api"}
-kmongo = {module = "org.litote.kmongo:kmongo-coroutine", version.ref = "kmongo"}
+kmongo = {module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo"}

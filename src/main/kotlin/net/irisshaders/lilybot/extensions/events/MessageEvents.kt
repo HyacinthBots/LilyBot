@@ -11,7 +11,6 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
@@ -45,13 +44,14 @@ class MessageEvents : Extension() {
 		event<MessageDeleteEvent> {
 			action {
 				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
+				if (event.guild == null) return@action
 
 				// Try to get the message logs channel, return@action if null
 				val messageLogId =
-					DatabaseHelper.selectInConfig(event.guildId.toString(), "messageLogs") ?: return@action
+					DatabaseHelper.selectInConfig(event.guild!!.id, "messageLogs") ?: return@action
 
 				val guild = kord.getGuild(event.guildId!!)
-				val messageLogChannel = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior
+				val messageLogChannel = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				val messageContent = event.message?.asMessageOrNull()?.content.toString()
 				val eventMessage = event.message
 				val messageLocation = event.channel.id.value

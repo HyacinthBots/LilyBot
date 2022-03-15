@@ -16,7 +16,6 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.edit
 import com.kotlindiscord.kord.extensions.types.respond
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
@@ -51,13 +50,16 @@ class ThreadControl : Extension() {
 
 					// Try to get the moderator ping role from the config.
 					// If a config is not set, inform the user and return@action
-					val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+					val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id,
+						"moderatorsPing")
 					if (moderatorRoleId == null) {
-						respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
+						respond {
+							content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+						}
 						return@action
 					}
 
-					if (Snowflake(moderatorRoleId) in roles) {
+					if (moderatorRoleId in roles) {
 						channel.edit {
 							name = arguments.newThreadName
 
@@ -105,13 +107,16 @@ class ThreadControl : Extension() {
 
 					// Try to get the moderator ping role from the config.
 					// If a config is not set, inform the user and return@action
-					val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "moderatorsPing")
+					val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id,
+						"moderatorsPing")
 					if (moderatorRoleId == null) {
-						respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
+						respond {
+							content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+						}
 						return@action
 					}
 
-					if (Snowflake(moderatorRoleId) in roles) {
+					if (moderatorRoleId in roles) {
 						channel.edit {
 							this.archived = true
 							this.locked = arguments.lock
