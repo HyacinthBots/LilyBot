@@ -43,11 +43,13 @@ class ThreadInviter : Extension() {
 			check { failIf(event.message.author?.id == kord.selfId) }
 
 			action {
+				if (event.guildId == null) return@action
+
 				val supportTeamId = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportTeam")
 				val supportChannelId = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportChannel")
 
 				// you have to check as a string apparently
-				if (supportChannelId == null || supportTeamId == null) {return@action}
+				if (supportChannelId == null || supportTeamId == null) { return@action }
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null

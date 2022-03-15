@@ -143,7 +143,7 @@ class RoleMenu : Extension() {
 					roleId = DatabaseHelper.selectInComponents(interaction.componentId, "roleId")
 					addOrRemove = DatabaseHelper.selectInComponents(interaction.componentId, "addOrRemove")
 
-				} catch (e: java.lang.NullPointerException) {
+				} catch (e: NullPointerException) {
 					return@action
 				}
 

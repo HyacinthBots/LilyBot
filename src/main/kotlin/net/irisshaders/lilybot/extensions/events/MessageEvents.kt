@@ -47,7 +47,7 @@ class MessageEvents : Extension() {
 				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
 
 				// Try to get the message logs channel, return@action if null
-				val messageLogId: String =
+				val messageLogId =
 					DatabaseHelper.selectInConfig(event.guildId.toString(), "messageLogs") ?: return@action
 
 				val guild = kord.getGuild(event.guildId!!)
