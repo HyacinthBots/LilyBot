@@ -19,7 +19,9 @@ import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.reply
+import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.thread.NewsChannelThread
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
@@ -38,17 +40,24 @@ class ThreadInviter : Extension() {
 		 * @author IMS212
 		 */
 		event<MessageCreateEvent> {
-			check { failIf(event.message.type == MessageType.ChatInputCommand) } // Don't try to create if the message is a slash command
-			check { failIf(event.message.type == MessageType.ThreadCreated || event.message.type == MessageType.ThreadStarterMessage) } // Don't try and run this if the thread is manually created
-			check { failIf(event.message.author?.id == kord.selfId) }
-
 			action {
+				// Don't try to create if the message is in DMsg
 				if (event.guildId == null) return@action
+				// Don't try to create if the message is a slash command
+				if (event.message.type == MessageType.ChatInputCommand) return@action
+				// Don't try and run this if the thread is manually created
+				if (event.message.type == MessageType.ThreadCreated
+					|| event.message.type == MessageType.ThreadStarterMessage) return@action
+				// Don't try and create if Lily or another bot sent the message
+				if (event.message.author?.id == kord.selfId || event.message.author?.isBot == true) return@action
+				// Don't try to create if the message is already in a thread
+				if (event.message.getChannel() is TextChannelThread) return@action
+				// Don't try to create if the message is in an announcements channel
+				if (event.message.getChannel() is NewsChannel || event.message.getChannel() is NewsChannelThread) return@action
 
 				val supportTeamId = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportTeam")
 				val supportChannelId = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportChannel")
 
-				// you have to check as a string apparently
 				if (supportChannelId == null || supportTeamId == null) { return@action }
 
 				var userThreadExists = false
