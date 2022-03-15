@@ -40,21 +40,22 @@ class ThreadInviter : Extension() {
 		 * @author IMS212
 		 */
 		event<MessageCreateEvent> {
-			action {
-				// Don't try to create if the message is in DMsg
-				if (event.guildId == null) return@action
-				// Don't try to create if the message is a slash command
-				if (event.message.type == MessageType.ChatInputCommand) return@action
-				// Don't try and run this if the thread is manually created
-				if (event.message.type == MessageType.ThreadCreated
-					|| event.message.type == MessageType.ThreadStarterMessage) return@action
-				// Don't try and create if Lily or another bot sent the message
-				if (event.message.author?.id == kord.selfId || event.message.author?.isBot == true) return@action
-				// Don't try to create if the message is already in a thread
-				if (event.message.getChannel() is TextChannelThread) return@action
-				// Don't try to create if the message is in an announcements channel
-				if (event.message.getChannel() is NewsChannel || event.message.getChannel() is NewsChannelThread) return@action
+			// Don't try to create if the message is in DMs
+			check { failIf { event.guildId == null } }
+			// Don't try to create if the message is a slash command
+			check { failIf { event.message.type == MessageType.ChatInputCommand } }
+			// Don't try and run this if the thread is manually created
+			check { failIf { event.message.type == MessageType.ThreadCreated
+					|| event.message.type == MessageType.ThreadStarterMessage } }
+			// Don't try and create if Lily or another bot sent the message
+			check { failIf { event.message.author?.id == kord.selfId || event.message.author?.isBot == true } }
+			// Don't try to create if the message is already in a thread
+			check { failIf { event.message.getChannel() is TextChannelThread } }
+			// Don't try to create if the message is in an announcements channel
+			check { failIf { event.message.getChannel() is NewsChannel
+					|| event.message.getChannel() is NewsChannelThread } }
 
+			action {
 				val supportTeamId = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportTeam")
 				val supportChannelId = DatabaseHelper.selectInConfig(event.guildId!!.toString(), "supportChannel")
 
