@@ -135,11 +135,15 @@ class Utilities : Extension() {
 			name = "set-status"
 			description = "Set Lily's current presence/status."
 
-			check { failIf { guildId != TEST_GUILD_ID } } // lock this command to the testing guild
-
 			check { hasPermission(Permission.Administrator) }
 
 			action {
+				// lock this command to the testing guild
+				if (guild?.id != TEST_GUILD_ID) {
+					respond { content = "**Error:** This command can only be run in Lily's testing guild." }
+					return@action
+				}
+
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id.toString(), "modActionLog")
 
 				if (actionLogId == null) {

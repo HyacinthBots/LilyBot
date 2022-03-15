@@ -221,7 +221,7 @@ class Report : Extension() {
 						description = "Ban the user and delete their messages."
 					}
 					action {
-						val actionlog = guild?.getChannel(Snowflake(modActionLog!!)) as GuildMessageChannelBehavior
+						val actionLog = guild?.getChannel(Snowflake(modActionLog!!)) as GuildMessageChannelBehavior
 						when (this.selected[0]) {
 							"10-timeout" -> {
 								guild?.getMember(messageAuthor!!.id)?.edit {
@@ -236,7 +236,7 @@ class Report : Extension() {
 									"**Duration:**\n10 minutes\n**Reason:**\nTimed-out via report",
 									null
 								)
-								quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 10)
+								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 10)
 							}
 							"20-timeout" -> {
 								guild?.getMember(messageAuthor!!.id)?.edit {
@@ -251,7 +251,7 @@ class Report : Extension() {
 									"**Duration:**\n20 minutes\n**Reason:**\nTimed-out via report",
 									null
 								)
-								quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 20)
+								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 20)
 							}
 							"30-timeout" -> {
 								guild?.getMember(messageAuthor!!.id)?.edit {
@@ -266,7 +266,7 @@ class Report : Extension() {
 									"**Duration:**\n30 minutes\n**Reason:**\nTimed-out via report",
 									null
 								)
-								quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 30)
+								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 30)
 							}
 							"kick-user" -> {
 								ResponseHelper.userDMEmbed(
@@ -276,7 +276,7 @@ class Report : Extension() {
 									null
 								)
 								messageAuthor.kick(reason = "Kicked via report")
-								quickLogEmbed("Kicked a User", actionlog, messageAuthor.asUser())
+								quickLogEmbed("Kicked a User", actionLog, messageAuthor.asUser())
 							}
 							"soft-ban-user" -> {
 								ResponseHelper.userDMEmbed(
@@ -290,7 +290,7 @@ class Report : Extension() {
 									this.deleteMessagesDays = 1
 								}
 								reportedMessage.getGuild().unban(messageAuthor.id, reason = "Soft-ban")
-								quickLogEmbed("Soft-Banned a User", actionlog, messageAuthor.asUser())
+								quickLogEmbed("Soft-Banned a User", actionLog, messageAuthor.asUser())
 							}
 							"ban-user" -> {
 								ResponseHelper.userDMEmbed(
@@ -303,7 +303,7 @@ class Report : Extension() {
 									this.reason = "Banned via report"
 									this.deleteMessagesDays = 1
 								}
-								quickLogEmbed("Banned a user!", actionlog, messageAuthor.asUser())
+								quickLogEmbed("Banned a user!", actionLog, messageAuthor.asUser())
 							}
 						}
 					}
