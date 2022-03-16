@@ -31,7 +31,7 @@ import java.util.zip.GZIPInputStream
 import kotlin.time.ExperimentalTime
 
 class MessageEvents : Extension() {
-	override val name = "messageevents"
+	override val name = "message-events"
 
 	@Suppress("PrivatePropertyName")
 	private val LOG_FILE_EXTENSIONS = setOf("log", "gz", "txt")

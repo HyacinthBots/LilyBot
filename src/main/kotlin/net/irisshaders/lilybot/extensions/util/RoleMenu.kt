@@ -30,7 +30,7 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 
 //todo This really just needs a full rework. I'm about 90% sure it's not properly adapted for cross guild work.
 class RoleMenu : Extension() {
-    override val name = "rolemenu"
+    override val name = "role-menu"
 
 	override suspend fun setup() {
 		ephemeralSlashCommand(::RoleMenuArgs) {

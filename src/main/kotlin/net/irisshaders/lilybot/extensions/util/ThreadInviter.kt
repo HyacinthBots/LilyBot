@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 class ThreadInviter : Extension() {
-	override val name = "threadinviter"
+	override val name = "thread-inviter"
 
 	override suspend fun setup() {
 		/**
