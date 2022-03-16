@@ -16,7 +16,7 @@ import net.irisshaders.lilybot.config
  * @author IMS212
  */
 class CustomCommands : Extension() {
-	override var name = "customcommands"
+	override var name = "custom-commands"
 
 
 	override suspend fun setup() {

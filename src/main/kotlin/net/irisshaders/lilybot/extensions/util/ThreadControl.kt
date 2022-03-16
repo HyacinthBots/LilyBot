@@ -24,7 +24,7 @@ import kotlin.time.ExperimentalTime
 
 class ThreadControl : Extension() {
 
-	override val name = "threadcontrol"
+	override val name = "thread-control"
 
 	override suspend fun setup() {
 		publicSlashCommand {

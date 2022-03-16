@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 class ThreadInviter : Extension() {
-	override val name = "threadinviter"
+	override val name = "thread-inviter"
 
 	override suspend fun setup() {
 		/**
@@ -118,8 +118,8 @@ class ThreadInviter : Extension() {
 		/**
 		 * System for inviting moderators or support team to threads
 		 *
-		 * This code was adapted from QuiltMC's [cozy](https://github.com/QuiltMC/cozy-discord)
-		 * and hence subject to the terms of the Mozilla Public License V. 2.0
+		 * This code was adapted from [cozy](https://github.com/QuiltMC/cozy-discord) by QuiltMC
+		 * and hence is subject to the terms of the Mozilla Public License V. 2.0
 		 * A copy of this license can be found at https://mozilla.org/MPL/2.0/.
 		 */
 		event<ThreadChannelCreateEvent> {

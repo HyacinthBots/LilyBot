@@ -46,7 +46,7 @@ private var uri = MONGO_URI ?: "mongodb://localhost:27017" // this is the defaul
 private val settings = MongoClientSettings
 	.builder()
 	.uuidRepresentation(UuidRepresentation.STANDARD)
-	.applyConnectionString(ConnectionString(uri)) //todo make sure this actually works
+	.applyConnectionString(ConnectionString(uri))
 	.build()
 
 private val client = KMongo.createClient(settings).coroutine
@@ -96,7 +96,7 @@ suspend fun main() {
 			}
 		}
 
-		presence { playing("Iris") } //DatabaseHelper.selectInStatus()
+		presence { playing(DatabaseHelper.selectInStatus()) }
 
 		try {
 			github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()

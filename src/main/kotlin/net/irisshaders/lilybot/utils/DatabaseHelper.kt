@@ -1,7 +1,7 @@
 package net.irisshaders.lilybot.utils
 
 import dev.kord.common.entity.Snowflake
-import kotlinx.serialization.Contextual
+import kotlinx.coroutines.runBlocking
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
 import kotlinx.serialization.Serializable
@@ -128,9 +128,12 @@ object DatabaseHelper {
 	 * @return null or the set status in the database
 	 * @author NoComment1105
 	 */
-	suspend fun selectInStatus(): String {
-		val collection = database.getCollection<StatusData>()
-		val selectedStatus: StatusData? = collection.findOne(StatusData::key eq "LilyStatus")
+	fun selectInStatus(): String {
+		var selectedStatus: StatusData?
+		runBlocking {
+			val collection = database.getCollection<StatusData>()
+			selectedStatus = collection.findOne(StatusData::key eq "LilyStatus")
+		}
 		return selectedStatus?.status ?: "Iris"
 	}
 

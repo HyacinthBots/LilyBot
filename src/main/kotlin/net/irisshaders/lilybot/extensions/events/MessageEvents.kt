@@ -31,7 +31,7 @@ import java.util.zip.GZIPInputStream
 import kotlin.time.ExperimentalTime
 
 class MessageEvents : Extension() {
-	override val name = "messageevents"
+	override val name = "message-events"
 
 	@Suppress("PrivatePropertyName")
 	private val LOG_FILE_EXTENSIONS = setOf("log", "gz", "txt")
@@ -124,8 +124,8 @@ class MessageEvents : Extension() {
 
 						// Ask the user to remove NEC to ease the debugging on the support team
 						val necText = "at Not Enough Crashes"
-						val indexOfnecText = builder.indexOf(necText)
-						if (indexOfnecText != -1) {
+						val indexOfNECText = builder.indexOf(necText)
+						if (indexOfNECText != -1) {
 							ResponseHelper.responseEmbedInChannel(
 								eventMessage.channel,
 								"Not Enough Crashes detected in logs",
