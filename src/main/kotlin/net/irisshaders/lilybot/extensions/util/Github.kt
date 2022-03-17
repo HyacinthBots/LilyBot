@@ -191,7 +191,8 @@ class Github : Extension() {
 									field {
 										name = "Author:"
 										value =
-											"[" + author.login + " (" + author.name + ")](https://github.com/" + author.login + ")"
+											"[" + author.login + " (" + author.name + ")](" +
+													"https://github.com/" + author.login + ")"
 										inline = false
 									}
 								} else {
@@ -403,7 +404,8 @@ class Github : Extension() {
 										field {
 											name = "Twitter:"
 											value =
-												"[@" + ghUser.twitterUsername + "](https://twitter.com/" + ghUser.twitterUsername + ")"
+												"[@" + ghUser.twitterUsername + "](" +
+														"https://twitter.com/" + ghUser.twitterUsername + ")"
 											inline = false
 										}
 									}

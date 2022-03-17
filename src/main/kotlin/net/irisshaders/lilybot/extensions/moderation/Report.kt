@@ -55,7 +55,9 @@ class Report : Extension() {
 				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
 
 				if (messageLogId == null || actionLogId == null || moderatorRoleId == null) {
-					respond { content = "**Error:** Unable to access config for this guild! Please inform a member of staff!" }
+					respond {
+						content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
+					}
 					return@action
 				}
 
@@ -95,7 +97,9 @@ class Report : Extension() {
 				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
 
 				if (messageLogId == null || actionLogId == null || moderatorRoleId == null) {
-					respond { content = "**Error:** Unable to access config for this guild! Please inform a member of staff!" }
+					respond {
+						content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
+					}
 					return@action
 				}
 
@@ -103,7 +107,8 @@ class Report : Extension() {
 
 				try {
 					// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
-					val channel = (guild?.getChannel(Snowflake(arguments.message.split("/")[5])) as MessageChannel)
+					val channel = (guild?.getChannel(
+						Snowflake(arguments.message.split("/")[5])) as MessageChannel)
 					val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
 					val messageAuthor = reportedMessage.getAuthorAsMember()
 
@@ -282,7 +287,8 @@ class Report : Extension() {
 								ResponseHelper.userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been soft-banned from ${guild?.fetchGuild()?.name}",
-									"**Reason:**\nSoft-banned via report\n\nYou are free to rejoin without the need to be unbanned",
+									"**Reason:**\nSoft-banned via report\n\n" +
+											"You are free to rejoin without the need to be unbanned",
 									null
 								)
 								messageAuthor.ban {
@@ -334,7 +340,8 @@ class Report : Extension() {
 		}
 	}
 
-	private suspend fun quickLogEmbed(moderationAction: String, actionLog: GuildMessageChannelBehavior, user: User): Message {
+	private suspend fun quickLogEmbed(moderationAction: String,
+									  actionLog: GuildMessageChannelBehavior, user: User): Message {
 		return actionLog.createEmbed {
 			title = moderationAction
 

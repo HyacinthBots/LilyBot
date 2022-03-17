@@ -93,7 +93,8 @@ class MessageEvents : Extension() {
 		}
 
 		/**
-		 * Upload files that have the extensions specified in [LOG_FILE_EXTENSIONS] to hastebin, giving a user confirmation
+		 * Upload files that have the extensions specified in [LOG_FILE_EXTENSIONS] to hastebin,
+		 * giving a user confirmation.
 		 *
 		 * @author maximumpower55
 		 */
@@ -103,7 +104,8 @@ class MessageEvents : Extension() {
 
 				eventMessage.attachments.forEach { attachment ->
 					val attachmentFileName = attachment.filename
-					val attachmentFileExtension = attachmentFileName.substring(attachmentFileName.lastIndexOf(".") + 1)
+					val attachmentFileExtension = attachmentFileName.substring(
+						attachmentFileName.lastIndexOf(".") + 1)
 
 					if (attachmentFileExtension in LOG_FILE_EXTENSIONS) {
 						val logBytes = attachment.download()
@@ -129,7 +131,10 @@ class MessageEvents : Extension() {
 							ResponseHelper.responseEmbedInChannel(
 								eventMessage.channel,
 								"Not Enough Crashes detected in logs",
-								"Not Enough Crashes (NEC) is well know to cause issues and often makes the debugging process more difficult. Please remove NEC, recreate the issue, and resend the relevant files (ie. log or crash report) if the issue persists.",
+								"Not Enough Crashes (NEC) is well know to cause issues and often " +
+										"makes the debugging process more difficult. " +
+										"Please remove NEC, recreate the issue, and resend the relevant files " +
+										"(ie. log or crash report) if the issue persists.",
 								DISCORD_PINK,
 								eventMessage.author
 							)
@@ -140,7 +145,9 @@ class MessageEvents : Extension() {
 							confirmationMessage = ResponseHelper.responseEmbedInChannel(
 								eventMessage.channel,
 								"Do you want to upload this file to Hastebin?",
-								"Hastebin is a website that allows users to share plain text through public posts called “pastes.”\nIt's easier for the support team to view the file on Hastebin, do you want it to be uploaded?",
+								"Hastebin is a website that allows users to share plain text through " +
+										"public posts called “pastes.”\nIt's easier for the support team to view " +
+										"the file on Hastebin, do you want it to be uploaded?",
 								DISCORD_PINK,
 								eventMessage.author
 							).edit {

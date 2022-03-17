@@ -118,7 +118,9 @@ class Moderation : Extension() {
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
 				if (actionLogId == null || moderatorRoleId == null) {
-					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
+					respond {
+						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
 					return@action
 				}
 
@@ -151,7 +153,8 @@ class Moderation : Extension() {
 				)
 
 				try {
-					guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // remove timeout if they had a timeout when banned
+					// Remove timeout if they had a timeout when banned
+					guild?.getMember(userArg.id)?.edit { timeoutUntil = null }
 				} catch (e: EntityNotFoundException) {
 					logger.info("Unable to find user! Skipping timeout removal")
 				}
@@ -218,7 +221,9 @@ class Moderation : Extension() {
 				// Try to get the action log from the config. If a config is not set, inform the user and return@action
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 				if (actionLogId == null) {
-					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
+					respond {
+						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
 					return@action
 				}
 
@@ -264,7 +269,9 @@ class Moderation : Extension() {
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
 				if (actionLogId == null || moderatorRoleId == null) {
-					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
+					respond {
+						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
 					return@action
 				}
 
@@ -296,7 +303,8 @@ class Moderation : Extension() {
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been soft-banned from ${guild?.fetchGuild()?.name}",
-					"**Reason:**\n${arguments.reason}\n\nYou are free to rejoin without the need to be unbanned",
+					"**Reason:**\n${arguments.reason}\n\n" +
+							"You are free to rejoin without the need to be unbanned",
 					null
 				)
 
@@ -368,7 +376,9 @@ class Moderation : Extension() {
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
 				if (actionLogId == null || moderatorRoleId == null) {
-					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
+					respond {
+						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
 					return@action
 				}
 
@@ -456,7 +466,9 @@ class Moderation : Extension() {
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
 				if (actionLogId == null || moderatorRoleId == null) {
-					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
+					respond {
+						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
 					return@action
 				}
 
@@ -493,7 +505,8 @@ class Moderation : Extension() {
 				val dm = ResponseHelper.userDMEmbed(
 					userArg,
 					"You have been warned in ${guild?.fetchGuild()?.name}",
-					"You were given ${arguments.warnPoints} points\nYour total is now $databasePoints\n\n**Reason:**\n${arguments.reason}",
+					"You were given ${arguments.warnPoints} points\n" +
+							"Your total is now $databasePoints\n\n**Reason:**\n${arguments.reason}",
 					null
 				)
 
@@ -502,7 +515,8 @@ class Moderation : Extension() {
 					ResponseHelper.userDMEmbed(
 						userArg,
 						"You have been timed-out in ${guild!!.fetchGuild().name}",
-						"You have accumulated too many warn points, and have hence been given a 3 hour timeout",
+						"You have accumulated too many warn points, and have hence been given a " +
+								"3 hour timeout",
 						DISCORD_BLACK
 					)
 
@@ -513,7 +527,8 @@ class Moderation : Extension() {
 					ResponseHelper.responseEmbedInChannel(
 						actionLog,
 						"Timeout",
-						"${userArg.mention} has been timed-out for 3 hours due to point accumulation\n${userArg.id} (${userArg.tag})",
+						"${userArg.mention} has been timed-out for 3 hours due to point " +
+								"accumulation\n${userArg.id} (${userArg.tag})",
 						DISCORD_BLACK,
 						user.asUser()
 					)
@@ -521,7 +536,8 @@ class Moderation : Extension() {
 					ResponseHelper.userDMEmbed(
 						userArg,
 						"You have been timed-out in ${guild!!.fetchGuild().name}",
-						"You have accumulated too many warn points, and have hence been given a 12 hour timeout",
+						"You have accumulated too many warn points, and have hence been given " +
+								"a 12 hour timeout",
 						DISCORD_BLACK
 					)
 
@@ -532,12 +548,14 @@ class Moderation : Extension() {
 					ResponseHelper.responseEmbedInChannel(
 						actionLog,
 						"Timeout",
-						"${userArg.mention} has been timed-out for 12 hours due to point accumulation\n${userArg.id} (${userArg.tag})",
+						"${userArg.mention} has been timed-out for 12 hours due to point " +
+								"accumulation\n${userArg.id} (${userArg.tag})",
 						DISCORD_BLACK,
 						user.asUser()
 					)
 				} else if (databasePoints >= 200) {
-					guild?.getMember(userArg.id)?.edit { timeoutUntil = null } // Remove timeout in case they were timed out when banned
+					// Remove timeout in case they were timed out when banned
+					guild?.getMember(userArg.id)?.edit { timeoutUntil = null }
 					ResponseHelper.userDMEmbed(
 						userArg,
 						"You have been banned from ${guild!!.fetchGuild().name}",
@@ -625,7 +643,9 @@ class Moderation : Extension() {
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
 				if (actionLogId == null || moderatorRoleId == null) {
-					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
+					respond {
+						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
 					return@action
 				}
 
@@ -736,7 +756,9 @@ class Moderation : Extension() {
 				// Try to get the action log from the config. If a config is not set, inform the user and return@action
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 				if (actionLogId == null) {
-					respond { content = "**Error:** Unable to access config for this guild! Is your configuration set?" }
+					respond {
+						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+					}
 					return@action
 				}
 

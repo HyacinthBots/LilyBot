@@ -108,8 +108,8 @@ class RoleMenu : Extension() {
 					actionLog.createEmbed {
 						color = DISCORD_BLACK
 						title = "Role menu created."
-						description =
-							"A role menu for the ${arguments.role.mention} role was created in ${targetChannel.mention}"
+						description = "A role menu for the ${arguments.role.mention} role was " +
+								"created in ${targetChannel.mention}"
 
 						field {
 							name = "Embed title:"
@@ -140,17 +140,10 @@ class RoleMenu : Extension() {
 				val member = guild.getMember(interaction.user.id)
 
 				// this is  a very dirty fix, so it doesn't conflict with log uploading
-				var roleId: Snowflake?
-				var addOrRemove: String?
-				try {
-					roleId = DatabaseHelper.selectInComponents(interaction.componentId,
-						"roleId") as Snowflake?
-					addOrRemove = DatabaseHelper.selectInComponents(interaction.componentId,
-						"addOrRemove") as String?
-
-				} catch (e: NullPointerException) {
-					return@action
-				}
+				val roleId: Snowflake? = try { DatabaseHelper.selectInComponents(interaction.componentId,
+					"roleId") as Snowflake? } catch (e: NullPointerException) {return@action}
+				val addOrRemove: String? = try { DatabaseHelper.selectInComponents(interaction.componentId,
+					"addOrRemove") as String? } catch (e: NullPointerException) { return@action }
 
 				if (roleId == null || addOrRemove == null) {return@action}
 

@@ -41,7 +41,8 @@ class Utilities : Extension() {
 		 * Online notification
 		 * @author IMS212
 		 */
-		ResponseHelper.responseEmbedInChannel(onlineLog, "Lily is now online!", null, DISCORD_GREEN, null)
+		ResponseHelper.responseEmbedInChannel(onlineLog, "Lily is now online!", null,
+			DISCORD_GREEN, null)
 
 		/**
 		 * Ping Command
@@ -119,7 +120,8 @@ class Utilities : Extension() {
 				ResponseHelper.responseEmbedInChannel(
 					actionLog,
 					"Message Sent",
-					"/say has been used to say ${arguments.messageArgument} in ${targetChannel.mention}",
+					"/say has been used to " +
+							"say ${arguments.messageArgument} in ${targetChannel.mention}",
 					DISCORD_BLACK,
 					user.asUser()
 				)
