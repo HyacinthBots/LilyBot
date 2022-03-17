@@ -22,7 +22,6 @@ import kotlin.time.ExperimentalTime
 class JoinLeaveEvent : Extension() {
 	override val name = "join-leave-event"
 
-	@Suppress("DuplicatedCode")
 	override suspend fun setup() {
 		event<MemberJoinEvent> {
 			action {

@@ -28,6 +28,7 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.ResponseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
+import net.irisshaders.lilybot.utils.getFromConfig
 import kotlin.time.ExperimentalTime
 
 @Suppress("DuplicatedCode")
@@ -84,12 +85,7 @@ class Utilities : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-
-				if (actionLogId == null) {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
-					return@action
-				}
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val targetChannel: MessageChannelBehavior = if (arguments.targetChannel == null) {
@@ -145,12 +141,7 @@ class Utilities : Extension() {
 					return@action
 				}
 
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-
-				if (actionLogId == null) {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
-					return@action
-				}
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 

@@ -32,6 +32,7 @@ import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ResponseHelper
+import net.irisshaders.lilybot.utils.getFromConfig
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -50,16 +51,9 @@ class Report : Extension() {
 
 			action {
 				// Try to get the action log, message log and moderators from config
-				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, "messageLogs")
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
-
-				if (messageLogId == null || actionLogId == null || moderatorRoleId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
-					}
-					return@action
-				}
+				val messageLogId = getFromConfig("messageLogs") ?: return@action
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
 
 				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				try {
@@ -92,16 +86,9 @@ class Report : Extension() {
 
 			action {
 				// Try to get the action log, message log and moderators from config
-				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, "messageLogs")
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
-
-				if (messageLogId == null || actionLogId == null || moderatorRoleId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
-					}
-					return@action
-				}
+				val messageLogId = getFromConfig("messageLogs") ?: return@action
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
 
 				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 

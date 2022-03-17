@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
@@ -26,7 +27,6 @@ import dev.kord.core.behavior.edit
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.request.KtorRequestException
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
@@ -36,6 +36,7 @@ import kotlinx.datetime.plus
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ResponseHelper
+import net.irisshaders.lilybot.utils.getFromConfig
 import java.lang.Integer.min
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -60,13 +61,7 @@ class Moderation : Extension() {
 
 			action {
 				// Try to get the action log from the config. If a config is not set, inform the user and return@action
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-				if (actionLogId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
-					return@action
-				}
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val messageAmount = arguments.messages
@@ -76,7 +71,7 @@ class Moderation : Extension() {
 
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
 					Snowflake.max, min(messageAmount, 100)
-				).filterNotNull().map { it.id }.toList()
+				).map { it.id }.toList()
 
 				textChannel.bulkDelete(messages)
 
@@ -109,14 +104,8 @@ class Moderation : Extension() {
 			action {
 				// Try to get the action log and moderator ping role from the config.
 				// If a config is not set, inform the user and return@action
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
-				if (actionLogId == null || moderatorRoleId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
-					return@action
-				}
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -213,13 +202,7 @@ class Moderation : Extension() {
 
 			action {
 				// Try to get the action log from the config. If a config is not set, inform the user and return@action
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-				if (actionLogId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
-					return@action
-				}
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -260,14 +243,8 @@ class Moderation : Extension() {
 			action {
 				// Try to get the action log and moderator ping role from the config.
 				// If a config is not set, inform the user and return@action
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
-				if (actionLogId == null || moderatorRoleId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
-					return@action
-				}
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -367,14 +344,8 @@ class Moderation : Extension() {
 			action {
 				// Try to get the action log and moderator ping role from the config.
 				// If a config is not set, inform the user and return@action
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
-				if (actionLogId == null || moderatorRoleId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
-					return@action
-				}
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -457,14 +428,8 @@ class Moderation : Extension() {
 			action {
 				// Try to get the action log and moderator ping role from the config.
 				// If a config is not set, inform the user and return@action
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
-				if (actionLogId == null || moderatorRoleId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
-					return@action
-				}
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
 
 				val userArg = arguments.userArgument
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
@@ -634,14 +599,8 @@ class Moderation : Extension() {
 			action {
 				// Try to get the action log and moderator ping role from the config.
 				// If a config is not set, inform the user and return@action
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, "moderatorsPing")
-				if (actionLogId == null || moderatorRoleId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
-					return@action
-				}
+				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -786,7 +745,6 @@ class Moderation : Extension() {
 			}
 		}
 	}
-
 
 	inner class ClearArgs : Arguments() {
 		val messages by int {
