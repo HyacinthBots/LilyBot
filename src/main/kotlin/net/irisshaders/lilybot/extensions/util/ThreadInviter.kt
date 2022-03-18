@@ -44,11 +44,8 @@ class ThreadInviter : Extension() {
 			// Don't try to create if the message is a slash command
 			check { failIf { event.message.type == MessageType.ChatInputCommand } }
 			// Don't try and run this if the thread is manually created
-			check {
-				failIf {
-					event.message.type == MessageType.ThreadCreated
-							|| event.message.type == MessageType.ThreadStarterMessage
-				}
+			check { failIf { event.message.type == MessageType.ThreadCreated
+					|| event.message.type == MessageType.ThreadStarterMessage }
 			}
 			// Don't try and create if Lily or another bot sent the message
 			check { failIf { event.message.author?.id == kord.selfId || event.message.author?.isBot == true } }
