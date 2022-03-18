@@ -61,12 +61,18 @@ suspend fun EphemeralMessageCommandContext.getFromConfigPublicResponse(inputColu
 		null
 }
 
-
+/**
+ * This is a simple function to check if the channel a command is being run in is a thread or not. If not, it informs
+ * the user. It should be handled with an if statement to return the action, depending on your desired response
+ *
+ * @return Boolean. True if the channel is a thread, false if not
+ * @author NoComment1105
+ */
 suspend fun EphemeralSlashCommandContext<*>.isThread(): Boolean {
 	return if (channel.asChannel() is ThreadChannel) {
 		kotlin.run {
 			edit {
-				content = "This isn't a thread :person_facepalming:"
+				content = "**Error:** This isn't a thread!"
 			}
 		}
 		true
