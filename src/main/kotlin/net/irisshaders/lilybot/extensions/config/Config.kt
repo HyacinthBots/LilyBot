@@ -14,7 +14,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.ResponseHelper
+import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 class Config : Extension() {
 
@@ -62,7 +62,7 @@ class Config : Extension() {
 
 					// Log the config being set in the action log
 					val actionLogChannel = guild?.getChannel(arguments.modActionLog.id) as GuildMessageChannelBehavior
-					ResponseHelper.responseEmbedInChannel(
+					responseEmbedInChannel(
 						actionLogChannel,
 						"Configuration set!",
 						"An administrator has set a config for this guild!",
@@ -89,7 +89,7 @@ class Config : Extension() {
 						// Log the config being cleared to the action log
 						val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 						val actionLogChannel = guild?.getChannel(actionLogId!!) as GuildMessageChannelBehavior
-						ResponseHelper.responseEmbedInChannel(
+						responseEmbedInChannel(
 							actionLogChannel,
 							"Configuration cleared!",
 							"An administrator has cleared the configuration for this guild!",

@@ -27,10 +27,11 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ComponentData
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.getFromConfigPublicResponse
 
 //todo This really just needs a full rework. I'm about 90% sure it's not properly adapted for cross guild work.
 class RoleMenu : Extension() {
-    override val name = "role-menu"
+	override val name = "role-menu"
 
 	override suspend fun setup() {
 		ephemeralSlashCommand(::RoleMenuArgs) {
@@ -96,13 +97,7 @@ class RoleMenu : Extension() {
 
 					// Try to get the action log from the config.
 					// If a config is not set, inform the user and return@action
-					val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
-					if (actionLogId == null) {
-						respond {
-							content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-						}
-						return@action
-					}
+					val actionLogId = getFromConfigPublicResponse("modActionLog") ?: return@action
 					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 					actionLog.createEmbed {
@@ -133,19 +128,33 @@ class RoleMenu : Extension() {
 
 		event<InteractionCreateEvent> {
 			check { failIfNot(event.interaction is ButtonInteraction) }
-			
+
 			action {
 				val interaction = event.interaction as ButtonInteraction
 				val guild = kord.getGuild(interaction.data.guildId.value!!)!!
 				val member = guild.getMember(interaction.user.id)
 
 				// this is  a very dirty fix, so it doesn't conflict with log uploading
-				val roleId: Snowflake? = try { DatabaseHelper.selectInComponents(interaction.componentId,
-					"roleId") as Snowflake? } catch (e: NullPointerException) {return@action}
-				val addOrRemove: String? = try { DatabaseHelper.selectInComponents(interaction.componentId,
-					"addOrRemove") as String? } catch (e: NullPointerException) { return@action }
+				val roleId: Snowflake? = try {
+					DatabaseHelper.selectInComponents(
+						interaction.componentId,
+						"roleId"
+					) as Snowflake?
+				} catch (e: NullPointerException) {
+					return@action
+				}
+				val addOrRemove: String? = try {
+					DatabaseHelper.selectInComponents(
+						interaction.componentId,
+						"addOrRemove"
+					) as String?
+				} catch (e: NullPointerException) {
+					return@action
+				}
 
-				if (roleId == null || addOrRemove == null) {return@action}
+				if (roleId == null || addOrRemove == null) {
+					return@action
+				}
 
 				val role = guild.getRole(roleId)
 
@@ -176,21 +185,21 @@ class RoleMenu : Extension() {
 		}
 	}
 
-    inner class RoleMenuArgs : Arguments() {
+	inner class RoleMenuArgs : Arguments() {
 		val role by role {
 			name = "roles"
 			description = "The roles to be selected."
 		}
-        val title by defaultingString {
-            name = "title"
-            description = "The title of the embed. Defaults to \"Role Selection Menu\""
+		val title by defaultingString {
+			name = "title"
+			description = "The title of the embed. Defaults to \"Role Selection Menu\""
 			defaultValue = "Role selection menu"
-        }
-        val description by defaultingString {
-            name = "description"
-            description = "Text for the embed. Will be appended with a description of how to use the buttons."
+		}
+		val description by defaultingString {
+			name = "description"
+			description = "Text for the embed. Will be appended with a description of how to use the buttons."
 			defaultValue = " "
-        }
+		}
 		val channel by optionalChannel {
 			name = "channel"
 			description = "The channel for the message to be sent in. Defaults to the channel executed in."
@@ -200,5 +209,5 @@ class RoleMenu : Extension() {
 			description = "The color for the embed menu to be."
 			defaultValue = DISCORD_BLACK
 		}
-    }
+	}
 }

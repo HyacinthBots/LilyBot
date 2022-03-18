@@ -44,8 +44,12 @@ class ThreadInviter : Extension() {
 			// Don't try to create if the message is a slash command
 			check { failIf { event.message.type == MessageType.ChatInputCommand } }
 			// Don't try and run this if the thread is manually created
-			check { failIf { event.message.type == MessageType.ThreadCreated
-					|| event.message.type == MessageType.ThreadStarterMessage } }
+			check {
+				failIf {
+					event.message.type == MessageType.ThreadCreated
+							|| event.message.type == MessageType.ThreadStarterMessage
+				}
+			}
 			// Don't try and create if Lily or another bot sent the message
 			check { failIf { event.message.author?.id == kord.selfId || event.message.author?.isBot == true } }
 			// Don't try to create if the message is already in a thread
@@ -55,10 +59,8 @@ class ThreadInviter : Extension() {
 					|| event.message.getChannel() is NewsChannelThread } }
 
 			action {
-				val supportTeamId = DatabaseHelper.selectInConfig(event.guildId!!, "supportTeam")
-				val supportChannelId = DatabaseHelper.selectInConfig(event.guildId!!, "supportChannel")
-
-				if (supportChannelId == null || supportTeamId == null) { return@action }
+				val supportTeamId = DatabaseHelper.selectInConfig(event.guildId!!, "supportTeam") ?: return@action
+				val supportChannelId = DatabaseHelper.selectInConfig(event.guildId!!, "supportChannel") ?: return@action
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
@@ -67,7 +69,9 @@ class ThreadInviter : Extension() {
 				val supportChannel = guild?.getChannel(supportChannelId) as MessageChannelBehavior
 
 				// fail if the message is not in the support channel
-				if (textChannel != supportChannel) { return@action }
+				if (textChannel != supportChannel) {
+					return@action
+				}
 
 				//TODO: this is incredibly stupid, there has to be a better way to do this.
 				textChannel.activeThreads.collect {
@@ -129,92 +133,90 @@ class ThreadInviter : Extension() {
 
 			action {
 				// Try to get the moderator ping role from the config. If a config is not set, return@action
-				val moderatorRoleId = DatabaseHelper.selectInConfig(event.channel.guildId, "moderatorsPing")
+				val moderatorRoleId =
+					DatabaseHelper.selectInConfig(event.channel.guildId, "moderatorsPing") ?: return@action
 
-				val supportTeamId = DatabaseHelper.selectInConfig(event.channel.guildId, "supportTeam")
-				val supportChannelId = DatabaseHelper.selectInConfig(event.channel.guildId,
-					"supportChannel")
+				val supportTeamId = DatabaseHelper.selectInConfig(event.channel.guildId, "supportTeam") ?: return@action
+				val supportChannelId =
+					DatabaseHelper.selectInConfig(event.channel.guildId, "supportChannel") ?: return@action
 
-				if (supportTeamId != null && supportChannelId != null) {
-					if (try {
-							event.channel.parentId == supportChannelId
-						} catch (e: NumberFormatException) {
-							false
-						}
-					) {
-						val threadOwner = event.channel.owner.asUser()
-
-						val supportRole = event.channel.guild.getRole(supportTeamId)
-
-						event.channel.withTyping {
-							delay(2.seconds)
-						}
-
-						val message = event.channel.createMessage(
-							content = "Hello there! Since you're in the support channel, I'll just grab" +
-									" support team for you..."
-						)
-
-						event.channel.withTyping {
-							delay(4.seconds)
-						}
-
-						message.edit {
-							content = "${supportRole.mention}, could you help this person please!"
-						}
-
-						event.channel.withTyping {
-							delay(3.seconds)
-						}
-
-						message.edit {
-							content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
-									" you can just send a message in <#$supportChannelId> and I'll automatically " +
-									"make a thread for you"
-						}
-
-					} else if (moderatorRoleId != null) {
-						if (
-							try {
-								event.channel.parentId != supportChannelId
-							} catch (e: NumberFormatException) {
-								false
-							}
-						) {
-							val threadOwner = event.channel.owner.asUser()
-
-							val modRole = event.channel.guild.getRole((moderatorRoleId))
-
-							event.channel.withTyping {
-								delay(2.seconds)
-							}
-							val message = event.channel.createMessage(
-								content = "Hello there! Lemme just grab the moderators..."
-							)
-
-							event.channel.withTyping {
-								delay(4.seconds)
-							}
-
-							message.edit {
-								content = "${modRole.mention}, welcome to the thread!"
-							}
-
-							event.channel.withTyping {
-								delay(4.seconds)
-							}
-
-							message.edit {
-								content = "Welcome to your thread, ${threadOwner.mention}\nOnce you're finished, use" +
-										"`/thread archive` to close it. If you want to change the thread name, use " +
-										"`/thread rename` to do so"
-							}
-
-							delay(20.seconds)
-
-							message.delete("Mods have been invited, message can go now!")
-						}
+				if (try {
+						event.channel.parentId == supportChannelId
+					} catch (e: NumberFormatException) {
+						false
 					}
+				) {
+					val threadOwner = event.channel.owner.asUser()
+
+					val supportRole = event.channel.guild.getRole(supportTeamId)
+
+					event.channel.withTyping {
+						delay(2.seconds)
+					}
+
+					val message = event.channel.createMessage(
+						content = "Hello there! Since you're in the support channel, I'll just grab" +
+								" support team for you..."
+					)
+
+					event.channel.withTyping {
+						delay(4.seconds)
+					}
+
+					message.edit {
+						content = "${supportRole.mention}, could you help this person please!"
+					}
+
+					event.channel.withTyping {
+						delay(3.seconds)
+					}
+
+					message.edit {
+						content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
+								" you can just send a message in <#$supportChannelId> and I'll automatically " +
+								"make a thread for you"
+					}
+				}
+
+				if (
+					try {
+						event.channel.parentId != supportChannelId
+					} catch (e: NumberFormatException) {
+						false
+					}
+				) {
+					val threadOwner = event.channel.owner.asUser()
+
+					val modRole = event.channel.guild.getRole((moderatorRoleId))
+
+					event.channel.withTyping {
+						delay(2.seconds)
+					}
+					val message = event.channel.createMessage(
+						content = "Hello there! Lemme just grab the moderators..."
+					)
+
+					event.channel.withTyping {
+						delay(4.seconds)
+					}
+
+					message.edit {
+						content = "${modRole.mention}, welcome to the thread!"
+					}
+
+					event.channel.withTyping {
+						delay(4.seconds)
+					}
+
+					message.edit {
+						content = "Welcome to your thread, ${threadOwner.mention}\nOnce you're finished, use" +
+								"`/thread archive` to close it. If you want to change the thread name, use " +
+								"`/thread rename` to do so"
+					}
+
+					delay(20.seconds)
+
+					message.delete("Mods have been invited, message can go now!")
 				}
 			}
 		}

@@ -6,7 +6,6 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
@@ -35,8 +34,9 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.ResponseHelper
-import net.irisshaders.lilybot.utils.getFromConfig
+import net.irisshaders.lilybot.utils.getFromConfigPrivateResponse
+import net.irisshaders.lilybot.utils.responseEmbedInChannel
+import net.irisshaders.lilybot.utils.userDMEmbed
 import java.lang.Integer.min
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -61,7 +61,7 @@ class Moderation : Extension() {
 
 			action {
 				// Try to get the action log from the config. If a config is not set, inform the user and return@action
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val messageAmount = arguments.messages
@@ -70,8 +70,7 @@ class Moderation : Extension() {
 				// Get the specified amount of messages into an array list of Snowflakes and delete them
 
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
-					Snowflake.max, min(messageAmount, 100)
-				).map { it.id }.toList()
+					Snowflake.max, min(messageAmount, 100)).map { it.id }.toList()
 
 				textChannel.bulkDelete(messages)
 
@@ -79,7 +78,7 @@ class Moderation : Extension() {
 					content = "Messages cleared"
 				}
 
-				ResponseHelper.responseEmbedInChannel(
+				responseEmbedInChannel(
 					actionLog,
 					"$messageAmount messages have been cleared.",
 					"Action occurred in ${textChannel.mention}",
@@ -104,8 +103,8 @@ class Moderation : Extension() {
 			action {
 				// Try to get the action log and moderator ping role from the config.
 				// If a config is not set, inform the user and return@action
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -128,7 +127,7 @@ class Moderation : Extension() {
 				}
 
 				// DM the user before the ban task is run, to avoid error, null if fails
-				val dm = ResponseHelper.userDMEmbed(
+				val dm = userDMEmbed(
 					userArg,
 					"You have been banned from ${guild?.fetchGuild()?.name}",
 					"**Reason:**\n${arguments.reason}",
@@ -202,7 +201,7 @@ class Moderation : Extension() {
 
 			action {
 				// Try to get the action log from the config. If a config is not set, inform the user and return@action
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -219,7 +218,7 @@ class Moderation : Extension() {
 					content = "Unbanned user"
 				}
 
-				ResponseHelper.responseEmbedInChannel(
+				responseEmbedInChannel(
 					actionLog,
 					"Unbanned a user",
 					"${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})",
@@ -243,8 +242,8 @@ class Moderation : Extension() {
 			action {
 				// Try to get the action log and moderator ping role from the config.
 				// If a config is not set, inform the user and return@action
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -271,7 +270,7 @@ class Moderation : Extension() {
 				}
 
 				// DM the user before the ban task is run
-				val dm = ResponseHelper.userDMEmbed(
+				val dm = userDMEmbed(
 					userArg,
 					"You have been soft-banned from ${guild?.fetchGuild()?.name}",
 					"**Reason:**\n${arguments.reason}\n\n" +
@@ -344,8 +343,8 @@ class Moderation : Extension() {
 			action {
 				// Try to get the action log and moderator ping role from the config.
 				// If a config is not set, inform the user and return@action
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -370,7 +369,7 @@ class Moderation : Extension() {
 				}
 
 				// DM the user about it before the kick
-				val dm = ResponseHelper.userDMEmbed(
+				val dm = userDMEmbed(
 					userArg,
 					"You have been kicked from ${guild?.fetchGuild()?.name}",
 					"**Reason:**\n${arguments.reason}",
@@ -428,8 +427,8 @@ class Moderation : Extension() {
 			action {
 				// Try to get the action log and moderator ping role from the config.
 				// If a config is not set, inform the user and return@action
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val userArg = arguments.userArgument
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
@@ -461,7 +460,7 @@ class Moderation : Extension() {
 				val databasePoints = DatabaseHelper.selectInWarn(userArg.id, guild!!.id)
 
 				// DM the user about the warning
-				val dm = ResponseHelper.userDMEmbed(
+				val dm = userDMEmbed(
 					userArg,
 					"You have been warned in ${guild?.fetchGuild()?.name}",
 					"You were given ${arguments.warnPoints} points\n" +
@@ -471,7 +470,7 @@ class Moderation : Extension() {
 
 				// Check the points amount, before running sanctions
 				if (databasePoints in (75..124)) {
-					ResponseHelper.userDMEmbed(
+					userDMEmbed(
 						userArg,
 						"You have been timed-out in ${guild!!.fetchGuild().name}",
 						"You have accumulated too many warn points, and have hence been given a " +
@@ -483,7 +482,7 @@ class Moderation : Extension() {
 						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
 					}
 
-					ResponseHelper.responseEmbedInChannel(
+					responseEmbedInChannel(
 						actionLog,
 						"Timeout",
 						"${userArg.mention} has been timed-out for 3 hours due to point " +
@@ -492,7 +491,7 @@ class Moderation : Extension() {
 						user.asUser()
 					)
 				} else if (databasePoints in (125..199)) {
-					ResponseHelper.userDMEmbed(
+					userDMEmbed(
 						userArg,
 						"You have been timed-out in ${guild!!.fetchGuild().name}",
 						"You have accumulated too many warn points, and have hence been given " +
@@ -504,7 +503,7 @@ class Moderation : Extension() {
 						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
 					}
 
-					ResponseHelper.responseEmbedInChannel(
+					responseEmbedInChannel(
 						actionLog,
 						"Timeout",
 						"${userArg.mention} has been timed-out for 12 hours due to point " +
@@ -515,7 +514,7 @@ class Moderation : Extension() {
 				} else if (databasePoints >= 200) {
 					guild?.getMember(userArg.id)
 						?.edit { timeoutUntil = null } // Remove timeout in case they were timed out when banned
-					ResponseHelper.userDMEmbed(
+					userDMEmbed(
 						userArg,
 						"You have been banned from ${guild!!.fetchGuild().name}",
 						"You have accumulated too many warn points, and have hence been banned",
@@ -527,7 +526,7 @@ class Moderation : Extension() {
 						this.deleteMessagesDays = 0
 					})
 
-					ResponseHelper.responseEmbedInChannel(
+					responseEmbedInChannel(
 						actionLog,
 						"User Banned!",
 						"${userArg.mention} has been banned due to point accumulation\n${userArg.id} (${userArg.tag})",
@@ -599,8 +598,8 @@ class Moderation : Extension() {
 			action {
 				// Try to get the action log and moderator ping role from the config.
 				// If a config is not set, inform the user and return@action
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -640,7 +639,7 @@ class Moderation : Extension() {
 
 				// Send the DM after the timeout task, in case Lily doesn't have required permissions
 				// DM the user about it
-				val dm = ResponseHelper.userDMEmbed(
+				val dm = userDMEmbed(
 					userArg,
 					"You have been timed out in ${guild?.fetchGuild()?.name}",
 					"**Duration:**\n${

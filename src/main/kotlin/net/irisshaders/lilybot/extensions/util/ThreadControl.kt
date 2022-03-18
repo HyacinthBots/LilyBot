@@ -15,12 +15,9 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.edit
-import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
-import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.getFromConfig
 import net.irisshaders.lilybot.utils.getFromConfigPublicResponse
 import kotlin.time.ExperimentalTime
 
@@ -153,6 +150,7 @@ class ThreadControl : Extension() {
 			description = "The new name to give to the thread"
 		}
 	}
+
 	inner class ThreadArchiveArgs : Arguments() {
 		val lock by defaultingBoolean {
 			name = "lock"

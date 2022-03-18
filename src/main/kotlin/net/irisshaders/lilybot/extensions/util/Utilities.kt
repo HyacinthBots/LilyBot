@@ -26,9 +26,9 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
-import net.irisshaders.lilybot.utils.ResponseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import net.irisshaders.lilybot.utils.getFromConfig
+import net.irisshaders.lilybot.utils.getFromConfigPrivateResponse
+import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import kotlin.time.ExperimentalTime
 
 @Suppress("DuplicatedCode")
@@ -42,8 +42,10 @@ class Utilities : Extension() {
 		 * Online notification
 		 * @author IMS212
 		 */
-		ResponseHelper.responseEmbedInChannel(onlineLog, "Lily is now online!", null,
-			DISCORD_GREEN, null)
+		responseEmbedInChannel(
+			onlineLog, "Lily is now online!", null,
+			DISCORD_GREEN, null
+		)
 
 		/**
 		 * Ping Command
@@ -85,10 +87,10 @@ class Utilities : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-				val targetChannel: MessageChannelBehavior = if (arguments.targetChannel == null) {
+				val targetChannel = if (arguments.targetChannel == null) {
 					channel
 				} else {
 					guild?.getChannel(arguments.targetChannel!!.id) as MessageChannelBehavior
@@ -106,14 +108,14 @@ class Utilities : Extension() {
 							content = arguments.messageArgument
 						}
 					}
-				} catch (e:KtorRequestException) {
+				} catch (e: KtorRequestException) {
 					respond { content = "Lily does not have permission to send messages in this channel." }
 					return@action
 				}
 
 				respond { content = "Message sent." }
 
-				ResponseHelper.responseEmbedInChannel(
+				responseEmbedInChannel(
 					actionLog,
 					"Message Sent",
 					"/say has been used to " +
@@ -141,7 +143,7 @@ class Utilities : Extension() {
 					return@action
 				}
 
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
@@ -154,7 +156,7 @@ class Utilities : Extension() {
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
-				ResponseHelper.responseEmbedInChannel(
+				responseEmbedInChannel(
 					actionLog,
 					"Presence Changed",
 					"Lily's presence has been set to `${arguments.presenceArgument}`",

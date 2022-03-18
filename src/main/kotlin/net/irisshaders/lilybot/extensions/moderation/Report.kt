@@ -30,9 +30,8 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.ResponseHelper
-import net.irisshaders.lilybot.utils.getFromConfig
+import net.irisshaders.lilybot.utils.getFromConfigPublicResponse
+import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -51,9 +50,9 @@ class Report : Extension() {
 
 			action {
 				// Try to get the action log, message log and moderators from config
-				val messageLogId = getFromConfig("messageLogs") ?: return@action
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
+				val messageLogId = getFromConfigPublicResponse("messageLogs") ?: return@action
+				val actionLogId = getFromConfigPublicResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
 
 				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				try {
@@ -86,9 +85,9 @@ class Report : Extension() {
 
 			action {
 				// Try to get the action log, message log and moderators from config
-				val messageLogId = getFromConfig("messageLogs") ?: return@action
-				val actionLogId = getFromConfig("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfig("moderatorsPing") ?: return@action
+				val messageLogId = getFromConfigPublicResponse("messageLogs") ?: return@action
+				val actionLogId = getFromConfigPublicResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
 
 				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 
@@ -222,7 +221,7 @@ class Report : Extension() {
 								respond {
 									content = "Timed out user for 10 minutes"
 								}
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been timed out in ${guild?.fetchGuild()?.name}",
 									"**Duration:**\n10 minutes\n**Reason:**\nTimed-out via report",
@@ -237,7 +236,7 @@ class Report : Extension() {
 								respond {
 									content = "Timed out user for 20 minutes"
 								}
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been timed out in ${guild?.fetchGuild()?.name}",
 									"**Duration:**\n20 minutes\n**Reason:**\nTimed-out via report",
@@ -252,7 +251,7 @@ class Report : Extension() {
 								respond {
 									content = "Timed out user for 30 minutes"
 								}
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been timed out in ${guild?.fetchGuild()?.name}",
 									"**Duration:**\n30 minutes\n**Reason:**\nTimed-out via report",
@@ -261,7 +260,7 @@ class Report : Extension() {
 								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 30)
 							}
 							"kick-user" -> {
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been kicked from ${guild?.fetchGuild()?.name}",
 									"**Reason:**\nKicked via report",
@@ -271,7 +270,7 @@ class Report : Extension() {
 								quickLogEmbed("Kicked a User", actionLog, messageAuthor.asUser())
 							}
 							"soft-ban-user" -> {
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been soft-banned from ${guild?.fetchGuild()?.name}",
 									"**Reason:**\nSoft-banned via report\n\n" +
@@ -286,7 +285,7 @@ class Report : Extension() {
 								quickLogEmbed("Soft-Banned a User", actionLog, messageAuthor.asUser())
 							}
 							"ban-user" -> {
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been banned from ${guild?.fetchGuild()?.name}",
 									"**Reason:**\nBanned via report",
