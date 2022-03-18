@@ -2,7 +2,9 @@ package net.irisshaders.lilybot.utils
 
 import com.kotlindiscord.kord.extensions.commands.application.message.EphemeralMessageCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
+import com.kotlindiscord.kord.extensions.types.edit
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.core.entity.channel.thread.ThreadChannel
 
 /**
  * This is a simple function to get a value from the configuration database in an ephemeral slash command context,
@@ -57,4 +59,18 @@ suspend fun EphemeralMessageCommandContext.getFromConfigPublicResponse(inputColu
 			content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
 		}
 		null
+}
+
+
+suspend fun EphemeralSlashCommandContext<*>.isThread(): Boolean {
+	return if (channel.asChannel() is ThreadChannel) {
+		kotlin.run {
+			edit {
+				content = "This isn't a thread :person_facepalming:"
+			}
+		}
+		true
+	} else {
+		false
+	}
 }

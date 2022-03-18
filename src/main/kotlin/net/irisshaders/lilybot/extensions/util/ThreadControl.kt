@@ -19,8 +19,10 @@ import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.utils.getFromConfigPublicResponse
+import net.irisshaders.lilybot.utils.isThread
 import kotlin.time.ExperimentalTime
 
+@Suppress("DuplicatedCode")
 class ThreadControl : Extension() {
 
 	override val name = "thread-control"
@@ -34,14 +36,8 @@ class ThreadControl : Extension() {
 				name = "rename"
 				description = "Rename a thread!"
 
-				@Suppress("DuplicatedCode")
 				action {
-					if (channel.asChannel() !is ThreadChannel) {
-						edit {
-							content = "This isn't a thread :person_facepalming:"
-						}
-						return@action
-					}
+					if (!isThread()) return@action
 
 					val channel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
@@ -86,12 +82,7 @@ class ThreadControl : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					if (channel.asChannel() !is ThreadChannel) {
-						edit {
-							content = "This isn't a thread :person_facepalming:"
-						}
-						return@action
-					}
+					if (!isThread()) return@action
 
 					val channel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
