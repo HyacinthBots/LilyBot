@@ -131,10 +131,10 @@ class MessageEvents : Extension() {
 							ResponseHelper.responseEmbedInChannel(
 								eventMessage.channel,
 								"Not Enough Crashes detected in logs",
-								"Not Enough Crashes (NEC) is well know to cause issues and often " +
+								"Not Enough Crashes (NEC) is well known to cause issues and often " +
 										"makes the debugging process more difficult. " +
 										"Please remove NEC, recreate the issue, and resend the relevant files " +
-										"(ie. log or crash report) if the issue persists.",
+										"(i.e. log or crash report) if the issue persists.",
 								DISCORD_PINK,
 								eventMessage.author
 							)
