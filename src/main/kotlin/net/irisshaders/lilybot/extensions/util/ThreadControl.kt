@@ -36,7 +36,7 @@ class ThreadControl : Extension() {
 				name = "rename"
 				description = "Rename a thread!"
 
-				check { failIf { isInThread() != pass() } }
+				check { isInThread() }
 
 				action {
 
@@ -80,7 +80,7 @@ class ThreadControl : Extension() {
 				name = "archive"
 				description = "Archive this thread"
 
-				check { failIf { isInThread() != pass() } }
+				check { isInThread() }
 
 				action {
 
