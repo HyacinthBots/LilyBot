@@ -25,7 +25,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.util.toByteArray
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.ResponseHelper
+import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
 import kotlin.time.ExperimentalTime
@@ -128,7 +128,7 @@ class MessageEvents : Extension() {
 						val necText = "at Not Enough Crashes"
 						val indexOfNECText = builder.indexOf(necText)
 						if (indexOfNECText != -1) {
-							ResponseHelper.responseEmbedInChannel(
+							responseEmbedInChannel(
 								eventMessage.channel,
 								"Not Enough Crashes detected in logs",
 								"Not Enough Crashes (NEC) is well known to cause issues and often " +
@@ -142,7 +142,7 @@ class MessageEvents : Extension() {
 							// Ask the user if they're ok with uploading their log to a paste site
 							var confirmationMessage: Message? = null
 
-							confirmationMessage = ResponseHelper.responseEmbedInChannel(
+							confirmationMessage = responseEmbedInChannel(
 								eventMessage.channel,
 								"Do you want to upload this file to Hastebin?",
 								"Hastebin is a website that allows users to share plain text through " +
