@@ -136,25 +136,17 @@ class RoleMenu : Extension() {
 
 				// this is  a very dirty fix, so it doesn't conflict with log uploading
 				val roleId: Snowflake? = try {
-					DatabaseHelper.selectInComponents(
-						interaction.componentId,
-						"roleId"
-					) as Snowflake?
+					DatabaseHelper.selectInComponents(interaction.componentId, "roleId") as Snowflake?
 				} catch (e: NullPointerException) {
 					return@action
 				}
 				val addOrRemove: String? = try {
-					DatabaseHelper.selectInComponents(
-						interaction.componentId,
-						"addOrRemove"
-					) as String?
+					DatabaseHelper.selectInComponents(interaction.componentId, "addOrRemove") as String?
 				} catch (e: NullPointerException) {
 					return@action
 				}
 
-				if (roleId == null || addOrRemove == null) {
-					return@action
-				}
+				if (roleId == null || addOrRemove == null) return@action
 
 				val role = guild.getRole(roleId)
 

@@ -49,7 +49,6 @@ class Report : Extension() {
 			locking = true // To prevent the command from being run more than once concurrently
 
 			action {
-				// Try to get the action log, message log and moderators from config
 				val messageLogId = getFromConfigPublicResponse("messageLogs") ?: return@action
 				val actionLogId = getFromConfigPublicResponse("modActionLog") ?: return@action
 				val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
@@ -84,7 +83,6 @@ class Report : Extension() {
 			locking = true
 
 			action {
-				// Try to get the action log, message log and moderators from config
 				val messageLogId = getFromConfigPublicResponse("messageLogs") ?: return@action
 				val actionLogId = getFromConfigPublicResponse("modActionLog") ?: return@action
 				val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action

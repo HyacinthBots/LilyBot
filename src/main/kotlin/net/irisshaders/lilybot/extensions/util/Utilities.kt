@@ -31,7 +31,6 @@ import net.irisshaders.lilybot.utils.getFromConfigPrivateResponse
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import kotlin.time.ExperimentalTime
 
-@Suppress("DuplicatedCode")
 class Utilities : Extension() {
 	override val name = "utilities"
 

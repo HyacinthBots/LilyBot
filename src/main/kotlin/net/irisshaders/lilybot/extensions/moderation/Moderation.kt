@@ -60,7 +60,6 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ManageMessages) }
 
 			action {
-				// Try to get the action log from the config. If a config is not set, inform the user and return@action
 				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
@@ -101,8 +100,6 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				// Try to get the action log and moderator ping role from the config.
-				// If a config is not set, inform the user and return@action
 				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
 
@@ -200,7 +197,6 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				// Try to get the action log from the config. If a config is not set, inform the user and return@action
 				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
@@ -240,8 +236,6 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				// Try to get the action log and moderator ping role from the config.
-				// If a config is not set, inform the user and return@action
 				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
 
@@ -341,8 +335,6 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.KickMembers) }
 
 			action {
-				// Try to get the action log and moderator ping role from the config.
-				// If a config is not set, inform the user and return@action
 				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
 
@@ -425,8 +417,6 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				// Try to get the action log and moderator ping role from the config.
-				// If a config is not set, inform the user and return@action
 				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
 
@@ -596,8 +586,6 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				// Try to get the action log and moderator ping role from the config.
-				// If a config is not set, inform the user and return@action
 				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
 
@@ -705,7 +693,6 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				// Try to get the action log from the config. If a config is not set, inform the user and return@action
 				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
 				if (actionLogId == null) {
 					respond {

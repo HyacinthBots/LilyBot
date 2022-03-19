@@ -8,6 +8,7 @@
 
 package net.irisshaders.lilybot.extensions.util
 
+import com.kotlindiscord.kord.extensions.checks.isInThread
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
@@ -19,7 +20,6 @@ import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.utils.getFromConfigPublicResponse
-import net.irisshaders.lilybot.utils.isThread
 import kotlin.time.ExperimentalTime
 
 @Suppress("DuplicatedCode")
@@ -36,15 +36,15 @@ class ThreadControl : Extension() {
 				name = "rename"
 				description = "Rename a thread!"
 
+				check { failIf { isInThread() != pass() } }
+
 				action {
-					if (!isThread()) return@action
+
 
 					val channel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					// Try to get the moderator ping role from the config.
-					// If a config is not set, inform the user and return@action
 					val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
 
 					if (moderatorRoleId in roles) {
@@ -80,16 +80,14 @@ class ThreadControl : Extension() {
 				name = "archive"
 				description = "Archive this thread"
 
-				@Suppress("DuplicatedCode")
+				check { failIf { isInThread() != pass() } }
+
 				action {
-					if (!isThread()) return@action
 
 					val channel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					// Try to get the moderator ping role from the config.
-					// If a config is not set, inform the user and return@action
 					val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
 
 					if (moderatorRoleId in roles) {
