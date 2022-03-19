@@ -11,7 +11,6 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
@@ -20,41 +19,39 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageDeleteEvent
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.util.cio.*
+import io.ktor.client.HttpClient
+import io.ktor.client.request.post
+import io.ktor.client.statement.HttpResponse
+import io.ktor.util.toByteArray
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.utils.ResponseHelper
+import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
 import kotlin.time.ExperimentalTime
 
 class MessageEvents : Extension() {
-	override val name = "messageevents"
+	override val name = "message-events"
 
 	@Suppress("PrivatePropertyName")
 	private val LOG_FILE_EXTENSIONS = setOf("log", "gz", "txt")
 
 	override suspend fun setup() {
 		/**
-		 * Log the deletion of messages to the guilds [DatabaseManager.Config.messageLogs] channel
+		 * Logs deleted messages in a guild to the message log channel designated in the config for that guild
 		 * @author NoComment1105
 		 */
 		event<MessageDeleteEvent> {
 			action {
-				// Try to get the  message logs channel
-				val messageLogId: String? = DatabaseHelper.selectInConfig(event.guildId!!, DatabaseManager.Config.messageLogs)
-
-				// This uses return@action because events are triggered on bot startup
-				if (messageLogId == "NoSuchElementException" || messageLogId == null) { return@action }
-
 				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
+				if (event.guild == null) return@action
+
+				// Try to get the message logs channel, return@action if null
+				val messageLogId =
+					DatabaseHelper.selectInConfig(event.guild!!.id, "messageLogs") ?: return@action
 
 				val guild = kord.getGuild(event.guildId!!)
-				val messageLogChannel = guild?.getChannel(Snowflake(messageLogId)) as GuildMessageChannelBehavior
+				val messageLogChannel = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				val messageContent = event.message?.asMessageOrNull()?.content.toString()
 				val eventMessage = event.message
 				val messageLocation = event.channel.id.value
@@ -96,7 +93,8 @@ class MessageEvents : Extension() {
 		}
 
 		/**
-		 * Upload files that have the extensions specified in [LOG_FILE_EXTENSIONS] to hastebin, giving a user confirmation
+		 * Upload files that have the extensions specified in [LOG_FILE_EXTENSIONS] to hastebin,
+		 * giving a user confirmation.
 		 *
 		 * @author maximumpower55
 		 */
@@ -106,7 +104,8 @@ class MessageEvents : Extension() {
 
 				eventMessage.attachments.forEach { attachment ->
 					val attachmentFileName = attachment.filename
-					val attachmentFileExtension = attachmentFileName.substring(attachmentFileName.lastIndexOf(".") + 1)
+					val attachmentFileExtension = attachmentFileName.substring(
+						attachmentFileName.lastIndexOf(".") + 1)
 
 					if (attachmentFileExtension in LOG_FILE_EXTENSIONS) {
 						val logBytes = attachment.download()
@@ -127,12 +126,15 @@ class MessageEvents : Extension() {
 
 						// Ask the user to remove NEC to ease the debugging on the support team
 						val necText = "at Not Enough Crashes"
-						val indexOfnecText = builder.indexOf(necText)
-						if (indexOfnecText != -1) {
-							ResponseHelper.responseEmbedInChannel(
+						val indexOfNECText = builder.indexOf(necText)
+						if (indexOfNECText != -1) {
+							responseEmbedInChannel(
 								eventMessage.channel,
 								"Not Enough Crashes detected in logs",
-								"Not Enough Crashes (NEC) is well know to cause issues and often makes the debugging process more difficult. Please remove NEC, recreate the issue, and resend the relevant files (ie. log or crash report) if the issue persists.",
+								"Not Enough Crashes (NEC) is well known to cause issues and often " +
+										"makes the debugging process more difficult. " +
+										"Please remove NEC, recreate the issue, and resend the relevant files " +
+										"(i.e. log or crash report) if the issue persists.",
 								DISCORD_PINK,
 								eventMessage.author
 							)
@@ -140,10 +142,12 @@ class MessageEvents : Extension() {
 							// Ask the user if they're ok with uploading their log to a paste site
 							var confirmationMessage: Message? = null
 
-							confirmationMessage = ResponseHelper.responseEmbedInChannel(
+							confirmationMessage = responseEmbedInChannel(
 								eventMessage.channel,
 								"Do you want to upload this file to Hastebin?",
-								"Hastebin is a website that allows users to share plain text through public posts called “pastes.”\nIt's easier for the support team to view the file on Hastebin, do you want it to be uploaded?",
+								"Hastebin is a website that allows users to share plain text through " +
+										"public posts called “pastes.”\nIt's easier for the support team to view " +
+										"the file on Hastebin, do you want it to be uploaded?",
 								DISCORD_PINK,
 								eventMessage.author
 							).edit {

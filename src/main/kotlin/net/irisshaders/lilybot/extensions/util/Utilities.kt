@@ -17,7 +17,6 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.PresenceStatus
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
@@ -25,28 +24,27 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.utils.ResponseHelper
-import net.irisshaders.lilybot.utils.TEST_GUILD_CHANNEL
+import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.update
+import net.irisshaders.lilybot.utils.getFromConfigPrivateResponse
+import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import kotlin.time.ExperimentalTime
 
-@Suppress("DuplicatedCode")
 class Utilities : Extension() {
 	override val name = "utilities"
 
 	override suspend fun setup() {
-		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(TEST_GUILD_CHANNEL) as GuildMessageChannelBehavior
+		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
 
 		/**
 		 * Online notification
 		 * @author IMS212
 		 */
-		ResponseHelper.responseEmbedInChannel(onlineLog, "Lily is now online!", null, DISCORD_GREEN, null)
+		responseEmbedInChannel(
+			onlineLog, "Lily is now online!", null,
+			DISCORD_GREEN, null
+		)
 
 		/**
 		 * Ping Command
@@ -88,15 +86,10 @@ class Utilities : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
 
-				if (actionLogId.equals("NoSuchElementException")) {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
-					return@action
-				}
-
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-				val targetChannel: MessageChannelBehavior = if (arguments.targetChannel == null) {
+				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val targetChannel = if (arguments.targetChannel == null) {
 					channel
 				} else {
 					guild?.getChannel(arguments.targetChannel!!.id) as MessageChannelBehavior
@@ -114,17 +107,18 @@ class Utilities : Extension() {
 							content = arguments.messageArgument
 						}
 					}
-				} catch (e:KtorRequestException) {
+				} catch (e: KtorRequestException) {
 					respond { content = "Lily does not have permission to send messages in this channel." }
 					return@action
 				}
 
 				respond { content = "Message sent." }
 
-				ResponseHelper.responseEmbedInChannel(
+				responseEmbedInChannel(
 					actionLog,
 					"Message Sent",
-					"/say has been used to say ${arguments.messageArgument} in ${targetChannel.mention}",
+					"/say has been used to " +
+							"say ${arguments.messageArgument} in ${targetChannel.mention}",
 					DISCORD_BLACK,
 					user.asUser()
 				)
@@ -142,34 +136,26 @@ class Utilities : Extension() {
 			check { hasPermission(Permission.Administrator) }
 
 			action {
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-
-				if (actionLogId.equals("NoSuchElementException")) {
-					respond { content = "**Error:** Unable to access a config for this guild! Have you set it?" }
+				// lock this command to the testing guild
+				if (guild?.id != TEST_GUILD_ID) {
+					respond { content = "**Error:** This command can only be run in Lily's testing guild." }
 					return@action
 				}
 
-				val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+
+				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 				this@ephemeralSlashCommand.kord.editPresence {
 					status = PresenceStatus.Online
 					playing(arguments.presenceArgument)
 				}
 
-				newSuspendedTransaction {
-					DatabaseManager.Utilities.insertIgnore {
-						it[status] = "status"
-						it[statusMessage] = arguments.presenceArgument
-					}
-
-					DatabaseManager.Utilities.update( { DatabaseManager.Utilities.status eq "status" } ) {
-						it[statusMessage] = arguments.presenceArgument
-					}
-				}
+				DatabaseHelper.putInStatus(arguments.presenceArgument)
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
-				ResponseHelper.responseEmbedInChannel(
+				responseEmbedInChannel(
 					actionLog,
 					"Presence Changed",
 					"Lily's presence has been set to `${arguments.presenceArgument}`",

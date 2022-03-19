@@ -8,6 +8,7 @@
 
 package net.irisshaders.lilybot.extensions.util
 
+import com.kotlindiscord.kord.extensions.checks.isInThread
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
@@ -15,18 +16,16 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.edit
-import com.kotlindiscord.kord.extensions.types.respond
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
+import net.irisshaders.lilybot.utils.getFromConfigPublicResponse
 import kotlin.time.ExperimentalTime
 
+@Suppress("DuplicatedCode")
 class ThreadControl : Extension() {
 
-	override val name = "threadcontrol"
+	override val name = "thread-control"
 
 	override suspend fun setup() {
 		publicSlashCommand {
@@ -37,29 +36,18 @@ class ThreadControl : Extension() {
 				name = "rename"
 				description = "Rename a thread!"
 
-				@Suppress("DuplicatedCode")
+				check { isInThread() }
+
 				action {
-					if (channel.asChannel() !is ThreadChannel) {
-						edit {
-							content = "This isn't a thread :person_facepalming:"
-						}
-						return@action
-					}
+
 
 					val channel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
-					if (moderators.equals("NoSuchElementException")) {
-						respond {
-							content =
-								"**Error:** Unable to access config for this guild! Please inform a member of staff!"
-						}
-						return@action
-					}
+					val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
 
-					if (Snowflake(moderators!!) in roles) {
+					if (moderatorRoleId in roles) {
 						channel.edit {
 							name = arguments.newThreadName
 
@@ -92,29 +80,17 @@ class ThreadControl : Extension() {
 				name = "archive"
 				description = "Archive this thread"
 
-				@Suppress("DuplicatedCode")
+				check { isInThread() }
+
 				action {
-					if (channel.asChannel() !is ThreadChannel) {
-						edit {
-							content = "This isn't a thread :person_facepalming:"
-						}
-						return@action
-					}
 
 					val channel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					val moderators = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
-					if (moderators.equals("NoSuchElementException")) {
-						respond {
-							content =
-								"**Error:** Unable to access config for this guild! Please inform a member of staff!"
-						}
-						return@action
-					}
+					val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
 
-					if (Snowflake(moderators!!) in roles) {
+					if (moderatorRoleId in roles) {
 						channel.edit {
 							this.archived = true
 							this.locked = arguments.lock
@@ -163,6 +139,7 @@ class ThreadControl : Extension() {
 			description = "The new name to give to the thread"
 		}
 	}
+
 	inner class ThreadArchiveArgs : Arguments() {
 		val lock by defaultingBoolean {
 			name = "lock"
