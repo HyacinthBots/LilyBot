@@ -70,7 +70,7 @@ class RoleMenu : Extension() {
 								arguments.role.id,
 								"add"
 							)
-							DatabaseHelper.putInComponents(newComponent)
+							DatabaseHelper.setComponent(newComponent)
 
 							action { }
 						}
@@ -85,7 +85,7 @@ class RoleMenu : Extension() {
 								arguments.role.id,
 								"remove"
 							)
-							DatabaseHelper.putInComponents(newComponent)
+							DatabaseHelper.setComponent(newComponent)
 
 							action { }
 						}
@@ -136,12 +136,12 @@ class RoleMenu : Extension() {
 
 				// this is  a very dirty fix, so it doesn't conflict with log uploading
 				val roleId: Snowflake? = try {
-					DatabaseHelper.selectInComponents(interaction.componentId, "roleId") as Snowflake?
+					DatabaseHelper.getComponent(interaction.componentId, "roleId") as Snowflake?
 				} catch (e: NullPointerException) {
 					return@action
 				}
 				val addOrRemove: String? = try {
-					DatabaseHelper.selectInComponents(interaction.componentId, "addOrRemove") as String?
+					DatabaseHelper.getComponent(interaction.componentId, "addOrRemove") as String?
 				} catch (e: NullPointerException) {
 					return@action
 				}

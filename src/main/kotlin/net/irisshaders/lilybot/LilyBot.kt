@@ -14,15 +14,16 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
 import net.irisshaders.lilybot.extensions.config.Config
-import net.irisshaders.lilybot.extensions.events.JoinLeaveEvent
-import net.irisshaders.lilybot.extensions.events.MessageEvents
+import net.irisshaders.lilybot.extensions.events.LogUploading
+import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
+import net.irisshaders.lilybot.extensions.events.MessageDelete
+import net.irisshaders.lilybot.extensions.events.ThreadInviter
 import net.irisshaders.lilybot.extensions.moderation.Moderation
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.RoleMenu
 import net.irisshaders.lilybot.extensions.util.ThreadControl
-import net.irisshaders.lilybot.extensions.util.ThreadInviter
 import net.irisshaders.lilybot.extensions.util.Utilities
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
@@ -73,14 +74,15 @@ suspend fun main() {
 			add(::Config)
 			add(::CustomCommands)
 			add(::Github)
-			add(::JoinLeaveEvent)
-			add(::MessageEvents)
+			add(::MemberJoinLeave)
+			add(::MessageDelete)
 			add(::Moderation)
 			add(::Report)
 			add(::RoleMenu)
 			add(::ThreadControl)
 			add(::ThreadInviter)
 			add(::Utilities)
+			add(::LogUploading)
 
 			extPhishing {
 				appName = "Lily Bot"
@@ -96,7 +98,7 @@ suspend fun main() {
 			}
 		}
 
-		presence { playing(DatabaseHelper.selectInStatus()) }
+		presence { playing(DatabaseHelper.getStatus()) }
 
 		try {
 			github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()

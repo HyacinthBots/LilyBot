@@ -15,7 +15,7 @@ import com.kotlindiscord.kord.extensions.types.respond
  * @author NoComment1105
  */
 suspend fun EphemeralSlashCommandContext<*>.getFromConfigPrivateResponse(inputColumn: String) =
-	DatabaseHelper.selectInConfig(guild!!.id, inputColumn) ?: run {
+	DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
 		respond {
 			content = "**Error:** Unable to access config for this guild! Is your configuration set?"
 		}
@@ -34,7 +34,7 @@ suspend fun EphemeralSlashCommandContext<*>.getFromConfigPrivateResponse(inputCo
  * @author NoComment1105
  */
 suspend fun EphemeralSlashCommandContext<*>.getFromConfigPublicResponse(inputColumn: String) =
-	DatabaseHelper.selectInConfig(guild!!.id, inputColumn) ?: run {
+	DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
 		respond {
 			content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
 		}
@@ -52,7 +52,7 @@ suspend fun EphemeralSlashCommandContext<*>.getFromConfigPublicResponse(inputCol
  * @author NoComment1105
  */
 suspend fun EphemeralMessageCommandContext.getFromConfigPublicResponse(inputColumn: String) =
-	DatabaseHelper.selectInConfig(guild!!.id, inputColumn) ?: run {
+	DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
 		respond {
 			content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
 		}

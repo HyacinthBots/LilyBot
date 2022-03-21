@@ -11,12 +11,10 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.event.message.MessageCreateEvent
-import dev.kord.core.event.message.MessageDeleteEvent
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.HttpClient
@@ -24,74 +22,18 @@ import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
 import io.ktor.util.toByteArray
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
 import kotlin.time.ExperimentalTime
 
-class MessageEvents : Extension() {
-	override val name = "message-events"
+class LogUploading : Extension() {
+	override val name = "log-uploading"
 
 	@Suppress("PrivatePropertyName")
 	private val LOG_FILE_EXTENSIONS = setOf("log", "gz", "txt")
 
 	override suspend fun setup() {
-		/**
-		 * Logs deleted messages in a guild to the message log channel designated in the config for that guild
-		 * @author NoComment1105
-		 */
-		event<MessageDeleteEvent> {
-			action {
-				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
-				if (event.guild == null) return@action
-
-				// Try to get the message logs channel, return@action if null
-				val messageLogId =
-					DatabaseHelper.selectInConfig(event.guild!!.id, "messageLogs") ?: return@action
-
-				val guild = kord.getGuild(event.guildId!!)
-				val messageLogChannel = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
-				val messageContent = event.message?.asMessageOrNull()?.content.toString()
-				val eventMessage = event.message
-				val messageLocation = event.channel.id.value
-
-				messageLogChannel.createEmbed {
-					color = DISCORD_PINK
-					title = "Message Deleted"
-					description = "Location: <#$messageLocation>"
-					timestamp = Clock.System.now()
-
-					field {
-						name = "Message Contents:"
-						value = messageContent.ifEmpty { "Failed to get content of message" }
-						inline = false
-					}
-					if (eventMessage?.attachments != null && eventMessage.attachments.isNotEmpty()) {
-						val attachmentUrls = StringBuilder()
-						for (attachment in eventMessage.attachments) {
-							attachmentUrls.append(attachment.data.url + "\n")
-						}
-						field {
-							name = "Attachments:"
-							value = attachmentUrls.trim().toString()
-							inline = false
-						}
-					}
-					field {
-						name = "Message Author:"
-						value = eventMessage?.author?.tag.toString()
-						inline = true
-					}
-					field {
-						name = "Author ID:"
-						value = eventMessage?.author?.id.toString()
-						inline = true
-					}
-				}
-			}
-		}
-
 		/**
 		 * Upload files that have the extensions specified in [LOG_FILE_EXTENSIONS] to hastebin,
 		 * giving a user confirmation.

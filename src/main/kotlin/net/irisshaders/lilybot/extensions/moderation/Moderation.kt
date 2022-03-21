@@ -444,10 +444,10 @@ class Moderation : Extension() {
 					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
 				}
 
-				val oldPoints = DatabaseHelper.selectInWarn(userArg.id, guild!!.id)
+				val oldPoints = DatabaseHelper.getWarn(userArg.id, guild!!.id)
 				val newPoints = oldPoints.plus(arguments.warnPoints)
-				DatabaseHelper.putInWarn(userArg.id, guild!!.id, newPoints)
-				val databasePoints = DatabaseHelper.selectInWarn(userArg.id, guild!!.id)
+				DatabaseHelper.setWarn(userArg.id, guild!!.id, newPoints)
+				val databasePoints = DatabaseHelper.getWarn(userArg.id, guild!!.id)
 
 				// DM the user about the warning
 				val dm = userDMEmbed(
@@ -693,7 +693,7 @@ class Moderation : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, "modActionLog")
+				val actionLogId = DatabaseHelper.getConfig(guild!!.id, "modActionLog")
 				if (actionLogId == null) {
 					respond {
 						content = "**Error:** Unable to access config for this guild! Is your configuration set?"

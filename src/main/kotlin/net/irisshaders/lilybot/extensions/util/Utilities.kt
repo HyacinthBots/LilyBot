@@ -151,7 +151,7 @@ class Utilities : Extension() {
 					playing(arguments.presenceArgument)
 				}
 
-				DatabaseHelper.putInStatus(arguments.presenceArgument)
+				DatabaseHelper.setStatus(arguments.presenceArgument)
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
@@ -169,15 +169,15 @@ class Utilities : Extension() {
 	inner class SayArgs : Arguments() {
 		val messageArgument by string {
 			name = "message"
-			description = "Message contents"
+			description = "The text of the message to be sent"
 		}
 		val targetChannel by optionalChannel {
 			name = "channel"
-			description = "The channel you want to send the message in"
+			description = "The channel the message should be sent in"
 		}
 		val embedMessage by defaultingBoolean {
 			name = "embed"
-			description = "Would you like to send as embed"
+			description = "If the message should be sent as an embed"
 			defaultValue = false
 		}
 	}
@@ -185,7 +185,7 @@ class Utilities : Extension() {
 	inner class PresenceArgs : Arguments() {
 		val presenceArgument by string {
 			name = "presence"
-			description = "Lily's presence"
+			description = "The new value Lily's presence should be set to"
 		}
 	}
 }

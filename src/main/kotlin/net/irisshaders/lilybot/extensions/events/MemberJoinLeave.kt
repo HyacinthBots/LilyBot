@@ -19,14 +19,13 @@ import kotlin.time.ExperimentalTime
  * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild
  * @author NoComment1105
  */
-class JoinLeaveEvent : Extension() {
-	override val name = "join-leave-event"
+class MemberJoinLeave : Extension() {
+	override val name = "member-join-leave"
 
 	override suspend fun setup() {
 		event<MemberJoinEvent> {
 			action {
-				// Try to get the join channel ID from the database and return@action if null
-				val joinChannelId = DatabaseHelper.selectInConfig(event.guildId, "joinChannel")
+				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel")
 					?: return@action
 
 				val eventMember = event.member
@@ -58,8 +57,7 @@ class JoinLeaveEvent : Extension() {
 
 		event<MemberLeaveEvent> {
 			action {
-				// Try to get the join channel ID from the database and return@action if null
-				val joinChannelId = DatabaseHelper.selectInConfig(event.guildId, "joinChannel")
+				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel")
 					?: return@action
 
 				val eventUser = event.user
