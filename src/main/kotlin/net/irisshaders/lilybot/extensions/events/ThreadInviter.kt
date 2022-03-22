@@ -6,7 +6,7 @@
 
 @file:OptIn(ExperimentalTime::class)
 
-package net.irisshaders.lilybot.extensions.util
+package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
@@ -56,8 +56,10 @@ class ThreadInviter : Extension() {
 					|| event.message.getChannel() is NewsChannelThread } }
 
 			action {
-				val supportTeamId = DatabaseHelper.selectInConfig(event.guildId!!, "supportTeam") ?: return@action
-				val supportChannelId = DatabaseHelper.selectInConfig(event.guildId!!, "supportChannel") ?: return@action
+				val supportTeamId = DatabaseHelper.getConfig(event.guildId!!, "supportTeam")
+					?: return@action
+				val supportChannelId = DatabaseHelper.getConfig(event.guildId!!, "supportChannel")
+					?: return@action
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
@@ -131,43 +133,33 @@ class ThreadInviter : Extension() {
 			action {
 				// Try to get the moderator ping role from the config. If a config is not set, return@action
 				val moderatorRoleId =
-					DatabaseHelper.selectInConfig(event.channel.guildId, "moderatorsPing") ?: return@action
+					DatabaseHelper.getConfig(event.channel.guildId, "moderatorsPing") ?: return@action
 
-				val supportTeamId = DatabaseHelper.selectInConfig(event.channel.guildId, "supportTeam") ?: return@action
+				val supportTeamId = DatabaseHelper.getConfig(event.channel.guildId, "supportTeam")
+					?: return@action
 				val supportChannelId =
-					DatabaseHelper.selectInConfig(event.channel.guildId, "supportChannel") ?: return@action
+					DatabaseHelper.getConfig(event.channel.guildId, "supportChannel") ?: return@action
 
-				if (try {
+				if (
+					try {
 						event.channel.parentId == supportChannelId
 					} catch (e: NumberFormatException) {
 						false
 					}
 				) {
 					val threadOwner = event.channel.owner.asUser()
-
 					val supportRole = event.channel.guild.getRole(supportTeamId)
 
-					event.channel.withTyping {
-						delay(2.seconds)
-					}
-
+					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
-						content = "Hello there! Since you're in the support channel, I'll just grab" +
-								" support team for you..."
+						content = "Hello there! Since you're in the support channel, I'll just grab the support " +
+								"team for you..."
 					)
 
-					event.channel.withTyping {
-						delay(4.seconds)
-					}
+					event.channel.withTyping { delay(4.seconds) }
+					message.edit { content = "${supportRole.mention}, could you please help this person!" }
 
-					message.edit {
-						content = "${supportRole.mention}, could you help this person please!"
-					}
-
-					event.channel.withTyping {
-						delay(3.seconds)
-					}
-
+					event.channel.withTyping { delay(3.seconds) }
 					message.edit {
 						content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
 								" you can just send a message in <#$supportChannelId> and I'll automatically " +
@@ -183,28 +175,17 @@ class ThreadInviter : Extension() {
 					}
 				) {
 					val threadOwner = event.channel.owner.asUser()
-
 					val modRole = event.channel.guild.getRole((moderatorRoleId))
 
-					event.channel.withTyping {
-						delay(2.seconds)
-					}
+					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
 						content = "Hello there! Lemme just grab the moderators..."
 					)
 
-					event.channel.withTyping {
-						delay(4.seconds)
-					}
+					event.channel.withTyping { delay(4.seconds) }
+					message.edit { content = "${modRole.mention}, welcome to the thread!" }
 
-					message.edit {
-						content = "${modRole.mention}, welcome to the thread!"
-					}
-
-					event.channel.withTyping {
-						delay(4.seconds)
-					}
-
+					event.channel.withTyping { delay(4.seconds) }
 					message.edit {
 						content = "Welcome to your thread, ${threadOwner.mention}\nOnce you're finished, use" +
 								"`/thread archive` to close it. If you want to change the thread name, use " +
@@ -212,7 +193,6 @@ class ThreadInviter : Extension() {
 					}
 
 					delay(20.seconds)
-
 					message.delete("Mods have been invited, message can go now!")
 				}
 			}

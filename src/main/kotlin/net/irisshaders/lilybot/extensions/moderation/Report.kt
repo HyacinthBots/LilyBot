@@ -30,7 +30,7 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.getFromConfigPublicResponse
+import net.irisshaders.lilybot.utils.getConfigPublicResponse
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -49,9 +49,9 @@ class Report : Extension() {
 			locking = true // To prevent the command from being run more than once concurrently
 
 			action {
-				val messageLogId = getFromConfigPublicResponse("messageLogs") ?: return@action
-				val actionLogId = getFromConfigPublicResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
+				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action
+				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
 
 				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				try {
@@ -83,9 +83,9 @@ class Report : Extension() {
 			locking = true
 
 			action {
-				val messageLogId = getFromConfigPublicResponse("messageLogs") ?: return@action
-				val actionLogId = getFromConfigPublicResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
+				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action
+				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
 
 				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 

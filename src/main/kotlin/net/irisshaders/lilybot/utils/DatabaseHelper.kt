@@ -17,7 +17,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @author tempest15
 	 */
-	suspend fun selectInConfig(inputGuildId: Snowflake, inputColumn: String): Snowflake? {
+	suspend fun getConfig(inputGuildId: Snowflake, inputColumn: String): Snowflake? {
 		val collection = database.getCollection<ConfigData>()
 		val selectedConfig = collection.findOne(ConfigData::guildId eq inputGuildId) ?: return  null
 
@@ -39,7 +39,7 @@ object DatabaseHelper {
 	 * @param newConfig The new config values you want to set
 	 * @author tempest15
 	 */
-	suspend fun putInConfig(newConfig: ConfigData) {
+	suspend fun setConfig(newConfig: ConfigData) {
 		val collection = database.getCollection<ConfigData>()
 		collection.deleteOne(ConfigData:: guildId eq newConfig.guildId)
 		collection.insertOne(newConfig)
@@ -64,7 +64,7 @@ object DatabaseHelper {
 	 * @param inputGuildId The ID of the guild the command was run in
 	 * @author tempest15
 	 */
-	suspend fun selectInWarn(inputUserId: Snowflake, inputGuildId: Snowflake): Int {
+	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): Int {
 		val collection = database.getCollection<WarnData>()
 		val selectedUserInGuild = collection.findOne(WarnData::userId eq inputUserId,
 			WarnData::guildId eq inputGuildId)
@@ -83,7 +83,7 @@ object DatabaseHelper {
 	 * @param inputGuildId The ID of the guild the command was run in
 	 * @author tempest15
 	 */
-	suspend fun putInWarn(inputUserId: Snowflake, inputGuildId: Snowflake, inputPointValue: Int) {
+	suspend fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, inputPointValue: Int) {
 			val collection = database.getCollection<WarnData>()
 			collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 			collection.insertOne(WarnData(inputUserId, inputGuildId, inputPointValue))
@@ -97,7 +97,7 @@ object DatabaseHelper {
 	 * @return null or the result from the database
 	 * @author tempest15
 	 */
-	suspend fun selectInComponents(inputComponentId: String, inputColumn: String): Any? {
+	suspend fun getComponent(inputComponentId: String, inputColumn: String): Any? {
 		// this returns any because it can return either a string or a snowflake
 		val collection = database.getCollection<ComponentData>()
 		val selectedComponent = collection.findOne(ComponentData:: componentId eq inputComponentId)
@@ -116,7 +116,7 @@ object DatabaseHelper {
 	 * @param [newComponent] The data for the component to be added
 	 * @author tempest15
 	 */
-	suspend fun putInComponents(newComponent: ComponentData) {
+	suspend fun setComponent(newComponent: ComponentData) {
 		val collection = database.getCollection<ComponentData>()
 		collection.deleteOne(ComponentData:: componentId eq newComponent.componentId)
 		collection.insertOne(newComponent)
@@ -128,7 +128,7 @@ object DatabaseHelper {
 	 * @return null or the set status in the database
 	 * @author NoComment1105
 	 */
-	fun selectInStatus(): String {
+	fun getStatus(): String {
 		var selectedStatus: StatusData?
 		runBlocking {
 			val collection = database.getCollection<StatusData>()
@@ -143,7 +143,7 @@ object DatabaseHelper {
 	 * @param [newStatus] The new status you wish to set
 	 * @author NoComment1105
 	 */
-	suspend fun putInStatus(newStatus: String) {
+	suspend fun setStatus(newStatus: String) {
 		val collection = database.getCollection<StatusData>()
 		collection.deleteOne(StatusData::key eq "LilyStatus")
 		collection.insertOne(StatusData("LilyStatus", newStatus))
