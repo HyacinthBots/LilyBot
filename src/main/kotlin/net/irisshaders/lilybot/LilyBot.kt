@@ -18,13 +18,15 @@ import net.irisshaders.lilybot.extensions.events.LogUploading
 import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
 import net.irisshaders.lilybot.extensions.events.MessageDelete
 import net.irisshaders.lilybot.extensions.events.ThreadInviter
-import net.irisshaders.lilybot.extensions.moderation.Moderation
+import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.moderation.Report
+import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
+import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.RoleMenu
 import net.irisshaders.lilybot.extensions.util.ThreadControl
-import net.irisshaders.lilybot.extensions.util.Utilities
+import net.irisshaders.lilybot.extensions.util.PublicUtilities
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -76,12 +78,14 @@ suspend fun main() {
 			add(::Github)
 			add(::MemberJoinLeave)
 			add(::MessageDelete)
-			add(::Moderation)
+			add(::TemporaryModeration)
+			add(::TerminalModeration)
 			add(::Report)
 			add(::RoleMenu)
 			add(::ThreadControl)
 			add(::ThreadInviter)
-			add(::Utilities)
+			add(::PublicUtilities)
+			add(::ModUtilities)
 			add(::LogUploading)
 
 			extPhishing {

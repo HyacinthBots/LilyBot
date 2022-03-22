@@ -3,7 +3,6 @@
 package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
-import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
@@ -23,7 +22,6 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
-import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.map
@@ -41,9 +39,8 @@ import java.lang.Integer.min
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-@Suppress("DuplicatedCode")
-class Moderation : Extension() {
-	override val name = "moderation"
+class TemporaryModeration : Extension() {
+	override val name = "temporary-moderation"
 
 	override suspend fun setup() {
 		val logger = KotlinLogging.logger { }
@@ -84,322 +81,6 @@ class Moderation : Extension() {
 					DISCORD_BLACK,
 					user.asUser()
 				)
-			}
-		}
-
-
-		/**
-		 * Ban command
-		 * @author IMS212
-		 */
-		ephemeralSlashCommand(::BanArgs) {
-			name = "ban"
-			description = "Bans a user."
-
-			// Require the Ban Member permission
-			check { hasPermission(Permission.BanMembers) }
-
-			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-				val userArg = arguments.userArgument
-
-				try {
-					// Get all the members roles into a List of snowflakes
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-					// Check if the user is a bot and fail
-					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond { content = "You cannot ban bot users!" }
-						return@action
-					// If the moderator ping role is found in the roles list, fail
-					} else if (moderatorRoleId in roles) {
-						respond { content = "You cannot ban moderators!" }
-						return@action
-					}
-				// In the case of any exceptions that crop up
-				} catch (exception: Exception) {
-					logger.warn("IsBot and moderator checks skipped on `Ban` due to error")
-				}
-
-				// DM the user before the ban task is run, to avoid error, null if fails
-				val dm = userDMEmbed(
-					userArg,
-					"You have been banned from ${guild?.fetchGuild()?.name}",
-					"**Reason:**\n${arguments.reason}",
-					null
-				)
-
-				try {
-					guild?.getMember(userArg.id)
-						?.edit { timeoutUntil = null } // remove timeout if they had a timeout when banned
-				} catch (e: EntityNotFoundException) {
-					logger.info("Unable to find user! Skipping timeout removal")
-				}
-
-				// Run the ban task
-				guild?.ban(userArg.id, builder = {
-					this.reason = arguments.reason
-					this.deleteMessagesDays = arguments.messages
-				})
-
-				respond {
-					content = "Banned a user"
-				}
-
-				actionLog.createEmbed {
-					color = DISCORD_BLACK
-					title = "Banned a user"
-					description = "${userArg.mention} has been banned!\n${userArg.id} (${userArg.tag})"
-
-					field {
-						name = "Reason:"
-						value = arguments.reason
-						inline = false
-					}
-					field {
-						name = "Days of messages deleted:"
-						value = arguments.messages.toString()
-						inline = false
-					}
-					field {
-						name = "User Notification:"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message"
-							}
-						inline = false
-					}
-
-					footer {
-						text = "Requested by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
-
-					timestamp = Clock.System.now()
-				}
-			}
-		}
-
-		/**
-		 *  Unban command
-		 *  @author NoComment1105
-		 */
-		ephemeralSlashCommand(::UnbanArgs) {
-			name = "unban"
-			description = "Unbans a user"
-
-			// Require Ban Members permission, only this check
-			// to avoid your everyday user from unbanning people
-			check { hasPermission(Permission.BanMembers) }
-
-			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-				val userArg = arguments.userArgument
-				val bans = guild!!.bans.toList().map { it.userId }
-
-				// Unban the user
-				if (userArg.id in bans) {
-					guild?.unban(userArg.id)
-				} else {
-					respond { content = "**Error:** User is not banned" }
-					return@action
-				}
-				respond {
-					content = "Unbanned user"
-				}
-
-				responseEmbedInChannel(
-					actionLog,
-					"Unbanned a user",
-					"${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})",
-					DISCORD_GREEN,
-					user.asUser()
-				)
-			}
-		}
-
-		/**
-		 * Soft ban command
-		 * @author NoComment1105
-		 */
-		ephemeralSlashCommand(::SoftBanArgs) {
-			name = "soft-ban"
-			description = "Soft-bans a user"
-
-			// Requires Ban Members Permission
-			check { hasPermission(Permission.BanMembers) }
-
-			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-				val userArg = arguments.userArgument
-
-				try {
-					// Gather users roles into a List of Snowflakes
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-					// Check if the user is a bot and return
-					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond {
-							content = "You cannot soft-ban bot users!"
-						}
-						return@action
-					// Check if the moderator role is in the roles list and return
-					} else if (moderatorRoleId in roles) {
-						respond {
-							content = "You cannot soft-ban moderators!"
-						}
-						return@action
-					}
-				// In case of any extra errors
-				} catch (exception: Exception) {
-					logger.warn("IsBot and Moderator checks skipped on `Soft-Ban` due to error")
-				}
-
-				// DM the user before the ban task is run
-				val dm = userDMEmbed(
-					userArg,
-					"You have been soft-banned from ${guild?.fetchGuild()?.name}",
-					"**Reason:**\n${arguments.reason}\n\n" +
-							"You are free to rejoin without the need to be unbanned",
-					null
-				)
-
-				guild?.getMember(userArg.id)?.edit { timeoutUntil = null }
-
-				// Ban the user, mark it as a soft-ban clearly
-				guild?.ban(userArg.id, builder = {
-					this.reason = "${arguments.reason} + **SOFT-BAN**"
-					this.deleteMessagesDays = arguments.messages
-				})
-
-				respond {
-					content = "Soft-Banned User"
-				}
-
-				actionLog.createEmbed {
-					color = DISCORD_BLACK
-					title = "Soft-banned a user"
-					description = "${userArg.mention} has been soft banned\n${userArg.id} (${userArg.tag})"
-
-					field {
-						name = "Reason:"
-						value = arguments.reason
-						inline = false
-					}
-					field {
-						name = "Days of messages deleted"
-						value = arguments.messages.toString()
-						inline = false
-					}
-					field {
-						name = "User Notification:"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message"
-							}
-						inline = false
-					}
-
-					footer {
-						text = "Requested by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
-
-					timestamp = Clock.System.now()
-				}
-
-				// Unban the user, as you're supposed to in soft-ban
-				guild?.unban(userArg.id)
-			}
-		}
-
-		/**
-		 * Kick command
-		 * @author IMS212
-		 */
-		ephemeralSlashCommand(::KickArgs) {
-			name = "kick"
-			description = "Kicks a user."
-
-			// Require Kick Members permission
-			check { hasPermission(Permission.KickMembers) }
-
-			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-				val userArg = arguments.userArgument
-
-				try {
-					// Get the users roles into a List of Snowflake
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-					// If the user is a bot, fail
-					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond {
-							content = "You cannot kick bot users!"
-						}
-						return@action
-					// If the moderator ping role is in the roles list, return
-					} else if (moderatorRoleId in roles) {
-						respond {
-							content = "You cannot kick moderators!"
-						}
-					}
-				} catch (exception: Exception) {
-					logger.warn("IsBot and Moderator checks skipped on `Kick` due to error")
-				}
-
-				// DM the user about it before the kick
-				val dm = userDMEmbed(
-					userArg,
-					"You have been kicked from ${guild?.fetchGuild()?.name}",
-					"**Reason:**\n${arguments.reason}",
-					null
-				)
-
-				// Run the kick task
-				guild?.kick(userArg.id, arguments.reason)
-
-				respond {
-					content = "Kicked User"
-				}
-
-				actionLog.createEmbed {
-					color = DISCORD_BLACK
-					title = "Kicked User"
-					description = "Kicked ${userArg.mention} from the server\n${userArg.id} (${userArg.tag})"
-
-					field {
-						name = "Reason"
-						value = arguments.reason
-						inline = false
-					}
-					field {
-						name = "User Notification:"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message"
-							}
-						inline = false
-					}
-					footer {
-						text = "Requested By ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
-				}
 			}
 		}
 
@@ -685,7 +366,7 @@ class Moderation : Extension() {
 		 *
 		 * @author IMS212
 		 */
-		ephemeralSlashCommand(::UnbanArgs) {
+		ephemeralSlashCommand(::RemoveArgs) {
 			name = "remove-timeout"
 			description = "Remove timeout on a user"
 
@@ -739,55 +420,10 @@ class Moderation : Extension() {
 		}
 	}
 
-	inner class KickArgs : Arguments() {
-		val userArgument by user {
-			name = "kickUser"
-			description = "Person to kick"
-		}
-		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the Kick"
-			defaultValue = "No Reason Provided"
-		}
-	}
-
-	inner class BanArgs : Arguments() {
-		val userArgument by user {
-			name = "banUser"
-			description = "Person to ban"
-		}
-		val messages by int {
-			name = "messages"
-			description = "Messages"
-		}
-		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the ban"
-			defaultValue = "No Reason Provided"
-		}
-	}
-
-	inner class UnbanArgs : Arguments() {
+	inner class RemoveArgs : Arguments() {
 		val userArgument by user {
 			name = "unbanUserId"
 			description = "Person Unbanned"
-		}
-	}
-
-	inner class SoftBanArgs : Arguments() {
-		val userArgument by user {
-			name = "softBanUser"
-			description = "Person to Soft ban"
-		}
-		val messages by defaultingInt {
-			name = "messages"
-			description = "Messages"
-			defaultValue = 3
-		}
-		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the ban"
-			defaultValue = "No Reason Provided"
 		}
 	}
 
