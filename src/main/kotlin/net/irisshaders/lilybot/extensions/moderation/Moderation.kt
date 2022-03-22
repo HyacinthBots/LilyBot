@@ -4,6 +4,7 @@ package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
@@ -34,6 +35,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.DatabaseHelper.selectInWarn
 import net.irisshaders.lilybot.utils.getFromConfigPrivateResponse
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
@@ -69,7 +71,8 @@ class Moderation : Extension() {
 				// Get the specified amount of messages into an array list of Snowflakes and delete them
 
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
-					Snowflake.max, min(messageAmount, 100)).map { it.id }.toList()
+					Snowflake.max, min(messageAmount, 100)
+				).map { it.id }.toList()
 
 				textChannel.bulkDelete(messages)
 
@@ -113,12 +116,12 @@ class Moderation : Extension() {
 					if (guild?.getMember(userArg.id)?.isBot == true) {
 						respond { content = "You cannot ban bot users!" }
 						return@action
-					// If the moderator ping role is found in the roles list, fail
+						// If the moderator ping role is found in the roles list, fail
 					} else if (moderatorRoleId in roles) {
 						respond { content = "You cannot ban moderators!" }
 						return@action
 					}
-				// In the case of any exceptions that crop up
+					// In the case of any exceptions that crop up
 				} catch (exception: Exception) {
 					logger.warn("IsBot and moderator checks skipped on `Ban` due to error")
 				}
@@ -251,14 +254,14 @@ class Moderation : Extension() {
 							content = "You cannot soft-ban bot users!"
 						}
 						return@action
-					// Check if the moderator role is in the roles list and return
+						// Check if the moderator role is in the roles list and return
 					} else if (moderatorRoleId in roles) {
 						respond {
 							content = "You cannot soft-ban moderators!"
 						}
 						return@action
 					}
-				// In case of any extra errors
+					// In case of any extra errors
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks skipped on `Soft-Ban` due to error")
 				}
@@ -350,7 +353,7 @@ class Moderation : Extension() {
 							content = "You cannot kick bot users!"
 						}
 						return@action
-					// If the moderator ping role is in the roles list, return
+						// If the moderator ping role is in the roles list, return
 					} else if (moderatorRoleId in roles) {
 						respond {
 							content = "You cannot kick moderators!"
@@ -444,86 +447,19 @@ class Moderation : Extension() {
 					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
 				}
 
-				val oldPoints = DatabaseHelper.selectInWarn(userArg.id, guild!!.id)
-				val newPoints = oldPoints.plus(arguments.warnPoints)
-				DatabaseHelper.putInWarn(userArg.id, guild!!.id, newPoints)
-				val databasePoints = DatabaseHelper.selectInWarn(userArg.id, guild!!.id)
+				val oldStrikes = selectInWarn(userArg.id, guild!!.id)
+				DatabaseHelper.putInWarn(userArg.id, guild!!.id, oldStrikes.plus(1))
+				val newStrikes = selectInWarn(userArg.id, guild!!.id)
 
 				// DM the user about the warning
 				val dm = userDMEmbed(
 					userArg,
 					"You have been warned in ${guild?.fetchGuild()?.name}",
-					"You were given ${arguments.warnPoints} points\n" +
-							"Your total is now $databasePoints\n\n**Reason:**\n${arguments.reason}",
+					"You were given a strike\n" +
+							"Your total is now $newStrikes\n\n**Reason:**\n${arguments.reason}\n\nFor more information" +
+							" about the warn system, please see [this document](https://github.com/IrisShaders/LilyBot/blob/develop/docs/warn-strikes.md)",
 					null
 				)
-
-				// Check the points amount, before running sanctions
-				if (databasePoints in (75..124)) {
-					userDMEmbed(
-						userArg,
-						"You have been timed-out in ${guild!!.fetchGuild().name}",
-						"You have accumulated too many warn points, and have hence been given a " +
-								"3 hour timeout",
-						DISCORD_BLACK
-					)
-
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
-					}
-
-					responseEmbedInChannel(
-						actionLog,
-						"Timeout",
-						"${userArg.mention} has been timed-out for 3 hours due to point " +
-								"accumulation\n${userArg.id} (${userArg.tag})",
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				} else if (databasePoints in (125..199)) {
-					userDMEmbed(
-						userArg,
-						"You have been timed-out in ${guild!!.fetchGuild().name}",
-						"You have accumulated too many warn points, and have hence been given " +
-								"a 12 hour timeout",
-						DISCORD_BLACK
-					)
-
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
-					}
-
-					responseEmbedInChannel(
-						actionLog,
-						"Timeout",
-						"${userArg.mention} has been timed-out for 12 hours due to point " +
-								"accumulation\n${userArg.id} (${userArg.tag})",
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				} else if (databasePoints >= 200) {
-					guild?.getMember(userArg.id)
-						?.edit { timeoutUntil = null } // Remove timeout in case they were timed out when banned
-					userDMEmbed(
-						userArg,
-						"You have been banned from ${guild!!.fetchGuild().name}",
-						"You have accumulated too many warn points, and have hence been banned",
-						DISCORD_BLACK
-					)
-
-					guild?.ban(userArg.id, builder = {
-						this.reason = "Banned due to point accumulation"
-						this.deleteMessagesDays = 0
-					})
-
-					responseEmbedInChannel(
-						actionLog,
-						"User Banned!",
-						"${userArg.mention} has been banned due to point accumulation\n${userArg.id} (${userArg.tag})",
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				}
 
 				respond {
 					content = "Warned User"
@@ -540,13 +476,8 @@ class Moderation : Extension() {
 						inline = false
 					}
 					field {
-						name = "Total Points:"
-						value = databasePoints.toString()
-						inline = false
-					}
-					field {
-						name = "Points added:"
-						value = arguments.warnPoints.toString()
+						name = "Total Strikes:"
+						value = newStrikes.toString()
 						inline = false
 					}
 					field {
@@ -569,8 +500,113 @@ class Moderation : Extension() {
 						icon = user.asUser().avatar?.url
 					}
 				}
+
+
+				// Check the amount of points before running sanctions
+				if (newStrikes == 2) {
+					userDMEmbed(
+						userArg,
+						"This is your second warning in ${guild?.fetchGuild()?.name}",
+						"If you receive any more warnings you will be given a timeout of 12 hours!." +
+								"\nMore information can be found [here](https://github.com/IrisShaders/LilyBot/blob/develop/docs/warn-strikes.md)",
+						DISCORD_RED
+					)
+				} else if (newStrikes == 3) {
+					userDMEmbed(
+						userArg,
+						"You have been timed-out in ${guild!!.fetchGuild().name}",
+						"You have accumulated too many warn strikes, and have hence been given a " +
+								"12 hour timeout",
+						DISCORD_BLACK
+					)
+
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+					}
+
+					responseEmbedInChannel(
+						actionLog,
+						"Timeout",
+						"${userArg.mention} has been timed-out for 12 hours due to warn strike " +
+								"accumulation\n${userArg.id} (${userArg.tag})",
+						DISCORD_BLACK,
+						user.asUser()
+					)
+				} else if (newStrikes > 3) {
+					userDMEmbed(
+						userArg,
+						"You have been timed out in ${guild!!.fetchGuild().name}",
+						"You have accumulated too many warn strikes, and have hence been given a " +
+								"3 day timeout. Please carefully consider your actions in future.",
+						DISCORD_BLACK
+					)
+
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+					}
+
+					responseEmbedInChannel(
+						actionLog,
+						"Timeout",
+						"${userArg.mention} has been timed-out for 3 days due to warn strike " +
+								"accumulation\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action.",
+						DISCORD_BLACK,
+						user.asUser()
+					)
+				}
 			}
 		}
+
+		ephemeralSlashCommand(::UnbanArgs) {
+			name = "remove-warn"
+			description = "Remove a warning strike from a user"
+
+			check { hasPermission(Permission.ModerateMembers) }
+
+			action {
+				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+
+				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val userArg = arguments.userArgument
+
+				val targetUser = guild?.getMember(userArg.id)
+				if (selectInWarn(targetUser!!.id, guild!!.id) == 0) {
+					respond {
+						content = "This user does not have any warning strikes!"
+					}
+					return@action
+				}
+
+				val oldStrikes = selectInWarn(userArg.id, guild!!.id)
+				DatabaseHelper.putInWarn(userArg.id, guild!!.id, oldStrikes.minus(1))
+				val newStrikes = selectInWarn(userArg.id, guild!!.id)
+
+				respond {
+					content = "Removed strike from user"
+				}
+
+				actionLog.createEmbed {
+					title = "Warning Removal"
+					color = DISCORD_BLACK
+					timestamp = Clock.System.now()
+
+					field {
+						name = "User:"
+						value = "${userArg.tag} \n${userArg.id}"
+						inline = false
+					}
+					field {
+						name = "Total Strikes:"
+						value = newStrikes.toString()
+						inline = false
+					}
+					footer {
+						text = "Requested by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
+					}
+				}
+			}
+ 		}
 
 		/**
 		 * Timeout command
@@ -602,14 +638,14 @@ class Moderation : Extension() {
 							content = "You cannot timeout a bot!"
 						}
 						return@action
-					// If the moderator ping role is in roles list, fail
+						// If the moderator ping role is in roles list, fail
 					} else if (moderatorRoleId in roles) {
 						respond {
 							content = "You cannot timeout a moderator!"
 						}
 						return@action
 					}
-				// To catch any errors in checking
+					// To catch any errors in checking
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks failed on `Timeout` due to error")
 				}
@@ -795,11 +831,6 @@ class Moderation : Extension() {
 		val userArgument by user {
 			name = "warnUser"
 			description = "Person to Warn"
-		}
-		val warnPoints by defaultingInt {
-			name = "points"
-			description = "Amount of points to add"
-			defaultValue = 10
 		}
 		val reason by defaultingString {
 			name = "reason"
