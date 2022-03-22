@@ -19,7 +19,7 @@ import com.kotlindiscord.kord.extensions.types.edit
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
-import net.irisshaders.lilybot.utils.getFromConfigPublicResponse
+import net.irisshaders.lilybot.utils.getConfigPublicResponse
 import kotlin.time.ExperimentalTime
 
 @Suppress("DuplicatedCode")
@@ -45,7 +45,7 @@ class ThreadControl : Extension() {
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
+					val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
 
 					if (moderatorRoleId in roles) {
 						channel.edit {
@@ -88,7 +88,7 @@ class ThreadControl : Extension() {
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					val moderatorRoleId = getFromConfigPublicResponse("moderatorsPing") ?: return@action
+					val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
 
 					if (moderatorRoleId in roles) {
 						channel.edit {
