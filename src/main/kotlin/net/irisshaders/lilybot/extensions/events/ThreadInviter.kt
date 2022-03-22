@@ -140,7 +140,13 @@ class ThreadInviter : Extension() {
 				val supportChannelId =
 					DatabaseHelper.getConfig(event.channel.guildId, "supportChannel") ?: return@action
 
-				if ( try { event.channel.parentId == supportChannelId } catch (e: NumberFormatException) { false } ) {
+				if (
+					try {
+						event.channel.parentId == supportChannelId
+					} catch (e: NumberFormatException) {
+						false
+					}
+				) {
 					val threadOwner = event.channel.owner.asUser()
 					val supportRole = event.channel.guild.getRole(supportTeamId)
 
@@ -161,7 +167,13 @@ class ThreadInviter : Extension() {
 					}
 				}
 
-				if ( try { event.channel.parentId != supportChannelId } catch (e: NumberFormatException) { false } ) {
+				if (
+					try {
+						event.channel.parentId != supportChannelId
+					} catch (e: NumberFormatException) {
+						false
+					}
+				) {
 					val threadOwner = event.channel.owner.asUser()
 					val modRole = event.channel.guild.getRole((moderatorRoleId))
 
