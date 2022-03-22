@@ -23,7 +23,7 @@ import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
-import net.irisshaders.lilybot.utils.getFromConfigPrivateResponse
+import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.ExperimentalTime
@@ -47,8 +47,8 @@ class TerminalModeration : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -144,7 +144,7 @@ class TerminalModeration : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -183,8 +183,8 @@ class TerminalModeration : Extension() {
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -282,8 +282,8 @@ class TerminalModeration : Extension() {
 			check { hasPermission(Permission.KickMembers) }
 
 			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument

@@ -27,7 +27,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ComponentData
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.getFromConfigPublicResponse
+import net.irisshaders.lilybot.utils.getConfigPublicResponse
 
 //todo This really just needs a full rework. I'm about 90% sure it's not properly adapted for cross guild work.
 class RoleMenu : Extension() {
@@ -97,7 +97,7 @@ class RoleMenu : Extension() {
 
 					// Try to get the action log from the config.
 					// If a config is not set, inform the user and return@action
-					val actionLogId = getFromConfigPublicResponse("modActionLog") ?: return@action
+					val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
 					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 					actionLog.createEmbed {

@@ -32,7 +32,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.getFromConfigPrivateResponse
+import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import java.lang.Integer.min
@@ -57,7 +57,7 @@ class TemporaryModeration : Extension() {
 			check { hasPermission(Permission.ManageMessages) }
 
 			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val messageAmount = arguments.messages
@@ -98,8 +98,8 @@ class TemporaryModeration : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val userArg = arguments.userArgument
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
@@ -267,8 +267,8 @@ class TemporaryModeration : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getFromConfigPrivateResponse("moderatorsPing") ?: return@action
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument

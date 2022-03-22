@@ -22,7 +22,7 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import net.irisshaders.lilybot.utils.getFromConfigPrivateResponse
+import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import kotlin.time.ExperimentalTime
 
@@ -42,7 +42,7 @@ class ModUtilities : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val targetChannel = if (arguments.targetChannel == null) {
@@ -98,7 +98,7 @@ class ModUtilities : Extension() {
 					return@action
 				}
 
-				val actionLogId = getFromConfigPrivateResponse("modActionLog") ?: return@action
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
