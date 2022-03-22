@@ -97,11 +97,12 @@ Arguments:
 Result: Warns `warnUser` with a DM and adds `points` points to their points total.
 Depending on their new points total, action is taken based on the below table.
 
-| Points | Action          |
-|--------|-----------------|
-| 75     | 3 hour timeout  |
-| 125    | 12 hour timeout |
-| 200    | Ban             |
+| Points   | Sanction                                                                                     |
+|:---------|:---------------------------------------------------------------------------------------------|
+| 1        | None. This is the first warning. It would be harsh to punish on warning 1                    |
+| 2        | 3 hour timeout. The user will be given a reminder in their notification about being careful  |
+| 3        | 12 hour timeout. The user already been told twice, therefore it is time to enforce sanctions |
+| 3+       | 3 day timeout. How many times :/                                                             |
 
 
 ### Timeout
