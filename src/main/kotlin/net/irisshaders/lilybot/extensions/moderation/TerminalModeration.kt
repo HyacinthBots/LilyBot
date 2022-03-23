@@ -23,7 +23,9 @@ import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
+import net.irisshaders.lilybot.utils.dmNotificationEmbed
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
+import net.irisshaders.lilybot.utils.isBotOrModerator
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.ExperimentalTime
@@ -48,27 +50,11 @@ class TerminalModeration : Extension() {
 
 			action {
 				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
-				try {
-					// Get all the members roles into a List of snowflakes
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-					// Check if the user is a bot and fail
-					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond { content = "You cannot ban bot users!" }
-						return@action
-						// If the moderator ping role is found in the roles list, fail
-					} else if (moderatorRoleId in roles) {
-						respond { content = "You cannot ban moderators!" }
-						return@action
-					}
-					// In the case of any exceptions that crop up
-				} catch (exception: Exception) {
-					logger.warn("IsBot and moderator checks skipped on `Ban` due to error")
-				}
+				isBotOrModerator(userArg, "ban") ?: return@action
 
 				// DM the user before the ban task is run, to avoid error, null if fails
 				val dm = userDMEmbed(
@@ -110,17 +96,7 @@ class TerminalModeration : Extension() {
 						value = arguments.messages.toString()
 						inline = false
 					}
-					field {
-						name = "User Notification:"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message"
-							}
-						inline = false
-					}
-
+					dmNotificationEmbed(dm)
 					footer {
 						text = "Requested by ${user.asUser().tag}"
 						icon = user.asUser().avatar?.url
@@ -184,31 +160,11 @@ class TerminalModeration : Extension() {
 
 			action {
 				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
-				try {
-					// Gather users roles into a List of Snowflakes
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-					// Check if the user is a bot and return
-					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond {
-							content = "You cannot soft-ban bot users!"
-						}
-						return@action
-						// Check if the moderator role is in the roles list and return
-					} else if (moderatorRoleId in roles) {
-						respond {
-							content = "You cannot soft-ban moderators!"
-						}
-						return@action
-					}
-					// In case of any extra errors
-				} catch (exception: Exception) {
-					logger.warn("IsBot and Moderator checks skipped on `Soft-Ban` due to error")
-				}
+				isBotOrModerator(userArg, "soft-ban") ?: return@action
 
 				// DM the user before the ban task is run
 				val dm = userDMEmbed(
@@ -246,17 +202,7 @@ class TerminalModeration : Extension() {
 						value = arguments.messages.toString()
 						inline = false
 					}
-					field {
-						name = "User Notification:"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message"
-							}
-						inline = false
-					}
-
+					dmNotificationEmbed(dm)
 					footer {
 						text = "Requested by ${user.asUser().tag}"
 						icon = user.asUser().avatar?.url
@@ -283,29 +229,11 @@ class TerminalModeration : Extension() {
 
 			action {
 				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
-				try {
-					// Get the users roles into a List of Snowflake
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-					// If the user is a bot, fail
-					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond {
-							content = "You cannot kick bot users!"
-						}
-						return@action
-						// If the moderator ping role is in the roles list, return
-					} else if (moderatorRoleId in roles) {
-						respond {
-							content = "You cannot kick moderators!"
-						}
-					}
-				} catch (exception: Exception) {
-					logger.warn("IsBot and Moderator checks skipped on `Kick` due to error")
-				}
+				isBotOrModerator(userArg, "kick") ?: return@action
 
 				// DM the user about it before the kick
 				val dm = userDMEmbed(
@@ -332,16 +260,7 @@ class TerminalModeration : Extension() {
 						value = arguments.reason
 						inline = false
 					}
-					field {
-						name = "User Notification:"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message"
-							}
-						inline = false
-					}
+					dmNotificationEmbed(dm)
 					footer {
 						text = "Requested By ${user.asUser().tag}"
 						icon = user.asUser().avatar?.url

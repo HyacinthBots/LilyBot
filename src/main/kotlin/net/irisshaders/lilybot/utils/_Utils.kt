@@ -3,12 +3,14 @@ package net.irisshaders.lilybot.utils
 import com.kotlindiscord.kord.extensions.commands.application.message.EphemeralMessageCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.kordLogger
+import dev.kord.rest.builder.message.EmbedBuilder
 import kotlinx.coroutines.flow.toList
 
 /**
- * This is a simple function to get a value from the configuration database in an ephemeral slash command context,
+ * This is a simple function to get a value from the configuration database in an [EphemeralSlashCommandContext],
  * null check it, and respond accordingly. It takes a string input of the column that is requested and gets it, if it's
  * null a private error message (i.e. for commands staff run), and null is returned. If null this should be handled with
  * an elvis operator to return the action.
@@ -27,7 +29,7 @@ suspend fun EphemeralSlashCommandContext<*>.getConfigPrivateResponse(inputColumn
 
 
 /**
- * This is a simple function to get a value from the configuration database in an ephemeral slash command context,
+ * This is a simple function to get a value from the configuration database in an [EphemeralSlashCommandContext],
  * null check it, and respond accordingly. It takes a string input of the column that is requested and gets it, if it's
  * null a public error message (i.e. for commands the people run), and null is returned. If null this should be handled
  * with an elvis operator to return the action.
@@ -45,7 +47,7 @@ suspend fun EphemeralSlashCommandContext<*>.getConfigPublicResponse(inputColumn:
 }
 
 /**
- * This is a simple function to get a value from the configuration database in an ephemeral message command context,
+ * This is a simple function to get a value from the configuration database in an [EphemeralMessageCommandContext],
  * null check it, and respond accordingly. It takes a string input of the column that is requested and gets it, if it's
  * null a private error message (i.e. for commands staff run), and null is returned. If null this should be handled with
  * an elvis operator to return the action.
@@ -62,6 +64,18 @@ suspend fun EphemeralMessageCommandContext.getConfigPublicResponse(inputColumn: 
 		null
 }
 
+/**
+ * This function runs a check to see if the target user is a bot or moderator in an [EphemeralSlashCommandContext],
+ * before responding accordingly. It takes the target user as an input, allowing said user to pass through the checks.
+ * It also takes in the command name to make the response more detailed to the command it is called from. If at any
+ * point the check fails, null is returned. This should be handled with an elvis operator to return the action in the
+ * code.
+ *
+ * @param user The target user in the command
+ * @param commandName The name of the command. Used for the responses and error message
+ * @return *null*, if user is a bot/moderator. *success* if it isn't
+ * @author NoComment1105
+ */
 suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
 	val moderatorRoleId = getConfigPrivateResponse("moderatorsPing")
 
@@ -87,4 +101,24 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
 	}
 
 	return "success"
+}
+
+/**
+ * This function uses a DM variable provided by the place it is run it, and checks to see it succeeded in sending the
+ * user a DM.
+ *
+ * @param dm The direct message that is sent to the user
+ * @author NoComment1105
+ */
+fun EmbedBuilder.dmNotificationEmbed(dm: Message?) {
+	field {
+		name = "User Notification:"
+		value =
+			if (dm != null) {
+				"User notified with a direct message"
+			} else {
+				"Failed to notify user with a direct message"
+			}
+		inline = false
+	}
 }

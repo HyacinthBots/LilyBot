@@ -30,8 +30,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.dmNotificationEmbed
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.isBotOrModerator
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
@@ -40,11 +40,11 @@ import java.lang.Integer.min
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
+@Suppress("DuplicatedCode")
 class TemporaryModeration : Extension() {
 	override val name = "temporary-moderation"
 
 	override suspend fun setup() {
-		val logger = KotlinLogging.logger { }
 
 		/**
 		 * Clear Command
@@ -216,16 +216,7 @@ class TemporaryModeration : Extension() {
 						value = arguments.reason
 						inline = false
 					}
-					field {
-						name = "User notification"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message"
-							}
-						inline = false
-					}
+					dmNotificationEmbed(dm)
 					footer {
 						text = "Requested by ${user.asUser().tag}"
 						icon = user.asUser().avatar?.url
@@ -249,32 +240,12 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
 
-				try {
-					// Get the users roles into a List of Snowflakes
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-					// Fail if the user is a bot
-					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond {
-							content = "You cannot timeout a bot!"
-						}
-						return@action
-					// If the moderator ping role is in roles list, fail
-					} else if (moderatorRoleId in roles) {
-						respond {
-							content = "You cannot timeout a moderator!"
-						}
-						return@action
-					}
-				// To catch any errors in checking
-				} catch (exception: Exception) {
-					logger.warn("IsBot and Moderator checks failed on `Timeout` due to error")
-				}
+				isBotOrModerator(userArg, "timeout") ?: return@action
 
 				try {
 					// Run the timeout task
@@ -324,16 +295,7 @@ class TemporaryModeration : Extension() {
 						value = arguments.reason
 						inline = false
 					}
-					field {
-						name = "User notification"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message "
-							}
-						inline = false
-					}
+					dmNotificationEmbed(dm)
 					footer {
 						text = "Requested by ${user.asUser().tag}"
 						icon = user.asUser().avatar?.url
@@ -355,13 +317,7 @@ class TemporaryModeration : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = DatabaseHelper.getConfig(guild!!.id, "modActionLog")
-				if (actionLogId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
-					return@action
-				}
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
