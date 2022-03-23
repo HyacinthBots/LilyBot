@@ -3,6 +3,7 @@
 package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
+import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
@@ -136,7 +137,8 @@ class TemporaryModeration : Extension() {
 					"You have been warned in ${guild?.fetchGuild()?.name}",
 					"You were given a strike\n" +
 							"Your total is now $newStrikes\n\n**Reason:**\n${arguments.reason}\n\nFor more information" +
-							" about the warn system, please see [this document](https://github.com/IrisShaders/LilyBot/blob/develop/docs/warn-strikes.md)",
+							" about the warn system, please see [this document](https://github.com/IrisShaders/LilyBot" +
+							"/blob/develop/docs/warn-strikes.md)",
 					null
 				)
 
@@ -199,8 +201,8 @@ class TemporaryModeration : Extension() {
 					responseEmbedInChannel(
 						actionLog,
 						"Timeout",
-						"${userArg.mention} has been timed-out for 3 hours due to warn strike " +
-								"accumulation\n${userArg.id} (${userArg.tag})",
+						"${userArg.mention} has been timed-out for 3 hours due to $newStrikes warn " +
+								"strikes\n${userArg.id} (${userArg.tag})",
 						DISCORD_BLACK,
 						user.asUser()
 					)
@@ -220,8 +222,8 @@ class TemporaryModeration : Extension() {
 					responseEmbedInChannel(
 						actionLog,
 						"Timeout",
-						"${userArg.mention} has been timed-out for 12 hours due to warn strike " +
-								"accumulation\n${userArg.id} (${userArg.tag})",
+						"${userArg.mention} has been timed-out for 12 hours due to $newStrikes warn " +
+								"strikes\n${userArg.id} (${userArg.tag})",
 						DISCORD_BLACK,
 						user.asUser()
 					)
@@ -241,8 +243,8 @@ class TemporaryModeration : Extension() {
 					responseEmbedInChannel(
 						actionLog,
 						"Timeout",
-						"${userArg.mention} has been timed-out for 3 days due to warn strike " +
-								"accumulation\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action.",
+						"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn strike" +
+								"\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action.",
 						DISCORD_BLACK,
 						user.asUser()
 					)
@@ -278,6 +280,13 @@ class TemporaryModeration : Extension() {
 					content = "Removed strike from user"
 				}
 
+				val dm = userDMEmbed(
+					userArg,
+					"Warn strike removal",
+					"You have had a warn strike removed.",
+					DISCORD_GREEN
+				)
+
 				actionLog.createEmbed {
 					title = "Warning Removal"
 					color = DISCORD_BLACK
@@ -291,6 +300,16 @@ class TemporaryModeration : Extension() {
 					field {
 						name = "Total Strikes:"
 						value = newStrikes.toString()
+						inline = false
+					}
+					field {
+						name = "User notification"
+						value =
+							if (dm != null) {
+								"User notified with a direct message"
+							} else {
+								"Failed to notify user with a direct message"
+							}
 						inline = false
 					}
 					footer {
