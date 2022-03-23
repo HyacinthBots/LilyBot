@@ -282,7 +282,7 @@ class TemporaryModeration : Extension() {
 
 				val dm = userDMEmbed(
 					userArg,
-					"Warn strike removal",
+					"Warn strike removal in ${guild?.fetchGuild()?.name}",
 					"You have had a warn strike removed.",
 					DISCORD_GREEN
 				)
