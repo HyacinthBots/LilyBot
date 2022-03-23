@@ -30,7 +30,6 @@ import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.ExperimentalTime
 
-@Suppress("DuplicatedCode")
 class TerminalModeration : Extension() {
 	override val name = "terminal-moderation"
 
