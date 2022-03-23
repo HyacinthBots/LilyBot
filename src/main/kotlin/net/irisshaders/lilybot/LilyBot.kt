@@ -41,15 +41,16 @@ import org.litote.kmongo.reactivestreams.KMongo
 import java.nio.file.Files
 import java.nio.file.Path
 
+import net.irisshaders.lilybot.utils.migrateDatabase //todo remove this after first run
+
 val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
 
 // Connect to the database
-private var uri = MONGO_URI ?: "mongodb://localhost:27017" // this is the default for localhost
 private val settings = MongoClientSettings
 	.builder()
 	.uuidRepresentation(UuidRepresentation.STANDARD)
-	.applyConnectionString(ConnectionString(uri))
+	.applyConnectionString(ConnectionString(MONGO_URI))
 	.build()
 
 private val client = KMongo.createClient(settings).coroutine
@@ -115,4 +116,6 @@ suspend fun main() {
 	}
 
 	bot.start()
+
+	migrateDatabase() // todo remove this after first run
 }
