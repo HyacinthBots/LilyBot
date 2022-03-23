@@ -39,8 +39,6 @@ class ThreadControl : Extension() {
 				check { isInThread() }
 
 				action {
-
-
 					val channel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
@@ -83,7 +81,6 @@ class ThreadControl : Extension() {
 				check { isInThread() }
 
 				action {
-
 					val channel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
