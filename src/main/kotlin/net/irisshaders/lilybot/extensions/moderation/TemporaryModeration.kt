@@ -33,6 +33,7 @@ import kotlinx.datetime.plus
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
+import net.irisshaders.lilybot.utils.isBotOrModerator
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import java.lang.Integer.min
@@ -99,31 +100,11 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val userArg = arguments.userArgument
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
-				try {
-					// Get the users roles into a List of Snowflakes
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-					// If the user is a bot, return
-					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond {
-							content = "You cannot warn bot users!"
-						}
-						return@action
-					// If the moderator ping role is in roles, return
-					} else if (moderatorRoleId in roles) {
-						respond {
-							content = "You cannot warn moderators!"
-						}
-						return@action
-					}
-				// Just to catch any errors in the checks
-				} catch (exception: Exception) {
-					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
-				}
+				isBotOrModerator() ?: return@action
 
 				val oldPoints = DatabaseHelper.getWarn(userArg.id, guild!!.id)
 				val newPoints = oldPoints.plus(arguments.warnPoints)
