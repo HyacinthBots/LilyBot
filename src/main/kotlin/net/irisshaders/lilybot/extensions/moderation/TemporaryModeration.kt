@@ -104,7 +104,7 @@ class TemporaryModeration : Extension() {
 				val userArg = arguments.userArgument
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
-				isBotOrModerator() ?: return@action
+				isBotOrModerator(userArg,"warn") ?: return@action
 
 				val oldPoints = DatabaseHelper.getWarn(userArg.id, guild!!.id)
 				val newPoints = oldPoints.plus(arguments.warnPoints)

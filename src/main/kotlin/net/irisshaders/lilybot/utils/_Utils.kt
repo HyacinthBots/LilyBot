@@ -3,6 +3,7 @@ package net.irisshaders.lilybot.utils
 import com.kotlindiscord.kord.extensions.commands.application.message.EphemeralMessageCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.core.entity.User
 import dev.kord.core.kordLogger
 import kotlinx.coroutines.flow.toList
 
@@ -61,8 +62,8 @@ suspend fun EphemeralMessageCommandContext.getConfigPublicResponse(inputColumn: 
 		null
 }
 
-suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(): String? {
-	val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return null
+suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
+	val moderatorRoleId = getConfigPrivateResponse("moderatorsPing")
 
 	try {
 		// Get the users roles into a List of Snowflakes
@@ -70,19 +71,19 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(): String? {
 		// If the user is a bot, return
 		if (guild?.getMember(user.id)?.isBot == true) {
 			respond {
-				content = "You cannot warn bot users!"
+				content = "You cannot $commandName bot users!"
 			}
 			return null
 		// If the moderator ping role is in roles, return
 		} else if (moderatorRoleId in roles) {
 			respond {
-				content = "You cannot warn moderators!"
+				content = "You cannot $commandName moderators!"
 			}
 			return null
 		}
 	// Just to catch any errors in the checks
 	} catch (exception: Exception) {
-		kordLogger.warn { "isBot and isModerator checks failed." }
+		kordLogger.warn { "isBot and isModerator checks failed on $commandName." }
 	}
 
 	return "success"
