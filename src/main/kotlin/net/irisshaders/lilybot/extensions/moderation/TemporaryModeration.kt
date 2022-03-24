@@ -136,14 +136,14 @@ class TemporaryModeration : Extension() {
 					userArg,
 					"You have been warned in ${guild?.fetchGuild()?.name}",
 					"You were given a strike\n" +
-							"Your total is now $newStrikes\n\n**Reason:**\n${arguments.reason}\n\nFor more information" +
-							" about the warn system, please see [this document](https://github.com/IrisShaders/LilyBot" +
-							"/blob/develop/docs/warn-strikes.md)",
+							"Your total is now $newStrikes\n\n**Reason:**\n${arguments.reason}\n\nFor more " +
+							"information about the warn system, please see [this document]" +
+							"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
 					null
 				)
 
 				respond {
-					content = "Warned User"
+					content = "Warned user."
 				}
 
 				actionLog.createEmbed {
@@ -188,9 +188,9 @@ class TemporaryModeration : Extension() {
 					userDMEmbed(
 						userArg,
 						"This is your second warning in ${guild?.fetchGuild()?.name}",
-						"You have been timed out for 3 hours. Further warnings will result in a 12 hour " +
-								"timeout.\nMore information can be found [here]" +
-								"(https://github.com/IrisShaders/LilyBot/blob/develop/docs/warn-strikes.md)",
+						"You have been timed out for 3 hours. Your next warning will result in a 12 " +
+								"hour timeout.\nMore information can be found [here]" +
+								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
 						DISCORD_RED
 					)
 
@@ -243,8 +243,8 @@ class TemporaryModeration : Extension() {
 					responseEmbedInChannel(
 						actionLog,
 						"Timeout",
-						"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn strike" +
-								"\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action.",
+						"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
+								"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action.",
 						DISCORD_BLACK,
 						user.asUser()
 					)
@@ -252,6 +252,11 @@ class TemporaryModeration : Extension() {
 			}
 		}
 
+		/**
+		 * Remove warn command
+		 *
+		 * @author NoComment1105
+		 */
 		ephemeralSlashCommand(::RemoveWarnArgs) {
 			name = "remove-warn"
 			description = "Remove a warning strike from a user"
@@ -283,7 +288,7 @@ class TemporaryModeration : Extension() {
 				val dm = userDMEmbed(
 					userArg,
 					"Warn strike removal in ${guild?.fetchGuild()?.name}",
-					"You have had a warn strike removed.",
+					"You have had a warn strike removed. You have $newStrikes strikes",
 					DISCORD_GREEN
 				)
 
