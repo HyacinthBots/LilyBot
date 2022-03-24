@@ -3,6 +3,7 @@
 package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
+import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
@@ -31,10 +32,10 @@ import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.isBotOrModerator
-import net.irisshaders.lilybot.utils.reasonAndFooterEmbedField
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import java.lang.Integer.min
@@ -196,11 +197,7 @@ class TemporaryModeration : Extension() {
 					color = DISCORD_BLACK
 					timestamp = Clock.System.now()
 
-					field {
-						name = "User:"
-						value = "${userArg.tag} \n${userArg.id}"
-						inline = false
-					}
+					baseModerationEmbed(arguments.reason, userArg, user)
 					field {
 						name = "Total Points:"
 						value = databasePoints.toString()
@@ -211,7 +208,6 @@ class TemporaryModeration : Extension() {
 						value = arguments.warnPoints.toString()
 						inline = false
 					}
-					reasonAndFooterEmbedField(arguments.reason, user)
 					dmNotificationStatusEmbedField(dm)
 				}
 			}
@@ -271,18 +267,13 @@ class TemporaryModeration : Extension() {
 					color = DISCORD_BLACK
 					timestamp = Clock.System.now()
 
-					field {
-						name = "User:"
-						value = "${userArg.tag} \n${userArg.id}"
-						inline = false
-					}
+					baseModerationEmbed(arguments.reason, userArg, user)
 					field {
 						name = "Duration:"
 						value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
 							.replace("PT", "") + ")"
 						inline = false
 					}
-					reasonAndFooterEmbedField(arguments.reason, user)
 					dmNotificationStatusEmbedField(dm)
 				}
 			}
@@ -312,24 +303,16 @@ class TemporaryModeration : Extension() {
 				}
 
 				respond {
-					content = "Removed timeout on ${userArg.id}"
+					content = "Removed timeout from ${userArg.id}"
 				}
 
-				actionLog.createEmbed {
-					title = "Remove Timeout"
-					color = DISCORD_BLACK
-					timestamp = Clock.System.now()
-
-					field {
-						name = "User:"
-						value = "${userArg.tag} \n${userArg.id}"
-						inline = false
-					}
-					footer {
-						text = "Requested by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
-				}
+				responseEmbedInChannel(
+					actionLog,
+					"Timeout removal",
+					"${userArg.tag} \n${userArg.id}",
+					DISCORD_GREEN,
+					user.asUser()
+				)
 			}
 		}
 	}

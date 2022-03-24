@@ -45,7 +45,7 @@ class ThreadControl : Extension() {
 
 					val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
 
-					if (moderatorRoleId in roles) {
+					if (moderatorRoleId in roles || threadChannel.ownerId == user.id) {
 						threadChannel.edit {
 							name = arguments.newThreadName
 
@@ -101,6 +101,18 @@ class ThreadControl : Extension() {
 							if (arguments.lock) content += " and locked"
 
 							content += "!"
+						}
+
+						return@action
+					} else if (threadChannel.ownerId == user.id) {
+						threadChannel.edit {
+							this.archived = true
+
+							reason = "Archived by ${user.asUser().tag}"
+						}
+
+						edit {
+							content = "Thread archived!"
 						}
 
 						return@action

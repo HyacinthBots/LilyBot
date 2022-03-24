@@ -23,10 +23,10 @@ import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
+import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.isBotOrModerator
-import net.irisshaders.lilybot.utils.reasonAndFooterEmbedField
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.ExperimentalTime
@@ -84,14 +84,14 @@ class TerminalModeration : Extension() {
 				actionLog.createEmbed {
 					color = DISCORD_BLACK
 					title = "Banned a user"
-					description = "${userArg.mention} has been banned!\n${userArg.id} (${userArg.tag})"
+					description = "${userArg.mention} has been banned!"
 
+					baseModerationEmbed(arguments.reason, userArg, user)
 					field {
 						name = "Days of messages deleted:"
 						value = arguments.messages.toString()
 						inline = false
 					}
-					reasonAndFooterEmbedField(arguments.reason, user)
 					dmNotificationStatusEmbedField(dm)
 
 					timestamp = Clock.System.now()
@@ -182,14 +182,14 @@ class TerminalModeration : Extension() {
 				actionLog.createEmbed {
 					color = DISCORD_BLACK
 					title = "Soft-banned a user"
-					description = "${userArg.mention} has been soft banned\n${userArg.id} (${userArg.tag})"
+					description = "${userArg.mention} has been soft banned"
 
+					baseModerationEmbed(arguments.reason, userArg, user)
 					field {
 						name = "Days of messages deleted"
 						value = arguments.messages.toString()
 						inline = false
 					}
-					reasonAndFooterEmbedField(arguments.reason, user)
 					dmNotificationStatusEmbedField(dm)
 
 					timestamp = Clock.System.now()
@@ -237,9 +237,9 @@ class TerminalModeration : Extension() {
 				actionLog.createEmbed {
 					color = DISCORD_BLACK
 					title = "Kicked User"
-					description = "Kicked ${userArg.mention} from the server\n${userArg.id} (${userArg.tag})"
+					description = "${userArg.mention} has been kicked"
 
-					reasonAndFooterEmbedField(arguments.reason, user)
+					baseModerationEmbed(arguments.reason, userArg, user)
 					dmNotificationStatusEmbedField(dm)
 				}
 			}

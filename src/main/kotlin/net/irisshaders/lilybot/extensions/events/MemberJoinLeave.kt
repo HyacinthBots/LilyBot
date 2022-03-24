@@ -25,8 +25,7 @@ class MemberJoinLeave : Extension() {
 	override suspend fun setup() {
 		event<MemberJoinEvent> {
 			action {
-				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel")
-					?: return@action
+				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel") ?: return@action
 
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
