@@ -3,6 +3,7 @@ package net.irisshaders.lilybot.utils
 import com.kotlindiscord.kord.extensions.commands.application.message.EphemeralMessageCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.exception.EntityNotFoundException
@@ -111,7 +112,7 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
  * @param dm The direct message that is sent to the user
  * @author NoComment1105
  */
-fun EmbedBuilder.dmNotificationEmbed(dm: Message?) {
+fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?) {
 	field {
 		name = "User Notification:"
 		value =
@@ -124,7 +125,16 @@ fun EmbedBuilder.dmNotificationEmbed(dm: Message?) {
 	}
 }
 
-suspend fun EmbedBuilder.reasonAndFooterEmbed(reason: String, user: User) {
+/**
+ * This function will take in a [reason] for a sanction and the [user] who ran the command before generating the fields to
+ * an embed, reason and footer. Despite this calling the footer builder, you can provide field elements after this
+ * function in code, and it will still place the footer where it should be, without error
+ *
+ * @param reason The reason for the sanction
+ * @param user The user that ran the command
+ * @author NoComment1105
+ */
+suspend fun EmbedBuilder.reasonAndFooterEmbedField(reason: String, user: UserBehavior) {
 	field {
 		name = "Reason:"
 		value = reason

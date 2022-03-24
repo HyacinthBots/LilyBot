@@ -23,10 +23,10 @@ import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
-import net.irisshaders.lilybot.utils.dmNotificationEmbed
+import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.isBotOrModerator
-import net.irisshaders.lilybot.utils.reasonAndFooterEmbed
+import net.irisshaders.lilybot.utils.reasonAndFooterEmbedField
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.ExperimentalTime
@@ -91,8 +91,8 @@ class TerminalModeration : Extension() {
 						value = arguments.messages.toString()
 						inline = false
 					}
-					reasonAndFooterEmbed(arguments.reason, userArg)
-					dmNotificationEmbed(dm)
+					reasonAndFooterEmbedField(arguments.reason, user)
+					dmNotificationStatusEmbedField(dm)
 
 					timestamp = Clock.System.now()
 				}
@@ -189,8 +189,8 @@ class TerminalModeration : Extension() {
 						value = arguments.messages.toString()
 						inline = false
 					}
-					reasonAndFooterEmbed(arguments.reason, userArg)
-					dmNotificationEmbed(dm)
+					reasonAndFooterEmbedField(arguments.reason, user)
+					dmNotificationStatusEmbedField(dm)
 
 					timestamp = Clock.System.now()
 				}
@@ -239,8 +239,8 @@ class TerminalModeration : Extension() {
 					title = "Kicked User"
 					description = "Kicked ${userArg.mention} from the server\n${userArg.id} (${userArg.tag})"
 
-					reasonAndFooterEmbed(arguments.reason, userArg)
-					dmNotificationEmbed(dm)
+					reasonAndFooterEmbedField(arguments.reason, user)
+					dmNotificationStatusEmbedField(dm)
 				}
 			}
 		}

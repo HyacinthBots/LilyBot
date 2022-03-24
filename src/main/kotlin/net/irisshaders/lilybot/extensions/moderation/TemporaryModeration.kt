@@ -31,10 +31,10 @@ import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.dmNotificationEmbed
+import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.isBotOrModerator
-import net.irisshaders.lilybot.utils.reasonAndFooterEmbed
+import net.irisshaders.lilybot.utils.reasonAndFooterEmbedField
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import java.lang.Integer.min
@@ -211,8 +211,8 @@ class TemporaryModeration : Extension() {
 						value = arguments.warnPoints.toString()
 						inline = false
 					}
-					reasonAndFooterEmbed(arguments.reason, userArg)
-					dmNotificationEmbed(dm)
+					reasonAndFooterEmbedField(arguments.reason, user)
+					dmNotificationStatusEmbedField(dm)
 				}
 			}
 		}
@@ -282,8 +282,8 @@ class TemporaryModeration : Extension() {
 							.replace("PT", "") + ")"
 						inline = false
 					}
-					reasonAndFooterEmbed(arguments.reason, userArg)
-					dmNotificationEmbed(dm)
+					reasonAndFooterEmbedField(arguments.reason, user)
+					dmNotificationStatusEmbedField(dm)
 				}
 			}
 		}
