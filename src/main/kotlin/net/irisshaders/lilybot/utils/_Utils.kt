@@ -5,6 +5,7 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSla
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
+import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.kordLogger
 import dev.kord.rest.builder.message.EmbedBuilder
 import kotlinx.coroutines.flow.toList
@@ -96,7 +97,7 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
 			return null
 		}
 	// Just to catch any errors in the checks
-	} catch (exception: Exception) {
+	} catch (exception: EntityNotFoundException) {
 		kordLogger.warn { "isBot and isModerator checks failed on $commandName." }
 	}
 
@@ -120,5 +121,17 @@ fun EmbedBuilder.dmNotificationEmbed(dm: Message?) {
 				"Failed to notify user with a direct message"
 			}
 		inline = false
+	}
+}
+
+suspend fun EmbedBuilder.reasonAndFooterEmbed(reason: String, user: User) {
+	field {
+		name = "Reason:"
+		value = reason
+		inline = false
+	}
+	footer {
+		text = "Requested by ${user.asUser().tag}"
+		icon = user.asUser().avatar?.url
 	}
 }

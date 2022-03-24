@@ -34,13 +34,13 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.dmNotificationEmbed
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.isBotOrModerator
+import net.irisshaders.lilybot.utils.reasonAndFooterEmbed
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import java.lang.Integer.min
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-@Suppress("DuplicatedCode")
 class TemporaryModeration : Extension() {
 	override val name = "temporary-moderation"
 
@@ -211,16 +211,8 @@ class TemporaryModeration : Extension() {
 						value = arguments.warnPoints.toString()
 						inline = false
 					}
-					field {
-						name = "Reason:"
-						value = arguments.reason
-						inline = false
-					}
+					reasonAndFooterEmbed(arguments.reason, userArg)
 					dmNotificationEmbed(dm)
-					footer {
-						text = "Requested by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
 				}
 			}
 		}
@@ -290,16 +282,8 @@ class TemporaryModeration : Extension() {
 							.replace("PT", "") + ")"
 						inline = false
 					}
-					field {
-						name = "Reason:"
-						value = arguments.reason
-						inline = false
-					}
+					reasonAndFooterEmbed(arguments.reason, userArg)
 					dmNotificationEmbed(dm)
-					footer {
-						text = "Requested by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
 				}
 			}
 		}

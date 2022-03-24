@@ -39,14 +39,14 @@ class ThreadControl : Extension() {
 				check { isInThread() }
 
 				action {
-					val channel = channel.asChannel() as ThreadChannel
+					val threadChannel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
 					val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
 
 					if (moderatorRoleId in roles) {
-						channel.edit {
+						threadChannel.edit {
 							name = arguments.newThreadName
 
 							reason = "Renamed by ${member.tag}"
@@ -58,13 +58,13 @@ class ThreadControl : Extension() {
 						return@action
 					}
 
-					if (channel.ownerId != user.id) {
+					if (threadChannel.ownerId != user.id) {
 						edit { content = "**Error:** This is not your thread!" }
 
 						return@action
 					}
 
-					channel.edit {
+					threadChannel.edit {
 						name = arguments.newThreadName
 
 						reason = "Renamed by ${member.tag}"
@@ -81,14 +81,14 @@ class ThreadControl : Extension() {
 				check { isInThread() }
 
 				action {
-					val channel = channel.asChannel() as ThreadChannel
+					val threadChannel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
 					val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
 
 					if (moderatorRoleId in roles) {
-						channel.edit {
+						threadChannel.edit {
 							this.archived = true
 							this.locked = arguments.lock
 
@@ -106,19 +106,19 @@ class ThreadControl : Extension() {
 						return@action
 					}
 
-					if (channel.ownerId != user.id) {
+					if (threadChannel.ownerId != user.id) {
 						edit { content = "This is not your thread!" }
 
 						return@action
 					}
 
-					if (channel.isArchived) {
+					if (threadChannel.isArchived) {
 						edit { content = "**Error:** This channel is already archived!" }
 
 						return@action
 					}
 
-					channel.edit {
+					threadChannel.edit {
 						archived = true
 
 						reason = "Archived by ${user.asUser().tag}"

@@ -26,6 +26,7 @@ import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.dmNotificationEmbed
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.isBotOrModerator
+import net.irisshaders.lilybot.utils.reasonAndFooterEmbed
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.ExperimentalTime
@@ -86,20 +87,12 @@ class TerminalModeration : Extension() {
 					description = "${userArg.mention} has been banned!\n${userArg.id} (${userArg.tag})"
 
 					field {
-						name = "Reason:"
-						value = arguments.reason
-						inline = false
-					}
-					field {
 						name = "Days of messages deleted:"
 						value = arguments.messages.toString()
 						inline = false
 					}
+					reasonAndFooterEmbed(arguments.reason, userArg)
 					dmNotificationEmbed(dm)
-					footer {
-						text = "Requested by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
 
 					timestamp = Clock.System.now()
 				}
@@ -192,20 +185,12 @@ class TerminalModeration : Extension() {
 					description = "${userArg.mention} has been soft banned\n${userArg.id} (${userArg.tag})"
 
 					field {
-						name = "Reason:"
-						value = arguments.reason
-						inline = false
-					}
-					field {
 						name = "Days of messages deleted"
 						value = arguments.messages.toString()
 						inline = false
 					}
+					reasonAndFooterEmbed(arguments.reason, userArg)
 					dmNotificationEmbed(dm)
-					footer {
-						text = "Requested by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
 
 					timestamp = Clock.System.now()
 				}
@@ -254,16 +239,8 @@ class TerminalModeration : Extension() {
 					title = "Kicked User"
 					description = "Kicked ${userArg.mention} from the server\n${userArg.id} (${userArg.tag})"
 
-					field {
-						name = "Reason"
-						value = arguments.reason
-						inline = false
-					}
+					reasonAndFooterEmbed(arguments.reason, userArg)
 					dmNotificationEmbed(dm)
-					footer {
-						text = "Requested By ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
 				}
 			}
 		}
