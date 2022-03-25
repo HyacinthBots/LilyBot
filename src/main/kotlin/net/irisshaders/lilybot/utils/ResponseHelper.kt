@@ -69,7 +69,7 @@ suspend fun userDMEmbed(user: User, embedTitle: String?, embedDescription: Strin
  * @param commandUser The user that ran the command
  * @author NoComment1105
  */
-suspend fun EmbedBuilder.baseModerationEmbed(reason: String, targetUser: User, commandUser: UserBehavior) {
+suspend fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User, commandUser: UserBehavior) {
 	field {
 		name = "User:"
 		value = "${targetUser.tag}\n${targetUser.id}"
@@ -77,11 +77,31 @@ suspend fun EmbedBuilder.baseModerationEmbed(reason: String, targetUser: User, c
 	}
 	field {
 		name = "Reason:"
-		value = reason
+		value = reason ?: "No reason provided"
 		inline = false
 	}
 	footer {
 		text = "Requested by ${commandUser.asUser().tag}"
 		icon = commandUser.asUser().avatar?.url
+	}
+}
+
+/**
+ * This function uses a DM variable provided by the place it is run it, and checks to see it succeeded in sending the
+ * user a DM.
+ *
+ * @param dm The direct message that is sent to the user
+ * @author NoComment1105
+ */
+fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?) {
+	field {
+		name = "User Notification:"
+		value =
+			if (dm != null) {
+				"User notified with a direct message"
+			} else {
+				"Failed to notify user with a direct message"
+			}
+		inline = false
 	}
 }

@@ -31,22 +31,22 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.DatabaseHelper.getWarn
+import net.irisshaders.lilybot.utils.baseModerationEmbed
+import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
+import net.irisshaders.lilybot.utils.isBotOrModerator
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import java.lang.Integer.min
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-@Suppress("DuplicatedCode")
 class TemporaryModeration : Extension() {
 	override val name = "temporary-moderation"
 
 	override suspend fun setup() {
-		val logger = KotlinLogging.logger { }
 
 		/**
 		 * Clear Command
@@ -102,31 +102,11 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val userArg = arguments.userArgument
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
-				try {
-					// Get the users roles into a List of Snowflakes
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-					// If the user is a bot, return
-					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond {
-							content = "You cannot warn bot users!"
-						}
-						return@action
-					// If the moderator ping role is in roles, return
-					} else if (moderatorRoleId in roles) {
-						respond {
-							content = "You cannot warn moderators!"
-						}
-						return@action
-					}
-				// Just to catch any errors in the checks
-				} catch (exception: Exception) {
-					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
-				}
+				isBotOrModerator(userArg, "warn") ?: return@action
 
 				val oldStrikes = getWarn(userArg.id, guild!!.id)
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, oldStrikes.plus(1))
@@ -227,35 +207,13 @@ class TemporaryModeration : Extension() {
 					color = DISCORD_BLACK
 					timestamp = Clock.System.now()
 
-					field {
-						name = "User:"
-						value = "${userArg.tag} \n${userArg.id}"
-						inline = false
-					}
+					baseModerationEmbed(arguments.reason, userArg, user)
 					field {
 						name = "Total Strikes:"
 						value = newStrikes.toString()
 						inline = false
 					}
-					field {
-						name = "Reason:"
-						value = arguments.reason
-						inline = false
-					}
-					field {
-						name = "User notification"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message"
-							}
-						inline = false
-					}
-					footer {
-						text = "Requested by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
+					dmNotificationStatusEmbedField(dm)
 				}
 			}
 		}
@@ -305,30 +263,13 @@ class TemporaryModeration : Extension() {
 					color = DISCORD_BLACK
 					timestamp = Clock.System.now()
 
-					field {
-						name = "User:"
-						value = "${userArg.tag} \n${userArg.id}"
-						inline = false
-					}
+					baseModerationEmbed(null, userArg, user)
 					field {
 						name = "Total Strikes:"
 						value = newStrikes.toString()
 						inline = false
 					}
-					field {
-						name = "User notification"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message"
-							}
-						inline = false
-					}
-					footer {
-						text = "Requested by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
+					dmNotificationStatusEmbedField(dm)
 				}
 			}
 		}
@@ -348,32 +289,12 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
-				val duration = Clock.System.now().plus(arguments.duration, TimeZone.currentSystemDefault())
+				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
 
-				try {
-					// Get the users roles into a List of Snowflakes
-					val roles = userArg.asMember(guild!!.id).roles.toList().map { it.id }
-					// Fail if the user is a bot
-					if (guild?.getMember(userArg.id)?.isBot == true) {
-						respond {
-							content = "You cannot timeout a bot!"
-						}
-						return@action
-					// If the moderator ping role is in roles list, fail
-					} else if (moderatorRoleId in roles) {
-						respond {
-							content = "You cannot timeout a moderator!"
-						}
-						return@action
-					}
-				// To catch any errors in checking
-				} catch (exception: Exception) {
-					logger.warn("IsBot and Moderator checks failed on `Timeout` due to error")
-				}
+				isBotOrModerator(userArg, "timeout") ?: return@action
 
 				try {
 					// Run the timeout task
@@ -407,36 +328,14 @@ class TemporaryModeration : Extension() {
 					color = DISCORD_BLACK
 					timestamp = Clock.System.now()
 
-					field {
-						name = "User:"
-						value = "${userArg.tag} \n${userArg.id}"
-						inline = false
-					}
+					baseModerationEmbed(arguments.reason, userArg, user)
 					field {
 						name = "Duration:"
 						value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
 							.replace("PT", "") + ")"
 						inline = false
 					}
-					field {
-						name = "Reason:"
-						value = arguments.reason
-						inline = false
-					}
-					field {
-						name = "User notification"
-						value =
-							if (dm != null) {
-								"User notified with a direct message"
-							} else {
-								"Failed to notify user with a direct message "
-							}
-						inline = false
-					}
-					footer {
-						text = "Requested by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
+					dmNotificationStatusEmbedField(dm)
 				}
 			}
 		}

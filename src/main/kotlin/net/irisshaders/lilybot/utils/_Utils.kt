@@ -3,11 +3,9 @@ package net.irisshaders.lilybot.utils
 import com.kotlindiscord.kord.extensions.commands.application.message.EphemeralMessageCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.types.respond
-import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.kordLogger
-import dev.kord.rest.builder.message.EmbedBuilder
 import kotlinx.coroutines.flow.toList
 
 /**
@@ -102,24 +100,4 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
 	}
 
 	return "success"
-}
-
-/**
- * This function uses a DM variable provided by the place it is run it, and checks to see it succeeded in sending the
- * user a DM.
- *
- * @param dm The direct message that is sent to the user
- * @author NoComment1105
- */
-fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?) {
-	field {
-		name = "User Notification:"
-		value =
-			if (dm != null) {
-				"User notified with a direct message"
-			} else {
-				"Failed to notify user with a direct message"
-			}
-		inline = false
-	}
 }
