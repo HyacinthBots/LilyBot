@@ -116,14 +116,14 @@ class TemporaryModeration : Extension() {
 							content = "You cannot warn bot users!"
 						}
 						return@action
-						// If the moderator ping role is in roles, return
+					// If the moderator ping role is in roles, return
 					} else if (moderatorRoleId in roles) {
 						respond {
 							content = "You cannot warn moderators!"
 						}
 						return@action
 					}
-					// Just to catch any errors in the checks
+				// Just to catch any errors in the checks
 				} catch (exception: Exception) {
 					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
 				}
@@ -136,12 +136,12 @@ class TemporaryModeration : Extension() {
 					content = "Warned user."
 				}
 
-				var dm:Message? = null
+				var dm: Message? = null
 				// Check the amount of points before running sanctions and dming the user
 				if (newStrikes == 1) {
 					dm = userDMEmbed(
 						userArg,
-				"First warning in ${guild?.fetchGuild()?.name}",
+						"First warning in ${guild?.fetchGuild()?.name}",
 						"**Reason:** ${arguments.reason}\n\n" +
 						"No moderation action has been taken. Please consider your actions carefully.\n\n" +
 						"For more information about the warn system, please see [this document]" +
@@ -175,8 +175,8 @@ class TemporaryModeration : Extension() {
 				} else if (newStrikes == 3) {
 					dm = userDMEmbed(
 						userArg,
-				"Third warning and timeout in ${guild!!.fetchGuild().name}",
-				"**Reason:** ${arguments.reason}\n\n" +
+						"Third warning and timeout in ${guild!!.fetchGuild().name}",
+						"**Reason:** ${arguments.reason}\n\n" +
 								"You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
 								"For more information about the warn system, please see [this document]" +
 								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
