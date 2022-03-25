@@ -22,6 +22,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
+import dev.kord.core.entity.Message
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.map
@@ -131,19 +132,94 @@ class TemporaryModeration : Extension() {
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, oldStrikes.plus(1))
 				val newStrikes = getWarn(userArg.id, guild!!.id)
 
-				// DM the user about the warning
-				val dm = userDMEmbed(
-					userArg,
-					"You have been warned in ${guild?.fetchGuild()?.name}",
-					"You were given a strike\n" +
-							"Your total is now $newStrikes\n\n**Reason:**\n${arguments.reason}\n\nFor more " +
-							"information about the warn system, please see [this document]" +
-							"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
-					null
-				)
-
 				respond {
 					content = "Warned user."
+				}
+
+				var dm:Message? = null
+				// Check the amount of points before running sanctions and dming the user
+				if (newStrikes == 1) {
+					dm = userDMEmbed(
+						userArg,
+				"First warning in ${guild?.fetchGuild()?.name}",
+						"**Reason:** ${arguments.reason}\n\n" +
+						"No moderation action has been taken. Please consider your actions carefully.\n\n" +
+						"For more information about the warn system, please see [this document]" +
+						"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+						DISCORD_BLACK
+					)
+				} else if (newStrikes == 2) {
+					dm = userDMEmbed(
+						userArg,
+						"Second warning and timeout in ${guild?.fetchGuild()?.name}",
+						"**Reason:** ${arguments.reason}\n\n" +
+								"You have been timed out for 3 hours. Please consider your actions carefully.\n\n" +
+								"For more information about the warn system, please see [this document]" +
+								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+						DISCORD_RED
+					)
+
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+					}
+
+					responseEmbedInChannel(
+						actionLog,
+						"Timeout",
+						"${userArg.mention} has been timed-out for 3 hours due to $newStrikes warn " +
+								"strikes\n${userArg.id} (${userArg.tag})" +
+								"Reason: ${arguments.reason}\n\n",
+						DISCORD_BLACK,
+						user.asUser()
+					)
+				} else if (newStrikes == 3) {
+					dm = userDMEmbed(
+						userArg,
+				"Third warning and timeout in ${guild!!.fetchGuild().name}",
+				"**Reason:** ${arguments.reason}\n\n" +
+								"You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
+								"For more information about the warn system, please see [this document]" +
+								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+						DISCORD_RED
+					)
+
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+					}
+
+					responseEmbedInChannel(
+						actionLog,
+						"Timeout",
+						"${userArg.mention} has been timed-out for 12 hours due to $newStrikes warn " +
+								"strikes\n${userArg.id} (${userArg.tag})" +
+								"Reason: ${arguments.reason}\n\n",
+						DISCORD_BLACK,
+						user.asUser()
+					)
+				} else if (newStrikes > 3) {
+					dm = userDMEmbed(
+						userArg,
+						"Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}",
+						"**Reason:** ${arguments.reason}\n\n" +
+								"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
+								"For more information about the warn system, please see [this document]" +
+								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+						DISCORD_RED
+					)
+
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+					}
+
+					responseEmbedInChannel(
+						actionLog,
+						"Timeout",
+						"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
+								"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action." +
+								"Reason: ${arguments.reason}\n\n",
+						DISCORD_BLACK,
+						user.asUser()
+					)
 				}
 
 				actionLog.createEmbed {
@@ -180,74 +256,6 @@ class TemporaryModeration : Extension() {
 						text = "Requested by ${user.asUser().tag}"
 						icon = user.asUser().avatar?.url
 					}
-				}
-
-
-				// Check the amount of points before running sanctions
-				if (newStrikes == 2) {
-					userDMEmbed(
-						userArg,
-						"This is your second warning in ${guild?.fetchGuild()?.name}",
-						"You have been timed out for 3 hours. Your next warning will result in a 12 " +
-								"hour timeout.\nMore information can be found [here]" +
-								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
-						DISCORD_RED
-					)
-
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
-					}
-
-					responseEmbedInChannel(
-						actionLog,
-						"Timeout",
-						"${userArg.mention} has been timed-out for 3 hours due to $newStrikes warn " +
-								"strikes\n${userArg.id} (${userArg.tag})",
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				} else if (newStrikes == 3) {
-					userDMEmbed(
-						userArg,
-						"You have been timed-out in ${guild!!.fetchGuild().name}",
-						"You have accumulated too many warn strikes, and have hence been given a " +
-								"12 hour timeout",
-						DISCORD_BLACK
-					)
-
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
-					}
-
-					responseEmbedInChannel(
-						actionLog,
-						"Timeout",
-						"${userArg.mention} has been timed-out for 12 hours due to $newStrikes warn " +
-								"strikes\n${userArg.id} (${userArg.tag})",
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				} else if (newStrikes > 3) {
-					userDMEmbed(
-						userArg,
-						"You have been timed out in ${guild!!.fetchGuild().name}",
-						"You have accumulated too many warn strikes, and have hence been given a " +
-								"3 day timeout. Please carefully consider your actions in future.",
-						DISCORD_BLACK
-					)
-
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
-					}
-
-					responseEmbedInChannel(
-						actionLog,
-						"Timeout",
-						"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
-								"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action.",
-						DISCORD_BLACK,
-						user.asUser()
-					)
 				}
 			}
 		}
