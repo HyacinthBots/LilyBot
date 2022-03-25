@@ -39,7 +39,6 @@ import kotlin.time.ExperimentalTime
  * The message reporting feature in the bot
  * @author NoComment1105
  */
-@Suppress("DuplicatedCode")
 class Report : Extension() {
 	override val name = "report"
 
@@ -50,8 +49,8 @@ class Report : Extension() {
 
 			action {
 				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action
-				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
 				val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
+				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
 
 				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				try {

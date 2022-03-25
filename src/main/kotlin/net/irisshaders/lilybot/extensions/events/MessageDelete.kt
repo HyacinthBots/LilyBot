@@ -22,13 +22,13 @@ class MessageDelete : Extension() {
 		 * @author NoComment1105
 		 */
 		event<MessageDeleteEvent> {
+			// Don't try to create if the message is in DMs
+			check { failIf { event.guildId == null } }
 			action {
 				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
-				if (event.guild == null) return@action
 
 				// Try to get the message logs channel, return@action if null
-				val messageLogId =
-					DatabaseHelper.getConfig(event.guild!!.id, "messageLogs") ?: return@action
+				val messageLogId = DatabaseHelper.getConfig(event.guild!!.id, "messageLogs") ?: return@action
 
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLogChannel = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior

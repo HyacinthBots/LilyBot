@@ -3,10 +3,12 @@ package net.irisshaders.lilybot.utils
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.utils.dm
 import dev.kord.common.Color
+import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
+import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 
@@ -55,5 +57,51 @@ suspend fun userDMEmbed(user: User, embedTitle: String?, embedDescription: Strin
 			color = embedColor ?: DISCORD_BLACK
 			timestamp = Clock.System.now()
 		}
+	}
+}
+
+/**
+ * This is the base moderation embed for all moderation actions. This should be posted to the action log of a guild.
+ * It takes in the reason for the action, the user the action is being targeted to, and the user of the command
+ *
+ * @param reason The reason for the action
+ * @param targetUser The targeted user in the action
+ * @param commandUser The user that ran the command
+ * @author NoComment1105
+ */
+suspend fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User, commandUser: UserBehavior) {
+	field {
+		name = "User:"
+		value = "${targetUser.tag}\n${targetUser.id}"
+		inline = false
+	}
+	field {
+		name = "Reason:"
+		value = reason ?: "No reason provided"
+		inline = false
+	}
+	footer {
+		text = "Requested by ${commandUser.asUser().tag}"
+		icon = commandUser.asUser().avatar?.url
+	}
+}
+
+/**
+ * This function uses a DM variable provided by the place it is run it, and checks to see it succeeded in sending the
+ * user a DM.
+ *
+ * @param dm The direct message that is sent to the user
+ * @author NoComment1105
+ */
+fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?) {
+	field {
+		name = "User Notification:"
+		value =
+			if (dm != null) {
+				"User notified with a direct message"
+			} else {
+				"Failed to notify user with a direct message"
+			}
+		inline = false
 	}
 }

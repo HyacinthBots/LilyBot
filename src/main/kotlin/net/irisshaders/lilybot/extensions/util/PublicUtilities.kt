@@ -35,7 +35,7 @@ class PublicUtilities : Extension() {
 		 * @author IMS212
 		 * @author NoComment1105
 		 */
-		publicSlashCommand {  // Public slash commands have public responses
+		publicSlashCommand {
 			name = "ping"
 			description = "Am I alive?"
 
