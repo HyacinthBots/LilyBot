@@ -3,10 +3,11 @@
 package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
+import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
@@ -18,10 +19,10 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
+import dev.kord.core.entity.Message
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.map
@@ -32,6 +33,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.DatabaseHelper.getWarn
 import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
@@ -39,6 +41,7 @@ import java.lang.Integer.min
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
+@Suppress("DuplicatedCode")
 class TemporaryModeration : Extension() {
 	override val name = "temporary-moderation"
 
@@ -125,28 +128,35 @@ class TemporaryModeration : Extension() {
 					logger.warn("IsBot and Moderator checks skipped on `Warn` due to error")
 				}
 
-				val oldPoints = DatabaseHelper.getWarn(userArg.id, guild!!.id)
-				val newPoints = oldPoints.plus(arguments.warnPoints)
-				DatabaseHelper.setWarn(userArg.id, guild!!.id, newPoints)
-				val databasePoints = DatabaseHelper.getWarn(userArg.id, guild!!.id)
+				val oldStrikes = getWarn(userArg.id, guild!!.id)
+				DatabaseHelper.setWarn(userArg.id, guild!!.id, oldStrikes.plus(1))
+				val newStrikes = getWarn(userArg.id, guild!!.id)
 
-				// DM the user about the warning
-				val dm = userDMEmbed(
-					userArg,
-					"You have been warned in ${guild?.fetchGuild()?.name}",
-					"You were given ${arguments.warnPoints} points\n" +
-							"Your total is now $databasePoints\n\n**Reason:**\n${arguments.reason}",
-					null
-				)
+				respond {
+					content = "Warned user."
+				}
 
-				// Check the points amount, before running sanctions
-				if (databasePoints in (75..124)) {
-					userDMEmbed(
+				var dm: Message? = null
+				// Check the amount of points before running sanctions and dming the user
+				if (newStrikes == 1) {
+					dm = userDMEmbed(
 						userArg,
-						"You have been timed-out in ${guild!!.fetchGuild().name}",
-						"You have accumulated too many warn points, and have hence been given a " +
-								"3 hour timeout",
+						"First warning in ${guild?.fetchGuild()?.name}",
+						"**Reason:** ${arguments.reason}\n\n" +
+						"No moderation action has been taken. Please consider your actions carefully.\n\n" +
+						"For more information about the warn system, please see [this document]" +
+						"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
 						DISCORD_BLACK
+					)
+				} else if (newStrikes == 2) {
+					dm = userDMEmbed(
+						userArg,
+						"Second warning and timeout in ${guild?.fetchGuild()?.name}",
+						"**Reason:** ${arguments.reason}\n\n" +
+								"You have been timed out for 3 hours. Please consider your actions carefully.\n\n" +
+								"For more information about the warn system, please see [this document]" +
+								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+						DISCORD_RED
 					)
 
 					guild?.getMember(userArg.id)?.edit {
@@ -156,18 +166,21 @@ class TemporaryModeration : Extension() {
 					responseEmbedInChannel(
 						actionLog,
 						"Timeout",
-						"${userArg.mention} has been timed-out for 3 hours due to point " +
-								"accumulation\n${userArg.id} (${userArg.tag})",
+						"${userArg.mention} has been timed-out for 3 hours due to $newStrikes warn " +
+								"strikes\n${userArg.id} (${userArg.tag})" +
+								"Reason: ${arguments.reason}\n\n",
 						DISCORD_BLACK,
 						user.asUser()
 					)
-				} else if (databasePoints in (125..199)) {
-					userDMEmbed(
+				} else if (newStrikes == 3) {
+					dm = userDMEmbed(
 						userArg,
-						"You have been timed-out in ${guild!!.fetchGuild().name}",
-						"You have accumulated too many warn points, and have hence been given " +
-								"a 12 hour timeout",
-						DISCORD_BLACK
+						"Third warning and timeout in ${guild!!.fetchGuild().name}",
+						"**Reason:** ${arguments.reason}\n\n" +
+								"You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
+								"For more information about the warn system, please see [this document]" +
+								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+						DISCORD_RED
 					)
 
 					guild?.getMember(userArg.id)?.edit {
@@ -177,37 +190,36 @@ class TemporaryModeration : Extension() {
 					responseEmbedInChannel(
 						actionLog,
 						"Timeout",
-						"${userArg.mention} has been timed-out for 12 hours due to point " +
-								"accumulation\n${userArg.id} (${userArg.tag})",
+						"${userArg.mention} has been timed-out for 12 hours due to $newStrikes warn " +
+								"strikes\n${userArg.id} (${userArg.tag})" +
+								"Reason: ${arguments.reason}\n\n",
 						DISCORD_BLACK,
 						user.asUser()
 					)
-				} else if (databasePoints >= 200) {
-					guild?.getMember(userArg.id)
-						?.edit { timeoutUntil = null } // Remove timeout in case they were timed out when banned
-					userDMEmbed(
+				} else if (newStrikes > 3) {
+					dm = userDMEmbed(
 						userArg,
-						"You have been banned from ${guild!!.fetchGuild().name}",
-						"You have accumulated too many warn points, and have hence been banned",
-						DISCORD_BLACK
+						"Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}",
+						"**Reason:** ${arguments.reason}\n\n" +
+								"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
+								"For more information about the warn system, please see [this document]" +
+								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+						DISCORD_RED
 					)
 
-					guild?.ban(userArg.id, builder = {
-						this.reason = "Banned due to point accumulation"
-						this.deleteMessagesDays = 0
-					})
+					guild?.getMember(userArg.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+					}
 
 					responseEmbedInChannel(
 						actionLog,
-						"User Banned!",
-						"${userArg.mention} has been banned due to point accumulation\n${userArg.id} (${userArg.tag})",
+						"Timeout",
+						"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
+								"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action." +
+								"Reason: ${arguments.reason}\n\n",
 						DISCORD_BLACK,
 						user.asUser()
 					)
-				}
-
-				respond {
-					content = "Warned User"
 				}
 
 				actionLog.createEmbed {
@@ -221,18 +233,86 @@ class TemporaryModeration : Extension() {
 						inline = false
 					}
 					field {
-						name = "Total Points:"
-						value = databasePoints.toString()
-						inline = false
-					}
-					field {
-						name = "Points added:"
-						value = arguments.warnPoints.toString()
+						name = "Total Strikes:"
+						value = newStrikes.toString()
 						inline = false
 					}
 					field {
 						name = "Reason:"
 						value = arguments.reason
+						inline = false
+					}
+					field {
+						name = "User notification"
+						value =
+							if (dm != null) {
+								"User notified with a direct message"
+							} else {
+								"Failed to notify user with a direct message"
+							}
+						inline = false
+					}
+					footer {
+						text = "Requested by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
+					}
+				}
+			}
+		}
+
+		/**
+		 * Remove warn command
+		 *
+		 * @author NoComment1105
+		 */
+		ephemeralSlashCommand(::RemoveWarnArgs) {
+			name = "remove-warn"
+			description = "Remove a warning strike from a user"
+
+			check { hasPermission(Permission.ModerateMembers) }
+
+			action {
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+
+				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val userArg = arguments.userArgument
+
+				val targetUser = guild?.getMember(userArg.id)
+				if (getWarn(targetUser!!.id, guild!!.id) == 0) {
+					respond {
+						content = "This user does not have any warning strikes!"
+					}
+					return@action
+				}
+
+				val oldStrikes = getWarn(userArg.id, guild!!.id)
+				DatabaseHelper.setWarn(userArg.id, guild!!.id, oldStrikes.minus(1))
+				val newStrikes = getWarn(userArg.id, guild!!.id)
+
+				respond {
+					content = "Removed strike from user"
+				}
+
+				val dm = userDMEmbed(
+					userArg,
+					"Warn strike removal in ${guild?.fetchGuild()?.name}",
+					"You have had a warn strike removed. You have $newStrikes strikes",
+					DISCORD_GREEN
+				)
+
+				actionLog.createEmbed {
+					title = "Warning Removal"
+					color = DISCORD_BLACK
+					timestamp = Clock.System.now()
+
+					field {
+						name = "User:"
+						value = "${userArg.tag} \n${userArg.id}"
+						inline = false
+					}
+					field {
+						name = "Total Strikes:"
+						value = newStrikes.toString()
 						inline = false
 					}
 					field {
@@ -432,15 +512,17 @@ class TemporaryModeration : Extension() {
 			name = "warnUser"
 			description = "Person to Warn"
 		}
-		val warnPoints by defaultingInt {
-			name = "points"
-			description = "Amount of points to add"
-			defaultValue = 10
-		}
 		val reason by defaultingString {
 			name = "reason"
 			description = "Reason for Warn"
 			defaultValue = "No Reason Provided"
+		}
+	}
+
+	inner class RemoveWarnArgs : Arguments() {
+		val userArgument by user {
+			name = "warnUser"
+			description = "Person to remove warn from"
 		}
 	}
 

@@ -91,17 +91,17 @@ Name: `warn`
 
 Arguments:
 * `warnUser` - Person to warn - User
-* `points` - Amount of points to add - Integer (default 10)
 * `reason` - Reason for warn - Optional String
 
-Result: Warns `warnUser` with a DM and adds `points` points to their points total.
+Result: Warns `warnUser` with a DM and adds a strike to their points total.
 Depending on their new points total, action is taken based on the below table.
 
-| Points | Action          |
-|--------|-----------------|
-| 75     | 3 hour timeout  |
-| 125    | 12 hour timeout |
-| 200    | Ban             |
+| Points | Sanction         |
+|:-------|:-----------------|
+| 1      | None.            |
+| 2      | 3 hour timeout.  |
+| 3      | 12 hour timeout. |
+| 3+     | 3 day timeout.   |
 
 
 ### Timeout
