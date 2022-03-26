@@ -6,7 +6,7 @@
 
 ![GitHub](https://img.shields.io/github/license/IrisShaders/LilyBot?label=License) ![GitHub repo size](https://img.shields.io/github/repo-size/IrisShaders/LilyBot?label=Repository%20Size)
 
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/IrisShaders/LilyBot/latest/main?include_prereleases) ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/IrisShaders/LilyBot?label=Commit%20Activity)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/IrisShaders/LilyBot/latest/main?include_prereleases) ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/IrisShaders/LilyBot/main?label=Commit%20Activity%20-%20Main) ![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/w/IrisShaders/LilyBot/develop?label=Commit%20Activity%20-%20Develop)
 ## Links
 * **Visit [our website](https://irisshaders.net) for downloads and pretty screenshots!**
 * Visit [our Discord server](https://discord.gg/jQJnav2jPu) to chat about Iris projects (such as LilyBot) and get support!
