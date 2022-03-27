@@ -22,6 +22,7 @@ import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
 import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
+import net.irisshaders.lilybot.extensions.util.ClearDatabase
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.RoleMenu
@@ -32,6 +33,7 @@ import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.MONGO_URI
+import net.irisshaders.lilybot.utils.OldDatabaseManager.startDatabase
 import net.irisshaders.lilybot.utils.SENTRY_DSN
 import org.bson.UuidRepresentation
 import org.kohsuke.github.GitHub
@@ -41,7 +43,8 @@ import org.litote.kmongo.reactivestreams.KMongo
 import java.nio.file.Files
 import java.nio.file.Path
 
-import net.irisshaders.lilybot.utils.migrateDatabase //todo remove this after first run
+//todo remove this
+import net.irisshaders.lilybot.utils.migrateDatabase
 
 val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
@@ -89,6 +92,8 @@ suspend fun main() {
 			add(::ModUtilities)
 			add(::LogUploading)
 
+			add(::ClearDatabase)
+
 			extPhishing {
 				appName = "Lily Bot"
 				detectionAction = DetectionAction.Kick
@@ -105,6 +110,14 @@ suspend fun main() {
 
 		presence { playing(DatabaseHelper.getStatus()) }
 
+		//todo remove this
+		hooks {
+			afterKoinSetup {
+				startDatabase()
+				migrateDatabase()
+			}
+		}
+
 		try {
 			github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()
 			gitHubLogger.info("Logged into GitHub!")
@@ -116,6 +129,4 @@ suspend fun main() {
 	}
 
 	bot.start()
-
-	migrateDatabase() // todo remove this after first run
 }
