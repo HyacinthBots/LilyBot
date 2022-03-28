@@ -22,7 +22,6 @@ import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
 import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
-import net.irisshaders.lilybot.extensions.util.ClearDatabase
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.RoleMenu
@@ -91,8 +90,6 @@ suspend fun main() {
 			add(::PublicUtilities)
 			add(::ModUtilities)
 			add(::LogUploading)
-
-			add(::ClearDatabase)
 
 			extPhishing {
 				appName = "Lily Bot"
