@@ -68,9 +68,8 @@ class ThreadInviter : Extension() {
 				val supportChannel = guild?.getChannel(supportChannelId) as MessageChannelBehavior
 
 				// fail if the message is not in the support channel
-				if (textChannel != supportChannel) {
-					return@action
-				}
+				if (textChannel != supportChannel) return@action
+
 
 				//TODO: this is incredibly stupid, there has to be a better way to do this.
 				textChannel.activeThreads.collect {
@@ -83,8 +82,8 @@ class ThreadInviter : Extension() {
 				if (userThreadExists) {
 					val response = event.message.respond {
 						content =
-							"You already have a thread, please talk about your issue " +
-									"in it. " + existingUserThread!!.mention
+							"You already have a thread, please talk about your issue in it. " +
+									existingUserThread!!.mention
 					}
 					event.message.delete("User already has a thread")
 					response.delete(10000L, false)
@@ -134,7 +133,6 @@ class ThreadInviter : Extension() {
 				// Try to get the moderator ping role from the config. If a config is not set, return@action
 				val moderatorRoleId =
 					DatabaseHelper.getConfig(event.channel.guildId, "moderatorsPing") ?: return@action
-
 				val supportTeamId = DatabaseHelper.getConfig(event.channel.guildId, "supportTeam")
 					?: return@action
 				val supportChannelId =

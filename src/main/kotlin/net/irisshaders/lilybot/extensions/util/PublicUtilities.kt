@@ -26,8 +26,7 @@ class PublicUtilities : Extension() {
 		 * @author IMS212
 		 */
 		responseEmbedInChannel(
-			onlineLog, "Lily is now online!", null,
-			DISCORD_GREEN, null
+			onlineLog, "Lily is now online!", null, DISCORD_GREEN, null
 		)
 
 		/**
@@ -58,6 +57,5 @@ class PublicUtilities : Extension() {
 				}
 			}
 		}
-
 	}
 }

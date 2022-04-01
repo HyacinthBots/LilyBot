@@ -19,7 +19,7 @@ object DatabaseHelper {
 	 */
 	suspend fun getConfig(inputGuildId: Snowflake, inputColumn: String): Snowflake? {
 		val collection = database.getCollection<ConfigData>()
-		val selectedConfig = collection.findOne(ConfigData::guildId eq inputGuildId) ?: return  null
+		val selectedConfig = collection.findOne(ConfigData::guildId eq inputGuildId) ?: return null
 
 		return when (inputColumn) {
 			"guildId" -> selectedConfig.guildId

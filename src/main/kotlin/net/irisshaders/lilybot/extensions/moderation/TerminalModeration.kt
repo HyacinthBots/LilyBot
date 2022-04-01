@@ -167,7 +167,12 @@ class TerminalModeration : Extension() {
 					null
 				)
 
-				guild?.getMember(userArg.id)?.edit { timeoutUntil = null }
+				try {
+					guild?.getMember(userArg.id)
+						?.edit { timeoutUntil = null } // remove timeout if they had a timeout when banned
+				} catch (e: EntityNotFoundException) {
+					logger.info("Unable to find user! Skipping timeout removal")
+				}
 
 				// Ban the user, mark it as a soft-ban clearly
 				guild?.ban(userArg.id, builder = {
@@ -226,6 +231,13 @@ class TerminalModeration : Extension() {
 					"**Reason:**\n${arguments.reason}",
 					null
 				)
+
+				try {
+					guild?.getMember(userArg.id)
+						?.edit { timeoutUntil = null } // remove timeout if they had a timeout when kicked
+				} catch (e: EntityNotFoundException) {
+					logger.info("Unable to find user! Skipping timeout removal")
+				}
 
 				// Run the kick task
 				guild?.kick(userArg.id, arguments.reason)
