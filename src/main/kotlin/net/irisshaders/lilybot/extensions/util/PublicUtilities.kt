@@ -26,8 +26,7 @@ class PublicUtilities : Extension() {
 		 * @author IMS212
 		 */
 		responseEmbedInChannel(
-			onlineLog, "Lily is now online!", null,
-			DISCORD_GREEN, null
+			onlineLog, "Lily is now online!", null, DISCORD_GREEN, null
 		)
 
 		/**
@@ -35,7 +34,7 @@ class PublicUtilities : Extension() {
 		 * @author IMS212
 		 * @author NoComment1105
 		 */
-		publicSlashCommand {  // Public slash commands have public responses
+		publicSlashCommand {
 			name = "ping"
 			description = "Am I alive?"
 
@@ -58,6 +57,5 @@ class PublicUtilities : Extension() {
 				}
 			}
 		}
-
 	}
 }

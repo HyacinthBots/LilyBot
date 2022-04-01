@@ -74,7 +74,7 @@ class ModUtilities : Extension() {
 					actionLog,
 					"Message Sent",
 					"/say has been used to " +
-							"say ${arguments.messageArgument} in ${targetChannel.mention}",
+							"say `${arguments.messageArgument}` in ${targetChannel.mention}",
 					DISCORD_BLACK,
 					user.asUser()
 				)

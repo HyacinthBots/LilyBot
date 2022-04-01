@@ -19,7 +19,7 @@ object DatabaseHelper {
 	 */
 	suspend fun getConfig(inputGuildId: Snowflake, inputColumn: String): Snowflake? {
 		val collection = database.getCollection<ConfigData>()
-		val selectedConfig = collection.findOne(ConfigData::guildId eq inputGuildId) ?: return  null
+		val selectedConfig = collection.findOne(ConfigData::guildId eq inputGuildId) ?: return null
 
 		return when (inputColumn) {
 			"guildId" -> selectedConfig.guildId
@@ -113,7 +113,7 @@ object DatabaseHelper {
 	/**
 	 * Add the given [newComponent] to the database
 	 *
-	 * @param [newComponent] The data for the component to be added
+	 * @param newComponent The data for the component to be added
 	 * @author tempest15
 	 */
 	suspend fun setComponent(newComponent: ComponentData) {

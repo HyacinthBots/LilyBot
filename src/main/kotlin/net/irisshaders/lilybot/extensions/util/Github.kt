@@ -24,6 +24,7 @@ import org.kohsuke.github.GHOrganization
 import org.kohsuke.github.GHPullRequest
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GHUser
+import org.kohsuke.github.HttpException
 import org.kohsuke.github.PagedIterator
 import java.text.DecimalFormat
 import kotlin.math.floor
@@ -71,7 +72,7 @@ class Github : Extension() {
 							category = "extensions.util.Github.issue.getIssue"
 							message = "Found issue"
 						}
-					} catch (e: Exception) {
+					} catch (e: HttpException) {
 						val iterator: PagedIterator<GHIssue>? = github?.searchIssues()
 							?.q("${arguments.issue} repo:${arguments.repository}")
 							?.order(GHDirection.DESC)
@@ -266,7 +267,7 @@ class Github : Extension() {
 							category = "extensions.util.Github.repository.getRepository"
 							message = "Repository found"
 						}
-					} catch (exception: Exception) {
+					} catch (exception: IOException) {
 						sentry.breadcrumb(BreadcrumbType.Error) {
 							category = "extensions.util.Github.repository.getRepository"
 							message = "Repository not found"

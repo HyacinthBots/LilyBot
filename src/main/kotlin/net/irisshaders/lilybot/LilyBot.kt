@@ -39,6 +39,7 @@ import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -118,10 +119,10 @@ suspend fun main() {
 		try {
 			github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()
 			gitHubLogger.info("Logged into GitHub!")
-		} catch (exception: Exception) {
+		} catch (exception: IOException) {
 			exception.printStackTrace()
 			gitHubLogger.error("Failed to log into GitHub!")
-			throw Exception(exception)
+			throw IOException(exception)
 		}
 	}
 
