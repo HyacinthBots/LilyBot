@@ -108,8 +108,7 @@ class TemporaryModeration : Extension() {
 
 				isBotOrModerator(userArg, "warn") ?: return@action
 
-				val oldStrikes = getWarn(userArg.id, guild!!.id)
-				DatabaseHelper.setWarn(userArg.id, guild!!.id, oldStrikes.plus(1))
+				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
 				val newStrikes = getWarn(userArg.id, guild!!.id)
 
 				respond {
@@ -243,8 +242,7 @@ class TemporaryModeration : Extension() {
 					return@action
 				}
 
-				val oldStrikes = getWarn(userArg.id, guild!!.id)
-				DatabaseHelper.setWarn(userArg.id, guild!!.id, oldStrikes.minus(1))
+				DatabaseHelper.setWarn(userArg.id, guild!!.id, true)
 				val newStrikes = getWarn(userArg.id, guild!!.id)
 
 				respond {

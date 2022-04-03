@@ -70,7 +70,7 @@ object DatabaseHelper {
 			WarnData::guildId eq inputGuildId)
 
 		return if (selectedUserInGuild != null) {
-			selectedUserInGuild.points!!
+			selectedUserInGuild.strikes!!
 		} else {
 			0
 		}
@@ -81,12 +81,20 @@ object DatabaseHelper {
 	 *
 	 * @param inputUserId The ID of the user to get the point value for
 	 * @param inputGuildId The ID of the guild the command was run in
+	 * @param remove Remove a warn strike, or add a warn strike
 	 * @author tempest15
 	 */
-	suspend fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, inputPointValue: Int) {
-			val collection = database.getCollection<WarnData>()
-			collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
-			collection.insertOne(WarnData(inputUserId, inputGuildId, inputPointValue))
+	suspend fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
+		val currentStrikes = getWarn(inputUserId, inputGuildId)
+		val collection = database.getCollection<WarnData>()
+		collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
+		collection.insertOne(
+			WarnData(
+				inputUserId,
+				inputGuildId,
+				if (!remove) currentStrikes.plus(1) else currentStrikes.minus(1)
+			)
+		)
 	}
 
 	/**
@@ -167,7 +175,7 @@ data class ConfigData (
 data class WarnData (
 	val userId: Snowflake?,
 	val guildId: Snowflake?,
-	val points: Int?
+	val strikes: Int?
 )
 
 @Serializable
