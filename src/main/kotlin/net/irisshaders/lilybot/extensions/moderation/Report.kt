@@ -90,8 +90,9 @@ class Report : Extension() {
 
 				try {
 					// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
-					val channel = (guild?.getChannel(
-						Snowflake(arguments.message.split("/")[5])) as MessageChannel)
+					val channel = guild?.getChannel(
+						Snowflake(arguments.message.split("/")[5])
+					) as MessageChannel
 					val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
 					val messageAuthor = reportedMessage.getAuthorAsMember()
 

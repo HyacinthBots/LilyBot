@@ -150,8 +150,8 @@ class ThreadInviter : Extension() {
 
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
-						content = "Hello there! Since you're in the support channel, I'll just grab the support " +
-								"team for you..."
+						content = "Hello there! Since you're in the support channel, I'll just grab the support" +
+								" team for you..."
 					)
 
 					event.channel.withTyping { delay(4.seconds) }
@@ -160,8 +160,8 @@ class ThreadInviter : Extension() {
 					event.channel.withTyping { delay(3.seconds) }
 					message.edit {
 						content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
-								" you can just send a message in <#$supportChannelId> and I'll automatically " +
-								"make a thread for you"
+								" you can just send a message in <#$supportChannelId> and I'll automatically" +
+								" make a thread for you"
 					}
 				}
 
@@ -186,8 +186,8 @@ class ThreadInviter : Extension() {
 					event.channel.withTyping { delay(4.seconds) }
 					message.edit {
 						content = "Welcome to your thread, ${threadOwner.mention}\nOnce you're finished, use" +
-								"`/thread archive` to close it. If you want to change the thread name, use " +
-								"`/thread rename` to do so"
+								" `/thread archive` to close it. If you want to change the thread name, use" +
+								" `/thread rename` to do so"
 					}
 
 					delay(20.seconds)

@@ -56,8 +56,7 @@ class MemberJoinLeave : Extension() {
 
 		event<MemberLeaveEvent> {
 			action {
-				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel")
-					?: return@action
+				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel") ?: return@action
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
