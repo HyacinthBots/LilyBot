@@ -46,11 +46,10 @@ val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_P
 var github: GitHub? = null
 
 // Connect to the database
-private var uri = MONGO_URI ?: "mongodb://localhost:27017" // This is the default for localhost
 private val settings = MongoClientSettings
 	.builder()
 	.uuidRepresentation(UuidRepresentation.STANDARD)
-	.applyConnectionString(ConnectionString(uri))
+	.applyConnectionString(ConnectionString(MONGO_URI))
 	.build()
 
 private val client = KMongo.createClient(settings).coroutine
