@@ -32,7 +32,6 @@ import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.MONGO_URI
-import net.irisshaders.lilybot.utils.OldDatabaseManager.startDatabase
 import net.irisshaders.lilybot.utils.SENTRY_DSN
 import org.bson.UuidRepresentation
 import org.kohsuke.github.GitHub
@@ -42,9 +41,6 @@ import org.litote.kmongo.reactivestreams.KMongo
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-
-//todo remove this
-import net.irisshaders.lilybot.utils.migrateDatabase
 
 val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
@@ -107,14 +103,6 @@ suspend fun main() {
 		}
 
 		presence { playing(DatabaseHelper.getStatus()) }
-
-		//todo remove this
-		hooks {
-			afterKoinSetup {
-				startDatabase()
-				migrateDatabase()
-			}
-		}
 
 		try {
 			github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()
