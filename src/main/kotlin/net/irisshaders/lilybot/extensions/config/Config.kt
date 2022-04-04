@@ -39,7 +39,6 @@ class Config : Extension() {
 				action {
 					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
-
 					if (DatabaseHelper.getConfig(guild!!.id, "modActionLog") == null) {
 						val newConfig = ConfigData(
 							guild!!.id,
