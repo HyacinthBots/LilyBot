@@ -80,17 +80,17 @@ suspend fun main() {
 			add(::Config)
 			add(::CustomCommands)
 			add(::Github)
+			add(::LogUploading)
 			add(::MemberJoinLeave)
 			add(::MessageDelete)
-			add(::TemporaryModeration)
-			add(::TerminalModeration)
+			add(::ModUtilities)
+			add(::PublicUtilities)
 			add(::Report)
 			add(::RoleMenu)
+			add(::TemporaryModeration)
+			add(::TerminalModeration)
 			add(::ThreadControl)
 			add(::ThreadInviter)
-			add(::PublicUtilities)
-			add(::ModUtilities)
-			add(::LogUploading)
 
 			extPhishing {
 				appName = "Lily Bot"
