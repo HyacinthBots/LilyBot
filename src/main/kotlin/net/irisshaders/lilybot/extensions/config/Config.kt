@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalTime::class)
-
 package net.irisshaders.lilybot.extensions.config
 
 import com.kotlindiscord.kord.extensions.checks.hasPermission
@@ -13,21 +11,21 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.utils.ResponseHelper
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import kotlin.time.ExperimentalTime
+import net.irisshaders.lilybot.utils.ConfigData
+import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 class Config : Extension() {
 
 	override val name = "config"
 
 	override suspend fun setup() {
+		/**
+		 * Commands to handle configuration
+		 * @author NoComment1105
+		 * @author tempest15
+		 */
 		ephemeralSlashCommand {
 			name = "config"
 			description = "Configuration set up commands!"
@@ -36,99 +34,71 @@ class Config : Extension() {
 				name = "set"
 				description = "Set the config"
 
-				// We only want admins doing this, not your average moderator
 				check { hasPermission(Permission.Administrator) }
 
 				action {
-					val actionLogId: String?
-					// Try to select the guild from the database, with either return NoSuchElementException,
-					//  or the guild id
-					val alreadySet = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.guildId)
+					// If an action log ID doesn't exist, set the config
+					// Otherwise, inform the user their config is already set
+					if (DatabaseHelper.getConfig(guild!!.id, "modActionLog") == null) {
+						val newConfig = ConfigData(
+							guild!!.id,
+							arguments.moderatorPing.id,
+							arguments.modActionLog.id,
+							arguments.messageLogs.id,
+							arguments.joinChannel.id,
+							arguments.supportChannel?.id,
+							arguments.supportTeam?.id,
+						)
 
-					// If the database is empty, there is nothing set for this guild, so we move ahead with
-					// adding config else we inform the config is already set
-					if (alreadySet.equals("NoSuchElementException")) {
-						newSuspendedTransaction {
-							DatabaseManager.Config.insertIgnore {
-								it[guildId] = guild!!.id.toString()
-								it[moderatorsPing] = arguments.moderatorPing.id.toString()
-								it[supportTeam] = arguments.supportTeam?.id.toString()
-								it[modActionLog] = arguments.modActionLog.id.toString()
-								it[messageLogs] = arguments.messageLogs.id.toString()
-								it[supportChannel] = arguments.supportChannel?.id.toString()
-								it[joinChannel] = arguments.joinChannel.id.toString()
-							}
-						}
-
-						// Once inserted to the database we get the mod action log, so we can print a message to it
-						actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
+						DatabaseHelper.setConfig(newConfig)
 
 						respond { content = "Config Set for Guild ID: ${guild!!.id}!" }
 
-						val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-						ResponseHelper.responseEmbedInChannel(
-							actionLogChannel,
-							"Configuration set!",
-							"An administrator has set a config for this guild!",
-							null,
-							user.asUser()
-						)
 					} else {
-						respond { content = "Your configuration is already set, clear it first before updating!" }
+						respond { content = "**Error:** There is already a configuration set for this guild!" }
+						return@action
 					}
+
+					// Log the config being set in the action log
+					val actionLogChannel = guild?.getChannel(arguments.modActionLog.id) as GuildMessageChannelBehavior
+					responseEmbedInChannel(
+						actionLogChannel,
+						"Configuration set!",
+						"An administrator has set a config for this guild!",
+						null,
+						user.asUser()
+					)
 				}
 			}
+
 			ephemeralSubCommand {
 				name = "clear"
 				description = "Clear the config!"
 
-				// We only want admins doing this, not your average moderator
 				check { hasPermission(Permission.Administrator) }
 
 				action {
-					var error = false
+					// If an action log ID resists, inform the user their config isn't set.
+					// Otherwise, clear the config.
+					if (DatabaseHelper.getConfig(guild!!.id, "modActionLog") == null) {
+						respond { content = "**Error:** There is no configuration set for this guild!" }
+						return@action // Return to avoid the database trying to delete things that don't exist
+					} else {
+						respond { content = "Cleared config for Guild ID: ${guild!!.id}" }
+						// Log the config being cleared to the action log
+						val actionLogId = DatabaseHelper.getConfig(guild!!.id, "modActionLog")
+						val actionLogChannel = guild?.getChannel(actionLogId!!) as GuildMessageChannelBehavior
+						responseEmbedInChannel(
+							actionLogChannel,
+							"Configuration cleared!",
+							"An administrator has cleared the configuration for this guild!",
+							null,
+							user.asUser()
+						)
 
-					// Try to get the guild ID and action log ID. NoSuchElement means no config set
-					val guildConfig: String? = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.guildId)
-					val actionLogId: String? = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-
-					if (guildConfig.equals("NoSuchElementException") || actionLogId.equals("NoSuchElementException")) {
-						respond {
-							content = "**Error:** There is no configuration set for this guild!"
-						}
-						// Return to avoid the database trying to delete things that don't exist
-						return@action
+						// clear the config (do this last)
+						DatabaseHelper.clearConfig(guild!!.id)
 					}
-
-					newSuspendedTransaction {
-						try {
-							DatabaseManager.Config.deleteWhere {
-								DatabaseManager.Config.guildId eq guild!!.id.toString()
-							}
-						} catch (e: NoSuchElementException) {
-							// More of a sanity check, the action should've returned by
-							// this point if there was no configuration for the guild
-							respond {
-								content = "**Error:** There is no configuration set for this guild!"
-							}
-							error = true
-						}
-					}
-
-					// Use error to decide whether to return. More of a sanity check,
-					// the previous one should have caught the NoSuchElementException
-					if (error) return@action
-
-					respond { content = "Cleared config for Guild ID: $guildConfig" }
-
-					val actionLogChannel = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-					ResponseHelper.responseEmbedInChannel(
-						actionLogChannel,
-						"Configuration cleared!",
-						"An administrator has cleared the configuration for this guild!",
-						null,
-						user.asUser()
-					)
 				}
 			}
 		}

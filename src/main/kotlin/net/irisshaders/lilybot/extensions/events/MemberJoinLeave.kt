@@ -6,41 +6,31 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import kotlin.time.ExperimentalTime
 
 /**
- * The join and leave logging for Members in the guild. More accurate join and leave times for users
+ * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild
  * @author NoComment1105
  */
-class JoinLeaveEvent : Extension() {
-	override val name = "joinleaveevent"
+class MemberJoinLeave : Extension() {
+	override val name = "member-join-leave"
 
-	@Suppress("DuplicatedCode")
 	override suspend fun setup() {
 		event<MemberJoinEvent> {
-
 			action {
-				// Try to get the join channel ID from the database
-				val joinChannelId = DatabaseHelper.selectInConfig(event.guild.id, DatabaseManager.Config.joinChannel)
+				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel") ?: return@action
 
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				// If the database has nothing in it for join channel, return
-				// This should only happen if no config was set at all, it's not
-				// a nullable field
-				if (joinChannelId.equals("NoSuchElementException")) return@action
-
-				val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId!!)) as GuildMessageChannelBehavior
+				val joinChannel = event.getGuild().getChannel(joinChannelId) as GuildMessageChannelBehavior
 
 				joinChannel.createEmbed {
 					color = DISCORD_GREEN
@@ -65,20 +55,13 @@ class JoinLeaveEvent : Extension() {
 		}
 
 		event<MemberLeaveEvent> {
-
 			action {
-				// Try to get the join channel ID from the database
-				val joinChannelId = DatabaseHelper.selectInConfig(event.guild.id, DatabaseManager.Config.joinChannel)
+				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel") ?: return@action
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
-				// If the database has nothing in it for join channel, return
-				// This should only happen if no config was set at all, it's not
-				// a nullable field
-				if (joinChannelId.equals("NoSuchElementException")) return@action
-
-				val joinChannel = event.getGuild().getChannel(Snowflake(joinChannelId!!)) as GuildMessageChannelBehavior
+				val joinChannel = event.getGuild().getChannel(joinChannelId) as GuildMessageChannelBehavior
 
 				joinChannel.createEmbed {
 					color = DISCORD_RED

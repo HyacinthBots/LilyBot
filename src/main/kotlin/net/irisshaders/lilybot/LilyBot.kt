@@ -8,36 +8,53 @@ import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
-import dev.kord.common.entity.PresenceStatus
+import com.mongodb.ConnectionString
+import com.mongodb.MongoClientSettings
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
-import net.irisshaders.lilybot.database.DatabaseManager
 import net.irisshaders.lilybot.extensions.config.Config
-import net.irisshaders.lilybot.extensions.events.JoinLeaveEvent
-import net.irisshaders.lilybot.extensions.events.MessageEvents
-import net.irisshaders.lilybot.extensions.moderation.Moderation
+import net.irisshaders.lilybot.extensions.events.LogUploading
+import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
+import net.irisshaders.lilybot.extensions.events.MessageDelete
+import net.irisshaders.lilybot.extensions.events.ThreadInviter
+import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.moderation.Report
+import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
+import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.RoleMenu
 import net.irisshaders.lilybot.extensions.util.ThreadControl
-import net.irisshaders.lilybot.extensions.util.ThreadInviter
-import net.irisshaders.lilybot.extensions.util.Utilities
+import net.irisshaders.lilybot.extensions.util.PublicUtilities
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
+import net.irisshaders.lilybot.utils.MONGO_URI
 import net.irisshaders.lilybot.utils.SENTRY_DSN
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.bson.UuidRepresentation
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
+import org.litote.kmongo.coroutine.coroutine
+import org.litote.kmongo.reactivestreams.KMongo
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 
 val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
 
+// Connect to the database
+private var uri = MONGO_URI ?: "mongodb://localhost:27017" // This is the default for localhost
+private val settings = MongoClientSettings
+	.builder()
+	.uuidRepresentation(UuidRepresentation.STANDARD)
+	.applyConnectionString(ConnectionString(uri))
+	.build()
+
+private val client = KMongo.createClient(settings).coroutine
+val database = client.getDatabase("LilyBot")
 private val gitHubLogger = KotlinLogging.logger { }
 
 suspend fun main() {
@@ -60,14 +77,17 @@ suspend fun main() {
 			add(::Config)
 			add(::CustomCommands)
 			add(::Github)
-			add(::JoinLeaveEvent)
-			add(::MessageEvents)
-			add(::Moderation)
+			add(::LogUploading)
+			add(::MemberJoinLeave)
+			add(::MessageDelete)
+			add(::ModUtilities)
+			add(::PublicUtilities)
 			add(::Report)
 			add(::RoleMenu)
+			add(::TemporaryModeration)
+			add(::TerminalModeration)
 			add(::ThreadControl)
 			add(::ThreadInviter)
-			add(::Utilities)
 
 			extPhishing {
 				appName = "Lily Bot"
@@ -83,41 +103,17 @@ suspend fun main() {
 			}
 		}
 
-		hooks {
-			afterKoinSetup {
-				DatabaseManager.startDatabase()
-			}
-		}
-
-		presence {
-			var setStatus: String? = null
-			transaction {
-				setStatus = try {
-					DatabaseManager.Utilities.select {
-						DatabaseManager.Utilities.status eq "status"
-					}.single()[DatabaseManager.Utilities.statusMessage]
-				} catch (e: NoSuchElementException) {
-					"NoSuchElementException"
-				}
-			}
-
-			if (setStatus.equals("NoSuchElementException")) {
-				status = PresenceStatus.Online
-				playing("Iris")
-			} else {
-				status = PresenceStatus.Online
-				playing(setStatus!!)
-			}
-		}
+		presence { playing(DatabaseHelper.getStatus()) }
 
 		try {
 			github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()
 			gitHubLogger.info("Logged into GitHub!")
-		} catch (exception: Exception) {
+		} catch (exception: IOException) {
 			exception.printStackTrace()
 			gitHubLogger.error("Failed to log into GitHub!")
-			throw Exception(exception)
+			throw IOException(exception)
 		}
 	}
+
 	bot.start()
 }

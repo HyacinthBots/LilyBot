@@ -25,13 +25,13 @@ import dev.kord.core.entity.interaction.ButtonInteraction
 import dev.kord.core.event.interaction.InteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseManager
-import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
+import net.irisshaders.lilybot.utils.ComponentData
+import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.getConfigPublicResponse
 
+//todo This really just needs a full rework. I'm about 90% sure it's not properly adapted for cross guild work.
 class RoleMenu : Extension() {
-    override val name = "rolemenu"
+	override val name = "role-menu"
 
 	override suspend fun setup() {
 		ephemeralSlashCommand(::RoleMenuArgs) {
@@ -65,13 +65,12 @@ class RoleMenu : Extension() {
 							style = ButtonStyle.Success
 							id = arguments.role.name + "add"
 
-							transaction {
-								DatabaseManager.Components.insertIgnore {
-									it[componentId] = arguments.role.name + "add"
-									it[roleId] = arguments.role.id.toString()
-									it[addOrRemove] = "add"
-								}
-							}
+							val newComponent = ComponentData(
+								arguments.role.name + "add",
+								arguments.role.id,
+								"add"
+							)
+							DatabaseHelper.setComponent(newComponent)
 
 							action { }
 						}
@@ -81,13 +80,12 @@ class RoleMenu : Extension() {
 							style = ButtonStyle.Danger
 							id = arguments.role.name + "remove"
 
-							transaction {
-								DatabaseManager.Components.insertIgnore {
-									it[componentId] = arguments.role.name + "remove"
-									it[roleId] = arguments.role.id.toString()
-									it[addOrRemove] = "remove"
-								}
-							}
+							val newComponent = ComponentData(
+								arguments.role.name + "remove",
+								arguments.role.id,
+								"remove"
+							)
+							DatabaseHelper.setComponent(newComponent)
 
 							action { }
 						}
@@ -97,41 +95,32 @@ class RoleMenu : Extension() {
 
 					respond { content = "Role menu created." }
 
-					var actionLogId: String? = null
-					var error = false
-					try {
-						transaction {
-							actionLogId = DatabaseManager.Config.select {
-								DatabaseManager.Config.guildId eq guild!!.id.toString()
-							}.single()[DatabaseManager.Config.modActionLog]
-						}
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
-					if (!error) {
-						val actionLog = guild?.getChannel(Snowflake(actionLogId!!)) as GuildMessageChannelBehavior
-						actionLog.createEmbed {
-							color = DISCORD_BLACK
-							title = "Role menu created."
-							description =
-								"A role menu for the ${arguments.role.mention} role was created in ${targetChannel.mention}"
+					// Try to get the action log from the config.
+					// If a config is not set, inform the user and return@action
+					val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
+					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
-							field {
-								name = "Embed title:"
-								value = arguments.title
-								inline = false
-							}
-							field {
-								name = "Embed description:"
-								value = arguments.description + descriptionAppendix
-								inline = false
-							}
-							footer {
-								text = "Requested by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
-							}
-							timestamp = Clock.System.now()
+					actionLog.createEmbed {
+						color = DISCORD_BLACK
+						title = "Role menu created."
+						description = "A role menu for the ${arguments.role.mention} role was " +
+								"created in ${targetChannel.mention}"
+
+						field {
+							name = "Embed title:"
+							value = arguments.title
+							inline = false
 						}
+						field {
+							name = "Embed description:"
+							value = arguments.description + descriptionAppendix
+							inline = false
+						}
+						footer {
+							text = "Requested by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
 					}
 				}
 			}
@@ -139,74 +128,70 @@ class RoleMenu : Extension() {
 
 		event<InteractionCreateEvent> {
 			check { failIfNot(event.interaction is ButtonInteraction) }
-			
+
 			action {
 				val interaction = event.interaction as ButtonInteraction
 				val guild = kord.getGuild(interaction.data.guildId.value!!)!!
 				val member = guild.getMember(interaction.user.id)
 
-				var roleId: String? = null
-				var addOrRemove: String? = null
-				var error = false
-
-				transaction {
-					try {
-						roleId = DatabaseManager.Components.select {
-							DatabaseManager.Components.componentId eq interaction.componentId
-						}.single()[DatabaseManager.Components.roleId]
-
-						addOrRemove = DatabaseManager.Components.select {
-							DatabaseManager.Components.componentId eq interaction.componentId
-						}.single()[DatabaseManager.Components.addOrRemove]
-					} catch (e: NoSuchElementException) {
-						error = true
-					}
+				// this is  a very dirty fix, so it doesn't conflict with log uploading
+				val roleId: Snowflake? = try {
+					DatabaseHelper.getComponent(interaction.componentId, "roleId") as Snowflake?
+				} catch (e: NullPointerException) {
+					return@action
+				}
+				val addOrRemove: String? = try {
+					DatabaseHelper.getComponent(interaction.componentId, "addOrRemove") as String?
+				} catch (e: NullPointerException) {
+					return@action
 				}
 
-				if (!error) {
-					val role = guild.getRole(Snowflake(roleId!!))
+				if (roleId == null || addOrRemove == null) return@action
 
-					if (addOrRemove == "add") {
-						if (!member.hasRole(role)) {
-							member.addRole(role.id)
-							interaction.respondEphemeral { content = "Added the ${role.mention} role." }
-						} else if (member.hasRole(role)) {
-							interaction.respondEphemeral {
-								content =
-									"You already have the ${role.mention} role so it can't be added. If you don't, please contact a staff member."
-							}
+				val role = guild.getRole(roleId)
+
+				if (addOrRemove == "add") {
+					if (!member.hasRole(role)) {
+						member.addRole(role.id)
+						interaction.respondEphemeral { content = "Added the ${role.mention} role." }
+					} else if (member.hasRole(role)) {
+						interaction.respondEphemeral {
+							content =
+								"You already have the ${role.mention} role so it can't be added. " +
+										"If you don't, please contact a staff member."
 						}
-					} else if (addOrRemove == "remove") {
-						if (!member.hasRole(role)) {
-							interaction.respondEphemeral {
-								content =
-									"You don't have the ${role.mention} role so it can't be removed. If you do, please contact a staff member."
-							}
-						} else if (member.hasRole(role)) {
-							member.removeRole(role.id)
-							interaction.respondEphemeral { content = "Removed the ${role.mention} role." }
+					}
+				} else if (addOrRemove == "remove") {
+					if (!member.hasRole(role)) {
+						interaction.respondEphemeral {
+							content =
+								"You don't have the ${role.mention} role so it can't be removed. " +
+										"If you do, please contact a staff member."
 						}
+					} else if (member.hasRole(role)) {
+						member.removeRole(role.id)
+						interaction.respondEphemeral { content = "Removed the ${role.mention} role." }
 					}
 				}
 			}
 		}
 	}
 
-    inner class RoleMenuArgs : Arguments() {
+	inner class RoleMenuArgs : Arguments() {
 		val role by role {
 			name = "roles"
 			description = "The roles to be selected."
 		}
-        val title by defaultingString {
-            name = "title"
-            description = "The title of the embed. Defaults to \"Role Selection Menu\""
+		val title by defaultingString {
+			name = "title"
+			description = "The title of the embed. Defaults to \"Role Selection Menu\""
 			defaultValue = "Role selection menu"
-        }
-        val description by defaultingString {
-            name = "description"
-            description = "Text for the embed. Will be appended with a description of how to use the buttons."
+		}
+		val description by defaultingString {
+			name = "description"
+			description = "Text for the embed. Will be appended with a description of how to use the buttons."
 			defaultValue = " "
-        }
+		}
 		val channel by optionalChannel {
 			name = "channel"
 			description = "The channel for the message to be sent in. Defaults to the channel executed in."
@@ -216,5 +201,5 @@ class RoleMenu : Extension() {
 			description = "The color for the embed menu to be."
 			defaultValue = DISCORD_BLACK
 		}
-    }
+	}
 }

@@ -30,9 +30,8 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseHelper
-import net.irisshaders.lilybot.database.DatabaseManager
-import net.irisshaders.lilybot.utils.ResponseHelper
+import net.irisshaders.lilybot.utils.getConfigPublicResponse
+import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -40,7 +39,6 @@ import kotlin.time.ExperimentalTime
  * The message reporting feature in the bot
  * @author NoComment1105
  */
-@Suppress("DuplicatedCode")
 class Report : Extension() {
 	override val name = "report"
 
@@ -50,29 +48,17 @@ class Report : Extension() {
 			locking = true // To prevent the command from being run more than once concurrently
 
 			action {
-				// Try to get the action log, message log and moderators from config. NoSuchElementException if failure
-				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.messageLogs)
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				val moderatorRoleId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action
+				val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
+				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
 
-				if (
-					messageLogId.equals("NoSuchElementException") ||
-					actionLogId.equals("NoSuchElementException") ||
-					moderatorRoleId.equals("NoSuchElementException")
-				) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
-					}
-					return@action
-				}
-
-				val messageLog = guild?.getChannel(Snowflake(messageLogId!!)) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				try {
 					val reportedMessage = event.interaction.getTarget()
 					val messageAuthor = reportedMessage.getAuthorAsMember()
 
 					respond {
-						content = "Message reported to staff"
+						content = "Message reported to staff."
 					}
 
 					// Call the create report function with the provided information
@@ -80,11 +66,11 @@ class Report : Extension() {
 
 				} catch (e: KtorRequestException) {
 					respond {
-						content = "Sorry, I can't properly access this message, could you ping the moderators instead please? Thanks!"
+						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 					}
 				} catch (e: EntityNotFoundException) {
 					respond {
-						content = "Sorry, I can't find this message... Could you ping the moderators instead please? Thanks!"
+						content = "Sorry, I can't find this message. Please ping the moderators instead."
 					}
 				}
 			}
@@ -96,27 +82,17 @@ class Report : Extension() {
 			locking = true
 
 			action {
-				// Try to get the action log, message log and moderators from config. NoSuchElementException if failure
-				val messageLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.messageLogs)
-				val actionLogId = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.modActionLog)
-				val moderatorRole = DatabaseHelper.selectInConfig(guild!!.id, DatabaseManager.Config.moderatorsPing)
+				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action
+				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
+				val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
 
-				if (
-					messageLogId.equals("NoSuchElementException") ||
-					actionLogId.equals("NoSuchElementException") ||
-					moderatorRole.equals("NoSuchElementException")
-				) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
-					}
-					return@action
-				}
-
-				val messageLog = guild?.getChannel(Snowflake(messageLogId!!)) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 
 				try {
 					// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
-					val channel = (guild?.getChannel(Snowflake(arguments.message.split("/")[5])) as MessageChannel)
+					val channel = guild?.getChannel(
+						Snowflake(arguments.message.split("/")[5])
+					) as MessageChannel
 					val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
 					val messageAuthor = reportedMessage.getAuthorAsMember()
 
@@ -125,15 +101,15 @@ class Report : Extension() {
 					}
 
 					// Create a report with the provided information
-					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRole, actionLogId)
+					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRoleId, actionLogId)
 
 				} catch (e: KtorRequestException) {
 					respond {
-						content = "Sorry, I can't properly access this message, could you ping the moderators instead please? Thanks!"
+						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 					}
 				} catch (e: EntityNotFoundException) {
 					respond {
-						content = "Sorry, I can't find this message... Could you ping the moderators instead please? Thanks!"
+						content = "Sorry, I can't find this message. Please ping the moderators instead."
 					}
 				}
 			}
@@ -145,12 +121,10 @@ class Report : Extension() {
 		messageLog: GuildMessageChannelBehavior,
 		messageAuthor: Member?,
 		reportedMessage: Message,
-		moderatorRole: String?,
-		modActionLog: String?
+		moderatorRole: Snowflake,
+		modActionLog: Snowflake
 	) {
-		messageLog.createMessage {
-			content = "<@&${moderatorRole!!}>"
-		}
+		messageLog.createMessage { content = "<@&${moderatorRole}>" }
 
 		messageLog.createEmbed {
 			color = DISCORD_RED
@@ -236,7 +210,7 @@ class Report : Extension() {
 						description = "Ban the user and delete their messages."
 					}
 					action {
-						val actionlog = guild?.getChannel(Snowflake(modActionLog!!)) as GuildMessageChannelBehavior
+						val actionLog = guild?.getChannel(modActionLog) as GuildMessageChannelBehavior
 						when (this.selected[0]) {
 							"10-timeout" -> {
 								guild?.getMember(messageAuthor!!.id)?.edit {
@@ -245,13 +219,13 @@ class Report : Extension() {
 								respond {
 									content = "Timed out user for 10 minutes"
 								}
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been timed out in ${guild?.fetchGuild()?.name}",
 									"**Duration:**\n10 minutes\n**Reason:**\nTimed-out via report",
 									null
 								)
-								quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 10)
+								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 10)
 							}
 							"20-timeout" -> {
 								guild?.getMember(messageAuthor!!.id)?.edit {
@@ -260,13 +234,13 @@ class Report : Extension() {
 								respond {
 									content = "Timed out user for 20 minutes"
 								}
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been timed out in ${guild?.fetchGuild()?.name}",
 									"**Duration:**\n20 minutes\n**Reason:**\nTimed-out via report",
 									null
 								)
-								quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 20)
+								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 20)
 							}
 							"30-timeout" -> {
 								guild?.getMember(messageAuthor!!.id)?.edit {
@@ -275,29 +249,30 @@ class Report : Extension() {
 								respond {
 									content = "Timed out user for 30 minutes"
 								}
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been timed out in ${guild?.fetchGuild()?.name}",
 									"**Duration:**\n30 minutes\n**Reason:**\nTimed-out via report",
 									null
 								)
-								quickTimeoutEmbed(actionlog, messageAuthor.asUser(), 30)
+								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 30)
 							}
 							"kick-user" -> {
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been kicked from ${guild?.fetchGuild()?.name}",
 									"**Reason:**\nKicked via report",
 									null
 								)
 								messageAuthor.kick(reason = "Kicked via report")
-								quickLogEmbed("Kicked a User", actionlog, messageAuthor.asUser())
+								quickLogEmbed("Kicked a User", actionLog, messageAuthor.asUser())
 							}
 							"soft-ban-user" -> {
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been soft-banned from ${guild?.fetchGuild()?.name}",
-									"**Reason:**\nSoft-banned via report\n\nYou are free to rejoin without the need to be unbanned",
+									"**Reason:**\nSoft-banned via report\n\n" +
+											"You are free to rejoin without the need to be unbanned",
 									null
 								)
 								messageAuthor.ban {
@@ -305,10 +280,10 @@ class Report : Extension() {
 									this.deleteMessagesDays = 1
 								}
 								reportedMessage.getGuild().unban(messageAuthor.id, reason = "Soft-ban")
-								quickLogEmbed("Soft-Banned a User", actionlog, messageAuthor.asUser())
+								quickLogEmbed("Soft-Banned a User", actionLog, messageAuthor.asUser())
 							}
 							"ban-user" -> {
-								ResponseHelper.userDMEmbed(
+								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been banned from ${guild?.fetchGuild()?.name}",
 									"**Reason:**\nBanned via report",
@@ -318,7 +293,7 @@ class Report : Extension() {
 									this.reason = "Banned via report"
 									this.deleteMessagesDays = 1
 								}
-								quickLogEmbed("Banned a user!", actionlog, messageAuthor.asUser())
+								quickLogEmbed("Banned a user!", actionLog, messageAuthor.asUser())
 							}
 						}
 					}
@@ -349,7 +324,8 @@ class Report : Extension() {
 		}
 	}
 
-	private suspend fun quickLogEmbed(moderationAction: String, actionLog: GuildMessageChannelBehavior, user: User): Message {
+	private suspend fun quickLogEmbed(moderationAction: String,
+									  actionLog: GuildMessageChannelBehavior, user: User): Message {
 		return actionLog.createEmbed {
 			title = moderationAction
 
@@ -368,7 +344,7 @@ class Report : Extension() {
 
 	inner class ManualReportArgs : Arguments() {
 		val message by string {
-			name = "message-link"
+			name = "messageLink"
 			description = "Link to the message to report"
 		}
 	}
