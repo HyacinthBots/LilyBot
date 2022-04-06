@@ -114,9 +114,21 @@ Arguments:
 
 Result: Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function.
 
+### Lock Server
+Name: `lock-server`
 
+Arguments:
+* `reason` - Reason for locking the server - Optional String
 
+Result: Locks the server.
 
+### Lock Channel
+Name: `lock-channel`
+
+Arguments:
+* `reason` - Reason for locking the channel - Optional String
+
+Result: Locks the channel the command was executed in.
 
 ## Utility Commands
 These commands are just handy to have around. Moderator only commands are at the top and clearly marked.
