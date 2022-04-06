@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalTime::class)
-
 package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
@@ -41,7 +39,6 @@ import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 import java.lang.Integer.min
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 class TemporaryModeration : Extension() {
 	override val name = "temporary-moderation"
