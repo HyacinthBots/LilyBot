@@ -11,6 +11,7 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSub
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -21,6 +22,7 @@ import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
@@ -45,6 +47,7 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.thread.TextChannelThread
 
 class TemporaryModeration : Extension() {
 	override val name = "temporary-moderation"
@@ -400,19 +403,34 @@ class TemporaryModeration : Extension() {
 
 			check { hasPermission(Permission.ModerateMembers) }
 
-			ephemeralSubCommand(::LockArgs) {
+			ephemeralSubCommand(::LockChannelArgs) {
 				name = "channel"
 				description = "Lock a channel so only mods can send messages"
 
+				@Suppress("DuplicatedCode")
 				action {
 					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
-					val targetChannel = event.interaction.getChannel() as TextChannel
+
+					val channelArg = arguments.channel ?: event.interaction.getChannel()
+					var channelParent : TextChannel? = null
+					if (channelArg is TextChannelThread) {
+						channelParent = channelArg.getParent()
+					}
+					val targetChannel = channelParent ?:  channelArg.asChannelOf()
 
 					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
-					if (channelPerms!!.denied.contains(Permission.SendMessages)) {
-						respond { content = "This channel is already locked!" }
-						return@action
+					if (channelPerms != null) {
+						if (channelPerms.denied.contains(Permission.SendMessages)) {
+							respond { content = "This channel is already locked!" }
+							return@action
+						}
+					}
+
+					targetChannel.createEmbed {
+						title = "Channel Locked"
+						description = "This channel has been locked by a moderator."
+						color = DISCORD_RED
 					}
 
 					targetChannel.editRolePermission(guild!!.id) {
@@ -437,7 +455,7 @@ class TemporaryModeration : Extension() {
 				}
 			}
 
-			ephemeralSubCommand (::LockArgs) {
+			ephemeralSubCommand (::LockServerArgs) {
 				name = "server"
 				description = "Lock the server so only mods can send messages"
 
@@ -486,17 +504,28 @@ class TemporaryModeration : Extension() {
 
 			check { hasPermission(Permission.ModerateMembers) }
 
-			ephemeralSubCommand {
+			ephemeralSubCommand (::UnlockChannelArgs) {
 				name = "channel"
 				description = "Unlock a channel so everyone can send messages"
 
+				@Suppress("DuplicatedCode")
 				action{
 					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
-					val targetChannel = event.interaction.getChannel() as TextChannel
+
+					val channelArg = arguments.channel ?: event.interaction.getChannel()
+					var channelParent : TextChannel? = null
+					if (channelArg is TextChannelThread) {
+						channelParent = channelArg.getParent()
+					}
+					val targetChannel = channelParent ?:  channelArg.asChannelOf()
 
 					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
-					if (!channelPerms!!.denied.contains(Permission.SendMessages)) {
+					if (channelPerms == null) {
+							respond { content = "This channel is not locked!" }
+							return@action
+						}
+					if (!channelPerms.denied.contains(Permission.SendMessages)) {
 						respond { content = "This channel is not locked!" }
 						return@action
 					}
@@ -509,8 +538,8 @@ class TemporaryModeration : Extension() {
 					}
 
 					targetChannel.createEmbed {
-						title = "Channel unlocked"
-						description = "This channel has been unlocked by a moderator. " +
+						title = "Channel Unlocked"
+						description = "This channel has been unlocked by a moderator.\n" +
 								"Please be aware of the rules when continuing discussion."
 						color = DISCORD_GREEN
 					}
@@ -565,7 +594,6 @@ class TemporaryModeration : Extension() {
 					respond { content = "Server unlocked." }
 				}
 			}
-
 		}
 	}
 
@@ -619,11 +647,31 @@ class TemporaryModeration : Extension() {
 		}
 	}
 
-	inner class LockArgs : Arguments() {
+	inner class LockChannelArgs : Arguments() {
+		val channel by optionalChannel {
+			name = "channel"
+			description = "Channel to lock. Defaults to current channel"
+		}
+
 		val reason by defaultingString {
 			name = "reason"
-			description = "Reason for locking"
+			description = "Reason for locking the channel"
 			defaultValue = "No reason provided"
+		}
+	}
+
+	inner class LockServerArgs : Arguments() {
+		val reason by defaultingString {
+			name = "reason"
+			description = "Reason for locking the server"
+			defaultValue = "No reason provided"
+		}
+	}
+
+	inner class UnlockChannelArgs : Arguments() {
+		val channel by optionalChannel {
+			name = "channel"
+			description = "Channel to unlock. Defaults to current channel"
 		}
 	}
 }
