@@ -1,11 +1,8 @@
-@file:OptIn(DoNotChain::class)
-
 package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
-import com.kotlindiscord.kord.extensions.annotations.DoNotChain
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.components.components
@@ -15,7 +12,6 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.setNickname
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
@@ -115,7 +111,7 @@ class PublicUtilities : Extension() {
 							style = ButtonStyle.Success
 
 							action {
-								user.asMember(guild!!.id).setNickname(arguments.newNick)
+								user.asMember(guild!!.id).edit { nickname = arguments.newNick }
 
 								userDMEmbed(
 									user.asUser(),
