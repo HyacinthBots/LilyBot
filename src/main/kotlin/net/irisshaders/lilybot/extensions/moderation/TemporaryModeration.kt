@@ -24,8 +24,11 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.map
@@ -45,9 +48,6 @@ import net.irisshaders.lilybot.utils.userDMEmbed
 import java.lang.Integer.min
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import dev.kord.core.behavior.channel.editRolePermission
-import dev.kord.core.entity.channel.TextChannel
-import dev.kord.core.entity.channel.thread.TextChannelThread
 
 class TemporaryModeration : Extension() {
 	override val name = "temporary-moderation"
@@ -74,7 +74,8 @@ class TemporaryModeration : Extension() {
 				// Get the specified amount of messages into an array list of Snowflakes and delete them
 
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
-					Snowflake.max, min(messageAmount, 100)).map { it.id }.toList()
+					Snowflake.max, min(messageAmount, 100)
+				).map { it.id }.toList()
 
 				textChannel.bulkDelete(messages)
 
@@ -126,9 +127,9 @@ class TemporaryModeration : Extension() {
 						userArg,
 						"First warning in ${guild?.fetchGuild()?.name}",
 						"**Reason:** ${arguments.reason}\n\n" +
-						"No moderation action has been taken. Please consider your actions carefully.\n\n" +
-						"For more information about the warn system, please see [this document]" +
-						"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+								"No moderation action has been taken. Please consider your actions carefully.\n\n" +
+								"For more information about the warn system, please see [this document]" +
+								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
 						DISCORD_BLACK
 					)
 				} else if (newStrikes == 2) {
@@ -413,11 +414,11 @@ class TemporaryModeration : Extension() {
 					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
-					var channelParent : TextChannel? = null
+					var channelParent: TextChannel? = null
 					if (channelArg is TextChannelThread) {
 						channelParent = channelArg.getParent()
 					}
-					val targetChannel = channelParent ?:  channelArg.asChannelOf()
+					val targetChannel = channelParent ?: channelArg.asChannelOf()
 
 					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
 					if (channelPerms != null) {
@@ -455,7 +456,7 @@ class TemporaryModeration : Extension() {
 				}
 			}
 
-			ephemeralSubCommand (::LockServerArgs) {
+			ephemeralSubCommand(::LockServerArgs) {
 				name = "server"
 				description = "Lock the server so only mods can send messages"
 
@@ -504,7 +505,7 @@ class TemporaryModeration : Extension() {
 
 			check { hasPermission(Permission.ModerateMembers) }
 
-			ephemeralSubCommand (::UnlockChannelArgs) {
+			ephemeralSubCommand(::UnlockChannelArgs) {
 				name = "channel"
 				description = "Unlock a channel so everyone can send messages"
 
@@ -518,13 +519,13 @@ class TemporaryModeration : Extension() {
 					if (channelArg is TextChannelThread) {
 						channelParent = channelArg.getParent()
 					}
-					val targetChannel = channelParent ?:  channelArg.asChannelOf()
+					val targetChannel = channelParent ?: channelArg.asChannelOf()
 
 					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
 					if (channelPerms == null) {
-							respond { content = "This channel is not locked!" }
-							return@action
-						}
+						respond { content = "This channel is not locked!" }
+						return@action
+					}
 					if (!channelPerms.denied.contains(Permission.SendMessages)) {
 						respond { content = "This channel is not locked!" }
 						return@action
