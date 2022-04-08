@@ -2,7 +2,10 @@ package net.irisshaders.lilybot.utils
 
 import com.kotlindiscord.kord.extensions.commands.application.message.EphemeralMessageCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
+import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.core.behavior.edit
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.kordLogger
@@ -100,4 +103,14 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
 	}
 
 	return "success"
+}
+
+/**
+ * Clears all the components from the specified message
+ *
+ * @param message The message to clear the components from
+ * @author NoComment
+ */
+suspend fun clearComponents(message: Message?) {
+	message!!.edit { components {  }.removeAll() }
 }

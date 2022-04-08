@@ -20,10 +20,12 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.edit
+import dev.kord.core.entity.Message
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
+import net.irisshaders.lilybot.utils.clearComponents
 import net.irisshaders.lilybot.utils.getConfigPublicResponse
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
@@ -77,7 +79,6 @@ class PublicUtilities : Extension() {
 		 * @author NoComment1105
 		 */
 
-		// TODO: Clear actionlog embeds of components when action done
 		// TODO: Permission stuff? Accept returns a permission error
 		// FIXME: This code is cursed, clean it up a little
 		ephemeralSlashCommand(::NickRequestArgs) {
@@ -88,10 +89,11 @@ class PublicUtilities : Extension() {
 				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val requester = user.asUser()
+				var responseEmbed: Message? = null
 
 				respond { content = "Nickname request sent!" }
 
-				actionLog.createEmbed {
+				responseEmbed = actionLog.createEmbed {
 					color = DISCORD_YELLOW
 					title = "Nickname Request"
 					timestamp = Clock.System.now()
@@ -121,6 +123,9 @@ class PublicUtilities : Extension() {
 									null,
 									DISCORD_GREEN
 								)
+								clearComponents(responseEmbed)
+
+								actionLog.createMessage("Nickname Accepted")
 							}
 						}
 						ephemeralButton(row = 0) {
@@ -128,9 +133,10 @@ class PublicUtilities : Extension() {
 							style = ButtonStyle.Danger
 
 							var reason: String? = null
+							var reasonEmbed: Message? = null
 
 							action {
-								actionLog.createEmbed {
+								reasonEmbed = actionLog.createEmbed {
 									description = "Why are you denying this username?"
 								}.edit {
 									components {
@@ -177,6 +183,12 @@ class PublicUtilities : Extension() {
 															"for reason:\n\n${reason} Please choose another nickname",
 													DISCORD_RED
 												)
+
+												clearComponents(responseEmbed)
+												clearComponents(reasonEmbed)
+												reasonEmbed!!.delete()
+
+												actionLog.createMessage("Nickname Denied. Reason:\n$reason")
 											}
 										}
 									}
@@ -184,7 +196,7 @@ class PublicUtilities : Extension() {
 							}
 						}
 					}
-				}.edit { components?.removeAll { true } }
+				}
 			}
 		}
 	}
