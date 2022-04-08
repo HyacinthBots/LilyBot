@@ -75,8 +75,6 @@ class PublicUtilities : Extension() {
 		 * Nickname request command
 		 * @author NoComment1105
 		 */
-
-		// TODO: Permission stuff? Accept returns a permission error
 		ephemeralSlashCommand {
 			name = "nickname"
 			description = "Nickname related commands"
@@ -119,12 +117,12 @@ class PublicUtilities : Extension() {
 									requester.asMember(guild!!.id).edit { nickname = arguments.newNick }
 
 									userDMEmbed(
-										user.asUser(),
+										requester.asUser(),
 										"Nickname Change accepted",
 										null,
 										DISCORD_GREEN
 									)
-									clearComponents(responseEmbed)
+									clearComponents(responseEmbed!!)
 
 									actionLog.createMessage("Nickname Accepted")
 								}
@@ -187,8 +185,8 @@ class PublicUtilities : Extension() {
 														DISCORD_RED
 													)
 
-													clearComponents(responseEmbed)
-													clearComponents(reasonEmbed)
+													clearComponents(responseEmbed!!)
+													clearComponents(reasonEmbed!!)
 													reasonEmbed!!.delete()
 
 													actionLog.createMessage("Nickname Denied. Reason:\n$reason")
@@ -211,8 +209,11 @@ class PublicUtilities : Extension() {
 					val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
 					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
+					respond { content = "Nickname cleared" }
+
 					actionLog.createEmbed {
 						title = "Nickname cleared"
+						color = DISCORD_YELLOW
 						timestamp = Clock.System.now()
 
 						field {

@@ -111,6 +111,6 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
  * @param message The message to clear the components from
  * @author NoComment
  */
-suspend fun clearComponents(message: Message?) {
-	message!!.edit { components {  }.removeAll() }
+suspend fun clearComponents(message: Message) {
+	message.edit { components {  }.removeAll() }
 }
