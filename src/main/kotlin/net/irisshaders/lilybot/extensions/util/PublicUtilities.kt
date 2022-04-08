@@ -77,7 +77,6 @@ class PublicUtilities : Extension() {
 		 */
 
 		// TODO: Permission stuff? Accept returns a permission error
-		// FIXME: This code is cursed, clean it up a little
 		ephemeralSlashCommand {
 			name = "nickname"
 			description = "Nickname related commands"
@@ -85,9 +84,11 @@ class PublicUtilities : Extension() {
 			ephemeralSubCommand(::NickRequestArgs) {
 				name = "request"
 				description = "This command allows you to request a new nickname for the server."
+
 				action {
 					val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
 					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+
 					val requester = user.asUser()
 					var responseEmbed: Message? = null
 
@@ -100,12 +101,12 @@ class PublicUtilities : Extension() {
 
 						field {
 							name = "User:"
-							value = "${user.mention}\n${user.asUser().tag}\n${user.id}"
+							value = "${requester.mention}\n${requester.asUser().tag}\n${requester.id}"
 							inline = false
 						}
 						field {
 							name = "Requested Nickname:"
-							value = "${user.asMember(guild!!.id).nickname} -> ${arguments.newNick}"
+							value = "${requester.asMember(guild!!.id).nickname} -> ${arguments.newNick}"
 							inline = false
 						}
 					}.edit {
@@ -115,7 +116,7 @@ class PublicUtilities : Extension() {
 								style = ButtonStyle.Success
 
 								action {
-									user.asMember(guild!!.id).edit { nickname = arguments.newNick }
+									requester.asMember(guild!!.id).edit { nickname = arguments.newNick }
 
 									userDMEmbed(
 										user.asUser(),
@@ -128,6 +129,7 @@ class PublicUtilities : Extension() {
 									actionLog.createMessage("Nickname Accepted")
 								}
 							}
+
 							ephemeralButton(row = 0) {
 								label = "Deny Nickname"
 								style = ButtonStyle.Danger
@@ -171,16 +173,17 @@ class PublicUtilities : Extension() {
 														}
 														"hoisting" -> {
 															reason =
-																"This nickname deliberately hoists you up the user ladder. " +
-																		"Which is not allowed."
+																"This nickname deliberately hoists you up the user " +
+																		"ladder, which is not allowed."
 														}
 													}
 
 													userDMEmbed(
 														requester.asUser(),
 														"Nickname Change Denied",
-														"Staff have review your nickname request and decided to reject it " +
-																"for reason:\n\n${reason} Please choose another nickname",
+														"Staff have review your nickname request and " +
+																"decided to reject it for reason:\n\n${reason} " +
+																"Please choose another nickname",
 														DISCORD_RED
 													)
 
