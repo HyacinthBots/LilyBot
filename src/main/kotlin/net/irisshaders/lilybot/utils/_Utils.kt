@@ -76,7 +76,7 @@ suspend fun EphemeralMessageCommandContext.getConfigPublicResponse(inputColumn: 
  * @author NoComment1105
  */
 suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
-	val moderatorRoleId = getConfigPrivateResponse("moderatorsPing") ?: return null
+	val moderatorRoleId = getConfigPrivateResponse("moderatorsPing")
 
 	try {
 		// Get the users roles into a List of Snowflakes
