@@ -16,13 +16,13 @@ import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import net.irisshaders.lilybot.utils.clearComponents
 import net.irisshaders.lilybot.utils.getConfigPublicResponse
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
@@ -122,9 +122,12 @@ class PublicUtilities : Extension() {
 										null,
 										DISCORD_GREEN
 									)
-									clearComponents(responseEmbed!!)
 
-									actionLog.createMessage("Nickname Accepted")
+									responseEmbed!!.edit { components { removeAll() } }
+
+									responseEmbed!!.edit {
+										content = "**Nickname accepted by** ${user.asUser().tag}"
+									}
 								}
 							}
 
@@ -133,11 +136,11 @@ class PublicUtilities : Extension() {
 								style = ButtonStyle.Danger
 
 								var reason: String? = null
-								var reasonEmbed: Message? = null
+								var reasonMessage: Message? = null
 
 								action {
-									reasonEmbed = actionLog.createEmbed {
-										description = "Why are you denying this username?"
+									reasonMessage = actionLog.createMessage {
+										content = "Why are you denying this username?"
 									}.edit {
 										components {
 											ephemeralSelectMenu(row = 1) {
@@ -164,15 +167,14 @@ class PublicUtilities : Extension() {
 												action {
 													when (this.selected[0]) {
 														"inappropriate" -> {
-															reason = "This nickname is inappropriate for this server."
+															reason = "is inappropriate for this server."
 														}
 														"impersonation" -> {
-															reason = "This nickname impersonates another user."
+															reason = "impersonates another user."
 														}
 														"hoisting" -> {
-															reason =
-																"This nickname deliberately hoists you up the user " +
-																		"ladder, which is not allowed."
+															reason = "deliberately hoists you up the user ladder, " +
+																	"which is not allowed."
 														}
 													}
 
@@ -180,16 +182,18 @@ class PublicUtilities : Extension() {
 														requester.asUser(),
 														"Nickname Change Denied",
 														"Staff have review your nickname request and " +
-																"decided to reject it for reason:\n\n${reason} " +
-																"Please choose another nickname",
+																"rejected it because it `${reason}` **Please choose " +
+																"another nickname**",
 														DISCORD_RED
 													)
 
-													clearComponents(responseEmbed!!)
-													clearComponents(reasonEmbed!!)
-													reasonEmbed!!.delete()
+													responseEmbed!!.edit { components { removeAll() } }
+													reasonMessage!!.delete()
 
-													actionLog.createMessage("Nickname Denied. Reason:\n$reason")
+													responseEmbed!!.edit {
+														content = "**Nickname Denied by** ${user.asUser().tag}" +
+																"\n**Reason: ${selected[0]}**"
+													}
 												}
 											}
 										}
