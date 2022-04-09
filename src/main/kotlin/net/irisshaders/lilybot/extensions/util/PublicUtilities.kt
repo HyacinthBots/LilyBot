@@ -20,6 +20,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.modify.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
@@ -88,6 +89,7 @@ class PublicUtilities : Extension() {
 					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 					val requester = user.asUser()
+					val requesterMember = requester.asMember(guild!!.id)
 					var responseEmbed: Message? = null
 
 					respond { content = "Nickname request sent!" }
@@ -104,7 +106,7 @@ class PublicUtilities : Extension() {
 						}
 						field {
 							name = "Requested Nickname:"
-							value = "${requester.asMember(guild!!.id).nickname} -> ${arguments.newNick}"
+							value = "${requesterMember.nickname} -> ${arguments.newNick}"
 							inline = false
 						}
 					}.edit {
@@ -114,19 +116,33 @@ class PublicUtilities : Extension() {
 								style = ButtonStyle.Success
 
 								action {
-									requester.asMember(guild!!.id).edit { nickname = arguments.newNick }
+									requesterMember.edit { nickname = arguments.newNick }
 
 									userDMEmbed(
 										requester.asUser(),
-										"Nickname Change accepted",
-										null,
+										"Nickname Change accepted in ${guild!!.asGuild().name}",
+										"Nickname updated from `${requesterMember.nickname}` to " +
+												"`${arguments.newNick}`",
 										DISCORD_GREEN
 									)
 
 									responseEmbed!!.edit { components { removeAll() } }
 
 									responseEmbed!!.edit {
-										content = "**Nickname accepted by** ${user.asUser().tag}"
+										embed {
+											color = DISCORD_GREEN
+											title = "Nickname request accepted"
+											description = "Nickname accepted by ${user.asUser().mention}"
+
+											field {
+												name = "Accepted Request:"
+												value = "${requester.mention} (${requester.tag}) " +
+														"requested the nickname `${arguments.newNick}`"
+												inline = false
+											}
+
+											timestamp = Clock.System.now()
+										}
 									}
 								}
 							}
@@ -180,9 +196,10 @@ class PublicUtilities : Extension() {
 
 													userDMEmbed(
 														requester.asUser(),
-														"Nickname Change Denied",
-														"Staff have review your nickname request and " +
-																"rejected it because it $reason",
+														"Nickname Change Denied in ${guild!!.asGuild().name}",
+														"Staff have review your nickname request (" +
+																"`${arguments.newNick}`) and rejected it," +
+																" because it $reason",
 														DISCORD_RED
 													)
 
@@ -190,8 +207,25 @@ class PublicUtilities : Extension() {
 													reasonMessage!!.delete()
 
 													responseEmbed!!.edit {
-														content = "**Nickname Denied by** ${user.asUser().tag}" +
-																"\n**Reason: ${selected[0]}**"
+														embed {
+															color = DISCORD_RED
+															title = "Nickname Request Denied"
+															description = "Nickname denied by ${user.asUser().mention}"
+
+															field {
+																name = "Denied Request:"
+																value = "${requester.mention} (${requester.tag}) " +
+																		"requested the nickname `${arguments.newNick}`"
+																inline = false
+															}
+
+															field {
+																name = "Reason:"
+																value = selected[0]
+																inline = false
+															}
+															timestamp = Clock.System.now()
+														}
 													}
 												}
 											}
@@ -211,6 +245,11 @@ class PublicUtilities : Extension() {
 				action {
 					val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
 					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+
+					if (user.fetchMember(guild!!.id).nickname == null) {
+						respond { content = "You have no nickname to clear!" }
+						return@action
+					}
 
 					respond { content = "Nickname cleared" }
 
