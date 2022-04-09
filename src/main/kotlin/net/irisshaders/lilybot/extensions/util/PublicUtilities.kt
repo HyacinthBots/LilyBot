@@ -182,8 +182,7 @@ class PublicUtilities : Extension() {
 														requester.asUser(),
 														"Nickname Change Denied",
 														"Staff have review your nickname request and " +
-																"rejected it because it `${reason}` **Please choose " +
-																"another nickname**",
+																"rejected it because it $reason",
 														DISCORD_RED
 													)
 
