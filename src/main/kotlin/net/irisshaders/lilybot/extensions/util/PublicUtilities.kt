@@ -6,7 +6,6 @@ import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
-import com.kotlindiscord.kord.extensions.components.buttons.EphemeralInteractionButton
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
@@ -92,9 +91,6 @@ class PublicUtilities : Extension() {
 					val requesterMember = requester.asMember(guild!!.id)
 					var responseEmbed: Message? = null
 
-					var denyButton: EphemeralInteractionButton? = null
-					var acceptButton: EphemeralInteractionButton
-
 					respond { content = "Nickname request sent!" }
 
 					responseEmbed = actionLog.createEmbed {
@@ -114,7 +110,7 @@ class PublicUtilities : Extension() {
 						}
 					}.edit {
 						components {
-							acceptButton = ephemeralButton(row = 0) {
+							ephemeralButton(row = 0) {
 								label = "Accept Nickname"
 								style = ButtonStyle.Success
 
@@ -129,9 +125,8 @@ class PublicUtilities : Extension() {
 										DISCORD_GREEN
 									)
 
-									responseEmbed!!.edit { components { removeAll() } }
-
 									responseEmbed!!.edit {
+										components { removeAll() }
 										embed {
 											color = DISCORD_GREEN
 											title = "Nickname request accepted"
@@ -156,7 +151,7 @@ class PublicUtilities : Extension() {
 								}
 							}
 
-							denyButton = ephemeralButton(row = 0) {
+							ephemeralButton(row = 0) {
 								label = "Deny Nickname"
 								style = ButtonStyle.Danger
 
@@ -168,8 +163,7 @@ class PublicUtilities : Extension() {
 											title = "Why are you denying this nickname?"
 										}
 										components {
-											remove(denyButton!!)
-											remove(acceptButton)
+											removeAll()
 											ephemeralSelectMenu(row = 1) {
 												placeholder = "Select Reason"
 												option(
@@ -214,10 +208,8 @@ class PublicUtilities : Extension() {
 														DISCORD_RED
 													)
 
-													responseEmbed!!.edit { components { removeAll() } }
-													//reasonMessage!!.delete()
-
 													responseEmbed!!.edit {
+														components { removeAll() }
 														embed {
 															color = DISCORD_RED
 															title = "Nickname Request Denied"
