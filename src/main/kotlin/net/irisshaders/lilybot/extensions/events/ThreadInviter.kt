@@ -8,6 +8,7 @@
 
 package net.irisshaders.lilybot.extensions.events
 
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.utils.delete
@@ -40,7 +41,7 @@ class ThreadInviter : Extension() {
 		 */
 		event<MessageCreateEvent> {
 			// Don't try to create if the message is in DMs
-			check { failIf { event.guildId == null } }
+			check { anyGuild() }
 			// Don't try to create if the message is a slash command
 			check { failIf { event.message.type == MessageType.ChatInputCommand } }
 			// Don't try and run this if the thread is manually created
