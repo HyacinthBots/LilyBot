@@ -88,13 +88,7 @@ The listed types are based on the labels that can be assigned to PR's in the Lil
 
 - One review must come from either NoComment1105 or tempest15
 
-**Final Comment Period**:
-
-- Small Refactor: 2 days
-- Large Refactor: 5 days
-
-Refactor size is determined by a Team member, when the PR is opened. If you disagree with the verdict, please ask in the
-disord.
+**Final Comment Period**: 3 days
 
 ### `PRT: documentation`
 
@@ -102,7 +96,7 @@ disord.
 
 **Required Approvals**: 2
 
-**Final Comment Period**: 3 days
+**Final Comment Period**: 2 days
 
 ### `PRT: new-feature`
 
@@ -110,7 +104,15 @@ disord.
 
 **Required Approvals**: 3
 
-**Final Comment Period**: 7 days
+**Final Comment Period**: 4 days
+
+### `PRT: release-staging`
+
+**Description**: Used for pull requests that merge develop into main
+
+**Required Approvals**: 3 
+
+**Final Comment Period**: 5 days
 
 ### Other
 
