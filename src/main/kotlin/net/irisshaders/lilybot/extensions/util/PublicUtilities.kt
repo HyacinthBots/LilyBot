@@ -78,11 +78,11 @@ class PublicUtilities : Extension() {
 		 */
 		ephemeralSlashCommand {
 			name = "nickname"
-			description = "Nickname related commands"
+			description = "The parent command for all nickname commands"
 
 			ephemeralSubCommand(::NickRequestArgs) {
 				name = "request"
-				description = "This command allows you to request a new nickname for the server."
+				description = "Request a new nickname for the server!"
 
 				check { anyGuild() }
 
@@ -102,19 +102,26 @@ class PublicUtilities : Extension() {
 						timestamp = Clock.System.now()
 
 						field {
-							name = "User:"
+							name = "User"
 							value = "${requester.mention}\n${requester.asUser().tag}\n${requester.id}"
 							inline = false
 						}
+
 						field {
-							name = "Requested Nickname:"
-							value = arguments.newNick
+							name = "Current Nickname"
+							value = "`${requesterAsMember.nickname}`"
+							inline = false
+						}
+
+						field {
+							name = "Requested Nickname"
+							value = "`${arguments.newNick}`"
 							inline = false
 						}
 					}.edit {
 						components {
 							ephemeralButton(row = 0) {
-								label = "Accept Nickname"
+								label = "Accept"
 								style = ButtonStyle.Success
 
 								action {
@@ -136,14 +143,21 @@ class PublicUtilities : Extension() {
 											title = "Nickname Request Accepted"
 
 											field {
-												name = "User:"
+												name = "User"
 												value = "${requester.mention}\n${requester.asUser().tag}\n" +
 														"${requester.id}"
 												inline = false
 											}
 
+											// these two fields should be the same and exist as a sanity check
 											field {
-												name = "Requested Nickname"
+												name = "Previous Nickname"
+												value = "`${requesterAsMember.nickname}`"
+												inline = false
+											}
+
+											field {
+												name = "Accepted Nickname"
 												value = "`${arguments.newNick}`"
 												inline = false
 											}
@@ -160,7 +174,7 @@ class PublicUtilities : Extension() {
 							}
 
 							ephemeralButton(row = 0) {
-								label = "Deny Nickname"
+								label = "Deny"
 								style = ButtonStyle.Danger
 
 								var reason: String? = null
@@ -173,8 +187,8 @@ class PublicUtilities : Extension() {
 											ephemeralSelectMenu(row = 1) {
 												placeholder = "Why are you denying this nickname?"
 
-												option("Inappropriate Nickname", "inappropriate") {
-													description = "This nickname is deemed inappropriate"
+												option("Inappropriate", "inappropriate") {
+													description = "This nickname is inappropriate"
 												}
 												option("Impersonates Others", "impersonation") {
 													description = "This nickname impersonates someone"
@@ -220,13 +234,19 @@ class PublicUtilities : Extension() {
 															}
 
 															field {
-																name = "Requested Nickname"
+																name = "Current Nickname"
+																value = "`${requesterAsMember.nickname}`"
+																inline = false
+															}
+
+															field {
+																name = "Rejected Nickname"
 																value = "`${arguments.newNick}`"
 																inline = false
 															}
 
 															field {
-																name = "Reason:"
+																name = "Reason"
 																value = selected[0]
 																inline = false
 															}
@@ -273,13 +293,14 @@ class PublicUtilities : Extension() {
 						timestamp = Clock.System.now()
 
 						field {
-							name = "User:"
+							name = "User"
 							value = "${user.mention}\n${user.asUser().tag}\n${user.id}"
 							inline = false
 						}
+
 						field {
-							name = "Nickname"
-							value = "Changed from `${user.asMember(guild!!.id).nickname}` to `null`"
+							name = "New Nickname"
+							value = "Nickname changed from `${user.asMember(guild!!.id).nickname}` to `null`"
 							inline = false
 						}
 					}
@@ -291,7 +312,7 @@ class PublicUtilities : Extension() {
 
 	inner class NickRequestArgs : Arguments() {
 		val newNick by string {
-			name = "newNick"
+			name = "nickname"
 			description = "The new nickname you would like"
 		}
 	}
