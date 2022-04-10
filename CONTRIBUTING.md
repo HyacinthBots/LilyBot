@@ -43,7 +43,7 @@ This PR policy has been adapted from the
    get reviews, try to thoughtfully address any concerns other people have. If you get confused, be sure to ask
    questions!
 
-3. ### Enter a Final Comment Period
+3. ### Entering a Final Comment Period
    Once your PR has no "changes requested" reviews, accumulated the minimum number of reviews for its
    [category](#pull-request-categories), and nobody has an outstanding review request, it is eligible to enter a Final
    Comment Period (FCP). An FCP is a final call for any reviewers to look at your PR before it is merged. The minimum
