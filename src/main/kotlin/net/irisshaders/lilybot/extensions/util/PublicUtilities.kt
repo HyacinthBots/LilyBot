@@ -108,7 +108,7 @@ class PublicUtilities : Extension() {
 						}
 						field {
 							name = "Requested Nickname:"
-							value = "${requesterAsMember.nickname} -> ${arguments.newNick}"
+							value = arguments.newNick
 							inline = false
 						}
 					}.edit {
@@ -122,7 +122,7 @@ class PublicUtilities : Extension() {
 
 									userDMEmbed(
 										requester.asUser(),
-										"Nickname Change accepted in ${guild!!.asGuild().name}",
+										"Nickname Change Accepted in ${guild!!.asGuild().name}",
 										"Nickname updated from `${requesterAsMember.nickname}` to " +
 												"`${arguments.newNick}`",
 										DISCORD_GREEN
@@ -133,8 +133,7 @@ class PublicUtilities : Extension() {
 
 										embed {
 											color = DISCORD_GREEN
-											title = "Nickname request accepted"
-											description = "Nickname accepted by ${user.asUser().mention}"
+											title = "Nickname Request Accepted"
 
 											field {
 												name = "User:"
@@ -147,6 +146,11 @@ class PublicUtilities : Extension() {
 												name = "Requested Nickname"
 												value = "`${arguments.newNick}`"
 												inline = false
+											}
+
+											footer {
+												text = "Nickname accepted by ${user.asUser().tag}"
+												icon = user.asUser().avatar?.url
 											}
 
 											timestamp = Clock.System.now()
@@ -163,15 +167,11 @@ class PublicUtilities : Extension() {
 
 								action {
 									actionLogEmbed!!.edit {
-										embed {
-											title = "Why are you denying this nickname?"
-										}
-
 										components {
 											removeAll()
 
 											ephemeralSelectMenu(row = 1) {
-												placeholder = "Select Reason"
+												placeholder = "Why are you denying this nickname?"
 
 												option("Inappropriate Nickname", "inappropriate") {
 													description = "This nickname is deemed inappropriate"
@@ -200,7 +200,7 @@ class PublicUtilities : Extension() {
 													userDMEmbed(
 														requester.asUser(),
 														"Nickname Change Denied in ${guild!!.asGuild().name}",
-														"Staff have review your nickname request (" +
+														"Staff have reviewed your nickname request (" +
 																"`${arguments.newNick}`) and rejected it," +
 																" because it $reason",
 														DISCORD_RED
@@ -211,7 +211,6 @@ class PublicUtilities : Extension() {
 														embed {
 															color = DISCORD_RED
 															title = "Nickname Request Denied"
-															description = "Nickname denied by ${user.asUser().mention}"
 
 															field {
 																name = "User:"
@@ -230,6 +229,11 @@ class PublicUtilities : Extension() {
 																name = "Reason:"
 																value = selected[0]
 																inline = false
+															}
+
+															footer {
+																text = "Nickname denied by ${user.asUser().tag}"
+																icon = user.asUser().avatar?.url
 															}
 
 															timestamp = Clock.System.now()
@@ -264,7 +268,7 @@ class PublicUtilities : Extension() {
 					respond { content = "Nickname cleared" }
 
 					actionLog.createEmbed {
-						title = "Nickname cleared"
+						title = "Nickname Cleared"
 						color = DISCORD_YELLOW
 						timestamp = Clock.System.now()
 
@@ -274,8 +278,8 @@ class PublicUtilities : Extension() {
 							inline = false
 						}
 						field {
-							name = "Nickname changed from"
-							value = "${user.asMember(guild!!.id).nickname} -> null"
+							name = "Nickname"
+							value = "Changed from `${user.asMember(guild!!.id).nickname}` to `null`"
 							inline = false
 						}
 					}
