@@ -59,9 +59,9 @@ object DatabaseHelper {
 	/**
 	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database
 	 *
-	 * @return null or the result from the database
 	 * @param inputUserId The ID of the user to get the point value for
 	 * @param inputGuildId The ID of the guild the command was run in
+	 * @return null or the result from the database
 	 * @author tempest15
 	 */
 	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): Int {

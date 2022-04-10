@@ -10,6 +10,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
@@ -36,45 +37,69 @@ class ModUtilities : Extension() {
 			name = "say"
 			description = "Say something through Lily."
 
-			check { hasPermission(Permission.ModerateMembers) }
-
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				if (guild != null) {
+					if (!user.asMember(guild!!.id).hasPermission(Permission.ModerateMembers)) {
+						respond { content = "**Error:** You do not have the `Moderate Members` permission" }
+						return@action
+					}
+					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-				val targetChannel = if (arguments.targetChannel == null) {
-					channel
+					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+					val targetChannel = if (arguments.targetChannel == null) {
+						channel
+					} else {
+						guild?.getChannel(arguments.targetChannel!!.id) as MessageChannelBehavior
+					}
+
+
+					try {
+						if (arguments.embedMessage) {
+							targetChannel.createEmbed {
+								color = DISCORD_BLURPLE
+								description = arguments.messageArgument
+								timestamp = Clock.System.now()
+							}
+						} else {
+							targetChannel.createMessage {
+								content = arguments.messageArgument
+							}
+						}
+					} catch (e: KtorRequestException) {
+						respond { content = "Lily does not have permission to send messages in this channel." }
+						return@action
+					}
+
+					respond { content = "Message sent." }
+
+					val description =
+						if (arguments.embedMessage) {
+							"/say has been used to embed `${arguments.messageArgument}` in ${targetChannel.mention}"
+						} else {
+							"/say has been used to say `${arguments.messageArgument}` in ${targetChannel.mention}"
+						}
+
+					responseEmbedInChannel(
+						actionLog,
+						"Message Sent",
+						description,
+						DISCORD_BLACK,
+						user.asUser()
+					)
 				} else {
-					guild?.getChannel(arguments.targetChannel!!.id) as MessageChannelBehavior
-				}
-
-				try {
 					if (arguments.embedMessage) {
-						targetChannel.createEmbed {
+						channel.createEmbed {
 							color = DISCORD_BLURPLE
 							description = arguments.messageArgument
 							timestamp = Clock.System.now()
 						}
 					} else {
-						targetChannel.createMessage {
+						channel.createMessage {
 							content = arguments.messageArgument
 						}
 					}
-				} catch (e: KtorRequestException) {
-					respond { content = "Lily does not have permission to send messages in this channel." }
-					return@action
+					respond { content = "Message sent!" }
 				}
-
-				respond { content = "Message sent." }
-
-				responseEmbedInChannel(
-					actionLog,
-					"Message Sent",
-					"/say has been used to " +
-							"say `${arguments.messageArgument}` in ${targetChannel.mention}",
-					DISCORD_BLACK,
-					user.asUser()
-				)
 			}
 		}
 

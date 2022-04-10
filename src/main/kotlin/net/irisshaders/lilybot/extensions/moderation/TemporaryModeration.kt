@@ -3,6 +3,7 @@ package net.irisshaders.lilybot.extensions.moderation
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
@@ -53,7 +54,7 @@ class TemporaryModeration : Extension() {
 			name = "clear"
 			description = "Clears messages."
 
-			// Require message managing permissions to run this command
+			check { anyGuild() }
 			check { hasPermission(Permission.ManageMessages) }
 
 			action {
@@ -94,7 +95,7 @@ class TemporaryModeration : Extension() {
 			name = "warn"
 			description = "Warn a member for any infractions."
 
-			// Require the ModerateMembers permission
+			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
@@ -223,6 +224,7 @@ class TemporaryModeration : Extension() {
 			name = "remove-warn"
 			description = "Remove a warning strike from a user"
 
+			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
@@ -279,7 +281,7 @@ class TemporaryModeration : Extension() {
 			name = "timeout"
 			description = "Timeout a user"
 
-			// Requires Moderate Members permission
+			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
@@ -344,7 +346,7 @@ class TemporaryModeration : Extension() {
 			name = "remove-timeout"
 			description = "Remove timeout on a user"
 
-			// Requires Moderate Members permission
+			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {

@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
@@ -42,7 +43,7 @@ class TerminalModeration : Extension() {
 			name = "ban"
 			description = "Bans a user."
 
-			// Require the Ban Member permission
+			check { anyGuild() }
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
@@ -104,8 +105,7 @@ class TerminalModeration : Extension() {
 			name = "unban"
 			description = "Unbans a user"
 
-			// Require Ban Members permission, only this check
-			// to avoid your everyday user from unbanning people
+			check { anyGuild() }
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
@@ -144,7 +144,7 @@ class TerminalModeration : Extension() {
 			name = "soft-ban"
 			description = "Soft-bans a user"
 
-			// Requires Ban Members Permission
+			check { anyGuild() }
 			check { hasPermission(Permission.BanMembers) }
 
 			action {
@@ -210,7 +210,7 @@ class TerminalModeration : Extension() {
 			name = "kick"
 			description = "Kicks a user."
 
-			// Require Kick Members permission
+			check { anyGuild() }
 			check { hasPermission(Permission.KickMembers) }
 
 			action {
