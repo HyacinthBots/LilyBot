@@ -1,6 +1,7 @@
 package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
@@ -38,6 +39,7 @@ class RoleMenu : Extension() {
 			name = "role-menu"
 			description = "Creates a menu that allows users to select a role."
 
+			check { anyGuild() }
 			check { hasPermission(Permission.ManageMessages) }
 
 			@Suppress("DuplicatedCode")

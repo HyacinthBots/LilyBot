@@ -4,6 +4,7 @@
 package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
@@ -23,7 +24,7 @@ class MessageDelete : Extension() {
 		 */
 		event<MessageDeleteEvent> {
 			// Don't try to create if the message is in DMs
-			check { failIf { event.guildId == null } }
+			check { anyGuild() }
 			action {
 				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
 
