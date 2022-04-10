@@ -91,12 +91,12 @@ class PublicUtilities : Extension() {
 					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 					val requester = user.asUser()
-					val requesterMember = requester.asMember(guild!!.id)
-					var responseEmbed: Message? = null
+					val requesterAsMember = requester.asMember(guild!!.id)
+					var actionLogEmbed: Message? = null
 
 					respond { content = "Nickname request sent!" }
 
-					responseEmbed = actionLog.createEmbed {
+					actionLogEmbed = actionLog.createEmbed {
 						color = DISCORD_YELLOW
 						title = "Nickname Request"
 						timestamp = Clock.System.now()
@@ -108,7 +108,7 @@ class PublicUtilities : Extension() {
 						}
 						field {
 							name = "Requested Nickname:"
-							value = "${requesterMember.nickname} -> ${arguments.newNick}"
+							value = "${requesterAsMember.nickname} -> ${arguments.newNick}"
 							inline = false
 						}
 					}.edit {
@@ -118,18 +118,19 @@ class PublicUtilities : Extension() {
 								style = ButtonStyle.Success
 
 								action {
-									requesterMember.edit { nickname = arguments.newNick }
+									requesterAsMember.edit { nickname = arguments.newNick }
 
 									userDMEmbed(
 										requester.asUser(),
 										"Nickname Change accepted in ${guild!!.asGuild().name}",
-										"Nickname updated from `${requesterMember.nickname}` to " +
+										"Nickname updated from `${requesterAsMember.nickname}` to " +
 												"`${arguments.newNick}`",
 										DISCORD_GREEN
 									)
 
-									responseEmbed!!.edit {
+									actionLogEmbed!!.edit {
 										components { removeAll() }
+
 										embed {
 											color = DISCORD_GREEN
 											title = "Nickname request accepted"
@@ -161,30 +162,24 @@ class PublicUtilities : Extension() {
 								var reason: String? = null
 
 								action {
-									responseEmbed!!.edit {
+									actionLogEmbed!!.edit {
 										embed {
 											title = "Why are you denying this nickname?"
 										}
+
 										components {
 											removeAll()
+
 											ephemeralSelectMenu(row = 1) {
 												placeholder = "Select Reason"
-												option(
-													label = "Inappropriate Nickname",
-													value = "inappropriate"
-												) {
+
+												option("Inappropriate Nickname", "inappropriate") {
 													description = "This nickname is deemed inappropriate"
 												}
-												option(
-													label = "Impersonates Others",
-													value = "impersonation"
-												) {
+												option("Impersonates Others", "impersonation") {
 													description = "This nickname impersonates someone"
 												}
-												option(
-													label = "Hoisting",
-													value = "hoisting"
-												) {
+												option("Hoisting", "hoisting") {
 													description = "This nickname deliberately hoists the user"
 												}
 
@@ -211,7 +206,7 @@ class PublicUtilities : Extension() {
 														DISCORD_RED
 													)
 
-													responseEmbed!!.edit {
+													actionLogEmbed!!.edit {
 														components { removeAll() }
 														embed {
 															color = DISCORD_RED
@@ -284,7 +279,6 @@ class PublicUtilities : Extension() {
 							inline = false
 						}
 					}
-
 					user.asMember(guild!!.id).edit { nickname = null }
 				}
 			}
