@@ -6,7 +6,7 @@ When opening issues, please make sure that you include as much information as ap
   [stacktrace](https://stackoverflow.com/questions/3988788/what-is-a-stack-trace-and-how-can-i-use-it-to-debug-my-application-errors)
   of what went wrong. This can be attached as a file, or uploaded to a [GitHub Gist](https://gist.github.com/).
 * If your issue is a bug or otherwise unexpected behavior, explain what happened and what you expected to happen.
-* If you're having trouble setting the bot up, we recommend joining [our discord](https://discord.gg/hy2329fcTZ)
+* If you're having trouble setting the bot up, we recommend joining [our Discord](https://discord.gg/hy2329fcTZ)
   as we will be able to provide more dynamic support there.
 
 ## Pull Requests
@@ -24,7 +24,7 @@ By submitting changes to the repository, you are hereby agreeing that:
   or other issues which would pose issues for inclusion or distribution under the above license.
 
 If you do not agree with these terms, please do not submit contributions to this repository. If you have any questions
-about these terms, feel free to join [our discord](https://discord.gg/hy2329fcTZ)
+about these terms, feel free to join [our Discord](https://discord.gg/hy2329fcTZ)
 and ask any questions that you may have.
 
 ## Pull Request Policy
@@ -36,14 +36,14 @@ This PR policy has been adapted from the
    Before you begin work on adding code to LilyBot, please spend some time looking through the rest of the code in
    LilyBot, and ensure in your Pull Request you follow the style as closely as you can.
 
-   If you have any questions, do not hesitate to ask in [our discord](https://discord.gg/hy2329fcTZ).
+   If you have any questions, do not hesitate to ask in [our Discord](https://discord.gg/hy2329fcTZ).
 
 2. ### Open your PR and wait for reviews
    Once you have forked LilyBot and opened a pull request, you will need to wait for reviews from other people. When you
    get reviews, try to thoughtfully address any concerns other people have. If you get confused, be sure to ask
    questions!
 
-3. ### Entering a Final Comment Period
+3. ### Enter a Final Comment Period
    Once your PR has no "changes requested" reviews, accumulated the minimum number of reviews for its
    [category](#pull-request-categories), and nobody has an outstanding review request, it is eligible to enter a Final
    Comment Period (FCP). An FCP is a final call for any reviewers to look at your PR before it is merged. The minimum
@@ -80,6 +80,14 @@ The listed types are based on the labels that can be assigned to PR's in the Lil
 
 - If the PR is marked as urgent, the PR may be merged once a review has been submitted from NoComment1105 or tempest15
 
+### `PRT: documentation`
+
+**Description**: Used for pull requests that focus mainly on adding or changing documentation
+
+**Required Approvals**: 2
+
+**Final Comment Period**: 2 days
+
 ### `PRT: refactor`
 
 **Description**: Used for pull requests that focus on changing or rewriting something
@@ -89,14 +97,6 @@ The listed types are based on the labels that can be assigned to PR's in the Lil
 - One review must come from either NoComment1105 or tempest15
 
 **Final Comment Period**: 3 days
-
-### `PRT: documentation`
-
-**Description**: Used for pull requests that focus mainly on adding or changing documentation
-
-**Required Approvals**: 2
-
-**Final Comment Period**: 2 days
 
 ### `PRT: new-feature`
 
