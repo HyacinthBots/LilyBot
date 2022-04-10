@@ -3,6 +3,7 @@ package net.irisshaders.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
@@ -82,6 +83,8 @@ class PublicUtilities : Extension() {
 			ephemeralSubCommand(::NickRequestArgs) {
 				name = "request"
 				description = "This command allows you to request a new nickname for the server."
+
+				check { anyGuild() }
 
 				action {
 					val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
@@ -251,6 +254,8 @@ class PublicUtilities : Extension() {
 			ephemeralSubCommand {
 				name = "clear"
 				description = "Clear your current nickname"
+
+				check { anyGuild() }
 
 				action {
 					val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
