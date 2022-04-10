@@ -102,19 +102,19 @@ class PublicUtilities : Extension() {
 						timestamp = Clock.System.now()
 
 						field {
-							name = "User"
+							name = "User:"
 							value = "${requester.mention}\n${requester.asUser().tag}\n${requester.id}"
 							inline = false
 						}
 
 						field {
-							name = "Current Nickname"
+							name = "Current Nickname:"
 							value = "`${requesterAsMember.nickname}`"
 							inline = false
 						}
 
 						field {
-							name = "Requested Nickname"
+							name = "Requested Nickname:"
 							value = "`${arguments.newNick}`"
 							inline = false
 						}
@@ -143,7 +143,7 @@ class PublicUtilities : Extension() {
 											title = "Nickname Request Accepted"
 
 											field {
-												name = "User"
+												name = "User:"
 												value = "${requester.mention}\n${requester.asUser().tag}\n" +
 														"${requester.id}"
 												inline = false
@@ -151,13 +151,13 @@ class PublicUtilities : Extension() {
 
 											// these two fields should be the same and exist as a sanity check
 											field {
-												name = "Previous Nickname"
+												name = "Previous Nickname:"
 												value = "`${requesterAsMember.nickname}`"
 												inline = false
 											}
 
 											field {
-												name = "Accepted Nickname"
+												name = "Accepted Nickname:"
 												value = "`${arguments.newNick}`"
 												inline = false
 											}
@@ -234,19 +234,19 @@ class PublicUtilities : Extension() {
 															}
 
 															field {
-																name = "Current Nickname"
+																name = "Current Nickname:"
 																value = "`${requesterAsMember.nickname}`"
 																inline = false
 															}
 
 															field {
-																name = "Rejected Nickname"
+																name = "Rejected Nickname:"
 																value = "`${arguments.newNick}`"
 																inline = false
 															}
 
 															field {
-																name = "Reason"
+																name = "Reason:"
 																value = selected[0]
 																inline = false
 															}
@@ -293,13 +293,13 @@ class PublicUtilities : Extension() {
 						timestamp = Clock.System.now()
 
 						field {
-							name = "User"
+							name = "User:"
 							value = "${user.mention}\n${user.asUser().tag}\n${user.id}"
 							inline = false
 						}
 
 						field {
-							name = "New Nickname"
+							name = "New Nickname:"
 							value = "Nickname changed from `${user.asMember(guild!!.id).nickname}` to `null`"
 							inline = false
 						}
