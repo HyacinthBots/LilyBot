@@ -6,8 +6,6 @@ import com.github.jezza.Toml
 import com.github.jezza.TomlTable
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
-import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
-import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import dev.kord.gateway.Intent
@@ -18,15 +16,16 @@ import net.irisshaders.lilybot.extensions.events.LogUploading
 import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
 import net.irisshaders.lilybot.extensions.events.MessageDelete
 import net.irisshaders.lilybot.extensions.events.ThreadInviter
-import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
 import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
-import net.irisshaders.lilybot.extensions.util.RoleMenu
-import net.irisshaders.lilybot.extensions.util.ThreadControl
+import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.util.PublicUtilities
+import net.irisshaders.lilybot.extensions.util.RoleMenu
+import net.irisshaders.lilybot.extensions.util.Tags
+import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -56,6 +55,7 @@ private val client = KMongo.createClient(settings).coroutine
 val database = client.getDatabase("LilyBot")
 private val gitHubLogger = KotlinLogging.logger { }
 
+@Suppress("DEPRECATION")
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 
@@ -83,17 +83,18 @@ suspend fun main() {
 			add(::PublicUtilities)
 			add(::Report)
 			add(::RoleMenu)
+			add(::Tags)
 			add(::TemporaryModeration)
 			add(::TerminalModeration)
 			add(::ThreadControl)
 			add(::ThreadInviter)
 
-			extPhishing {
-				appName = "Lily Bot"
-				detectionAction = DetectionAction.Kick
-				logChannelName = "anti-phishing-logs"
-				requiredCommandPermission = null
-			}
+//			extPhishing {
+//				appName = "Lily Bot"
+//				detectionAction = DetectionAction.Kick
+//				logChannelName = "anti-phishing-logs"
+//				requiredCommandPermission = null
+//			}
 
 			extMappings { }
 

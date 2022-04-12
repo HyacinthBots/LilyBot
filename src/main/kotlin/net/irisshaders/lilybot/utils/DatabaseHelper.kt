@@ -2,9 +2,9 @@ package net.irisshaders.lilybot.utils
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
-import kotlinx.serialization.Serializable
 
 object DatabaseHelper {
 
@@ -156,6 +156,59 @@ object DatabaseHelper {
 		collection.deleteOne(StatusData::key eq "LilyStatus")
 		collection.insertOne(StatusData("LilyStatus", newStatus))
 	}
+
+	suspend fun getTag(guildId: Snowflake, name: String, column: String): Any? {
+		val selectedTag: TagsData?
+		val collection = database.getCollection<TagsData>()
+		selectedTag = collection.findOne(TagsData::guildId eq guildId, TagsData::name eq name)
+
+		return when (column) {
+			"guildId" -> selectedTag!!.guildId
+			"name" -> selectedTag!!.name
+			"tagTitle" -> selectedTag!!.tagTitle
+			"tagValue" -> selectedTag!!.tagValue
+			else -> null
+		}
+	}
+
+	suspend fun getSubTags(guildId: Snowflake, parentTag: String, name: String, column: String): Any? {
+		val parentCollection = database.getCollection<TagsData>()
+		val subTagsCollection = database.getCollection<SubTagsData>()
+		val selectedSubTagParent: TagsData? = parentCollection.findOne(
+			TagsData::guildId eq guildId,
+			TagsData::parentId eq parentTag)
+		val selectedSubTag: SubTagsData? = subTagsCollection.findOne(
+			SubTagsData::parentTag eq parentTag,
+			SubTagsData::name eq name
+		)
+
+		var returnValue: Any? = null
+		if (selectedSubTag!!.parentTag == selectedSubTagParent!!.parentId) {
+			returnValue = when (column) {
+				"guildId" -> selectedSubTagParent.guildId
+				"name" -> selectedSubTag.name
+				"tagTitle" -> selectedSubTag.tagTitle
+				"tagValue" -> selectedSubTag.tagValue
+				else -> null
+			}
+		}
+		return returnValue
+	}
+
+	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String,) {
+		val collection = database.getCollection<TagsData>()
+		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue, name))
+	}
+
+	suspend fun setSubTag(inputGuildId: Snowflake, parentTag: String, name: String, tagTitle: String?, tagValue: String?) {
+		val collection = database.getCollection<SubTagsData>()
+		collection.insertOne(SubTagsData(inputGuildId, parentTag, name, tagTitle, tagValue))
+	}
+
+	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
+		val collection = database.getCollection<TagsData>()
+		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
+	}
 }
 
 // Note that all values should always be nullable in case the database is empty.
@@ -189,4 +242,22 @@ data class ComponentData (
 data class StatusData (
 	val key: String?, // this is just so we can find the status and should always be set to "LilyStatus"
 	val status: String?
+)
+
+@Serializable
+data class TagsData (
+	val guildId: Snowflake?,
+	val name: String?,
+	val tagTitle: String?,
+	val tagValue: String?,
+	val parentId: String?
+)
+
+@Serializable
+data class SubTagsData (
+	val guildId: Snowflake?,
+	val parentTag: String?,
+	val name: String?,
+	val tagTitle: String?,
+	val tagValue: String?
 )
