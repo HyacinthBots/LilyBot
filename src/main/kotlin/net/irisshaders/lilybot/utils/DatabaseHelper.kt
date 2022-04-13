@@ -183,6 +183,13 @@ object DatabaseHelper {
 		}
 	}
 
+	/**
+	 * Gets all tags in the given [guildId]
+	 *
+	 * @param guildId The ID of the guild
+	 * @return A [List] of tags for the specified [guildId]
+	 * @author NoComment1105
+	 */
 	suspend fun getAllTags(guildId: Snowflake): List<TagsData> {
 		val collection = database.getCollection<TagsData>()
 		return collection.find(TagsData::guildId eq guildId).toList()
@@ -199,7 +206,7 @@ object DatabaseHelper {
 	 */
 	suspend fun setTag(guildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
 		val collection = database.getCollection<TagsData>()
-		collection.insertOne(TagsData(guildId, name, tagTitle, tagValue, name))
+		collection.insertOne(TagsData(guildId, name, tagTitle, tagValue))
 	}
 
 	/**
@@ -253,6 +260,5 @@ data class TagsData(
 	val guildId: Snowflake?,
 	val name: String?,
 	val tagTitle: String?,
-	val tagValue: String?,
-	val parentId: String?
+	val tagValue: String?
 )
