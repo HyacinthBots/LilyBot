@@ -1,7 +1,6 @@
 package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
-import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
@@ -15,6 +14,7 @@ import com.kotlindiscord.kord.extensions.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.utils.suggestStringMap
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -28,7 +28,7 @@ class Tags : Extension() {
 
 		publicSlashCommand(::TagArgs) {
 			name = "tag"
-			description = "Tag commands!"
+			description = "The parent command for all /tag commands"
 
 			check { anyGuild() }
 
@@ -52,6 +52,37 @@ class Tags : Extension() {
 			}
 		}
 
+		publicSlashCommand {
+			name = "tag-help"
+			description = "Explains how the tag command works!"
+
+			action {
+				respond {
+					embed {
+						title = "How does the /tag command and others work?"
+						description =
+							"The tag command allows users to add guild specific 'tag' commands at runtime to their " +
+									"guild. Tags are like custom commands, they can do say what ever you want them" +
+									"to say.\n\nTo create a tag, if you have the Moderate Members permission, run " +
+									"the following command:\n`/create-tag <name> <title> <value>`\nYou will be " +
+									"prompted to enter a name for the tag, a title for the tag, and the value for the" +
+									" tag. This is what will appear in the embed of your tag. You can enter any " +
+									"character you like into all of these inputs.\n\nTo use the tag, run the " +
+									"following command\n`/tag <name>`\nYou will be prompted to enter the tag name, " +
+									"but will have an autocomplete window to aid you. The window will list all the " +
+									"tags that the guild has.\n\nTo delete a tag, if you have the Moderate Members " +
+									"permission, run the following command\n`/delete-tag <name>`\nYou will be " +
+									"prompted to enter the name of the tag, again aided by autocomplete, and then " +
+									"the tag will be completed.\n\nGuilds can have any number of tags they like. The " +
+									"limit on `tagValue` for tags is 1024 characters, which is the embed description " +
+									"limit enforced by discord"
+						color = DISCORD_BLURPLE
+						timestamp = Clock.System.now()
+					}
+				}
+			}
+		}
+
 		ephemeralSlashCommand(::CreateTagArgs) {
 			name = "create-tag"
 			description = "Create a tag for your guild!"
@@ -63,13 +94,26 @@ class Tags : Extension() {
 				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 				val actionLog = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
 
-				responseEmbedInChannel(
-					actionLog,
-					"Tag created!",
-					"The tag ${arguments.tagName} was created by ${user.asUser().mention}",
-					DISCORD_GREEN,
-					user.asUser()
-				)
+				actionLog.createEmbed {
+					title = "Tag created!"
+					description = "${user.asUser().mention} created the tag ${arguments.tagName}"
+					field {
+						name = "Tag contents:"
+						value = """
+							```text
+							title: ${arguments.tagTitle}
+							
+							value: ${arguments.tagValue}
+							```
+						""".trimIndent()
+						inline = false
+					}
+					footer {
+						icon = user.asUser().avatar?.url
+						text = "Requested by ${user.asUser().tag}"
+					}
+					timestamp = Clock.System.now()
+				}
 
 				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
 
@@ -87,6 +131,13 @@ class Tags : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
+				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName, "name") == null) {
+					respond {
+						content = "Unable to find tag! Does this tag exist?"
+					}
+					return@action
+				}
+
 				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 				val actionLog = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
 
@@ -97,13 +148,6 @@ class Tags : Extension() {
 					DISCORD_RED,
 					user.asUser()
 				)
-
-				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName, "name") == null) {
-					respond {
-						content = "Unable to find tag! Does this tag exist?"
-					}
-					return@action
-				}
 
 				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
 

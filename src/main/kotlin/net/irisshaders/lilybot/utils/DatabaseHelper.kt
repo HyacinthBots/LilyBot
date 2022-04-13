@@ -163,16 +163,16 @@ object DatabaseHelper {
 	 * Gets the given tag using it's [name] and returns the [column] selected. If the tag does not exist
 	 * it will return null
 	 *
-	 * @param guildId The ID of the guild the command was run in
+q	 * @param inputGuildId The ID of the guild the command was run in
 	 * @param name The named identifier of the tag
 	 * @param column The tag data you are requesting
 	 * @return The requested [column] value or null
 	 * @author NoComment1105
 	 */
-	suspend fun getTag(guildId: Snowflake, name: String, column: String): Any? {
+	suspend fun getTag(inputGuildId: Snowflake, name: String, column: String): Any? {
 		val selectedTag: TagsData?
 		val collection = database.getCollection<TagsData>()
-		selectedTag = collection.findOne(TagsData::guildId eq guildId, TagsData::name eq name) ?: return null
+		selectedTag = collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name) ?: return null
 
 		return when (column) {
 			"guildId" -> selectedTag.guildId
@@ -184,41 +184,41 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets all tags in the given [guildId]
+	 * Gets all tags in the given [inputGuildId]
 	 *
-	 * @param guildId The ID of the guild
-	 * @return A [List] of tags for the specified [guildId]
+	 * @param inputGuildId The ID of the guild
+	 * @return A [List] of tags for the specified [inputGuildId]
 	 * @author NoComment1105
 	 */
-	suspend fun getAllTags(guildId: Snowflake): List<TagsData> {
+	suspend fun getAllTags(inputGuildId: Snowflake): List<TagsData> {
 		val collection = database.getCollection<TagsData>()
-		return collection.find(TagsData::guildId eq guildId).toList()
+		return collection.find(TagsData::guildId eq inputGuildId).toList()
 	}
 
 	/**
 	 * Adds a tag to the database, using the provided parameters
 	 *
-	 * @param guildId The ID of the guild the command was run in. Used to keep things guild specific
+	 * @param inputGuildId The ID of the guild the command was run in. Used to keep things guild specific
 	 * @param name The named identifier of the tag being created
 	 * @param tagTitle The title of the tag being created
 	 * @param tagValue The contents of the tag being created
 	 * @author NoComment1105
 	 */
-	suspend fun setTag(guildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
+	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
 		val collection = database.getCollection<TagsData>()
-		collection.insertOne(TagsData(guildId, name, tagTitle, tagValue))
+		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue))
 	}
 
 	/**
 	 * Deletes the tag [name] from the [database]
 	 *
-	 * @param guildId The guild the tag was created in
+	 * @param inputGuildId The guild the tag was created in
 	 * @param name The named identifier of the tag being deleted
 	 * @author NoComment1105
 	 */
-	suspend fun deleteTag(guildId: Snowflake, name: String) {
+	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
 		val collection = database.getCollection<TagsData>()
-		collection.deleteOne(TagsData::guildId eq guildId, TagsData::name eq name)
+		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 	}
 }
 
