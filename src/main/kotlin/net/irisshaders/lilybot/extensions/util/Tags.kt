@@ -60,13 +60,7 @@ class Tags : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
-
-				respond {
-					content = "Tag: `${arguments.tagName}` created"
-				}
-
-				val actionLogId = getConfigPrivateResponse("actionLog") ?: return@action
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 				val actionLog = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 				responseEmbedInChannel(
@@ -76,6 +70,12 @@ class Tags : Extension() {
 					DISCORD_GREEN,
 					user.asUser()
 				)
+
+				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
+
+				respond {
+					content = "Tag: `${arguments.tagName}` created"
+				}
 			}
 		}
 
@@ -87,6 +87,17 @@ class Tags : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
+				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val actionLog = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+
+				responseEmbedInChannel(
+					actionLog,
+					"Tag deleted!",
+					"The tag ${arguments.tagName} was deleted by ${user.asUser().mention}",
+					DISCORD_RED,
+					user.asUser()
+				)
+
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName, "name") == null) {
 					respond {
 						content = "Unable to find tag! Does this tag exist?"
@@ -99,18 +110,6 @@ class Tags : Extension() {
 				respond {
 					content = "Tag: `${arguments.tagName}` deleted"
 				}
-
-
-				val actionLogId = getConfigPrivateResponse("actionLog") ?: return@action
-				val actionLog = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
-
-				responseEmbedInChannel(
-					actionLog,
-					"Tag deleted!",
-					"The tag ${arguments.tagName} was deleted by ${user.asUser().mention}",
-					DISCORD_RED,
-					user.asUser()
-				)
 			}
 		}
 	}
