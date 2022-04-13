@@ -1,4 +1,5 @@
 @file:OptIn(PrivilegedIntent::class)
+@file:Suppress("DEPRECATION")
 
 package net.irisshaders.lilybot
 
@@ -6,6 +7,8 @@ import com.github.jezza.Toml
 import com.github.jezza.TomlTable
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
+import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
+import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import dev.kord.gateway.Intent
@@ -55,7 +58,6 @@ private val client = KMongo.createClient(settings).coroutine
 val database = client.getDatabase("LilyBot")
 private val gitHubLogger = KotlinLogging.logger { }
 
-@Suppress("DEPRECATION")
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 
@@ -89,12 +91,12 @@ suspend fun main() {
 			add(::ThreadControl)
 			add(::ThreadInviter)
 
-//			extPhishing {
-//				appName = "Lily Bot"
-//				detectionAction = DetectionAction.Kick
-//				logChannelName = "anti-phishing-logs"
-//				requiredCommandPermission = null
-//			}
+			extPhishing {
+				appName = "Lily Bot"
+				detectionAction = DetectionAction.Kick
+				logChannelName = "anti-phishing-logs"
+				requiredCommandPermission = null
+			}
 
 			extMappings { }
 

@@ -16,7 +16,7 @@ import net.irisshaders.lilybot.config
  * @author IMS212
  */
 @Deprecated(
-	"Deprecated in favour of tags stored in the database.",
+	"Deprecated in favour of tags stored in the database. This will be removed in 3.1.+",
 	ReplaceWith(
 		"Tags",
 		"net.irisshaders.lilybot.extensions.util.Tags"

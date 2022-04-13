@@ -41,7 +41,7 @@ object DatabaseHelper {
 	 */
 	suspend fun setConfig(newConfig: ConfigData) {
 		val collection = database.getCollection<ConfigData>()
-		collection.deleteOne(ConfigData:: guildId eq newConfig.guildId)
+		collection.deleteOne(ConfigData::guildId eq newConfig.guildId)
 		collection.insertOne(newConfig)
 	}
 
@@ -53,7 +53,7 @@ object DatabaseHelper {
 	 */
 	suspend fun clearConfig(inputGuildId: Snowflake) {
 		val collection = database.getCollection<ConfigData>()
-		collection.deleteOne(ConfigData:: guildId eq inputGuildId)
+		collection.deleteOne(ConfigData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -66,8 +66,10 @@ object DatabaseHelper {
 	 */
 	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): Int {
 		val collection = database.getCollection<WarnData>()
-		val selectedUserInGuild = collection.findOne(WarnData::userId eq inputUserId,
-			WarnData::guildId eq inputGuildId)
+		val selectedUserInGuild = collection.findOne(
+			WarnData::userId eq inputUserId,
+			WarnData::guildId eq inputGuildId
+		)
 
 		return if (selectedUserInGuild != null) {
 			selectedUserInGuild.strikes!!
@@ -108,7 +110,7 @@ object DatabaseHelper {
 	suspend fun getComponent(inputComponentId: String, inputColumn: String): Any? {
 		// this returns any because it can return either a string or a snowflake
 		val collection = database.getCollection<ComponentData>()
-		val selectedComponent = collection.findOne(ComponentData:: componentId eq inputComponentId)
+		val selectedComponent = collection.findOne(ComponentData::componentId eq inputComponentId)
 
 		return when (inputColumn) {
 			"componentId" -> selectedComponent!!.componentId
@@ -126,7 +128,7 @@ object DatabaseHelper {
 	 */
 	suspend fun setComponent(newComponent: ComponentData) {
 		val collection = database.getCollection<ComponentData>()
-		collection.deleteOne(ComponentData:: componentId eq newComponent.componentId)
+		collection.deleteOne(ComponentData::componentId eq newComponent.componentId)
 		collection.insertOne(newComponent)
 	}
 
@@ -148,7 +150,7 @@ object DatabaseHelper {
 	/**
 	 * Add the given [newStatus] to the database
 	 *
-	 * @param [newStatus] The new status you wish to set
+	 * @param newStatus The new status you wish to set
 	 * @author NoComment1105
 	 */
 	suspend fun setStatus(newStatus: String) {
@@ -157,33 +159,55 @@ object DatabaseHelper {
 		collection.insertOne(StatusData("LilyStatus", newStatus))
 	}
 
+	/**
+	 * Gets the given tag using it's [name] and returns the [column] selected. If the tag does not exist
+	 * it will return null
+	 *
+	 * @param guildId The ID of the guild the command was run in
+	 * @param name The named identifier of the tag
+	 * @param column The tag data you are requesting
+	 * @return The requested [column] value or null
+	 * @author NoComment1105
+	 */
 	suspend fun getTag(guildId: Snowflake, name: String, column: String): Any? {
 		val selectedTag: TagsData?
 		val collection = database.getCollection<TagsData>()
-		selectedTag = collection.findOne(TagsData::guildId eq guildId, TagsData::name eq name)
+		selectedTag = collection.findOne(TagsData::guildId eq guildId, TagsData::name eq name) ?: return null
 
 		return when (column) {
-			"guildId" -> selectedTag!!.guildId
-			"name" -> selectedTag!!.name
-			"tagTitle" -> selectedTag!!.tagTitle
-			"tagValue" -> selectedTag!!.tagValue
+			"guildId" -> selectedTag.guildId
+			"name" -> selectedTag.name
+			"tagTitle" -> selectedTag.tagTitle
+			"tagValue" -> selectedTag.tagValue
 			else -> null
 		}
 	}
 
+	/**
+	 * Gets the given sub tag using it's [name] and the name of the [parentTag] to returns the [column] selected.
+	 * If the tag does not exist it will return null
+	 *
+	 * @param guildId The ID of the guild the command was run in. Used to keep things guild specific
+	 * @param parentTag The name of the parent of this tag
+	 * @param name The named identifier of the tag
+	 * @param column The tag data you are requesting
+	 * @return The requested [column] value or null
+	 * @author NoComment1105
+	 */
 	suspend fun getSubTags(guildId: Snowflake, parentTag: String, name: String, column: String): Any? {
 		val parentCollection = database.getCollection<TagsData>()
 		val subTagsCollection = database.getCollection<SubTagsData>()
-		val selectedSubTagParent: TagsData? = parentCollection.findOne(
+		val selectedSubTagParent = parentCollection.findOne(
 			TagsData::guildId eq guildId,
-			TagsData::parentId eq parentTag)
-		val selectedSubTag: SubTagsData? = subTagsCollection.findOne(
+			TagsData::parentId eq parentTag
+		) ?: return null
+		val selectedSubTag = subTagsCollection.findOne(
 			SubTagsData::parentTag eq parentTag,
 			SubTagsData::name eq name
-		)
+		) ?: return null
 
 		var returnValue: Any? = null
-		if (selectedSubTag!!.parentTag == selectedSubTagParent!!.parentId) {
+		if (selectedSubTag.parentTag == selectedSubTagParent.parentId) {
 			returnValue = when (column) {
 				"guildId" -> selectedSubTagParent.guildId
 				"name" -> selectedSubTag.name
@@ -192,29 +216,79 @@ object DatabaseHelper {
 				else -> null
 			}
 		}
+
 		return returnValue
 	}
 
-	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String,) {
+	/**
+	 * Adds a tag to the database, using the provided parameters
+	 *
+	 * @param guildId The ID of the guild the command was run in. Used to keep things guild specific
+	 * @param name The named identifier of the tag being created
+	 * @param tagTitle The title of the tag being created
+	 * @param tagValue The contents of the tag being created
+	 * @author NoComment1105
+	 */
+	suspend fun setTag(guildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
 		val collection = database.getCollection<TagsData>()
-		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue, name))
+		collection.insertOne(TagsData(guildId, name, tagTitle, tagValue, name))
 	}
 
-	suspend fun setSubTag(inputGuildId: Snowflake, parentTag: String, name: String, tagTitle: String?, tagValue: String?) {
+	/**
+	 * Adds a sub tag to a tag in the database, using the provided parameters
+	 *
+	 * @param guildId The ID of the guild the command was run in. Used to keep things guild specific
+	 * @param parentTag The named identifier of the parent for this sub tag
+	 * @param name The named identifier of the sub tag being created
+	 * @param tagTitle The title of the sub tag being created
+	 * @param tagValue The contents of the sub tag being created
+	 * @author NoComment1105
+	 */
+	suspend fun setSubTag(
+		guildId: Snowflake,
+		parentTag: String,
+		name: String,
+		tagTitle: String,
+		tagValue: String
+	) {
 		val collection = database.getCollection<SubTagsData>()
-		collection.insertOne(SubTagsData(inputGuildId, parentTag, name, tagTitle, tagValue))
+		collection.insertOne(SubTagsData(guildId, parentTag, name, tagTitle, tagValue))
 	}
 
-	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
+	/**
+	 * Deletes the tag [name] from the [database]
+	 *
+	 * @param guildId The guild the tag was created in
+	 * @param name The named identifier of the tag being deleted
+	 * @author NoComment1105
+	 */
+	suspend fun deleteTag(guildId: Snowflake, name: String) {
 		val collection = database.getCollection<TagsData>()
-		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
+		collection.deleteOne(TagsData::guildId eq guildId, TagsData::name eq name)
+	}
+
+	/**
+	 * Deletes the sub tag [name] from the [database]
+	 *
+	 * @param guildId The guild the tag was created in
+	 * @param parentId The named identifier of the parent tag
+	 * @param name The named identifier of the sub tag being deleted
+	 * @author NoComment1105
+	 */
+	suspend fun deleteSubTag(guildId: Snowflake, parentId: String, name: String) {
+		val collection = database.getCollection<SubTagsData>()
+		collection.deleteOne(
+			SubTagsData::guildId eq guildId,
+			SubTagsData::parentTag eq parentId,
+			SubTagsData::name eq name
+		)
 	}
 }
 
 // Note that all values should always be nullable in case the database is empty.
 
 @Serializable
-data class ConfigData (
+data class ConfigData(
 	val guildId: Snowflake?,
 	val moderatorsPing: Snowflake?,
 	val modActionLog: Snowflake?,
@@ -225,27 +299,27 @@ data class ConfigData (
 )
 
 @Serializable
-data class WarnData (
+data class WarnData(
 	val userId: Snowflake?,
 	val guildId: Snowflake?,
 	val strikes: Int?
 )
 
 @Serializable
-data class ComponentData (
+data class ComponentData(
 	val componentId: String?,
 	val roleId: Snowflake?,
 	val addOrRemove: String?
 )
 
 @Serializable
-data class StatusData (
+data class StatusData(
 	val key: String?, // this is just so we can find the status and should always be set to "LilyStatus"
 	val status: String?
 )
 
 @Serializable
-data class TagsData (
+data class TagsData(
 	val guildId: Snowflake?,
 	val name: String?,
 	val tagTitle: String?,
@@ -254,7 +328,7 @@ data class TagsData (
 )
 
 @Serializable
-data class SubTagsData (
+data class SubTagsData(
 	val guildId: Snowflake?,
 	val parentTag: String?,
 	val name: String?,
