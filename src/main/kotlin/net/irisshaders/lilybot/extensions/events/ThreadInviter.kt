@@ -57,10 +57,8 @@ class ThreadInviter : Extension() {
 					|| event.message.getChannel() is NewsChannelThread } }
 
 			action {
-				val supportTeamId = DatabaseHelper.getConfig(event.guildId!!, "supportTeam")
-					?: return@action
-				val supportChannelId = DatabaseHelper.getConfig(event.guildId!!, "supportChannel")
-					?: return@action
+				val supportTeamId = DatabaseHelper.getConfig(event.guildId!!)?.supportTeam ?: return@action
+				val supportChannelId = DatabaseHelper.getConfig(event.guildId!!)?.supportChannel ?: return@action
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
@@ -132,12 +130,9 @@ class ThreadInviter : Extension() {
 
 			action {
 				// Try to get the moderator ping role from the config. If a config is not set, return@action
-				val moderatorRoleId =
-					DatabaseHelper.getConfig(event.channel.guildId, "moderatorsPing") ?: return@action
-				val supportTeamId = DatabaseHelper.getConfig(event.channel.guildId, "supportTeam")
-					?: return@action
-				val supportChannelId =
-					DatabaseHelper.getConfig(event.channel.guildId, "supportChannel") ?: return@action
+				val moderatorRoleId = DatabaseHelper.getConfig(event.channel.guildId)?.moderatorsPing ?: return@action
+				val supportTeamId = DatabaseHelper.getConfig(event.channel.guildId)?.supportTeam ?: return@action
+				val supportChannelId = DatabaseHelper.getConfig(event.channel.guildId)?.supportChannel ?: return@action
 
 				if (
 					try {

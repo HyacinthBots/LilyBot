@@ -29,7 +29,7 @@ class MessageDelete : Extension() {
 				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
 
 				// Try to get the message logs channel, return@action if null
-				val messageLogId = DatabaseHelper.getConfig(event.guild!!.id, "messageLogs") ?: return@action
+				val messageLogId = DatabaseHelper.getConfig(event.guild!!.id)?.messageLogs ?: return@action
 
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLogChannel = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior

@@ -36,7 +36,6 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.DatabaseHelper.getWarn
 import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
-import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.isBotOrModerator
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
@@ -61,7 +60,7 @@ class TemporaryModeration : Extension() {
 			check { hasPermission(Permission.ManageMessages) }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val messageAmount = arguments.messages
@@ -102,7 +101,7 @@ class TemporaryModeration : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
 
 				val userArg = arguments.userArgument
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
@@ -110,7 +109,7 @@ class TemporaryModeration : Extension() {
 				isBotOrModerator(userArg, "warn") ?: return@action
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
-				val newStrikes = getWarn(userArg.id, guild!!.id)
+				val newStrikes = getWarn(userArg.id, guild!!.id)?.strikes
 
 				respond {
 					content = "Warned user."
@@ -176,30 +175,32 @@ class TemporaryModeration : Extension() {
 						DISCORD_BLACK,
 						user.asUser()
 					)
-				} else if (newStrikes > 3) {
-					dm = userDMEmbed(
-						userArg,
-						"Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}",
-						"**Reason:** ${arguments.reason}\n\n" +
-								"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
-								"For more information about the warn system, please see [this document]" +
-								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
-						DISCORD_RED
-					)
+				} else if (newStrikes != null) {
+					if (newStrikes > 3) {
+						dm = userDMEmbed(
+							userArg,
+							"Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}",
+							"**Reason:** ${arguments.reason}\n\n" +
+									"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
+									"For more information about the warn system, please see [this document]" +
+									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+							DISCORD_RED
+						)
 
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+						guild?.getMember(userArg.id)?.edit {
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+						}
+
+						responseEmbedInChannel(
+							actionLog,
+							"Timeout",
+							"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
+									"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action." +
+									"Reason: ${arguments.reason}\n\n",
+							DISCORD_BLACK,
+							user.asUser()
+						)
 					}
-
-					responseEmbedInChannel(
-						actionLog,
-						"Timeout",
-						"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
-								"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action." +
-								"Reason: ${arguments.reason}\n\n",
-						DISCORD_BLACK,
-						user.asUser()
-					)
 				}
 
 				actionLog.createEmbed {
@@ -231,13 +232,13 @@ class TemporaryModeration : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				val targetUser = guild?.getMember(userArg.id)
-				if (getWarn(targetUser!!.id, guild!!.id) == 0) {
+				if (getWarn(targetUser!!.id, guild!!.id)?.strikes == 0) {
 					respond {
 						content = "This user does not have any warning strikes!"
 					}
@@ -288,7 +289,7 @@ class TemporaryModeration : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
@@ -353,7 +354,7 @@ class TemporaryModeration : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-				val actionLogId = DatabaseHelper.getConfig(guild!!.id, "modActionLog")
+				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
 				if (actionLogId == null) {
 					respond {
 						content = "**Error:** Unable to access config for this guild! Is your configuration set?"

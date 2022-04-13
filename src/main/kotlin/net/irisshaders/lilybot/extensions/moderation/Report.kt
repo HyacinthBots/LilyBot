@@ -31,7 +31,7 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.getConfigPublicResponse
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -40,6 +40,7 @@ import kotlin.time.ExperimentalTime
  * The message reporting feature in the bot
  * @author NoComment1105
  */
+@Suppress("DuplicatedCode")
 class Report : Extension() {
 	override val name = "report"
 
@@ -51,9 +52,9 @@ class Report : Extension() {
 			check { anyGuild() }
 
 			action {
-				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action
-				val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
-				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
+				val messageLogId = DatabaseHelper.getConfig(guild!!.id)?.messageLogs ?: return@action
+				val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderatorsPing ?: return@action
+				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
 
 				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				try {
@@ -87,9 +88,9 @@ class Report : Extension() {
 			check { anyGuild() }
 
 			action {
-				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action
-				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
+				val messageLogId = DatabaseHelper.getConfig(guild!!.id)?.messageLogs ?: return@action
+				val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderatorsPing ?: return@action
+				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
 
 				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 

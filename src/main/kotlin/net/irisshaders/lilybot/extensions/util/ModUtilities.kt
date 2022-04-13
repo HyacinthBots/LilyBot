@@ -23,7 +23,6 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import kotlin.time.ExperimentalTime
 
@@ -46,7 +45,7 @@ class ModUtilities : Extension() {
 						respond { content = "**Error:** You do not have the `Moderate Members` permission" }
 						return@action
 					}
-					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+					val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
 
 					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 					val targetChannel = if (arguments.targetChannel == null) {
@@ -123,7 +122,7 @@ class ModUtilities : Extension() {
 					return@action
 				}
 
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
 
 				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 

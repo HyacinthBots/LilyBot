@@ -2,35 +2,23 @@ package net.irisshaders.lilybot.utils
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
-import kotlinx.serialization.Serializable
 
 object DatabaseHelper {
 
 	/**
-	 * Using the provided [inputGuildId] and [inputColumn] a value or null will be returned from the database
+	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database
 	 *
 	 * @param inputGuildId The ID of the guild the command was run in
-	 * @param inputColumn The config value associated with that guild that you want
-	 * @return null or the result from the database
+	 * @return The config for [inputGuildId]
 	 * @author NoComment1105
 	 * @author tempest15
 	 */
-	suspend fun getConfig(inputGuildId: Snowflake, inputColumn: String): Snowflake? {
+	suspend fun getConfig(inputGuildId: Snowflake): ConfigData? {
 		val collection = database.getCollection<ConfigData>()
-		val selectedConfig = collection.findOne(ConfigData::guildId eq inputGuildId) ?: return null
-
-		return when (inputColumn) {
-			"guildId" -> selectedConfig.guildId
-			"moderatorsPing" -> selectedConfig.moderatorsPing
-			"modActionLog" -> selectedConfig.modActionLog
-			"messageLogs" -> selectedConfig.messageLogs
-			"joinChannel" -> selectedConfig.joinChannel
-			"supportChannel" -> selectedConfig.supportChannel
-			"supportTeam" -> selectedConfig.supportTeam
-			else -> null
-		}
+		return collection.findOne(ConfigData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -41,7 +29,7 @@ object DatabaseHelper {
 	 */
 	suspend fun setConfig(newConfig: ConfigData) {
 		val collection = database.getCollection<ConfigData>()
-		collection.deleteOne(ConfigData:: guildId eq newConfig.guildId)
+		collection.deleteOne(ConfigData::guildId eq newConfig.guildId)
 		collection.insertOne(newConfig)
 	}
 
@@ -53,7 +41,7 @@ object DatabaseHelper {
 	 */
 	suspend fun clearConfig(inputGuildId: Snowflake) {
 		val collection = database.getCollection<ConfigData>()
-		collection.deleteOne(ConfigData:: guildId eq inputGuildId)
+		collection.deleteOne(ConfigData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -61,19 +49,12 @@ object DatabaseHelper {
 	 *
 	 * @param inputUserId The ID of the user to get the point value for
 	 * @param inputGuildId The ID of the guild the command was run in
-	 * @return null or the result from the database
+	 * @return The user and strikes from the Database
 	 * @author tempest15
 	 */
-	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): Int {
+	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? {
 		val collection = database.getCollection<WarnData>()
-		val selectedUserInGuild = collection.findOne(WarnData::userId eq inputUserId,
-			WarnData::guildId eq inputGuildId)
-
-		return if (selectedUserInGuild != null) {
-			selectedUserInGuild.strikes!!
-		} else {
-			0
-		}
+		return collection.findOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -85,7 +66,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 */
 	suspend fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
-		val currentStrikes = getWarn(inputUserId, inputGuildId)
+		val currentStrikes = getWarn(inputUserId, inputGuildId)?.strikes ?: 0
 		val collection = database.getCollection<WarnData>()
 		collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 		collection.insertOne(
@@ -98,24 +79,16 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [inputComponentId] and [inputColumn] a value or null will be returned from the database
+	 * Using the provided [inputComponentId] the component will be returned from the database
 	 *
 	 * @param inputComponentId The ID of the component the event was triggered with
-	 * @param inputColumn The config value associated with that component that you want
-	 * @return null or the result from the database
+	 * @return The component from the database
 	 * @author tempest15
 	 */
-	suspend fun getComponent(inputComponentId: String, inputColumn: String): Any? {
+	suspend fun getComponent(inputComponentId: String): ComponentData? {
 		// this returns any because it can return either a string or a snowflake
 		val collection = database.getCollection<ComponentData>()
-		val selectedComponent = collection.findOne(ComponentData:: componentId eq inputComponentId)
-
-		return when (inputColumn) {
-			"componentId" -> selectedComponent!!.componentId
-			"roleId" -> selectedComponent!!.roleId
-			"addOrRemove" -> selectedComponent!!.addOrRemove
-			else -> null
-		}
+		return collection.findOne(ComponentData::componentId eq inputComponentId)
 	}
 
 	/**
@@ -126,7 +99,7 @@ object DatabaseHelper {
 	 */
 	suspend fun setComponent(newComponent: ComponentData) {
 		val collection = database.getCollection<ComponentData>()
-		collection.deleteOne(ComponentData:: componentId eq newComponent.componentId)
+		collection.deleteOne(ComponentData::componentId eq newComponent.componentId)
 		collection.insertOne(newComponent)
 	}
 
