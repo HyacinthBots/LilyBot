@@ -183,41 +183,9 @@ object DatabaseHelper {
 		}
 	}
 
-	/**
-	 * Gets the given sub tag using it's [name] and the name of the [parentTag] to returns the [column] selected.
-	 * If the tag does not exist it will return null
-	 *
-	 * @param guildId The ID of the guild the command was run in. Used to keep things guild specific
-	 * @param parentTag The name of the parent of this tag
-	 * @param name The named identifier of the tag
-	 * @param column The tag data you are requesting
-	 * @return The requested [column] value or null
-	 * @author NoComment1105
-	 */
-	suspend fun getSubTags(guildId: Snowflake, parentTag: String, name: String, column: String): Any? {
-		val parentCollection = database.getCollection<TagsData>()
-		val subTagsCollection = database.getCollection<SubTagsData>()
-		val selectedSubTagParent = parentCollection.findOne(
-			TagsData::guildId eq guildId,
-			TagsData::parentId eq parentTag
-		) ?: return null
-		val selectedSubTag = subTagsCollection.findOne(
-			SubTagsData::parentTag eq parentTag,
-			SubTagsData::name eq name
-		) ?: return null
-
-		var returnValue: Any? = null
-		if (selectedSubTag.parentTag == selectedSubTagParent.parentId) {
-			returnValue = when (column) {
-				"guildId" -> selectedSubTagParent.guildId
-				"name" -> selectedSubTag.name
-				"tagTitle" -> selectedSubTag.tagTitle
-				"tagValue" -> selectedSubTag.tagValue
-				else -> null
-			}
-		}
-
-		return returnValue
+	suspend fun getAllTags(guildId: Snowflake): List<TagsData> {
+		val collection = database.getCollection<TagsData>()
+		return collection.find(TagsData::guildId eq guildId).toList()
 	}
 
 	/**
@@ -235,27 +203,6 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Adds a sub tag to a tag in the database, using the provided parameters
-	 *
-	 * @param guildId The ID of the guild the command was run in. Used to keep things guild specific
-	 * @param parentTag The named identifier of the parent for this sub tag
-	 * @param name The named identifier of the sub tag being created
-	 * @param tagTitle The title of the sub tag being created
-	 * @param tagValue The contents of the sub tag being created
-	 * @author NoComment1105
-	 */
-	suspend fun setSubTag(
-		guildId: Snowflake,
-		parentTag: String,
-		name: String,
-		tagTitle: String,
-		tagValue: String
-	) {
-		val collection = database.getCollection<SubTagsData>()
-		collection.insertOne(SubTagsData(guildId, parentTag, name, tagTitle, tagValue))
-	}
-
-	/**
 	 * Deletes the tag [name] from the [database]
 	 *
 	 * @param guildId The guild the tag was created in
@@ -265,23 +212,6 @@ object DatabaseHelper {
 	suspend fun deleteTag(guildId: Snowflake, name: String) {
 		val collection = database.getCollection<TagsData>()
 		collection.deleteOne(TagsData::guildId eq guildId, TagsData::name eq name)
-	}
-
-	/**
-	 * Deletes the sub tag [name] from the [database]
-	 *
-	 * @param guildId The guild the tag was created in
-	 * @param parentId The named identifier of the parent tag
-	 * @param name The named identifier of the sub tag being deleted
-	 * @author NoComment1105
-	 */
-	suspend fun deleteSubTag(guildId: Snowflake, parentId: String, name: String) {
-		val collection = database.getCollection<SubTagsData>()
-		collection.deleteOne(
-			SubTagsData::guildId eq guildId,
-			SubTagsData::parentTag eq parentId,
-			SubTagsData::name eq name
-		)
 	}
 }
 
@@ -325,13 +255,4 @@ data class TagsData(
 	val tagTitle: String?,
 	val tagValue: String?,
 	val parentId: String?
-)
-
-@Serializable
-data class SubTagsData(
-	val guildId: Snowflake?,
-	val parentTag: String?,
-	val name: String?,
-	val tagTitle: String?,
-	val tagValue: String?
 )
