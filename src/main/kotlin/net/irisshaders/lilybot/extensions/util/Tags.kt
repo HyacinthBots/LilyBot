@@ -29,23 +29,23 @@ class Tags : Extension() {
 
 			action {
 
-					if (DatabaseHelper.getTag(guild!!.id, arguments.tagName, "name") == null) {
-						respondEphemeral {
-							content = "Unable to find tag! Does this tag exist?"
-						}
-						return@action
+				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName, "name") == null) {
+					respondEphemeral {
+						content = "Unable to find tag! Does this tag exist?"
 					}
+					return@action
+				}
 
-					respond {
-						embed {
-							color = DISCORD_BLURPLE
-							title = DatabaseHelper.getTag(guild!!.id, arguments.tagName, "tagTitle")!!.toString()
-							description = DatabaseHelper.getTag(guild!!.id, arguments.tagName, "tagValue")!!.toString()
-							timestamp = Clock.System.now()
-						}
+				respond {
+					embed {
+						color = DISCORD_BLURPLE
+						title = DatabaseHelper.getTag(guild!!.id, arguments.tagName, "tagTitle")!!.toString()
+						description = DatabaseHelper.getTag(guild!!.id, arguments.tagName, "tagValue")!!.toString()
+						timestamp = Clock.System.now()
 					}
 				}
 			}
+		}
 
 		ephemeralSlashCommand(::CreateTagArgs) {
 			name = "create-tag"
@@ -71,18 +71,18 @@ class Tags : Extension() {
 			check { hasPermission(Permission.ModerateMembers) }
 
 			action {
-					if (DatabaseHelper.getTag(guild!!.id, arguments.tagName, "name") == null) {
-						respond {
-							content = "Unable to find tag! Does this tag exist?"
-						}
-						return@action
-					}
-
-					DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
-
+				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName, "name") == null) {
 					respond {
-						content = "Tag: `${arguments.tagName}` deleted"
+						content = "Unable to find tag! Does this tag exist?"
 					}
+					return@action
+				}
+
+				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
+
+				respond {
+					content = "Tag: `${arguments.tagName}` deleted"
+				}
 			}
 		}
 	}
