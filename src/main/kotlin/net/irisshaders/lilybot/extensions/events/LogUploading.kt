@@ -184,12 +184,6 @@ class LogUploading : Extension() {
 			})
 		}.content.toByteArray().decodeToString()
 		val log = Json.decodeFromString<logClass>(response)
-		/*if (response.contains("\"url\"")) {
-			response = response.substring(
-				response.indexOf(":") + 3,
-				response.length - 2
-			)
-		}*/
 		if (log.success == false){
 			throw Exception("Failed to upload log")
 			/* mclo.gs returns the error but I can't think
