@@ -21,7 +21,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.*
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
-import io.ktor.http.*
+import io.ktor.http.Parameters
 import io.ktor.util.toByteArray
 import kotlinx.datetime.Clock
 import kotlinx.serialization.decodeFromString
@@ -120,7 +120,7 @@ class LogUploading : Extension() {
 													}
 												}
 
-													try {
+												try {
 													val response = postToHasteBin(builder.toString())
 
 													uploadMessage.edit {
