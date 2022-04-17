@@ -18,14 +18,18 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.HttpClient
+import io.ktor.client.request.forms.*
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.*
 import io.ktor.util.toByteArray
 import kotlinx.datetime.Clock
+import kotlinx.serialization.decodeFromString
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
 import kotlin.time.ExperimentalTime
+import kotlinx.serialization.json.Json
 
 class LogUploading : Extension() {
 	override val name = "log-uploading"
@@ -35,9 +39,10 @@ class LogUploading : Extension() {
 
 	override suspend fun setup() {
 		/**
-		 * Upload files that have the extensions specified in [LOG_FILE_EXTENSIONS] to hastebin,
+		 * Upload files that have the extensions specified in [LOG_FILE_EXTENSIONS] to mclo.gs,
 		 * giving a user confirmation.
 		 *
+		 * @author Caio_MGT
 		 * @author maximumpower55
 		 */
 		event<MessageCreateEvent> {
@@ -86,10 +91,10 @@ class LogUploading : Extension() {
 
 							confirmationMessage = responseEmbedInChannel(
 								eventMessage.channel,
-								"Do you want to upload this file to Hastebin?",
-								"Hastebin is a website that allows users to share plain text through " +
-										"public posts called “pastes.”\nIt's easier for the support team to view " +
-										"the file on Hastebin, do you want it to be uploaded?",
+								"Do you want to upload this file to mclo.gs?",
+								"mclo.gs is a website that allows users to share minecraft logs through " +
+										"public posts.\nIt's easier for the support team to view " +
+										"the file on mclo.gs, do you want it to be uploaded?",
 								DISCORD_PINK,
 								eventMessage.author
 							).edit {
@@ -106,7 +111,7 @@ class LogUploading : Extension() {
 
 												val uploadMessage = eventMessage.channel.createEmbed {
 													color = DISCORD_PINK
-													title = "Uploading `$attachmentFileName` to Hastebin..."
+													title = "Uploading `$attachmentFileName` to mclo.gs..."
 													timestamp = Clock.System.now()
 
 													footer {
@@ -115,13 +120,13 @@ class LogUploading : Extension() {
 													}
 												}
 
-												try {
+													try {
 													val response = postToHasteBin(builder.toString())
 
 													uploadMessage.edit {
 														embed {
 															color = DISCORD_PINK
-															title = "`$attachmentFileName` uploaded to Hastebin"
+															title = "`$attachmentFileName` uploaded to mclo.gs"
 															timestamp = Clock.System.now()
 
 															footer {
@@ -167,23 +172,33 @@ class LogUploading : Extension() {
 			}
 		}
 	}
+	@kotlinx.serialization.Serializable
+	data class logClass(val success: Boolean, val id: String, val url: String, val raw: String)
 
 	private suspend fun postToHasteBin(text: String): String {
 		val client = HttpClient()
 
-		var response = client.post<HttpResponse>("https://www.toptal.com/developers/hastebin/documents") {
-			body = text
+		val response = client.post<HttpResponse>("https://api.mclo.gs/1/log") {
+			body = FormDataContent(Parameters.build {
+				append("content", text)
+			})
 		}.content.toByteArray().decodeToString()
-
-		if (response.contains("\"key\"")) {
-			response = "https://www.toptal.com/developers/hastebin/" + response.substring(
-				response.indexOf(":") + 2,
+		val log = Json.decodeFromString<logClass>(response)
+		/*if (response.contains("\"url\"")) {
+			response = response.substring(
+				response.indexOf(":") + 3,
 				response.length - 2
 			)
+		}*/
+		if (log.success == false){
+			throw Exception("Failed to upload log")
+			/* mclo.gs returns the error but I can't think
+			of a good way to get it, as if I add an error value to logClass,
+			Json.decodeFromString will hang if it does not find that value
+			on the JSON String - CaioMGT
+			 */
 		}
-
 		client.close()
-
-		return response
+		return "https://mclo.gs/" + log.id
 	}
 }
