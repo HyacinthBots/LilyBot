@@ -1,6 +1,7 @@
 package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
+import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
@@ -28,7 +29,7 @@ class Tags : Extension() {
 
 		publicSlashCommand(::TagArgs) {
 			name = "tag"
-			description = "The parent command for all /tag commands"
+			description = "Call a tag from this guild! Use /tag-help for more info."
 
 			check { anyGuild() }
 
@@ -59,23 +60,23 @@ class Tags : Extension() {
 			action {
 				respond {
 					embed {
-						title = "How does the /tag command and others work?"
+						title = "How does the tag system work?"
 						description =
 							"The tag command allows users to add guild specific 'tag' commands at runtime to their " +
-									"guild. Tags are like custom commands, they can do say what ever you want them" +
-									"to say.\n\nTo create a tag, if you have the Moderate Members permission, run " +
+									"guild. **Tags are like custom commands**, they can do say what ever you want them " +
+									"to say.\n\n**To create a tag**, if you have the Moderate Members permission, run " +
 									"the following command:\n`/create-tag <name> <title> <value>`\nYou will be " +
 									"prompted to enter a name for the tag, a title for the tag, and the value for the" +
 									" tag. This is what will appear in the embed of your tag. You can enter any " +
-									"character you like into all of these inputs.\n\nTo use the tag, run the " +
-									"following command\n`/tag <name>`\nYou will be prompted to enter the tag name, " +
+									"character you like into all of these inputs.\n\n**To use a tag**, run the " +
+									"following command\n`/tag <name>`\nYou will be prompted to enter a tag name, " +
 									"but will have an autocomplete window to aid you. The window will list all the " +
-									"tags that the guild has.\n\nTo delete a tag, if you have the Moderate Members " +
+									"tags that the guild has.\n\n**To delete a tag**, if you have the Moderate Members " +
 									"permission, run the following command\n`/delete-tag <name>`\nYou will be " +
 									"prompted to enter the name of the tag, again aided by autocomplete, and then " +
-									"the tag will be completed.\n\nGuilds can have any number of tags they like. The " +
+									"the tag will be completed.\n\n**Guilds can have any number of tags they like.** The " +
 									"limit on `tagValue` for tags is 1024 characters, which is the embed description " +
-									"limit enforced by discord"
+									"limit enforced by Discord"
 						color = DISCORD_BLURPLE
 						timestamp = Clock.System.now()
 					}
@@ -84,8 +85,8 @@ class Tags : Extension() {
 		}
 
 		ephemeralSlashCommand(::CreateTagArgs) {
-			name = "create-tag"
-			description = "Create a tag for your guild!"
+			name = "tag-create"
+			description = "Create a tag for your guild! Use /tag-help for more info."
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
@@ -95,17 +96,17 @@ class Tags : Extension() {
 				val actionLog = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 				actionLog.createEmbed {
+					color = DISCORD_GREEN
 					title = "Tag created!"
-					description = "${user.asUser().mention} created the tag ${arguments.tagName}"
+					description = "The tag `${arguments.tagName}` has been created"
 					field {
-						name = "Tag contents:"
-						value = """
-							```text
-							title: ${arguments.tagTitle}
-							
-							value: ${arguments.tagValue}
-							```
-						""".trimIndent()
+						name = "Tag title:"
+						value = "`${arguments.tagTitle}`"
+						inline = false
+					}
+					field {
+						name = "Tag value:"
+						value = "`${arguments.tagValue}`"
 						inline = false
 					}
 					footer {
@@ -124,8 +125,8 @@ class Tags : Extension() {
 		}
 
 		ephemeralSlashCommand(::TagArgs) {
-			name = "delete-tag"
-			description = "Delete a tag from your guild"
+			name = "tag-delete"
+			description = "Delete a tag from your guild. Use /tag-help for more info"
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
@@ -144,7 +145,7 @@ class Tags : Extension() {
 				responseEmbedInChannel(
 					actionLog,
 					"Tag deleted!",
-					"The tag ${arguments.tagName} was deleted by ${user.asUser().mention}",
+					"The tag ${arguments.tagName} was deleted",
 					DISCORD_RED,
 					user.asUser()
 				)
