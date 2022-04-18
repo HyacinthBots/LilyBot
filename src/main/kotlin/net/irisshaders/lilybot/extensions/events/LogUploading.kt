@@ -18,9 +18,10 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.HttpClient
-import io.ktor.client.request.*
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.request.forms.FormDataContent
-import io.ktor.client.statement.*
+import io.ktor.client.statement.readBytes
 import io.ktor.http.Parameters
 import kotlinx.datetime.Clock
 import kotlinx.serialization.decodeFromString
