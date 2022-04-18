@@ -195,10 +195,10 @@ class LogUploading : Extension() {
 		}.content.toByteArray().decodeToString()
 		client.close()
 		//ignoreUnknownKeys is necessary to not cause any errors due to missing values in the JSON
-		val log = Json { ignoreUnknownKeys = true}.decodeFromString<logClass>(response)
+		val log = Json { ignoreUnknownKeys = true }.decodeFromString<logClass>(response)
 		if (log.success) {
 			return "https://mclo.gs/" + log.id
-		} else{
+		} else {
 			throw Exception("Failed to upload log: " + log.error)
 		}
 	}
