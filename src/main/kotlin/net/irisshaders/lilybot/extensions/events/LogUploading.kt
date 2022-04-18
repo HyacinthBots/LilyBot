@@ -18,14 +18,10 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.HttpClient
+import io.ktor.client.request.*
 import io.ktor.client.request.forms.FormDataContent
-import io.ktor.client.request.post
-import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.*
 import io.ktor.http.Parameters
-import io.ktor.util.toByteArray
-
-
-
 import kotlinx.datetime.Clock
 import kotlinx.serialization.decodeFromString
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
@@ -179,20 +175,17 @@ class LogUploading : Extension() {
 		}
 	}
 
-
 	@kotlinx.serialization.Serializable
 	data class logClass(val success: Boolean, val id: String? = null, val error: String? = null)
 	//setting these to null is necessary in case a value is missing, which would cause an error.
 
 	private suspend fun postToMCLogs(text: String): String {
 		val client = HttpClient()
-
-		val response = client.post<HttpResponse>("https://api.mclo.gs/1/log") {
-			body = FormDataContent(Parameters.build {
+		val response = client.post("https://api.mclo.gs/1/log") {
+			setBody(FormDataContent(Parameters.build {
 				append("content", text)
-			})
-
-		}.content.toByteArray().decodeToString()
+			}))
+		}.readBytes().decodeToString()
 		client.close()
 		//ignoreUnknownKeys is necessary to not cause any errors due to missing values in the JSON
 		val log = Json { ignoreUnknownKeys = true }.decodeFromString<logClass>(response)
