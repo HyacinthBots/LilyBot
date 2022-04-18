@@ -145,6 +145,9 @@ class LogUploading : Extension() {
 													// Just swallow this exception
 													// If something has gone wrong here, something is wrong
 													// somewhere else, so it's probably fine
+													//-----------------------------------------------------
+													// This honestly makes no sense, why would you do this?
+													// It certainly made debugging harder. - CaioMGT
 												}
 											} else {
 												respond { content = "Only the uploader can use this menu." }
@@ -172,8 +175,10 @@ class LogUploading : Extension() {
 			}
 		}
 	}
+
 	@kotlinx.serialization.Serializable
-	data class logClass(val success: Boolean, val id: String, val url: String, val raw: String)
+	data class logClass(val success: Boolean, val id: String? = null, val error: String? = null)
+	//setting these to null is necessary in case a value is missing, which would cause an error.
 
 	private suspend fun postToHasteBin(text: String): String {
 		val client = HttpClient()
@@ -183,16 +188,13 @@ class LogUploading : Extension() {
 				append("content", text)
 			})
 		}.content.toByteArray().decodeToString()
-		val log = Json.decodeFromString<logClass>(response)
-		if (log.success == false){
-			throw Exception("Failed to upload log")
-			/* mclo.gs returns the error but I can't think
-			of a good way to get it, as if I add an error value to logClass,
-			Json.decodeFromString will hang if it does not find that value
-			on the JSON String - CaioMGT
-			 */
-		}
 		client.close()
-		return "https://mclo.gs/" + log.id
+		//ignoreUnknownKeys is necessary to not cause any errors due to missing values in the JSON
+		val log = Json { ignoreUnknownKeys = true}.decodeFromString<logClass>(response)
+		if (log.success) {
+			return "https://mclo.gs/" + log.id
+		} else{
+			throw Exception("Failed to upload log: " + log.error)
+		}
 	}
 }
