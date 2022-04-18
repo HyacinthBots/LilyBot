@@ -1,5 +1,6 @@
 package net.irisshaders.lilybot.extensions.config
 
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
@@ -34,6 +35,7 @@ class Config : Extension() {
 				name = "set"
 				description = "Set the config"
 
+				check { anyGuild() }
 				check { hasPermission(Permission.Administrator) }
 
 				action {
@@ -75,6 +77,7 @@ class Config : Extension() {
 				name = "clear"
 				description = "Clear the config!"
 
+				check { anyGuild() }
 				check { hasPermission(Permission.Administrator) }
 
 				action {

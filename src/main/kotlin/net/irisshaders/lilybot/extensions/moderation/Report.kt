@@ -1,8 +1,7 @@
-@file:OptIn(ExperimentalTime::class)
-
 package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.components.components
@@ -33,7 +32,6 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.getConfigPublicResponse
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * The message reporting feature in the bot
@@ -46,6 +44,8 @@ class Report : Extension() {
 		ephemeralMessageCommand {
 			name = "Report"
 			locking = true // To prevent the command from being run more than once concurrently
+
+			check { anyGuild() }
 
 			action {
 				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action
@@ -80,6 +80,8 @@ class Report : Extension() {
 			name = "manual-report"
 			description = "Manually report a message"
 			locking = true
+
+			check { anyGuild() }
 
 			action {
 				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action

@@ -23,6 +23,9 @@ import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.Parameters
 import io.ktor.util.toByteArray
+
+
+
 import kotlinx.datetime.Clock
 import kotlinx.serialization.decodeFromString
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
@@ -176,6 +179,7 @@ class LogUploading : Extension() {
 		}
 	}
 
+
 	@kotlinx.serialization.Serializable
 	data class logClass(val success: Boolean, val id: String? = null, val error: String? = null)
 	//setting these to null is necessary in case a value is missing, which would cause an error.
@@ -187,6 +191,7 @@ class LogUploading : Extension() {
 			body = FormDataContent(Parameters.build {
 				append("content", text)
 			})
+
 		}.content.toByteArray().decodeToString()
 		client.close()
 		//ignoreUnknownKeys is necessary to not cause any errors due to missing values in the JSON
