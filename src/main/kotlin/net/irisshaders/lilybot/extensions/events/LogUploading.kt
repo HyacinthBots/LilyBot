@@ -17,10 +17,9 @@ import dev.kord.core.entity.Message
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
-import io.ktor.client.HttpClient
-import io.ktor.client.request.post
-import io.ktor.client.statement.HttpResponse
-import io.ktor.util.toByteArray
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.util.*
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import java.io.ByteArrayInputStream
@@ -168,10 +167,11 @@ class LogUploading : Extension() {
 		}
 	}
 
+	@OptIn(InternalAPI::class)
 	private suspend fun postToHasteBin(text: String): String {
 		val client = HttpClient()
 
-		var response = client.post<HttpResponse>("https://www.toptal.com/developers/hastebin/documents") {
+		var response = client.post("https://www.toptal.com/developers/hastebin/documents") {
 			body = text
 		}.content.toByteArray().decodeToString()
 
