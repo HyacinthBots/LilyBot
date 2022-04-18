@@ -156,13 +156,15 @@ class ThreadInviter : Extension() {
 						)
 
 						event.channel.withTyping { delay(4.seconds) }
-						message.edit { content = "${supportRole.mention}, could you please help this person!" }
+						message.edit { content = "${supportRole.mention}, please help this person!" }
 
 						event.channel.withTyping { delay(3.seconds) }
 						message.edit {
 							content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
 									" you can just send a message in <#$supportChannelId> and I'll automatically" +
-									" make a thread for you!"
+									" make a thread for you!\n\nOnce you're finished, use `/thread archive` to close" +
+									" your thread. If you want to change the thread name, use `/thread rename`" +
+									" to do so."
 						}
 					}
 				}
