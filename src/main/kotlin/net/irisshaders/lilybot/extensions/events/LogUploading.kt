@@ -121,7 +121,7 @@ class LogUploading : Extension() {
 												}
 
 												try {
-													val response = postToHasteBin(builder.toString())
+													val response = postToMCLogs(builder.toString())
 
 													uploadMessage.edit {
 														embed {
@@ -180,7 +180,7 @@ class LogUploading : Extension() {
 	data class logClass(val success: Boolean, val id: String? = null, val error: String? = null)
 	//setting these to null is necessary in case a value is missing, which would cause an error.
 
-	private suspend fun postToHasteBin(text: String): String {
+	private suspend fun postToMCLogs(text: String): String {
 		val client = HttpClient()
 
 		val response = client.post<HttpResponse>("https://api.mclo.gs/1/log") {
