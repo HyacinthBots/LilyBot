@@ -177,8 +177,8 @@ class LogUploading : Extension() {
 	}
 
 	@kotlinx.serialization.Serializable
-	data class logClass(val success: Boolean, val id: String? = null, val error: String? = null)
-	//setting these to null is necessary in case a value is missing, which would cause an error.
+	data class LogData(val success: Boolean, val id: String? = null, val error: String? = null)
+	// setting these to null is necessary in case a value is missing, which would cause an error.
 
 	private suspend fun postToMCLogs(text: String): String {
 		val client = HttpClient()
@@ -188,8 +188,8 @@ class LogUploading : Extension() {
 			}))
 		}.readBytes().decodeToString()
 		client.close()
-		//ignoreUnknownKeys is necessary to not cause any errors due to missing values in the JSON
-		val log = Json { ignoreUnknownKeys = true }.decodeFromString<logClass>(response)
+		// ignoreUnknownKeys is necessary to not cause any errors due to missing values in the JSON
+		val log = Json { ignoreUnknownKeys = true }.decodeFromString<LogData>(response)
 		if (log.success) {
 			return "https://mclo.gs/" + log.id
 		} else {
