@@ -25,135 +25,135 @@ import kotlin.time.ExperimentalTime
 @Suppress("DuplicatedCode")
 class ThreadControl : Extension() {
 
-	override val name = "thread-control"
+    override val name = "thread-control"
 
-	override suspend fun setup() {
-		publicSlashCommand {
-			name = "thread"
-			description = "The parent command for all /thread commands"
+    override suspend fun setup() {
+        publicSlashCommand {
+            name = "thread"
+            description = "The parent command for all /thread commands"
 
-			ephemeralSubCommand(::ThreadRenameArgs) {
-				name = "rename"
-				description = "Rename a thread!"
+            ephemeralSubCommand(::ThreadRenameArgs) {
+                name = "rename"
+                description = "Rename a thread!"
 
-				check { isInThread() }
+                check { isInThread() }
 
-				action {
-					val threadChannel = channel.asChannel() as ThreadChannel
-					val member = user.asMember(guild!!.id)
-					val roles = member.roles.toList().map { it.id }
+                action {
+                    val threadChannel = channel.asChannel() as ThreadChannel
+                    val member = user.asMember(guild!!.id)
+                    val roles = member.roles.toList().map { it.id }
 
-					val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
+                    val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
 
-					if (moderatorRoleId in roles || threadChannel.ownerId == user.id) {
-						threadChannel.edit {
-							name = arguments.newThreadName
+                    if (moderatorRoleId in roles || threadChannel.ownerId == user.id) {
+                        threadChannel.edit {
+                            name = arguments.newThreadName
 
-							reason = "Renamed by ${member.tag}"
-						}
-						edit {
-							content = "Thread Renamed!"
-						}
+                            reason = "Renamed by ${member.tag}"
+                        }
+                        edit {
+                            content = "Thread Renamed!"
+                        }
 
-						return@action
-					}
+                        return@action
+                    }
 
-					if (threadChannel.ownerId != user.id) {
-						edit { content = "**Error:** This is not your thread!" }
+                    if (threadChannel.ownerId != user.id) {
+                        edit { content = "**Error:** This is not your thread!" }
 
-						return@action
-					}
+                        return@action
+                    }
 
-					threadChannel.edit {
-						name = arguments.newThreadName
+                    threadChannel.edit {
+                        name = arguments.newThreadName
 
-						reason = "Renamed by ${member.tag}"
-					}
+                        reason = "Renamed by ${member.tag}"
+                    }
 
-					edit { content = "Thread Renamed." }
-				}
-			}
+                    edit { content = "Thread Renamed." }
+                }
+            }
 
-			ephemeralSubCommand(::ThreadArchiveArgs) {
-				name = "archive"
-				description = "Archive this thread"
+            ephemeralSubCommand(::ThreadArchiveArgs) {
+                name = "archive"
+                description = "Archive this thread"
 
-				check { isInThread() }
+                check { isInThread() }
 
-				action {
-					val threadChannel = channel.asChannel() as ThreadChannel
-					val member = user.asMember(guild!!.id)
-					val roles = member.roles.toList().map { it.id }
+                action {
+                    val threadChannel = channel.asChannel() as ThreadChannel
+                    val member = user.asMember(guild!!.id)
+                    val roles = member.roles.toList().map { it.id }
 
-					val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
+                    val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
 
-					if (moderatorRoleId in roles) {
-						threadChannel.edit {
-							this.archived = true
-							this.locked = arguments.lock
+                    if (moderatorRoleId in roles) {
+                        threadChannel.edit {
+                            this.archived = true
+                            this.locked = arguments.lock
 
-							reason = "Archived by ${user.asUser().tag}"
-						}
+                            reason = "Archived by ${user.asUser().tag}"
+                        }
 
-						edit {
-							content = "Thread archived"
+                        edit {
+                            content = "Thread archived"
 
-							if (arguments.lock) content += " and locked"
+                            if (arguments.lock) content += " and locked"
 
-							content += "!"
-						}
+                            content += "!"
+                        }
 
-						return@action
-					} else if (threadChannel.ownerId == user.id) {
-						threadChannel.edit {
-							this.archived = true
+                        return@action
+                    } else if (threadChannel.ownerId == user.id) {
+                        threadChannel.edit {
+                            this.archived = true
 
-							reason = "Archived by ${user.asUser().tag}"
-						}
+                            reason = "Archived by ${user.asUser().tag}"
+                        }
 
-						edit {
-							content = "Thread archived!"
-						}
+                        edit {
+                            content = "Thread archived!"
+                        }
 
-						return@action
-					}
+                        return@action
+                    }
 
-					if (threadChannel.ownerId != user.id) {
-						edit { content = "This is not your thread!" }
+                    if (threadChannel.ownerId != user.id) {
+                        edit { content = "This is not your thread!" }
 
-						return@action
-					}
+                        return@action
+                    }
 
-					if (threadChannel.isArchived) {
-						edit { content = "**Error:** This channel is already archived!" }
+                    if (threadChannel.isArchived) {
+                        edit { content = "**Error:** This channel is already archived!" }
 
-						return@action
-					}
+                        return@action
+                    }
 
-					threadChannel.edit {
-						archived = true
+                    threadChannel.edit {
+                        archived = true
 
-						reason = "Archived by ${user.asUser().tag}"
-					}
+                        reason = "Archived by ${user.asUser().tag}"
+                    }
 
-					edit { content = "Thread archived!" }
-				}
-			}
-		}
-	}
+                    edit { content = "Thread archived!" }
+                }
+            }
+        }
+    }
 
-	inner class ThreadRenameArgs : Arguments() {
-		val newThreadName by string {
-			name = "newName"
-			description = "The new name to give to the thread"
-		}
-	}
+    inner class ThreadRenameArgs : Arguments() {
+        val newThreadName by string {
+            name = "newName"
+            description = "The new name to give to the thread"
+        }
+    }
 
-	inner class ThreadArchiveArgs : Arguments() {
-		val lock by defaultingBoolean {
-			name = "lock"
-			description = "Whether to lock this thread, if you are a moderator. Default is false"
-			defaultValue = false
-		}
-	}
+    inner class ThreadArchiveArgs : Arguments() {
+        val lock by defaultingBoolean {
+            name = "lock"
+            description = "Whether to lock this thread, if you are a moderator. Default is false"
+            defaultValue = false
+        }
+    }
 }

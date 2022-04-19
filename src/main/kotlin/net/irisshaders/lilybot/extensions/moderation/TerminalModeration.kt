@@ -30,280 +30,280 @@ import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 
 class TerminalModeration : Extension() {
-	override val name = "terminal-moderation"
+    override val name = "terminal-moderation"
 
-	override suspend fun setup() {
-		val logger = KotlinLogging.logger { }
+    override suspend fun setup() {
+        val logger = KotlinLogging.logger { }
 
-		/**
-		 * Ban command
-		 * @author IMS212
-		 */
-		ephemeralSlashCommand(::BanArgs) {
-			name = "ban"
-			description = "Bans a user."
+        /**
+         * Ban command
+         * @author IMS212
+         */
+        ephemeralSlashCommand(::BanArgs) {
+            name = "ban"
+            description = "Bans a user."
 
-			check { anyGuild() }
-			check { hasPermission(Permission.BanMembers) }
+            check { anyGuild() }
+            check { hasPermission(Permission.BanMembers) }
 
-			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+            action {
+                val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-				val userArg = arguments.userArgument
+                val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+                val userArg = arguments.userArgument
 
-				isBotOrModerator(userArg, "ban") ?: return@action
+                isBotOrModerator(userArg, "ban") ?: return@action
 
-				// DM the user before the ban task is run, to avoid error, null if fails
-				val dm = userDMEmbed(
-					userArg,
-					"You have been banned from ${guild?.fetchGuild()?.name}",
-					"**Reason:**\n${arguments.reason}",
-					null
-				)
+                // DM the user before the ban task is run, to avoid error, null if fails
+                val dm = userDMEmbed(
+                    userArg,
+                    "You have been banned from ${guild?.fetchGuild()?.name}",
+                    "**Reason:**\n${arguments.reason}",
+                    null
+                )
 
-				try {
-					guild?.getMember(userArg.id)
-						?.edit { timeoutUntil = null } // remove timeout if they had a timeout when banned
-				} catch (e: EntityNotFoundException) {
-					logger.info("Unable to find user! Skipping timeout removal")
-				}
+                try {
+                    guild?.getMember(userArg.id)
+                        ?.edit { timeoutUntil = null } // remove timeout if they had a timeout when banned
+                } catch (e: EntityNotFoundException) {
+                    logger.info("Unable to find user! Skipping timeout removal")
+                }
 
-				// Run the ban task
-				guild?.ban(userArg.id, builder = {
-					this.reason = arguments.reason
-					this.deleteMessagesDays = arguments.messages
-				})
+                // Run the ban task
+                guild?.ban(userArg.id, builder = {
+                    this.reason = arguments.reason
+                    this.deleteMessagesDays = arguments.messages
+                })
 
-				respond {
-					content = "Banned a user"
-				}
+                respond {
+                    content = "Banned a user"
+                }
 
-				actionLog.createEmbed {
-					color = DISCORD_BLACK
-					title = "Banned a user"
-					description = "${userArg.mention} has been banned!"
+                actionLog.createEmbed {
+                    color = DISCORD_BLACK
+                    title = "Banned a user"
+                    description = "${userArg.mention} has been banned!"
 
-					baseModerationEmbed(arguments.reason, userArg, user)
-					field {
-						name = "Days of messages deleted:"
-						value = arguments.messages.toString()
-						inline = false
-					}
-					dmNotificationStatusEmbedField(dm)
+                    baseModerationEmbed(arguments.reason, userArg, user)
+                    field {
+                        name = "Days of messages deleted:"
+                        value = arguments.messages.toString()
+                        inline = false
+                    }
+                    dmNotificationStatusEmbedField(dm)
 
-					timestamp = Clock.System.now()
-				}
-			}
-		}
+                    timestamp = Clock.System.now()
+                }
+            }
+        }
 
-		/**
-		 *  Unban command
-		 *  @author NoComment1105
-		 */
-		ephemeralSlashCommand(::UnbanArgs) {
-			name = "unban"
-			description = "Unbans a user"
+        /**
+         *  Unban command
+         *  @author NoComment1105
+         */
+        ephemeralSlashCommand(::UnbanArgs) {
+            name = "unban"
+            description = "Unbans a user"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.BanMembers) }
+            check { anyGuild() }
+            check { hasPermission(Permission.BanMembers) }
 
-			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+            action {
+                val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-				val userArg = arguments.userArgument
-				val bans = guild!!.bans.toList().map { it.userId }
+                val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+                val userArg = arguments.userArgument
+                val bans = guild!!.bans.toList().map { it.userId }
 
-				// Unban the user
-				if (userArg.id in bans) {
-					guild?.unban(userArg.id)
-				} else {
-					respond { content = "**Error:** User is not banned" }
-					return@action
-				}
-				respond {
-					content = "Unbanned user"
-				}
+                // Unban the user
+                if (userArg.id in bans) {
+                    guild?.unban(userArg.id)
+                } else {
+                    respond { content = "**Error:** User is not banned" }
+                    return@action
+                }
+                respond {
+                    content = "Unbanned user"
+                }
 
-				responseEmbedInChannel(
-					actionLog,
-					"Unbanned a user",
-					"${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})",
-					DISCORD_GREEN,
-					user.asUser()
-				)
-			}
-		}
+                responseEmbedInChannel(
+                    actionLog,
+                    "Unbanned a user",
+                    "${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})",
+                    DISCORD_GREEN,
+                    user.asUser()
+                )
+            }
+        }
 
-		/**
-		 * Soft ban command
-		 * @author NoComment1105
-		 */
-		ephemeralSlashCommand(::SoftBanArgs) {
-			name = "soft-ban"
-			description = "Soft-bans a user"
+        /**
+         * Soft ban command
+         * @author NoComment1105
+         */
+        ephemeralSlashCommand(::SoftBanArgs) {
+            name = "soft-ban"
+            description = "Soft-bans a user"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.BanMembers) }
+            check { anyGuild() }
+            check { hasPermission(Permission.BanMembers) }
 
-			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+            action {
+                val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-				val userArg = arguments.userArgument
+                val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+                val userArg = arguments.userArgument
 
-				isBotOrModerator(userArg, "soft-ban") ?: return@action
+                isBotOrModerator(userArg, "soft-ban") ?: return@action
 
-				// DM the user before the ban task is run
-				val dm = userDMEmbed(
-					userArg,
-					"You have been soft-banned from ${guild?.fetchGuild()?.name}",
-					"**Reason:**\n${arguments.reason}\n\n" +
-							"You are free to rejoin without the need to be unbanned",
-					null
-				)
+                // DM the user before the ban task is run
+                val dm = userDMEmbed(
+                    userArg,
+                    "You have been soft-banned from ${guild?.fetchGuild()?.name}",
+                    "**Reason:**\n${arguments.reason}\n\n" +
+                        "You are free to rejoin without the need to be unbanned",
+                    null
+                )
 
-				try {
-					guild?.getMember(userArg.id)
-						?.edit { timeoutUntil = null } // remove timeout if they had a timeout when banned
-				} catch (e: EntityNotFoundException) {
-					logger.info("Unable to find user! Skipping timeout removal")
-				}
+                try {
+                    guild?.getMember(userArg.id)
+                        ?.edit { timeoutUntil = null } // remove timeout if they had a timeout when banned
+                } catch (e: EntityNotFoundException) {
+                    logger.info("Unable to find user! Skipping timeout removal")
+                }
 
-				// Ban the user, mark it as a soft-ban clearly
-				guild?.ban(userArg.id, builder = {
-					this.reason = "${arguments.reason} + **SOFT-BAN**"
-					this.deleteMessagesDays = arguments.messages
-				})
+                // Ban the user, mark it as a soft-ban clearly
+                guild?.ban(userArg.id, builder = {
+                    this.reason = "${arguments.reason} + **SOFT-BAN**"
+                    this.deleteMessagesDays = arguments.messages
+                })
 
-				respond {
-					content = "Soft-Banned User"
-				}
+                respond {
+                    content = "Soft-Banned User"
+                }
 
-				actionLog.createEmbed {
-					color = DISCORD_BLACK
-					title = "Soft-banned a user"
-					description = "${userArg.mention} has been soft banned"
+                actionLog.createEmbed {
+                    color = DISCORD_BLACK
+                    title = "Soft-banned a user"
+                    description = "${userArg.mention} has been soft banned"
 
-					baseModerationEmbed(arguments.reason, userArg, user)
-					field {
-						name = "Days of messages deleted"
-						value = arguments.messages.toString()
-						inline = false
-					}
-					dmNotificationStatusEmbedField(dm)
+                    baseModerationEmbed(arguments.reason, userArg, user)
+                    field {
+                        name = "Days of messages deleted"
+                        value = arguments.messages.toString()
+                        inline = false
+                    }
+                    dmNotificationStatusEmbedField(dm)
 
-					timestamp = Clock.System.now()
-				}
+                    timestamp = Clock.System.now()
+                }
 
-				// Unban the user, as you're supposed to in soft-ban
-				guild?.unban(userArg.id)
-			}
-		}
+                // Unban the user, as you're supposed to in soft-ban
+                guild?.unban(userArg.id)
+            }
+        }
 
-		/**
-		 * Kick command
-		 * @author IMS212
-		 */
-		ephemeralSlashCommand(::KickArgs) {
-			name = "kick"
-			description = "Kicks a user."
+        /**
+         * Kick command
+         * @author IMS212
+         */
+        ephemeralSlashCommand(::KickArgs) {
+            name = "kick"
+            description = "Kicks a user."
 
-			check { anyGuild() }
-			check { hasPermission(Permission.KickMembers) }
+            check { anyGuild() }
+            check { hasPermission(Permission.KickMembers) }
 
-			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+            action {
+                val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-				val userArg = arguments.userArgument
+                val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+                val userArg = arguments.userArgument
 
-				isBotOrModerator(userArg, "kick") ?: return@action
+                isBotOrModerator(userArg, "kick") ?: return@action
 
-				// DM the user about it before the kick
-				val dm = userDMEmbed(
-					userArg,
-					"You have been kicked from ${guild?.fetchGuild()?.name}",
-					"**Reason:**\n${arguments.reason}",
-					null
-				)
+                // DM the user about it before the kick
+                val dm = userDMEmbed(
+                    userArg,
+                    "You have been kicked from ${guild?.fetchGuild()?.name}",
+                    "**Reason:**\n${arguments.reason}",
+                    null
+                )
 
-				try {
-					guild?.getMember(userArg.id)
-						?.edit { timeoutUntil = null } // remove timeout if they had a timeout when kicked
-				} catch (e: EntityNotFoundException) {
-					logger.info("Unable to find user! Skipping timeout removal")
-				}
+                try {
+                    guild?.getMember(userArg.id)
+                        ?.edit { timeoutUntil = null } // remove timeout if they had a timeout when kicked
+                } catch (e: EntityNotFoundException) {
+                    logger.info("Unable to find user! Skipping timeout removal")
+                }
 
-				// Run the kick task
-				guild?.kick(userArg.id, arguments.reason)
+                // Run the kick task
+                guild?.kick(userArg.id, arguments.reason)
 
-				respond {
-					content = "Kicked User"
-				}
+                respond {
+                    content = "Kicked User"
+                }
 
-				actionLog.createEmbed {
-					color = DISCORD_BLACK
-					title = "Kicked User"
-					description = "${userArg.mention} has been kicked"
+                actionLog.createEmbed {
+                    color = DISCORD_BLACK
+                    title = "Kicked User"
+                    description = "${userArg.mention} has been kicked"
 
-					baseModerationEmbed(arguments.reason, userArg, user)
-					dmNotificationStatusEmbedField(dm)
-				}
-			}
-		}
-	}
+                    baseModerationEmbed(arguments.reason, userArg, user)
+                    dmNotificationStatusEmbedField(dm)
+                }
+            }
+        }
+    }
 
-	inner class KickArgs : Arguments() {
-		val userArgument by user {
-			name = "kickUser"
-			description = "Person to kick"
-		}
-		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the Kick"
-			defaultValue = "No Reason Provided"
-		}
-	}
+    inner class KickArgs : Arguments() {
+        val userArgument by user {
+            name = "kickUser"
+            description = "Person to kick"
+        }
+        val reason by defaultingString {
+            name = "reason"
+            description = "The reason for the Kick"
+            defaultValue = "No Reason Provided"
+        }
+    }
 
-	inner class BanArgs : Arguments() {
-		val userArgument by user {
-			name = "banUser"
-			description = "Person to ban"
-		}
-		val messages by int {
-			name = "messages"
-			description = "Messages"
-		}
-		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the ban"
-			defaultValue = "No Reason Provided"
-		}
-	}
+    inner class BanArgs : Arguments() {
+        val userArgument by user {
+            name = "banUser"
+            description = "Person to ban"
+        }
+        val messages by int {
+            name = "messages"
+            description = "Messages"
+        }
+        val reason by defaultingString {
+            name = "reason"
+            description = "The reason for the ban"
+            defaultValue = "No Reason Provided"
+        }
+    }
 
-	inner class UnbanArgs : Arguments() {
-		val userArgument by user {
-			name = "unbanUserId"
-			description = "Person Unbanned"
-		}
-	}
+    inner class UnbanArgs : Arguments() {
+        val userArgument by user {
+            name = "unbanUserId"
+            description = "Person Unbanned"
+        }
+    }
 
-	inner class SoftBanArgs : Arguments() {
-		val userArgument by user {
-			name = "softBanUser"
-			description = "Person to Soft ban"
-		}
-		val messages by defaultingInt {
-			name = "messages"
-			description = "Messages"
-			defaultValue = 3
-		}
-		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the ban"
-			defaultValue = "No Reason Provided"
-		}
-	}
+    inner class SoftBanArgs : Arguments() {
+        val userArgument by user {
+            name = "softBanUser"
+            description = "Person to Soft ban"
+        }
+        val messages by defaultingInt {
+            name = "messages"
+            description = "Messages"
+            defaultValue = 3
+        }
+        val reason by defaultingString {
+            name = "reason"
+            description = "The reason for the ban"
+            defaultValue = "No Reason Provided"
+        }
+    }
 }
