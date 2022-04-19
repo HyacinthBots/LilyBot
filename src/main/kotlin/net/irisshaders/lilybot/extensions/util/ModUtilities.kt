@@ -88,7 +88,7 @@ class ModUtilities : Extension() {
 							inline = true
 						}
 						footer {
-							text = "Requested by ${user.asUser().tag}"
+							text = user.asUser().tag
 							icon = user.asUser().avatar?.url
 						}
 					}
