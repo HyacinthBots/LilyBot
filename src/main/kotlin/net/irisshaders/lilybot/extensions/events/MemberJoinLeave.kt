@@ -16,73 +16,73 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 import kotlin.time.ExperimentalTime
 
 /**
- * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild
+ * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild.
  * @author NoComment1105
  */
 class MemberJoinLeave : Extension() {
-	override val name = "member-join-leave"
+    override val name = "member-join-leave"
 
-	override suspend fun setup() {
-		event<MemberJoinEvent> {
-			action {
-				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel") ?: return@action
+    override suspend fun setup() {
+        event<MemberJoinEvent> {
+            action {
+                val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel") ?: return@action
 
-				val eventMember = event.member
-				val guildMemberCount = event.getGuild().members.count()
+                val eventMember = event.member
+                val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannel(joinChannelId) as GuildMessageChannelBehavior
+                val joinChannel = event.getGuild().getChannel(joinChannelId) as GuildMessageChannelBehavior
 
-				joinChannel.createEmbed {
-					color = DISCORD_GREEN
-					title = "User joined the server!"
-					timestamp = Clock.System.now()
+                joinChannel.createEmbed {
+                    color = DISCORD_GREEN
+                    title = "User joined the server!"
+                    timestamp = Clock.System.now()
 
-					field {
-						name = "Welcome:"
-						value = eventMember.tag
-						inline = true
-					}
-					field {
-						name = "ID:"
-						value = eventMember.id.toString()
-						inline = false
-					}
-					footer {
-						text = "Member Count: $guildMemberCount"
-					}
-				}
-			}
-		}
+                    field {
+                        name = "Welcome:"
+                        value = eventMember.tag
+                        inline = true
+                    }
+                    field {
+                        name = "ID:"
+                        value = eventMember.id.toString()
+                        inline = false
+                    }
+                    footer {
+                        text = "Member Count: $guildMemberCount"
+                    }
+                }
+            }
+        }
 
-		event<MemberLeaveEvent> {
-			action {
-				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel") ?: return@action
+        event<MemberLeaveEvent> {
+            action {
+                val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel") ?: return@action
 
-				val eventUser = event.user
-				val guildMemberCount = event.getGuild().members.count()
+                val eventUser = event.user
+                val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannel(joinChannelId) as GuildMessageChannelBehavior
+                val joinChannel = event.getGuild().getChannel(joinChannelId) as GuildMessageChannelBehavior
 
-				joinChannel.createEmbed {
-					color = DISCORD_RED
-					title = "User left the server!"
-					timestamp = Clock.System.now()
+                joinChannel.createEmbed {
+                    color = DISCORD_RED
+                    title = "User left the server!"
+                    timestamp = Clock.System.now()
 
-					field {
-						name = "Goodbye:"
-						value = eventUser.tag
-						inline = true
-					}
-					field {
-						name = "ID:"
-						value = eventUser.id.toString()
-						inline = false
-					}
-					footer {
-						text = "Member count: $guildMemberCount"
-					}
-				}
-			}
-		}
-	}
+                    field {
+                        name = "Goodbye:"
+                        value = eventUser.tag
+                        inline = true
+                    }
+                    field {
+                        name = "ID:"
+                        value = eventUser.id.toString()
+                        inline = false
+                    }
+                    footer {
+                        text = "Member count: $guildMemberCount"
+                    }
+                }
+            }
+        }
+    }
 }

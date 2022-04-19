@@ -19,13 +19,12 @@ import kotlinx.coroutines.flow.toList
  * @author NoComment1105
  */
 suspend fun EphemeralSlashCommandContext<*>.getConfigPrivateResponse(inputColumn: String) =
-	DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
-		respond {
-			content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-		}
-		null
-}
-
+    DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
+        respond {
+            content = "**Error:** Unable to access config for this guild! Is your configuration set?"
+        }
+        null
+    }
 
 /**
  * This is a simple function to get a value from the configuration database in an [EphemeralSlashCommandContext],
@@ -38,12 +37,12 @@ suspend fun EphemeralSlashCommandContext<*>.getConfigPrivateResponse(inputColumn
  * @author NoComment1105
  */
 suspend fun EphemeralSlashCommandContext<*>.getConfigPublicResponse(inputColumn: String) =
-	DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
-		respond {
-			content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
-		}
-		null
-}
+    DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
+        respond {
+            content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
+        }
+        null
+    }
 
 /**
  * This is a simple function to get a value from the configuration database in an [EphemeralMessageCommandContext],
@@ -56,12 +55,12 @@ suspend fun EphemeralSlashCommandContext<*>.getConfigPublicResponse(inputColumn:
  * @author NoComment1105
  */
 suspend fun EphemeralMessageCommandContext.getConfigPublicResponse(inputColumn: String) =
-	DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
-		respond {
-			content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
-		}
-		null
-}
+    DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
+        respond {
+            content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
+        }
+        null
+    }
 
 /**
  * This function runs a check to see if the target user is a bot or moderator in an [EphemeralSlashCommandContext],
@@ -76,28 +75,28 @@ suspend fun EphemeralMessageCommandContext.getConfigPublicResponse(inputColumn: 
  * @author NoComment1105
  */
 suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
-	val moderatorRoleId = getConfigPrivateResponse("moderatorsPing")
+    val moderatorRoleId = getConfigPrivateResponse("moderatorsPing")
 
-	try {
-		// Get the users roles into a List of Snowflakes
-		val roles = user.asMember(guild!!.id).roles.toList().map { it.id }
-		// If the user is a bot, return
-		if (guild?.getMember(user.id)?.isBot == true) {
-			respond {
-				content = "You cannot $commandName bot users!"
-			}
-			return null
-		// If the moderator ping role is in roles, return
-		} else if (moderatorRoleId in roles) {
-			respond {
-				content = "You cannot $commandName moderators!"
-			}
-			return null
-		}
-	// Just to catch any errors in the checks
-	} catch (exception: EntityNotFoundException) {
-		kordLogger.warn { "isBot and isModerator checks failed on $commandName." }
-	}
+    try {
+        // Get the users roles into a List of Snowflakes
+        val roles = user.asMember(guild!!.id).roles.toList().map { it.id }
+        // If the user is a bot, return
+        if (guild?.getMember(user.id)?.isBot == true) {
+            respond {
+                content = "You cannot $commandName bot users!"
+            }
+            return null
+            // If the moderator ping role is in roles, return
+        } else if (moderatorRoleId in roles) {
+            respond {
+                content = "You cannot $commandName moderators!"
+            }
+            return null
+        }
+        // Just to catch any errors in the checks
+    } catch (exception: EntityNotFoundException) {
+        kordLogger.warn { "isBot and isModerator checks failed on $commandName." }
+    }
 
-	return "success"
+    return "success"
 }

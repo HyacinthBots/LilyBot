@@ -18,15 +18,15 @@ import net.irisshaders.lilybot.extensions.events.LogUploading
 import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
 import net.irisshaders.lilybot.extensions.events.MessageDelete
 import net.irisshaders.lilybot.extensions.events.ThreadInviter
-import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
 import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
+import net.irisshaders.lilybot.extensions.util.ModUtilities
+import net.irisshaders.lilybot.extensions.util.PublicUtilities
 import net.irisshaders.lilybot.extensions.util.RoleMenu
 import net.irisshaders.lilybot.extensions.util.ThreadControl
-import net.irisshaders.lilybot.extensions.util.PublicUtilities
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -47,72 +47,70 @@ var github: GitHub? = null
 
 // Connect to the database
 private val settings = MongoClientSettings
-	.builder()
-	.uuidRepresentation(UuidRepresentation.STANDARD)
-	.applyConnectionString(ConnectionString(MONGO_URI))
-	.build()
+    .builder()
+    .uuidRepresentation(UuidRepresentation.STANDARD)
+    .applyConnectionString(ConnectionString(MONGO_URI))
+    .build()
 
 private val client = KMongo.createClient(settings).coroutine
 val database = client.getDatabase("LilyBot")
 private val gitHubLogger = KotlinLogging.logger { }
 
 suspend fun main() {
-	val bot = ExtensibleBot(BOT_TOKEN) {
+    val bot = ExtensibleBot(BOT_TOKEN) {
+        applicationCommands {
+            enabled = true
+        }
 
-		applicationCommands {
-			enabled = true
-		}
+        members {
+            lockMemberRequests = true
+            all()
+        }
 
-		members {
-			lockMemberRequests = true
-			all()
-		}
+        intents {
+            +Intent.GuildMembers
+        }
 
-		intents {
-			+Intent.GuildMembers
-		}
+        extensions {
+            add(::Config)
+            add(::CustomCommands)
+            add(::Github)
+            add(::LogUploading)
+            add(::MemberJoinLeave)
+            add(::MessageDelete)
+            add(::ModUtilities)
+            add(::PublicUtilities)
+            add(::Report)
+            add(::RoleMenu)
+            add(::TemporaryModeration)
+            add(::TerminalModeration)
+            add(::ThreadControl)
+            add(::ThreadInviter)
 
-		extensions {
-			add(::Config)
-			add(::CustomCommands)
-			add(::Github)
-			add(::LogUploading)
-			add(::MemberJoinLeave)
-			add(::MessageDelete)
-			add(::ModUtilities)
-			add(::PublicUtilities)
-			add(::Report)
-			add(::RoleMenu)
-			add(::TemporaryModeration)
-			add(::TerminalModeration)
-			add(::ThreadControl)
-			add(::ThreadInviter)
+            extPhishing {
+                appName = "Lily Bot"
+                detectionAction = DetectionAction.Kick
+                logChannelName = "anti-phishing-logs"
+                requiredCommandPermission = null
+            }
 
-			extPhishing {
-				appName = "Lily Bot"
-				detectionAction = DetectionAction.Kick
-				logChannelName = "anti-phishing-logs"
-				requiredCommandPermission = null
-			}
+            extMappings { }
 
-			extMappings { }
+            sentry {
+                enableIfDSN(SENTRY_DSN)
+            }
+        }
 
-			sentry {
-				enableIfDSN(SENTRY_DSN)
-			}
-		}
+        presence { playing(DatabaseHelper.getStatus()) }
 
-		presence { playing(DatabaseHelper.getStatus()) }
+        try {
+            github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()
+            gitHubLogger.info("Logged into GitHub!")
+        } catch (exception: IOException) {
+            exception.printStackTrace()
+            gitHubLogger.error("Failed to log into GitHub!")
+        }
+    }
 
-		try {
-			github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()
-			gitHubLogger.info("Logged into GitHub!")
-		} catch (exception: IOException) {
-			exception.printStackTrace()
-			gitHubLogger.error("Failed to log into GitHub!")
-			throw IOException(exception)
-		}
-	}
-
-	bot.start()
+    bot.start()
 }

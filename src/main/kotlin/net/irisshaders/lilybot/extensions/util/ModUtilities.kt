@@ -25,145 +25,143 @@ import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 class ModUtilities : Extension() {
-	override val name = "mod-utilities"
+    override val name = "mod-utilities"
 
-	override suspend fun setup() {
+    override suspend fun setup() {
+        /**
+         * Say Command
+         * @author NoComment1105
+         */
+        ephemeralSlashCommand(::SayArgs) {
+            name = "say"
+            description = "Say something through Lily."
 
-		/**
-		 * Say Command
-		 * @author NoComment1105
-		 */
-		ephemeralSlashCommand(::SayArgs) {
-			name = "say"
-			description = "Say something through Lily."
+            action {
+                if (guild != null) {
+                    if (!user.asMember(guild!!.id).hasPermission(Permission.ModerateMembers)) {
+                        respond { content = "**Error:** You do not have the `Moderate Members` permission" }
+                        return@action
+                    }
+                    val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
-			action {
-				if (guild != null) {
-					if (!user.asMember(guild!!.id).hasPermission(Permission.ModerateMembers)) {
-						respond { content = "**Error:** You do not have the `Moderate Members` permission" }
-						return@action
-					}
-					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+                    val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+                    val targetChannel = if (arguments.targetChannel == null) {
+                        channel
+                    } else {
+                        guild?.getChannel(arguments.targetChannel!!.id) as MessageChannelBehavior
+                    }
 
-					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
-					val targetChannel = if (arguments.targetChannel == null) {
-						channel
-					} else {
-						guild?.getChannel(arguments.targetChannel!!.id) as MessageChannelBehavior
-					}
+                    try {
+                        if (arguments.embedMessage) {
+                            targetChannel.createEmbed {
+                                color = DISCORD_BLURPLE
+                                description = arguments.messageArgument
+                                timestamp = Clock.System.now()
+                            }
+                        } else {
+                            targetChannel.createMessage {
+                                content = arguments.messageArgument
+                            }
+                        }
+                    } catch (e: KtorRequestException) {
+                        respond { content = "Lily does not have permission to send messages in this channel." }
+                        return@action
+                    }
 
+                    respond { content = "Message sent." }
 
-					try {
-						if (arguments.embedMessage) {
-							targetChannel.createEmbed {
-								color = DISCORD_BLURPLE
-								description = arguments.messageArgument
-								timestamp = Clock.System.now()
-							}
-						} else {
-							targetChannel.createMessage {
-								content = arguments.messageArgument
-							}
-						}
-					} catch (e: KtorRequestException) {
-						respond { content = "Lily does not have permission to send messages in this channel." }
-						return@action
-					}
+                    val description =
+                        if (arguments.embedMessage) {
+                            "/say has been used to embed `${arguments.messageArgument}` in ${targetChannel.mention}"
+                        } else {
+                            "/say has been used to say `${arguments.messageArgument}` in ${targetChannel.mention}"
+                        }
 
-					respond { content = "Message sent." }
+                    responseEmbedInChannel(
+                        actionLog,
+                        "Message Sent",
+                        description,
+                        DISCORD_BLACK,
+                        user.asUser()
+                    )
+                } else {
+                    if (arguments.embedMessage) {
+                        channel.createEmbed {
+                            color = DISCORD_BLURPLE
+                            description = arguments.messageArgument
+                            timestamp = Clock.System.now()
+                        }
+                    } else {
+                        channel.createMessage {
+                            content = arguments.messageArgument
+                        }
+                    }
+                    respond { content = "Message sent!" }
+                }
+            }
+        }
 
-					val description =
-						if (arguments.embedMessage) {
-							"/say has been used to embed `${arguments.messageArgument}` in ${targetChannel.mention}"
-						} else {
-							"/say has been used to say `${arguments.messageArgument}` in ${targetChannel.mention}"
-						}
+        /**
+         * Presence Command
+         * @author IMS
+         */
+        ephemeralSlashCommand(::PresenceArgs) {
+            name = "set-status"
+            description = "Set Lily's current presence/status."
 
-					responseEmbedInChannel(
-						actionLog,
-						"Message Sent",
-						description,
-						DISCORD_BLACK,
-						user.asUser()
-					)
-				} else {
-					if (arguments.embedMessage) {
-						channel.createEmbed {
-							color = DISCORD_BLURPLE
-							description = arguments.messageArgument
-							timestamp = Clock.System.now()
-						}
-					} else {
-						channel.createMessage {
-							content = arguments.messageArgument
-						}
-					}
-					respond { content = "Message sent!" }
-				}
-			}
-		}
+            check { hasPermission(Permission.Administrator) }
 
-		/**
-		 * Presence Command
-		 * @author IMS
-		 */
-		ephemeralSlashCommand(::PresenceArgs) {
-			name = "set-status"
-			description = "Set Lily's current presence/status."
+            action {
+                // lock this command to the testing guild
+                if (guild?.id != TEST_GUILD_ID) {
+                    respond { content = "**Error:** This command can only be run in Lily's testing guild." }
+                    return@action
+                }
 
-			check { hasPermission(Permission.Administrator) }
+                val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
 
-			action {
-				// lock this command to the testing guild
-				if (guild?.id != TEST_GUILD_ID) {
-					respond { content = "**Error:** This command can only be run in Lily's testing guild." }
-					return@action
-				}
+                val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+                this@ephemeralSlashCommand.kord.editPresence {
+                    status = PresenceStatus.Online
+                    playing(arguments.presenceArgument)
+                }
 
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+                DatabaseHelper.setStatus(arguments.presenceArgument)
 
-				this@ephemeralSlashCommand.kord.editPresence {
-					status = PresenceStatus.Online
-					playing(arguments.presenceArgument)
-				}
+                respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
-				DatabaseHelper.setStatus(arguments.presenceArgument)
+                responseEmbedInChannel(
+                    actionLog,
+                    "Presence Changed",
+                    "Lily's presence has been set to `${arguments.presenceArgument}`",
+                    DISCORD_BLACK,
+                    user.asUser()
+                )
+            }
+        }
+    }
 
-				respond { content = "Presence set to `${arguments.presenceArgument}`" }
+    inner class SayArgs : Arguments() {
+        val messageArgument by string {
+            name = "message"
+            description = "The text of the message to be sent"
+        }
+        val targetChannel by optionalChannel {
+            name = "channel"
+            description = "The channel the message should be sent in"
+        }
+        val embedMessage by defaultingBoolean {
+            name = "embed"
+            description = "If the message should be sent as an embed"
+            defaultValue = false
+        }
+    }
 
-				responseEmbedInChannel(
-					actionLog,
-					"Presence Changed",
-					"Lily's presence has been set to `${arguments.presenceArgument}`",
-					DISCORD_BLACK,
-					user.asUser()
-				)
-			}
-		}
-	}
-
-	inner class SayArgs : Arguments() {
-		val messageArgument by string {
-			name = "message"
-			description = "The text of the message to be sent"
-		}
-		val targetChannel by optionalChannel {
-			name = "channel"
-			description = "The channel the message should be sent in"
-		}
-		val embedMessage by defaultingBoolean {
-			name = "embed"
-			description = "If the message should be sent as an embed"
-			defaultValue = false
-		}
-	}
-
-	inner class PresenceArgs : Arguments() {
-		val presenceArgument by string {
-			name = "presence"
-			description = "The new value Lily's presence should be set to"
-		}
-	}
+    inner class PresenceArgs : Arguments() {
+        val presenceArgument by string {
+            name = "presence"
+            description = "The new value Lily's presence should be set to"
+        }
+    }
 }

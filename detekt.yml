@@ -1,0 +1,373 @@
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+  weights:
+  # complexity: 2
+  # LongParameterList: 1
+  # style: 1
+  # comments: 1
+
+config:
+  validation: true
+  # when writing own rules with new properties, exclude the property path e.g.: 'my_rule_set,.*>.*>[my_property]'
+  excludes: ''
+
+processors:
+  active: true
+  exclude:
+    - 'DetektProgressListener'
+    - 'FunctionCountProcessor'
+    - 'PropertyCountProcessor'
+    - 'ClassCountProcessor'
+    - 'PackageCountProcessor'
+    - 'KtFileCountProcessor'
+
+console-reports:
+  active: true
+  exclude:
+    - 'ProjectStatisticsReport'
+    - 'NotificationReport'
+    - 'FileBasedFindingsReport'
+
+output-reports:
+  active: true
+  exclude:
+    # - 'HtmlOutputReport'
+    - 'TxtOutputReport'
+    # - 'XmlOutputReport'
+
+# https://detekt.dev/comments.html
+comments:
+  active: true
+  EndOfSentenceFormat:
+    active: true
+    endOfSentenceFormat: '([.?!][ \t\n\r\f<])|([.?!:]$)'
+
+# https://detekt.dev/complexity.html
+complexity:
+  active: true
+  ComplexCondition:
+    active: true
+    threshold: 10
+  ComplexMethod:
+    active: false
+  LargeClass:
+    active: false
+  LongMethod:
+    active: false
+  LongParameterList:
+    active: false
+  NestedBlockDepth:
+    active: false
+  ReplaceSafeCallChainWithRun:
+    active: true
+  StringLiteralDuplication:
+    active: true
+    threshold: 6 # TODO Change this down to 3 once all other PR's are merged
+    ignoreAnnotation: true
+    excludeStringsWithLessThan5Characters: true
+    ignoreStringsRegex: '$^'
+  TooManyFunctions:
+    active: false
+
+# https://detekt.dev/coroutines.html
+coroutines:
+  active: true
+  GlobalCoroutineUsage:
+    active: true
+  RedundantSuspendModifier:
+    active: true
+  SuspendFunWithFlowReturnType:
+    active: true
+
+# https://detekt.dev/empty-blocks.html
+empty-blocks:
+  active: true
+  EmptyCatchBlock:
+    active: true
+    allowedExceptionNameRegex: '^(_|(ignore|expected).*)'
+  EmptyClassBlock:
+    active: true
+  EmptyDefaultConstructor:
+    active: true
+  EmptyDoWhileBlock:
+    active: true
+  EmptyElseBlock:
+    active: true
+  EmptyFinallyBlock:
+    active: true
+  EmptyForBlock:
+    active: true
+  EmptyFunctionBlock:
+    active: true
+    ignoreOverridden: false
+  EmptyIfBlock:
+    active: true
+  EmptyInitBlock:
+    active: true
+  EmptyKtFile:
+    active: true
+  EmptySecondaryConstructor:
+    active: true
+  EmptyTryBlock:
+    active: true
+  EmptyWhenBlock:
+    active: true
+  EmptyWhileBlock:
+    active: true
+
+# https://detekt.dev/exceptions.html
+exceptions:
+  active: true
+  InstanceOfCheckForException:
+    active: false  # It does often make things more readable
+  NotImplementedDeclaration:
+    active: false
+  SwallowedException:
+    active: false
+    ignoredExceptionTypes:
+      - InterruptedException
+      - NumberFormatException
+      - ParseException
+      - MalformedURLException
+    allowedExceptionNameRegex: '^(_|(ignore|expected).*)'
+  ThrowingExceptionInMain:
+    active: true
+  TooGenericExceptionCaught:
+    active: true
+    exceptionNames:
+      - ArrayIndexOutOfBoundsException
+      - Error
+      - Exception
+      - IllegalMonitorStateException
+      - IndexOutOfBoundsException
+      - RuntimeException
+      - Throwable
+    allowedExceptionNameRegex: '^(_|(ignore|expected).*)'
+
+# https://detekt.dev/formatting.html
+formatting:
+  active: true
+  android: false
+  autoCorrect: true
+  AnnotationOnSeparateLine:
+    active: true
+    autoCorrect: true
+  AnnotationSpacing:
+    active: true
+    autoCorrect: true
+  ArgumentListWrapping:
+    active: false  # It's wrong!
+    autoCorrect: true
+  EnumEntryNameCase:
+    active: true
+    autoCorrect: true
+  Indentation:
+    active: false
+    autoCorrect: false
+    indentSize: 4
+    continuationIndentSize: 4
+  MultiLineIfElse:
+    active: true
+    autoCorrect: true
+  NoEmptyFirstLineInMethodBlock:
+    active: true
+    autoCorrect: true
+  NoWildcardImports: # TODO Remove once log uploading PR is merged
+    active: false
+  PackageName:
+    active: true
+    autoCorrect: true
+  SpacingAroundDot:
+    active: true
+    autoCorrect: true
+  SpacingAroundDoubleColon:
+    active: true
+    autoCorrect: true
+  SpacingBetweenDeclarationsWithAnnotations:
+    active: true
+    autoCorrect: true
+  SpacingBetweenDeclarationsWithComments:
+    active: true
+    autoCorrect: true
+
+# https://detekt.dev/naming.html
+naming:
+  active: true
+  ClassNaming:
+    active: true
+    classPattern: '[A-Z$][a-zA-Z0-9$]*'
+  ForbiddenClassName:
+    active: false
+    forbiddenName: []
+  FunctionMaxLength:
+    active: false
+    maximumFunctionNameLength: 30
+  FunctionMinLength:
+    active: false
+    minimumFunctionNameLength: 3
+  FunctionNaming:
+    active: true
+    functionPattern: '^([a-z$][a-zA-Z$0-9]*)|(`.*`)$'
+    excludeClassPattern: '$^'
+    ignoreOverridden: true
+  InvalidPackageDeclaration:
+    active: true
+    rootPackage: 'net.irisshaders'
+  NonBooleanPropertyPrefixedWithIs:
+    active: true
+  PackageNaming:
+    active: true
+    packagePattern: '^[a-z]+(\.[a-z][A-Za-z0-9]*)*$'
+
+# https://detekt.dev/performance.html
+performance:
+  active: true
+  ArrayPrimitive:
+    active: true
+  ForEachOnRange:
+    active: true
+  SpreadOperator:
+    active: true
+  UnnecessaryTemporaryInstantiation:
+    active: true
+
+# https://detekt.dev/potential-bugs.html
+potential-bugs:
+  active: true
+  Deprecation:
+    active: true
+  HasPlatformType:
+    active: true
+  IgnoredReturnValue:
+    active: true
+  ImplicitDefaultLocale:
+    active: false
+  ImplicitUnitReturnType:
+    active: true
+    allowExplicitReturnType: true
+  LateinitUsage:
+    active: false
+    ignoreAnnotated: []
+    ignoreOnClassesPattern: ''
+  MapGetWithNotNullAssertionOperator:
+    active: true
+  NullableToStringCall:
+    active: true
+  UnconditionalJumpStatementInLoop:
+    active: true
+  UselessPostfixExpression:
+    active: true
+
+# https://detekt.dev/style.html
+style:
+  active: true
+  ClassOrdering:
+    active: true
+  CollapsibleIfStatements:
+    active: true
+  DataClassContainsFunctions:
+    active: true
+    conversionFunctionPrefix: 'to'
+  DataClassShouldBeImmutable:
+    active: true
+  EqualsOnSignatureLine:
+    active: true
+  ExplicitCollectionElementAccessMethod:
+    active: true
+  ExplicitItLambdaParameter:
+    active: true
+  ExpressionBodySyntax:
+    active: true
+    includeLineWrapping: true
+  ForbiddenComment:
+    active: false
+    values: ['TODO:', 'FIXME:', 'STOPSHIP:']
+    allowedPatterns: ''
+  ForbiddenImport:
+    active: false
+    imports: []
+    forbiddenPatterns: ''
+  ForbiddenMethodCall:
+    active: false
+    methods: []
+  ForbiddenPublicDataClass:
+    active: false
+    ignorePackages: ['*.internal', '*.internal.*']
+  ForbiddenVoid:
+    active: true
+    ignoreOverridden: true
+    ignoreUsageInGenerics: false
+  LoopWithTooManyJumpStatements:
+    active: true
+    maxJumpCount: 3
+  MagicNumber:
+    active: false
+    ignoreNumbers: ['-1', '0', '1', '2']
+    ignoreHashCodeFunction: true
+    ignorePropertyDeclaration: false
+    ignoreLocalVariableDeclaration: false
+    ignoreConstantDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreNamedArgument: true
+    ignoreEnums: true
+    ignoreRanges: false
+  MandatoryBracesIfStatements:
+    active: true
+  MandatoryBracesLoops:
+    active: true
+  OptionalUnit:
+    active: false
+  OptionalWhenBraces:
+    active: true
+  PreferToOverPairSyntax:
+    active: true
+  RedundantExplicitType:
+    active: true
+  RedundantVisibilityModifierRule:
+    active: false
+  ReturnCount:
+    active: false
+    max: 2
+    excludedFunctions: 'equals'
+    excludeLabeled: false
+    excludeReturnFromLambda: true
+    excludeGuardClauses: false
+  SpacingBetweenPackageAndImports:
+    active: true
+  TrailingWhitespace:
+    active: true
+  UnderscoresInNumericLiterals:
+    active: true
+    acceptableLength: 5
+  UnnecessaryAnnotationUseSiteTarget:
+    active: true
+  UnnecessaryLet:
+    active: true
+  UnnecessaryParentheses:
+    active: true
+  UntilInsteadOfRangeTo:
+    active: true
+  UnusedImports:
+    active: true
+  UseArrayLiteralsInAnnotations:
+    active: true
+  UseCheckNotNull:
+    active: true
+  UseCheckOrError:
+    active: true
+  UseDataClass:
+    active: true
+    ignoreAnnotated: []
+    allowVars: false
+  UseEmptyCounterpart:
+    active: true
+  UseIfInsteadOfWhen:
+    active: true
+  UseRequire:
+    active: true
+  UseRequireNotNull:
+    active: true
+  WildcardImport: # TODO Remove this once log uploading PR is merged
+    active: false
