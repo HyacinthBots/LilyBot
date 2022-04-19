@@ -73,8 +73,8 @@ class ModUtilities : Extension() {
 					respond { content = "Message sent." }
 
 					actionLog.createEmbed {
-						title = "/say command used"
-						description = arguments.messageArgument
+						title = "Say command used"
+						description = "`${arguments.messageArgument}`"
 						color = DISCORD_BLACK
 						timestamp = Clock.System.now()
 						field {
