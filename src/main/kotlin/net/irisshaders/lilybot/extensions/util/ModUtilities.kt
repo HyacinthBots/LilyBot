@@ -72,20 +72,26 @@ class ModUtilities : Extension() {
 
 					respond { content = "Message sent." }
 
-					val description =
-						if (arguments.embedMessage) {
-							"/say has been used to embed `${arguments.messageArgument}` in ${targetChannel.mention}"
-						} else {
-							"/say has been used to say `${arguments.messageArgument}` in ${targetChannel.mention}"
+					actionLog.createEmbed {
+						title = "Say command used"
+						description = "`${arguments.messageArgument}`"
+						color = DISCORD_BLACK
+						timestamp = Clock.System.now()
+						field {
+							name = "Channel:"
+							value = targetChannel.mention
+							inline = true
 						}
-
-					responseEmbedInChannel(
-						actionLog,
-						"Message Sent",
-						description,
-						DISCORD_BLACK,
-						user.asUser()
-					)
+						field {
+							name = "Type:"
+							value = if (arguments.embedMessage) "Embed" else "Message"
+							inline = true
+						}
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+					}
 				} else {
 					if (arguments.embedMessage) {
 						channel.createEmbed {
