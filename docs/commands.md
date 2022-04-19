@@ -116,8 +116,6 @@ Result: Times `timeoutUser` out for `duration`. A timeout is Discord's built-in 
 
 
 
-
-
 ## Utility Commands
 These commands are just handy to have around. Moderator only commands are at the top and clearly marked.
 
@@ -184,3 +182,38 @@ Arguments:
 * `newName` - New name for the thread executed in - String
 
 Result: Renames the thread executed in **if executed by a moderator or the thread owner**.
+
+
+## Tags
+Tag commands are guild specific commands, that can be added at runtime. They are all embed commands. You will be assisted by auto-complete when typing these commands. 
+
+### Create tags (MODS ONLY)
+Name: `tag-create`
+
+Arguments:
+* `tagName` - The named identifier of the tag you wish to create. This is what you'd use to call the tag in the `tag` command
+* `tagTitle` - The tag embed title
+* `tagValue` - The tag embed description
+
+Result: Creates a tag for the guild you ran this command in
+
+### Delete tags (MODS ONLY)
+Name: `tag-delete`
+
+Arguments:
+* `tagName` - The named identifier of the tag you wish to delete
+
+Result: Deletes the tag for the guild you ran this command in
+
+### Use tags
+Name: `tag`
+
+Arguments:
+* `tagName` - The named identifier of the tag you wish to run
+
+Result: Posts the tag embed you requested
+
+### Help
+Name: `tag-help`
+
+Result: Displays a help command with all this information, in greater detail.
