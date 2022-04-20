@@ -6,9 +6,11 @@ import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -19,9 +21,13 @@ import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.map
@@ -67,7 +73,8 @@ class TemporaryModeration : Extension() {
 				// Get the specified amount of messages into an array list of Snowflakes and delete them
 
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
-					Snowflake.max, min(messageAmount, 100)).map { it.id }.toList()
+					Snowflake.max, min(messageAmount, 100)
+				).map { it.id }.toList()
 
 				textChannel.bulkDelete(messages)
 
@@ -120,9 +127,9 @@ class TemporaryModeration : Extension() {
 						userArg,
 						"First warning in ${guild?.fetchGuild()?.name}",
 						"**Reason:** ${arguments.reason}\n\n" +
-						"No moderation action has been taken. Please consider your actions carefully.\n\n" +
-						"For more information about the warn system, please see [this document]" +
-						"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+								"No moderation action has been taken. Please consider your actions carefully.\n\n" +
+								"For more information about the warn system, please see [this document]" +
+								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
 						DISCORD_BLACK
 					)
 				} else if (newStrikes == 2) {
@@ -342,7 +349,7 @@ class TemporaryModeration : Extension() {
 		 *
 		 * @author IMS212
 		 */
-		ephemeralSlashCommand(::RemoveArgs) {
+		ephemeralSlashCommand(::RemoveTimeoutArgs) {
 			name = "remove-timeout"
 			description = "Remove timeout on a user"
 
@@ -387,6 +394,212 @@ class TemporaryModeration : Extension() {
 				}
 			}
 		}
+
+		/**
+		 * Server and channel locking commands
+		 *
+		 * @author tempest15
+		 */
+		ephemeralSlashCommand {
+			name = "lock"
+			description = "The parent command for all locking commands"
+
+			check { anyGuild() }
+			check { hasPermission(Permission.ModerateMembers) }
+
+			ephemeralSubCommand(::LockChannelArgs) {
+				name = "channel"
+				description = "Lock a channel so only mods can send messages"
+
+				@Suppress("DuplicatedCode")
+				action {
+					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+
+					val channelArg = arguments.channel ?: event.interaction.getChannel()
+					var channelParent: TextChannel? = null
+					if (channelArg is TextChannelThread) {
+						channelParent = channelArg.getParent()
+					}
+					val targetChannel = channelParent ?: channelArg.asChannelOf()
+
+					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
+					if (channelPerms != null) {
+						if (channelPerms.denied.contains(Permission.SendMessages)) {
+							respond { content = "This channel is already locked!" }
+							return@action
+						}
+					}
+
+					targetChannel.createEmbed {
+						title = "Channel Locked"
+						description = "This channel has been locked by a moderator."
+						color = DISCORD_RED
+					}
+
+					targetChannel.editRolePermission(guild!!.id) {
+						denied += Permission.SendMessages
+						denied += Permission.SendMessagesInThreads
+						denied += Permission.AddReactions
+						denied += Permission.UseApplicationCommands
+					}
+
+					actionLogChannel.createEmbed {
+						title = "Channel Locked"
+						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_RED
+					}
+
+					respond { content = "${targetChannel.mention} has been locked." }
+				}
+			}
+
+			ephemeralSubCommand(::LockServerArgs) {
+				name = "server"
+				description = "Lock the server so only mods can send messages"
+
+				action {
+					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+					val everyoneRole = guild!!.getRole(guild!!.id)
+
+					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
+						respond { content = "The server is already locked!" }
+						return@action
+					}
+
+					everyoneRole.edit {
+						permissions = everyoneRole.permissions
+							.minus(Permission.SendMessages)
+							.minus(Permission.SendMessagesInThreads)
+							.minus(Permission.AddReactions)
+							.minus(Permission.UseApplicationCommands)
+					}
+
+					actionLogChannel.createEmbed {
+						title = "Server locked"
+						description = "**Reason:** ${arguments.reason}"
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_RED
+					}
+
+					respond { content = "Server locked." }
+				}
+			}
+		}
+
+		/**
+		 * Server and channel unlocking commands
+		 *
+		 * @author tempest15
+		 */
+		ephemeralSlashCommand {
+			name = "unlock"
+			description = "The parent command for all unlocking commands"
+
+			check { anyGuild() }
+			check { hasPermission(Permission.ModerateMembers) }
+
+			ephemeralSubCommand(::UnlockChannelArgs) {
+				name = "channel"
+				description = "Unlock a channel so everyone can send messages"
+
+				@Suppress("DuplicatedCode")
+				action{
+					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+
+					val channelArg = arguments.channel ?: event.interaction.getChannel()
+					var channelParent : TextChannel? = null
+					if (channelArg is TextChannelThread) {
+						channelParent = channelArg.getParent()
+					}
+					val targetChannel = channelParent ?: channelArg.asChannelOf()
+
+					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
+					if (channelPerms == null) {
+						respond { content = "This channel is not locked!" }
+						return@action
+					}
+					if (!channelPerms.denied.contains(Permission.SendMessages)) {
+						respond { content = "This channel is not locked!" }
+						return@action
+					}
+
+					targetChannel.editRolePermission(guild!!.id) {
+						allowed += Permission.SendMessages
+						allowed += Permission.SendMessagesInThreads
+						allowed += Permission.AddReactions
+						allowed += Permission.UseApplicationCommands
+					}
+
+					targetChannel.createEmbed {
+						title = "Channel Unlocked"
+						description = "This channel has been unlocked by a moderator.\n" +
+								"Please be aware of the rules when continuing discussion."
+						color = DISCORD_GREEN
+					}
+
+					actionLogChannel.createEmbed {
+						title = "Channel Unlocked"
+						description = "${targetChannel.mention} has been unlocked."
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_GREEN
+					}
+
+					respond { content = "${targetChannel.mention} has been unlocked." }
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "server"
+				description = "Unlock the server so everyone can send messages"
+
+				action {
+					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+					val everyoneRole = guild!!.getRole(guild!!.id)
+
+					if (everyoneRole.permissions.contains(Permission.SendMessages)) {
+						respond { content = "The server isn't locked!" }
+						return@action
+					}
+
+					everyoneRole.edit {
+						permissions = everyoneRole.permissions
+							.plus(Permission.SendMessages)
+							.plus(Permission.SendMessagesInThreads)
+							.plus(Permission.AddReactions)
+							.plus(Permission.UseApplicationCommands)
+					}
+
+					actionLogChannel.createEmbed {
+						title = "Server unlocked"
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_GREEN
+					}
+
+					respond { content = "Server unlocked." }
+				}
+			}
+		}
 	}
 
 	inner class ClearArgs : Arguments() {
@@ -396,35 +609,9 @@ class TemporaryModeration : Extension() {
 		}
 	}
 
-	inner class RemoveArgs : Arguments() {
-		val userArgument by user {
-			name = "unbanUserId"
-			description = "Person Unbanned"
-		}
-	}
-
-	inner class WarnArgs : Arguments() {
-		val userArgument by user {
-			name = "warnUser"
-			description = "Person to Warn"
-		}
-		val reason by defaultingString {
-			name = "reason"
-			description = "Reason for Warn"
-			defaultValue = "No Reason Provided"
-		}
-	}
-
-	inner class RemoveWarnArgs : Arguments() {
-		val userArgument by user {
-			name = "warnUser"
-			description = "Person to remove warn from"
-		}
-	}
-
 	inner class TimeoutArgs : Arguments() {
 		val userArgument by user {
-			name = "timeoutUser"
+			name = "user"
 			description = "Person to timeout"
 		}
 		val duration by coalescingDefaultingDuration {
@@ -436,6 +623,60 @@ class TemporaryModeration : Extension() {
 			name = "reason"
 			description = "Reason for timeout"
 			defaultValue = "No reason provided"
+		}
+	}
+
+	inner class RemoveTimeoutArgs : Arguments() {
+		val userArgument by user {
+			name = "user"
+			description = "Person to remove timeout from"
+		}
+	}
+
+	inner class WarnArgs : Arguments() {
+		val userArgument by user {
+			name = "user"
+			description = "Person to warn"
+		}
+		val reason by defaultingString {
+			name = "reason"
+			description = "Reason for warn"
+			defaultValue = "No reason provided"
+		}
+	}
+
+	inner class RemoveWarnArgs : Arguments() {
+		val userArgument by user {
+			name = "user"
+			description = "Person to remove warn from"
+		}
+	}
+
+	inner class LockChannelArgs : Arguments() {
+		val channel by optionalChannel {
+			name = "channel"
+			description = "Channel to lock. Defaults to current channel"
+		}
+
+		val reason by defaultingString {
+			name = "reason"
+			description = "Reason for locking the channel"
+			defaultValue = "No reason provided"
+		}
+	}
+
+	inner class LockServerArgs : Arguments() {
+		val reason by defaultingString {
+			name = "reason"
+			description = "Reason for locking the server"
+			defaultValue = "No reason provided"
+		}
+	}
+
+	inner class UnlockChannelArgs : Arguments() {
+		val channel by optionalChannel {
+			name = "channel"
+			description = "Channel to unlock. Defaults to current channel"
 		}
 	}
 }

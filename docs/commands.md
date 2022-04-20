@@ -37,9 +37,9 @@ This command can only be executed in the test guild specified in your `.env` fil
 ## Moderation Commands
 These commands are for use by moderators.
 They utilize built-in permission checks.
-All moderation commands are logged to the action-log established in the config.
+All moderation commands are logged to the `modActionLog` established in the config.
 A Direct Message is sent to the target user containing the sanction they received and the provided reason.
-If Lily fails to DM them, this failure will be noted in the action-log embed.
+If Lily fails to DM them, this failure will be noted in the logging embed.
 
 ### Clear
 Name: `clear`
@@ -66,7 +66,8 @@ Arguments:
 * `messages` - Number of days of messages to delete - Integer
 * `reason` - Reason for the ban - Optional String
 
-Result: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last `messages` day(s).
+Result: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last
+`messages` day(s).
 
 ### Unban
 Name: `unban`
@@ -114,9 +115,46 @@ Arguments:
 
 Result: Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function.
 
+### Lock Server
+Name: `lock-server`
 
+Arguments:
+* `reason` - Reason for locking the server - Optional String
 
+Result: Locks the server.
 
+### Lock Channel
+Name: `lock-channel`
+
+Arguments:
+* `channel` - Channel to lock - Channel (default executed channel)
+* `reason` - Reason for locking the channel - Optional String
+
+Result: Locks `channel` so only the moderator role can send messages, create threads, or add reactions.
+
+### Lock Server
+Name: `lock-server`
+
+Arguments:
+* `reason` - Reason for locking the server - Optional String
+
+Result: Locks the whole server so only members with the moderator role can send messages, create threads,
+or add reactions.
+
+### Unlock Channel
+Name: `unlock-channel`
+
+Arguments:
+* `channel` - Channel to unlock - Channel (default executed channel)
+
+Result: Unlocks `channel` so anyone can send messages, create threads, or add reactions.
+
+### Unlock Server
+Name: `unlock-server`
+
+No arguments.
+
+Result: Unlocks the whole server so anyone can send messages, create threads, or add reactions.
 
 ## Utility Commands
 These commands are just handy to have around. Moderator only commands are at the top and clearly marked.
