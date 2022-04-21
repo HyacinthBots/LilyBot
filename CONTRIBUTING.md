@@ -72,8 +72,6 @@ The listed types are based on the labels that can be assigned to PR's in the Lil
 
 **Description**: Used for pull requests that explicitly fix a bug in the code
 
-**Required Approvals**: 1
-
 **Final Comment Period**: 1 day
 
 **Special Cases**:
@@ -84,17 +82,11 @@ The listed types are based on the labels that can be assigned to PR's in the Lil
 
 **Description**: Used for pull requests that focus mainly on adding or changing documentation
 
-**Required Approvals**: 2
-
 **Final Comment Period**: 2 days
 
 ### `PRT: refactor`
 
 **Description**: Used for pull requests that focus on changing or rewriting something
-
-**Required Approvals**: 3
-
-- One review must come from either NoComment1105 or tempest15
 
 **Final Comment Period**: 3 days
 
@@ -102,15 +94,11 @@ The listed types are based on the labels that can be assigned to PR's in the Lil
 
 **Description**: Used for pull requests that focus primarily on adding brand-new features to LilyBot
 
-**Required Approvals**: 3
-
 **Final Comment Period**: 4 days
 
 ### `PRT: release-staging`
 
 **Description**: Used for pull requests that merge develop into main
-
-**Required Approvals**: 3 
 
 **Final Comment Period**: 5 days
 

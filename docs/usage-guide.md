@@ -31,6 +31,10 @@ Congrats! You now have the official instance of LilyBot running in your server!
 For more information on all of Lily's commands,
 check out the [command list](https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md).
 
+If you're running this your own server, please be sure to allow the `Send Messages`, `Send Messages In Threads`,
+`Add Reactions`, and `Use Application Commands` permissions for your moderator role and any other role you want to be
+able to send messages when the server is locked.
+
 We suggest joining [our discord](https://discord.gg/hy2329fcTZ)
 for support, announcements of releases, Lily's online status, and even more!
 

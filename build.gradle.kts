@@ -70,10 +70,14 @@ application {
     mainClassName = "net.irisshaders.lilybot.LilyBotKt"
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+tasks.withType<KotlinCompile>().forEach {
+    it.kotlinOptions.jvmTarget = "17"
 
-    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+    it.kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+
+    it.incremental = true
+    it.sourceCompatibility = "17"
+    it.targetCompatibility = "17"
 }
 
 tasks.jar {
