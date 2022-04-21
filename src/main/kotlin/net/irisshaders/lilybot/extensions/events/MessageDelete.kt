@@ -28,12 +28,12 @@ class MessageDelete : Extension() {
 				val config = DatabaseHelper.getConfig(event.guild!!.id) ?: return@action
 
 				val guild = kord.getGuild(event.guildId!!)
-				val messageLogs = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
 				val messageContent = event.message?.asMessageOrNull()?.content.toString()
 				val eventMessage = event.message
 				val messageLocation = event.channel.id.value
 
-				messageLogs.createEmbed {
+				messageLog.createEmbed {
 					color = DISCORD_PINK
 					title = "Message Deleted"
 					description = "Location: <#$messageLocation>"

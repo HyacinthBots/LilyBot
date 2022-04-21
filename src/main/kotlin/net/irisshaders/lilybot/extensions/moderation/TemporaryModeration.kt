@@ -37,7 +37,6 @@ import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.DatabaseHelper.getWarn
 import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
@@ -115,7 +114,7 @@ class TemporaryModeration : Extension() {
 				isBotOrModerator(userArg, "warn") ?: return@action
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
-				val newStrikes = getWarn(userArg.id, guild!!.id)?.strikes
+				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)?.strikes
 
 				respond {
 					content = "Warned user."
@@ -244,7 +243,8 @@ class TemporaryModeration : Extension() {
 				val userArg = arguments.userArgument
 
 				val targetUser = guild?.getMember(userArg.id)
-				if (getWarn(targetUser!!.id, guild!!.id)?.strikes == 0) {
+				val userStrikes = DatabaseHelper.getWarn(targetUser!!.id, guild!!.id)?.strikes
+				if (userStrikes == 0 || userStrikes == null) {
 					respond {
 						content = "This user does not have any warning strikes!"
 					}
@@ -252,7 +252,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, true)
-				val newStrikes = getWarn(userArg.id, guild!!.id)
+				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)
 
 				respond {
 					content = "Removed strike from user"
@@ -412,7 +412,7 @@ class TemporaryModeration : Extension() {
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLogChannel = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -442,7 +442,7 @@ class TemporaryModeration : Extension() {
 						denied += Permission.UseApplicationCommands
 					}
 
-					actionLogChannel.createEmbed {
+					actionLog.createEmbed {
 						title = "Channel Locked"
 						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
 						footer {
@@ -463,7 +463,7 @@ class TemporaryModeration : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLogChannel = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLogChannel = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -515,7 +515,7 @@ class TemporaryModeration : Extension() {
 				@Suppress("DuplicatedCode")
 				action{
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLogChannel = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLogChannel = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent : TextChannel? = null

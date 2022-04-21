@@ -131,23 +131,21 @@ class ThreadInviter : Extension() {
 			check { configPresent() }
 
 			action {
-				val moderatorRoleId = DatabaseHelper.getConfig(event.channel.guildId)?.moderatorsPing
-				val supportTeamId = DatabaseHelper.getConfig(event.channel.guildId)?.supportTeam
-				val supportChannelId = DatabaseHelper.getConfig(event.channel.guildId)?.supportChannel
+				val config = DatabaseHelper.getConfig(event.channel.guildId)
 
 				if (
-					supportTeamId != null ||
-					supportChannelId != null
+					config?.supportTeam != null ||
+					config?.supportChannel != null
 				) {
 					if (
 						try {
-							event.channel.parentId == supportChannelId
+							event.channel.parentId == config.supportChannel
 						} catch (e: NumberFormatException) {
 							false
 						}
 					) {
 						val threadOwner = event.channel.owner.asUser()
-						val supportRole = event.channel.guild.getRole(supportTeamId!!)
+						val supportRole = event.channel.guild.getRole(config.supportTeam!!)
 
 						event.channel.withTyping { delay(2.seconds) }
 						val message = event.channel.createMessage(
@@ -161,7 +159,7 @@ class ThreadInviter : Extension() {
 						event.channel.withTyping { delay(3.seconds) }
 						message.edit {
 							content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
-									" you can just send a message in <#$supportChannelId> and I'll automatically" +
+									" you can just send a message in <#${config.supportChannel}> and I'll automatically" +
 									" make a thread for you!\n\nOnce you're finished, use `/thread archive` to close" +
 									" your thread. If you want to change the thread name, use `/thread rename`" +
 									" to do so."
@@ -170,17 +168,17 @@ class ThreadInviter : Extension() {
 				}
 
 				if (
-					moderatorRoleId != null
+					config?.moderatorsPing != null
 				) {
 					if (
 						try {
-							event.channel.parentId != supportChannelId
+							event.channel.parentId != config.supportChannel
 						} catch (e: NumberFormatException) {
 							false
 						}
 					) {
 						val threadOwner = event.channel.owner.asUser()
-						val modRole = event.channel.guild.getRole((moderatorRoleId))
+						val modRole = event.channel.guild.getRole(config.moderatorsPing)
 
 						event.channel.withTyping { delay(2.seconds) }
 						val message = event.channel.createMessage(

@@ -49,7 +49,7 @@ object DatabaseHelper {
 	 *
 	 * @param inputUserId The ID of the user to get the point value for
 	 * @param inputGuildId The ID of the guild the command was run in
-	 * @return The user and strikes from the Database
+	 * @return null or the result from the database
 	 * @author tempest15
 	 */
 	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? {
@@ -79,7 +79,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [inputComponentId] the component will be returned from the database
+	 * Using the provided [inputComponentId] the [ComponentData] will be returned from the database
 	 *
 	 * @param inputComponentId The ID of the component the event was triggered with
 	 * @return The component from the database
