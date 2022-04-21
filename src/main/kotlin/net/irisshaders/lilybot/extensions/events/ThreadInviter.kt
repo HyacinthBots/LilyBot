@@ -135,59 +135,70 @@ class ThreadInviter : Extension() {
 				val supportChannelId = DatabaseHelper.getConfig(event.channel.guildId)?.supportChannel ?: return@action
 
 				if (
-					try {
-						event.channel.parentId == supportChannelId
-					} catch (e: NumberFormatException) {
-						false
-					}
+					supportTeamId != null ||
+					supportChannelId != null
 				) {
-					val threadOwner = event.channel.owner.asUser()
-					val supportRole = event.channel.guild.getRole(supportTeamId)
+					if (
+						try {
+							event.channel.parentId == supportChannelId
+						} catch (e: NumberFormatException) {
+							false
+						}
+					) {
+						val threadOwner = event.channel.owner.asUser()
+						val supportRole = event.channel.guild.getRole(supportTeamId!!)
 
-					event.channel.withTyping { delay(2.seconds) }
-					val message = event.channel.createMessage(
-						content = "Hello there! Since you're in the support channel, I'll just grab the support" +
-								" team for you..."
-					)
+						event.channel.withTyping { delay(2.seconds) }
+						val message = event.channel.createMessage(
+							content = "Hello there! Since you're in the support channel, I'll just grab the support" +
+									" team for you..."
+						)
 
-					event.channel.withTyping { delay(4.seconds) }
-					message.edit { content = "${supportRole.mention}, could you please help this person!" }
+						event.channel.withTyping { delay(4.seconds) }
+						message.edit { content = "${supportRole.mention}, please help this person!" }
 
-					event.channel.withTyping { delay(3.seconds) }
-					message.edit {
-						content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
-								" you can just send a message in <#$supportChannelId> and I'll automatically" +
-								" make a thread for you"
+						event.channel.withTyping { delay(3.seconds) }
+						message.edit {
+							content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
+									" you can just send a message in <#$supportChannelId> and I'll automatically" +
+									" make a thread for you!\n\nOnce you're finished, use `/thread archive` to close" +
+									" your thread. If you want to change the thread name, use `/thread rename`" +
+									" to do so."
+						}
 					}
 				}
 
 				if (
-					try {
-						event.channel.parentId != supportChannelId
-					} catch (e: NumberFormatException) {
-						false
-					}
+					moderatorRoleId != null
 				) {
-					val threadOwner = event.channel.owner.asUser()
-					val modRole = event.channel.guild.getRole((moderatorRoleId))
+					if (
+						try {
+							event.channel.parentId != supportChannelId
+						} catch (e: NumberFormatException) {
+							false
+						}
+					) {
+						val threadOwner = event.channel.owner.asUser()
+						val modRole = event.channel.guild.getRole((moderatorRoleId))
 
-					event.channel.withTyping { delay(2.seconds) }
-					val message = event.channel.createMessage(
-						content = "Hello there! Lemme just grab the moderators..."
-					)
+						event.channel.withTyping { delay(2.seconds) }
+						val message = event.channel.createMessage(
+							content = "Hello there! Lemme just grab the moderators..."
+						)
 
-					event.channel.withTyping { delay(4.seconds) }
-					message.edit { content = "${modRole.mention}, welcome to the thread!" }
+						event.channel.withTyping { delay(4.seconds) }
+						message.edit { content = "${modRole.mention}, welcome to the thread!" }
 
-					event.channel.withTyping { delay(4.seconds) }
-					message.edit {
-						content = "Welcome to your thread, ${threadOwner.mention}\nOnce you're finished, use" +
-								" `/thread archive` to close it. If you want to change the thread name, use" +
-								" `/thread rename` to do so"
+						event.channel.withTyping { delay(4.seconds) }
+						message.edit {
+							content = "Welcome to your thread, ${threadOwner.mention}\nOnce you're finished, use" +
+									" `/thread archive` to close it. If you want to change the thread name, use" +
+									" `/thread rename` to do so."
+						}
+
+						delay(20.seconds)
+						message.delete("Mods have been invited, message can go now!")
 					}
-
-					delay(20.seconds)
-					message.delete("Mods have been invited, message can go now!")
 				}
 			}
 		}

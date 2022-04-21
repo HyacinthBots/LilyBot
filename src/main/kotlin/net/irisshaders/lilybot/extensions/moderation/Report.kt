@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalTime::class)
-
 package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_RED
@@ -34,7 +32,6 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * The message reporting feature in the bot
