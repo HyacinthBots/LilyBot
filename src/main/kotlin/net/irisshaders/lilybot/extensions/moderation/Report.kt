@@ -30,6 +30,7 @@ import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
 
@@ -37,7 +38,6 @@ import kotlin.time.Duration
  * The message reporting feature in the bot
  * @author NoComment1105
  */
-@Suppress("DuplicatedCode")
 class Report : Extension() {
 	override val name = "report"
 
@@ -47,13 +47,12 @@ class Report : Extension() {
 			locking = true // To prevent the command from being run more than once concurrently
 
 			check { anyGuild() }
+			check { configPresent() }
 
 			action {
-				val messageLogId = DatabaseHelper.getConfig(guild!!.id)?.messageLogs ?: return@action
-				val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderatorsPing ?: return@action
-				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
 
-				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				try {
 					val reportedMessage = event.interaction.getTarget()
 					val messageAuthor = reportedMessage.getAuthorAsMember()
@@ -63,7 +62,7 @@ class Report : Extension() {
 					}
 
 					// Call the create report function with the provided information
-					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRoleId, actionLogId)
+					createReport(user, messageLog, messageAuthor, reportedMessage, config.moderatorsPing, config.modActionLog)
 
 				} catch (e: KtorRequestException) {
 					respond {
@@ -83,13 +82,12 @@ class Report : Extension() {
 			locking = true
 
 			check { anyGuild() }
+			check { configPresent() }
 
 			action {
-				val messageLogId = DatabaseHelper.getConfig(guild!!.id)?.messageLogs ?: return@action
-				val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderatorsPing ?: return@action
-				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
 
-				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
 
 				try {
 					// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
@@ -104,7 +102,7 @@ class Report : Extension() {
 					}
 
 					// Create a report with the provided information
-					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRoleId, actionLogId)
+					createReport(user, messageLog, messageAuthor, reportedMessage, config.moderatorsPing, config.modActionLog)
 
 				} catch (e: KtorRequestException) {
 					respond {

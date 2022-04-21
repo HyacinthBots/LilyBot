@@ -135,31 +135,31 @@ object DatabaseHelper {
 
 @Serializable
 data class ConfigData (
-	val guildId: Snowflake?,
-	val moderatorsPing: Snowflake?,
-	val modActionLog: Snowflake?,
-	val messageLogs: Snowflake?,
-	val joinChannel: Snowflake?,
+	val guildId: Snowflake,
+	val moderatorsPing: Snowflake,
+	val modActionLog: Snowflake,
+	val messageLogs: Snowflake,
+	val joinChannel: Snowflake,
 	val supportChannel: Snowflake?,
 	val supportTeam: Snowflake?,
 )
 
 @Serializable
 data class WarnData (
-	val userId: Snowflake?,
-	val guildId: Snowflake?,
-	val strikes: Int?
+	val userId: Snowflake,
+	val guildId: Snowflake,
+	val strikes: Int
 )
 
 @Serializable
 data class ComponentData (
-	val componentId: String?,
-	val roleId: Snowflake?,
-	val addOrRemove: String?
+	val componentId: String,
+	val roleId: Snowflake,
+	val addOrRemove: String
 )
 
 @Serializable
 data class StatusData (
-	val key: String?, // this is just so we can find the status and should always be set to "LilyStatus"
-	val status: String?
+	val key: String, // this is just so we can find the status and should always be set to "LilyStatus"
+	val status: String
 )

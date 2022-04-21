@@ -24,6 +24,7 @@ import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.baseModerationEmbed
+import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.isBotOrModerator
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
@@ -45,11 +46,11 @@ class TerminalModeration : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.BanMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "ban") ?: return@action
@@ -107,11 +108,11 @@ class TerminalModeration : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.BanMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 				val bans = guild!!.bans.toList().map { it.userId }
 
@@ -146,11 +147,11 @@ class TerminalModeration : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.BanMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
@@ -212,11 +213,11 @@ class TerminalModeration : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.KickMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "kick") ?: return@action

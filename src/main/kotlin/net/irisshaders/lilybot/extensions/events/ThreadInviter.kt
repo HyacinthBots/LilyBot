@@ -130,9 +130,9 @@ class ThreadInviter : Extension() {
 
 			action {
 				// Try to get the moderator ping role from the config. If a config is not set, return@action
-				val moderatorRoleId = DatabaseHelper.getConfig(event.channel.guildId)?.moderatorsPing ?: return@action
-				val supportTeamId = DatabaseHelper.getConfig(event.channel.guildId)?.supportTeam ?: return@action
-				val supportChannelId = DatabaseHelper.getConfig(event.channel.guildId)?.supportChannel ?: return@action
+				val moderatorRoleId = DatabaseHelper.getConfig(event.channel.guildId)?.moderatorsPing
+				val supportTeamId = DatabaseHelper.getConfig(event.channel.guildId)?.supportTeam
+				val supportChannelId = DatabaseHelper.getConfig(event.channel.guildId)?.supportChannel
 
 				if (
 					supportTeamId != null ||
