@@ -72,7 +72,7 @@ The listed types are based on the labels that can be assigned to PR's in the Lil
 
 **Description**: Used for pull requests that explicitly fix a bug in the code
 
-**Final Comment Period**: 1 day
+**Final Comment Period**: 12 hours
 
 **Special Cases**:
 
@@ -82,25 +82,25 @@ The listed types are based on the labels that can be assigned to PR's in the Lil
 
 **Description**: Used for pull requests that focus mainly on adding or changing documentation
 
-**Final Comment Period**: 2 days
+**Final Comment Period**: 1 day
 
 ### `PRT: refactor`
 
 **Description**: Used for pull requests that focus on changing or rewriting something
 
-**Final Comment Period**: 3 days
+**Final Comment Period**: 2 days
 
 ### `PRT: new-feature`
 
 **Description**: Used for pull requests that focus primarily on adding brand-new features to LilyBot
 
-**Final Comment Period**: 4 days
+**Final Comment Period**: 2 days
 
 ### `PRT: release-staging`
 
 **Description**: Used for pull requests that merge develop into main
 
-**Final Comment Period**: 5 days
+**Final Comment Period**: 3 days
 
 ### Other
 
