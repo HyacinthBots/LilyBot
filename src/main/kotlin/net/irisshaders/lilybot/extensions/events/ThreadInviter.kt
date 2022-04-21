@@ -28,6 +28,7 @@ import dev.kord.core.event.message.MessageCreateEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
@@ -127,9 +128,9 @@ class ThreadInviter : Extension() {
 			check { failIf(event.channel.ownerId == kord.selfId) }
 			// To avoid running on thread join, rather than creation only
 			check { failIf(event.channel.member != null) }
+			check { configPresent() }
 
 			action {
-				// Try to get the moderator ping role from the config. If a config is not set, return@action
 				val moderatorRoleId = DatabaseHelper.getConfig(event.channel.guildId)?.moderatorsPing
 				val supportTeamId = DatabaseHelper.getConfig(event.channel.guildId)?.supportTeam
 				val supportChannelId = DatabaseHelper.getConfig(event.channel.guildId)?.supportChannel

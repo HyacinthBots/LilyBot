@@ -62,7 +62,14 @@ class Report : Extension() {
 					}
 
 					// Call the create report function with the provided information
-					createReport(user, messageLog, messageAuthor, reportedMessage, config.moderatorsPing, config.modActionLog)
+					createReport(
+						user,
+						messageLog,
+						messageAuthor,
+						reportedMessage,
+						config.moderatorsPing,
+						config.modActionLog
+					)
 
 				} catch (e: KtorRequestException) {
 					respond {
@@ -102,7 +109,14 @@ class Report : Extension() {
 					}
 
 					// Create a report with the provided information
-					createReport(user, messageLog, messageAuthor, reportedMessage, config.moderatorsPing, config.modActionLog)
+					createReport(
+						user,
+						messageLog,
+						messageAuthor,
+						reportedMessage,
+						config.moderatorsPing,
+						config.modActionLog
+					)
 
 				} catch (e: KtorRequestException) {
 					respond {
@@ -325,8 +339,10 @@ class Report : Extension() {
 		}
 	}
 
-	private suspend fun quickLogEmbed(moderationAction: String,
-									  actionLog: GuildMessageChannelBehavior, user: User): Message {
+	private suspend fun quickLogEmbed(
+		moderationAction: String,
+		actionLog: GuildMessageChannelBehavior, user: User
+	): Message {
 		return actionLog.createEmbed {
 			title = moderationAction
 
