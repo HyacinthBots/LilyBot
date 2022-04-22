@@ -125,25 +125,21 @@ class ThreadInviter : Extension() {
 		 */
 		event<ThreadChannelCreateEvent> {
 			check { failIf(event.channel.ownerId == kord.selfId) }
-			// To avoid running on thread join, rather than creation only
 			check { failIf(event.channel.member != null) }
 			check { configPresent() }
 
 			action {
 				val config = DatabaseHelper.getConfig(event.channel.guildId)!!
+				val modRole = event.channel.guild.getRole(config.moderatorsPing)
+				val threadOwner = event.channel.owner.asUser()
 
-				config.supportTeam ?: return@action
-				config.supportChannel ?: return@action
+				var supportConfigSet = true
+				if (config.supportTeam == null || config.supportChannel == null) {
+					supportConfigSet = false
+				}
 
-				if (
-					try {
-						event.channel.parentId == config.supportChannel
-					} catch (e: NumberFormatException) {
-						false
-					}
-				) {
-					val threadOwner = event.channel.owner.asUser()
-					val supportRole = event.channel.guild.getRole(config.supportTeam)
+				if (supportConfigSet && event.channel.parentId == config.supportChannel) {
+					val supportRole = event.channel.guild.getRole(config.supportTeam!!)
 
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
@@ -164,16 +160,7 @@ class ThreadInviter : Extension() {
 					}
 				}
 
-				if (
-					try {
-						event.channel.parentId != config.supportChannel
-					} catch (e: NumberFormatException) {
-						false
-					}
-				) {
-					val threadOwner = event.channel.owner.asUser()
-					val modRole = event.channel.guild.getRole(config.moderatorsPing)
-
+				if (!supportConfigSet || event.channel.parentId != config.supportChannel) {
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
 						content = "Hello there! Lemme just grab the moderators..."
