@@ -401,13 +401,13 @@ class TemporaryModeration : Extension() {
 			name = "lock"
 			description = "The parent command for all locking commands"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ModerateMembers) }
-			check { configPresent() }
-
 			ephemeralSubCommand(::LockChannelArgs) {
 				name = "channel"
 				description = "Lock a channel so only mods can send messages"
+
+				check { anyGuild() }
+				check { hasPermission(Permission.ModerateMembers) }
+				check { configPresent() }
 
 				@Suppress("DuplicatedCode")
 				action {
@@ -461,6 +461,10 @@ class TemporaryModeration : Extension() {
 				name = "server"
 				description = "Lock the server so only mods can send messages"
 
+				check { anyGuild() }
+				check { hasPermission(Permission.ModerateMembers) }
+				check { configPresent() }
+
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLogChannel = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
@@ -504,13 +508,13 @@ class TemporaryModeration : Extension() {
 			name = "unlock"
 			description = "The parent command for all unlocking commands"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ModerateMembers) }
-			check { configPresent() }
-
 			ephemeralSubCommand(::UnlockChannelArgs) {
 				name = "channel"
 				description = "Unlock a channel so everyone can send messages"
+
+				check { anyGuild() }
+				check { hasPermission(Permission.ModerateMembers) }
+				check { configPresent() }
 
 				@Suppress("DuplicatedCode")
 				action{
@@ -566,6 +570,10 @@ class TemporaryModeration : Extension() {
 			ephemeralSubCommand {
 				name = "server"
 				description = "Unlock the server so everyone can send messages"
+
+				check { anyGuild() }
+				check { hasPermission(Permission.ModerateMembers) }
+				check { configPresent() }
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
