@@ -1,4 +1,5 @@
 @file:OptIn(PrivilegedIntent::class)
+@file:Suppress("DEPRECATION")
 
 package net.irisshaders.lilybot
 
@@ -18,15 +19,16 @@ import net.irisshaders.lilybot.extensions.events.LogUploading
 import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
 import net.irisshaders.lilybot.extensions.events.MessageDelete
 import net.irisshaders.lilybot.extensions.events.ThreadInviter
-import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
 import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
 import net.irisshaders.lilybot.extensions.util.CustomCommands
 import net.irisshaders.lilybot.extensions.util.Github
-import net.irisshaders.lilybot.extensions.util.RoleMenu
-import net.irisshaders.lilybot.extensions.util.ThreadControl
+import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.util.PublicUtilities
+import net.irisshaders.lilybot.extensions.util.RoleMenu
+import net.irisshaders.lilybot.extensions.util.Tags
+import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -83,6 +85,7 @@ suspend fun main() {
 			add(::PublicUtilities)
 			add(::Report)
 			add(::RoleMenu)
+			add(::Tags)
 			add(::TemporaryModeration)
 			add(::TerminalModeration)
 			add(::ThreadControl)
