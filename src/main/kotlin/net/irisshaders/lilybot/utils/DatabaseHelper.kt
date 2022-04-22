@@ -9,28 +9,16 @@ import org.litote.kmongo.eq
 object DatabaseHelper {
 
 	/**
-	 * Using the provided [inputGuildId] and [inputColumn] a value or null will be returned from the database
+	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database
 	 *
 	 * @param inputGuildId The ID of the guild the command was run in
-	 * @param inputColumn The config value associated with that guild that you want
-	 * @return null or the result from the database
+	 * @return The config for [inputGuildId]
 	 * @author NoComment1105
 	 * @author tempest15
 	 */
-	suspend fun getConfig(inputGuildId: Snowflake, inputColumn: String): Snowflake? {
+	suspend fun getConfig(inputGuildId: Snowflake): ConfigData? {
 		val collection = database.getCollection<ConfigData>()
-		val selectedConfig = collection.findOne(ConfigData::guildId eq inputGuildId) ?: return null
-
-		return when (inputColumn) {
-			"guildId" -> selectedConfig.guildId
-			"moderatorsPing" -> selectedConfig.moderatorsPing
-			"modActionLog" -> selectedConfig.modActionLog
-			"messageLogs" -> selectedConfig.messageLogs
-			"joinChannel" -> selectedConfig.joinChannel
-			"supportChannel" -> selectedConfig.supportChannel
-			"supportTeam" -> selectedConfig.supportTeam
-			else -> null
-		}
+		return collection.findOne(ConfigData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -64,18 +52,9 @@ object DatabaseHelper {
 	 * @return null or the result from the database
 	 * @author tempest15
 	 */
-	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): Int {
+	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? {
 		val collection = database.getCollection<WarnData>()
-		val selectedUserInGuild = collection.findOne(
-			WarnData::userId eq inputUserId,
-			WarnData::guildId eq inputGuildId
-		)
-
-		return if (selectedUserInGuild != null) {
-			selectedUserInGuild.strikes!!
-		} else {
-			0
-		}
+		return collection.findOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -87,7 +66,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 */
 	suspend fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
-		val currentStrikes = getWarn(inputUserId, inputGuildId)
+		val currentStrikes = getWarn(inputUserId, inputGuildId)?.strikes ?: 0
 		val collection = database.getCollection<WarnData>()
 		collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 		collection.insertOne(
@@ -100,24 +79,16 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [inputComponentId] and [inputColumn] a value or null will be returned from the database
+	 * Using the provided [inputComponentId] the [ComponentData] will be returned from the database
 	 *
 	 * @param inputComponentId The ID of the component the event was triggered with
-	 * @param inputColumn The config value associated with that component that you want
-	 * @return null or the result from the database
+	 * @return The component from the database
 	 * @author tempest15
 	 */
-	suspend fun getComponent(inputComponentId: String, inputColumn: String): Any? {
+	suspend fun getComponent(inputComponentId: String): ComponentData? {
 		// this returns any because it can return either a string or a snowflake
 		val collection = database.getCollection<ComponentData>()
-		val selectedComponent = collection.findOne(ComponentData::componentId eq inputComponentId)
-
-		return when (inputColumn) {
-			"componentId" -> selectedComponent!!.componentId
-			"roleId" -> selectedComponent!!.roleId
-			"addOrRemove" -> selectedComponent!!.addOrRemove
-			else -> null
-		}
+		return collection.findOne(ComponentData::componentId eq inputComponentId)
 	}
 
 	/**
@@ -160,27 +131,17 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets the given tag using it's [name] and returns the [column] selected. If the tag does not exist
+	 * Gets the given tag using it's [name] and returns its [TagsData]. If the tag does not exist
 	 * it will return null
 	 *
-q	 * @param inputGuildId The ID of the guild the command was run in
+	 * @param inputGuildId The ID of the guild the command was run in
 	 * @param name The named identifier of the tag
-	 * @param column The tag data you are requesting
-	 * @return The requested [column] value or null
+	 * @return null or the result from the database
 	 * @author NoComment1105
 	 */
-	suspend fun getTag(inputGuildId: Snowflake, name: String, column: String): Any? {
-		val selectedTag: TagsData?
+	suspend fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
 		val collection = database.getCollection<TagsData>()
-		selectedTag = collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name) ?: return null
-
-		return when (column) {
-			"guildId" -> selectedTag.guildId
-			"name" -> selectedTag.name
-			"tagTitle" -> selectedTag.tagTitle
-			"tagValue" -> selectedTag.tagValue
-			else -> null
-		}
+		return collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 	}
 
 	/**
@@ -225,40 +186,40 @@ q	 * @param inputGuildId The ID of the guild the command was run in
 // Note that all values should always be nullable in case the database is empty.
 
 @Serializable
-data class ConfigData(
-	val guildId: Snowflake?,
-	val moderatorsPing: Snowflake?,
-	val modActionLog: Snowflake?,
-	val messageLogs: Snowflake?,
-	val joinChannel: Snowflake?,
+data class ConfigData (
+	val guildId: Snowflake,
+	val moderatorsPing: Snowflake,
+	val modActionLog: Snowflake,
+	val messageLogs: Snowflake,
+	val joinChannel: Snowflake,
 	val supportChannel: Snowflake?,
 	val supportTeam: Snowflake?,
 )
 
 @Serializable
-data class WarnData(
-	val userId: Snowflake?,
-	val guildId: Snowflake?,
-	val strikes: Int?
+data class WarnData (
+	val userId: Snowflake,
+	val guildId: Snowflake,
+	val strikes: Int
 )
 
 @Serializable
-data class ComponentData(
-	val componentId: String?,
-	val roleId: Snowflake?,
-	val addOrRemove: String?
+data class ComponentData (
+	val componentId: String,
+	val roleId: Snowflake,
+	val addOrRemove: String
 )
 
 @Serializable
-data class StatusData(
-	val key: String?, // this is just so we can find the status and should always be set to "LilyStatus"
-	val status: String?
+data class StatusData (
+	val key: String, // this is just so we can find the status and should always be set to "LilyStatus"
+	val status: String
 )
 
 @Serializable
 data class TagsData(
-	val guildId: Snowflake?,
-	val name: String?,
-	val tagTitle: String?,
-	val tagValue: String?
+	val guildId: Snowflake,
+	val name: String,
+	val tagTitle: String,
+	val tagValue: String
 )

@@ -29,7 +29,8 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.getConfigPublicResponse
+import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
 
@@ -46,13 +47,12 @@ class Report : Extension() {
 			locking = true // To prevent the command from being run more than once concurrently
 
 			check { anyGuild() }
+			check { configPresent() }
 
 			action {
-				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action
-				val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
-				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
 
-				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
 				try {
 					val reportedMessage = event.interaction.getTarget()
 					val messageAuthor = reportedMessage.getAuthorAsMember()
@@ -62,7 +62,14 @@ class Report : Extension() {
 					}
 
 					// Call the create report function with the provided information
-					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRoleId, actionLogId)
+					createReport(
+						user,
+						messageLog,
+						messageAuthor,
+						reportedMessage,
+						config.moderatorsPing,
+						config.modActionLog
+					)
 
 				} catch (e: KtorRequestException) {
 					respond {
@@ -82,13 +89,12 @@ class Report : Extension() {
 			locking = true
 
 			check { anyGuild() }
+			check { configPresent() }
 
 			action {
-				val messageLogId = getConfigPublicResponse("messageLogs") ?: return@action
-				val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
-				val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
 
-				val messageLog = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
 
 				try {
 					// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
@@ -103,7 +109,14 @@ class Report : Extension() {
 					}
 
 					// Create a report with the provided information
-					createReport(user, messageLog, messageAuthor, reportedMessage, moderatorRoleId, actionLogId)
+					createReport(
+						user,
+						messageLog,
+						messageAuthor,
+						reportedMessage,
+						config.moderatorsPing,
+						config.modActionLog
+					)
 
 				} catch (e: KtorRequestException) {
 					respond {
@@ -326,8 +339,10 @@ class Report : Extension() {
 		}
 	}
 
-	private suspend fun quickLogEmbed(moderationAction: String,
-									  actionLog: GuildMessageChannelBehavior, user: User): Message {
+	private suspend fun quickLogEmbed(
+		moderationAction: String,
+		actionLog: GuildMessageChannelBehavior, user: User
+	): Message {
 		return actionLog.createEmbed {
 			title = moderationAction
 

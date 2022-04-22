@@ -4,8 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-@file:OptIn(ExperimentalTime::class)
-
 package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.checks.anyGuild
@@ -28,8 +26,8 @@ import dev.kord.core.event.message.MessageCreateEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 class ThreadInviter : Extension() {
 	override val name = "thread-inviter"
@@ -56,21 +54,21 @@ class ThreadInviter : Extension() {
 			check { failIf { event.message.getChannel() is NewsChannel
 					|| event.message.getChannel() is NewsChannelThread } }
 
+			check { configPresent() }
 			action {
-				val supportTeamId = DatabaseHelper.getConfig(event.guildId!!, "supportTeam")
-					?: return@action
-				val supportChannelId = DatabaseHelper.getConfig(event.guildId!!, "supportChannel")
-					?: return@action
+				val config = DatabaseHelper.getConfig(event.guildId!!)!!
+
+				config.supportTeam ?: return@action
+				config.supportChannel ?: return@action
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel() as TextChannel
 				val guild = event.getGuild()
-				val supportChannel = guild?.getChannel(supportChannelId) as MessageChannelBehavior
+				val supportChannel = guild?.getChannel(config.supportChannel) as MessageChannelBehavior
 
 				// fail if the message is not in the support channel
 				if (textChannel != supportChannel) return@action
-
 
 				//TODO: this is incredibly stupid, there has to be a better way to do this.
 				textChannel.activeThreads.collect {
@@ -100,7 +98,7 @@ class ThreadInviter : Extension() {
 					editMessage.edit {
 						this.content =
 							event.member!!.asUser().mention + ", the " + event.getGuild()
-								?.getRole(supportTeamId)?.mention + " will be with you shortly!"
+								?.getRole(config.supportTeam)?.mention + " will be with you shortly!"
 					}
 
 					if (textChannel.messages.last().author?.id == kord.selfId) {
@@ -127,79 +125,59 @@ class ThreadInviter : Extension() {
 		 */
 		event<ThreadChannelCreateEvent> {
 			check { failIf(event.channel.ownerId == kord.selfId) }
-			// To avoid running on thread join, rather than creation only
 			check { failIf(event.channel.member != null) }
+			check { configPresent() }
 
 			action {
-				val moderatorRoleId = DatabaseHelper.getConfig(event.channel.guildId, "moderatorsPing")
-				val supportTeamId = DatabaseHelper.getConfig(event.channel.guildId, "supportTeam")
-				val supportChannelId = DatabaseHelper.getConfig(event.channel.guildId, "supportChannel")
+				val config = DatabaseHelper.getConfig(event.channel.guildId)!!
+				val modRole = event.channel.guild.getRole(config.moderatorsPing)
+				val threadOwner = event.channel.owner.asUser()
 
-				if (
-					supportTeamId != null ||
-					supportChannelId != null
-				) {
-					if (
-						try {
-							event.channel.parentId == supportChannelId
-						} catch (e: NumberFormatException) {
-							false
-						}
-					) {
-						val threadOwner = event.channel.owner.asUser()
-						val supportRole = event.channel.guild.getRole(supportTeamId!!)
+				var supportConfigSet = true
+				if (config.supportTeam == null || config.supportChannel == null) {
+					supportConfigSet = false
+				}
 
-						event.channel.withTyping { delay(2.seconds) }
-						val message = event.channel.createMessage(
-							content = "Hello there! Since you're in the support channel, I'll just grab the support" +
-									" team for you..."
-						)
+				if (supportConfigSet && event.channel.parentId == config.supportChannel) {
+					val supportRole = event.channel.guild.getRole(config.supportTeam!!)
 
-						event.channel.withTyping { delay(4.seconds) }
-						message.edit { content = "${supportRole.mention}, please help this person!" }
+					event.channel.withTyping { delay(2.seconds) }
+					val message = event.channel.createMessage(
+						content = "Hello there! Since you're in the support channel, I'll just grab the support" +
+								" team for you..."
+					)
 
-						event.channel.withTyping { delay(3.seconds) }
-						message.edit {
-							content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
-									" you can just send a message in <#$supportChannelId> and I'll automatically" +
-									" make a thread for you!\n\nOnce you're finished, use `/thread archive` to close" +
-									" your thread. If you want to change the thread name, use `/thread rename`" +
-									" to do so."
-						}
+					event.channel.withTyping { delay(4.seconds) }
+					message.edit { content = "${supportRole.mention}, please help this person!" }
+
+					event.channel.withTyping { delay(3.seconds) }
+					message.edit {
+						content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
+								" you can just send a message in <#${config.supportChannel}> and I'll automatically" +
+								" make a thread for you!\n\nOnce you're finished, use `/thread archive` to close" +
+								" your thread. If you want to change the thread name, use `/thread rename`" +
+								" to do so."
 					}
 				}
 
-				if (
-					moderatorRoleId != null
-				) {
-					if (
-						try {
-							event.channel.parentId != supportChannelId
-						} catch (e: NumberFormatException) {
-							false
-						}
-					) {
-						val threadOwner = event.channel.owner.asUser()
-						val modRole = event.channel.guild.getRole((moderatorRoleId))
+				if (!supportConfigSet || event.channel.parentId != config.supportChannel) {
+					event.channel.withTyping { delay(2.seconds) }
+					val message = event.channel.createMessage(
+						content = "Hello there! Lemme just grab the moderators..."
+					)
 
-						event.channel.withTyping { delay(2.seconds) }
-						val message = event.channel.createMessage(
-							content = "Hello there! Lemme just grab the moderators..."
-						)
+					event.channel.withTyping { delay(4.seconds) }
+					message.edit { content = "${modRole.mention}, welcome to the thread!" }
 
-						event.channel.withTyping { delay(4.seconds) }
-						message.edit { content = "${modRole.mention}, welcome to the thread!" }
-
-						event.channel.withTyping { delay(4.seconds) }
-						message.edit {
-							content = "Welcome to your thread, ${threadOwner.mention}\nOnce you're finished, use" +
-									" `/thread archive` to close it. If you want to change the thread name, use" +
-									" `/thread rename` to do so."
-						}
-
-						delay(20.seconds)
-						message.delete("Mods have been invited, message can go now!")
+					event.channel.withTyping { delay(4.seconds) }
+					message.edit {
+						content = "Welcome to your thread, ${threadOwner.mention}\nOnce you're finished, use" +
+								" `/thread archive` to close it. If you want to change the thread name, use" +
+								" `/thread rename` to do so."
 					}
+
+					delay(20.seconds)
+					message.delete("Mods have been invited, message can go now!")
 				}
 			}
 		}

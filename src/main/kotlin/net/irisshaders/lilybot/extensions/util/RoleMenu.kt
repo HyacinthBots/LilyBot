@@ -28,7 +28,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ComponentData
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.getConfigPublicResponse
+import net.irisshaders.lilybot.utils.configPresent
 
 //todo This really just needs a full rework. I'm about 90% sure it's not properly adapted for cross guild work.
 class RoleMenu : Extension() {
@@ -41,8 +41,8 @@ class RoleMenu : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ManageMessages) }
+			check { configPresent() }
 
-			@Suppress("DuplicatedCode")
 			action {
 				val descriptionAppendix = "\n\nUse the button below to add/remove the ${arguments.role.mention} role."
 
@@ -99,8 +99,8 @@ class RoleMenu : Extension() {
 
 					// Try to get the action log from the config.
 					// If a config is not set, inform the user and return@action
-					val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
-					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 					actionLog.createEmbed {
 						color = DISCORD_BLACK
@@ -138,12 +138,12 @@ class RoleMenu : Extension() {
 
 				// this is  a very dirty fix, so it doesn't conflict with log uploading
 				val roleId: Snowflake? = try {
-					DatabaseHelper.getComponent(interaction.componentId, "roleId") as Snowflake?
+					DatabaseHelper.getComponent(interaction.componentId)?.roleId
 				} catch (e: NullPointerException) {
 					return@action
 				}
 				val addOrRemove: String? = try {
-					DatabaseHelper.getComponent(interaction.componentId, "addOrRemove") as String?
+					DatabaseHelper.getComponent(interaction.componentId)?.addOrRemove
 				} catch (e: NullPointerException) {
 					return@action
 				}

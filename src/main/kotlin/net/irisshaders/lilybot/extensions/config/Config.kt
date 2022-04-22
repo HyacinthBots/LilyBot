@@ -41,7 +41,7 @@ class Config : Extension() {
 				action {
 					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
-					if (DatabaseHelper.getConfig(guild!!.id, "modActionLog") == null) {
+					if (DatabaseHelper.getConfig(guild!!.id)?.modActionLog == null) {
 						val newConfig = ConfigData(
 							guild!!.id,
 							arguments.moderatorPing.id,
@@ -83,13 +83,13 @@ class Config : Extension() {
 				action {
 					// If an action log ID resists, inform the user their config isn't set.
 					// Otherwise, clear the config.
-					if (DatabaseHelper.getConfig(guild!!.id, "modActionLog") == null) {
+					if (DatabaseHelper.getConfig(guild!!.id)?.modActionLog == null) {
 						respond { content = "**Error:** There is no configuration set for this guild!" }
 						return@action // Return to avoid the database trying to delete things that don't exist
 					} else {
 						respond { content = "Cleared config for Guild ID: ${guild!!.id}" }
 						// Log the config being cleared to the action log
-						val actionLogId = DatabaseHelper.getConfig(guild!!.id, "modActionLog")
+						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
 						val actionLogChannel = guild?.getChannel(actionLogId!!) as GuildMessageChannelBehavior
 						responseEmbedInChannel(
 							actionLogChannel,
