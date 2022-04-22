@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
+import javax.swing.text.html.HTML.Tag
 
 object DatabaseHelper {
 
@@ -121,13 +122,66 @@ object DatabaseHelper {
 	/**
 	 * Add the given [newStatus] to the database
 	 *
-	 * @param [newStatus] The new status you wish to set
+	 * @param newStatus The new status you wish to set
 	 * @author NoComment1105
 	 */
 	suspend fun setStatus(newStatus: String) {
 		val collection = database.getCollection<StatusData>()
 		collection.deleteOne(StatusData::key eq "LilyStatus")
 		collection.insertOne(StatusData("LilyStatus", newStatus))
+	}
+
+	/**
+	 * Gets the given tag using it's [name] and returns the [column] selected. If the tag does not exist
+	 * it will return null
+	 *
+	q	 * @param inputGuildId The ID of the guild the command was run in
+	 * @param name The named identifier of the tag
+	 * @param column The tag data you are requesting
+	 * @return The requested [column] value or null
+	 * @author NoComment1105
+	 */
+	suspend fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
+		val collection = database.getCollection<TagsData>()
+		return collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
+	}
+
+	/**
+	 * Gets all tags in the given [inputGuildId]
+	 *
+	 * @param inputGuildId The ID of the guild
+	 * @return A [List] of tags for the specified [inputGuildId]
+	 * @author NoComment1105
+	 */
+	suspend fun getAllTags(inputGuildId: Snowflake): List<TagsData> {
+		val collection = database.getCollection<TagsData>()
+		return collection.find(TagsData::guildId eq inputGuildId).toList()
+	}
+
+	/**
+	 * Adds a tag to the database, using the provided parameters
+	 *
+	 * @param inputGuildId The ID of the guild the command was run in. Used to keep things guild specific
+	 * @param name The named identifier of the tag being created
+	 * @param tagTitle The title of the tag being created
+	 * @param tagValue The contents of the tag being created
+	 * @author NoComment1105
+	 */
+	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
+		val collection = database.getCollection<TagsData>()
+		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue))
+	}
+
+	/**
+	 * Deletes the tag [name] from the [database]
+	 *
+	 * @param inputGuildId The guild the tag was created in
+	 * @param name The named identifier of the tag being deleted
+	 * @author NoComment1105
+	 */
+	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
+		val collection = database.getCollection<TagsData>()
+		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 	}
 }
 
@@ -162,4 +216,12 @@ data class ComponentData (
 data class StatusData (
 	val key: String, // this is just so we can find the status and should always be set to "LilyStatus"
 	val status: String
+)
+
+@Serializable
+data class TagsData(
+	val guildId: Snowflake,
+	val name: String,
+	val tagTitle: String,
+	val tagValue: String
 )
