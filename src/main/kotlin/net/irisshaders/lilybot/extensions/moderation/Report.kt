@@ -35,7 +35,7 @@ import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
 
 /**
- * The message reporting feature in the bot
+ * The message reporting feature in the bot.
  * @author NoComment1105
  */
 class Report : Extension() {
@@ -70,7 +70,6 @@ class Report : Extension() {
 						config.moderatorsPing,
 						config.modActionLog
 					)
-
 				} catch (e: KtorRequestException) {
 					respond {
 						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
@@ -117,7 +116,6 @@ class Report : Extension() {
 						config.moderatorsPing,
 						config.modActionLog
 					)
-
 				} catch (e: KtorRequestException) {
 					respond {
 						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
@@ -139,7 +137,7 @@ class Report : Extension() {
 		moderatorRole: Snowflake,
 		modActionLog: Snowflake
 	) {
-		messageLog.createMessage { content = "<@&${moderatorRole}>" }
+		messageLog.createMessage { content = "<@&$moderatorRole>" }
 
 		messageLog.createEmbed {
 			color = DISCORD_RED
@@ -199,29 +197,25 @@ class Report : Extension() {
 					option(
 						label = "30-Minute Timeout",
 						value = "30-timeout",
-					)
-					{
+					) {
 						description = "Timeout the user for 30 minutes."
 					}
 					option(
 						label = "Kick the user.",
 						value = "kick-user",
-					)
-					{
+					) {
 						description = "Kick the user from the server."
 					}
 					option(
 						label = "Soft-ban the user.",
 						value = "soft-ban-user",
-					)
-					{
+					) {
 						description = "Soft-ban the user and delete all their messages."
 					}
 					option(
 						label = "Ban the user.",
 						value = "ban-user",
-					)
-					{
+					) {
 						description = "Ban the user and delete their messages."
 					}
 					action {
@@ -317,45 +311,46 @@ class Report : Extension() {
 		}
 	}
 
-	private suspend fun quickTimeoutEmbed(actionLog: GuildMessageChannelBehavior, user: User, duration: Int): Message {
-		return actionLog.createEmbed {
-			title = "Timeout"
+	private suspend fun quickTimeoutEmbed(
+		actionLog: GuildMessageChannelBehavior,
+		user: User,
+		duration: Int
+	): Message = actionLog.createEmbed {
+		title = "Timeout"
 
-			field {
-				name = "User"
-				value = "${user.tag}\n${user.id}"
-				inline = false
-			}
-			field {
-				name = "Duration"
-				value = "$duration minutes \n ${Clock.System.now().plus(Duration.parse("PT${duration}M"))}"
-				inline = false
-			}
-			field {
-				name = "Reason"
-				value = "Timed-out via report"
-				inline = false
-			}
+		field {
+			name = "User"
+			value = "${user.tag}\n${user.id}"
+			inline = false
+		}
+		field {
+			name = "Duration"
+			value = "$duration minutes \n ${Clock.System.now().plus(Duration.parse("PT${duration}M"))}"
+			inline = false
+		}
+		field {
+			name = "Reason"
+			value = "Timed-out via report"
+			inline = false
 		}
 	}
 
 	private suspend fun quickLogEmbed(
 		moderationAction: String,
-		actionLog: GuildMessageChannelBehavior, user: User
-	): Message {
-		return actionLog.createEmbed {
-			title = moderationAction
+		actionLog: GuildMessageChannelBehavior,
+        user: User
+	): Message = actionLog.createEmbed {
+		title = moderationAction
 
-			field {
-				name = "User"
-				value = "${user.tag}\n${user.id}"
-				inline = false
-			}
-			field {
-				name = "Reason"
-				value = "Via report"
-				inline = false
-			}
+		field {
+			name = "User"
+			value = "${user.tag}\n${user.id}"
+			inline = false
+		}
+		field {
+			name = "Reason"
+			value = "Via report"
+			inline = false
 		}
 	}
 

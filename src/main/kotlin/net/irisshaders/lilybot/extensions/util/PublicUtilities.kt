@@ -32,7 +32,6 @@ import net.irisshaders.lilybot.utils.userDMEmbed
 class PublicUtilities : Extension() {
 	override val name = "public-utilities"
 
-
 	override suspend fun setup() {
 		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
 
@@ -201,16 +200,11 @@ class PublicUtilities : Extension() {
 
 												action {
 													when (this.selected[0]) {
-														"inappropriate" -> {
-															reason = "is inappropriate for this server."
-														}
-														"impersonation" -> {
-															reason = "impersonates another user."
-														}
-														"hoisting" -> {
-															reason = "deliberately hoists you up the user ladder, " +
-																	"which is not allowed."
-														}
+														"inappropriate" -> reason = "is inappropriate for this server."
+														"impersonation" -> reason = "impersonates another user."
+														"hoisting" ->
+														    reason = "deliberately hoists you up the user " +
+																"ladder, which is not allowed."
 													}
 
 													userDMEmbed(

@@ -28,7 +28,6 @@ class ModUtilities : Extension() {
 	override val name = "mod-utilities"
 
 	override suspend fun setup() {
-
 		/**
 		 * Say Command
 		 * @author NoComment1105
@@ -57,7 +56,6 @@ class ModUtilities : Extension() {
 					} else {
 						guild?.getChannel(arguments.targetChannel!!.id) as MessageChannelBehavior
 					}
-
 
 					try {
 						if (arguments.embedMessage) {

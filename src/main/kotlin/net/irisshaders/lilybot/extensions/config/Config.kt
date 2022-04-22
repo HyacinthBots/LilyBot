@@ -55,7 +55,6 @@ class Config : Extension() {
 						DatabaseHelper.setConfig(newConfig)
 
 						respond { content = "Config Set for Guild ID: ${guild!!.id}!" }
-
 					} else {
 						respond { content = "**Error:** There is already a configuration set for this guild!" }
 						return@action

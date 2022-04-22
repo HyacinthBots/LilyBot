@@ -43,16 +43,23 @@ class ThreadInviter : Extension() {
 			// Don't try to create if the message is a slash command
 			check { failIf { event.message.type == MessageType.ChatInputCommand } }
 			// Don't try and run this if the thread is manually created
-			check { failIf { event.message.type == MessageType.ThreadCreated
-					|| event.message.type == MessageType.ThreadStarterMessage }
+			check {
+			    failIf {
+			        event.message.type == MessageType.ThreadCreated ||
+					event.message.type == MessageType.ThreadStarterMessage
+			    }
 			}
 			// Don't try and create if Lily or another bot sent the message
 			check { failIf { event.message.author?.id == kord.selfId || event.message.author?.isBot == true } }
 			// Don't try to create if the message is already in a thread
 			check { failIf { event.message.getChannel() is TextChannelThread } }
 			// Don't try to create if the message is in an announcements channel
-			check { failIf { event.message.getChannel() is NewsChannel
-					|| event.message.getChannel() is NewsChannelThread } }
+			check {
+			    failIf {
+			        event.message.getChannel() is NewsChannel ||
+					event.message.getChannel() is NewsChannelThread
+			    }
+			}
 
 			check { configPresent() }
 			action {
@@ -70,7 +77,7 @@ class ThreadInviter : Extension() {
 				// fail if the message is not in the support channel
 				if (textChannel != supportChannel) return@action
 
-				//TODO: this is incredibly stupid, there has to be a better way to do this.
+				// TODO: this is incredibly stupid, there has to be a better way to do this.
 				textChannel.activeThreads.collect {
 					if (it.name == "Support thread for " + event.member!!.asUser().username) {
 						userThreadExists = true
