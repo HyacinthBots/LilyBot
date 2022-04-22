@@ -5,7 +5,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
-import javax.swing.text.html.HTML.Tag
 
 object DatabaseHelper {
 
@@ -132,13 +131,12 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets the given tag using it's [name] and returns the [column] selected. If the tag does not exist
+	 * Gets the given tag using it's [name] and returns its [TagsData]. If the tag does not exist
 	 * it will return null
 	 *
-	q	 * @param inputGuildId The ID of the guild the command was run in
+	 * @param inputGuildId The ID of the guild the command was run in
 	 * @param name The named identifier of the tag
-	 * @param column The tag data you are requesting
-	 * @return The requested [column] value or null
+	 * @return null or the result from the database
 	 * @author NoComment1105
 	 */
 	suspend fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
