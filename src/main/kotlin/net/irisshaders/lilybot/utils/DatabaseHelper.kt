@@ -9,9 +9,9 @@ import org.litote.kmongo.eq
 object DatabaseHelper {
 
 	/**
-	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database
+	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database.
 	 *
-	 * @param inputGuildId The ID of the guild the command was run in
+	 * @param inputGuildId The ID of the guild the command was run in.
 	 * @return The config for [inputGuildId]
 	 * @author NoComment1105
 	 * @author tempest15
@@ -22,9 +22,9 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Adds the given [newConfig] to the database
+	 * Adds the given [newConfig] to the database.
 	 *
-	 * @param newConfig The new config values you want to set
+	 * @param newConfig The new config values you want to set.
 	 * @author tempest15
 	 */
 	suspend fun setConfig(newConfig: ConfigData) {
@@ -34,7 +34,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Clears the config for the provided [inputGuildId]
+	 * Clears the config for the provided [inputGuildId].
 	 *
 	 * @param inputGuildId The ID of the guild the command was run in
 	 * @author tempest15
@@ -45,7 +45,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database
+	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database.
 	 *
 	 * @param inputUserId The ID of the user to get the point value for
 	 * @param inputGuildId The ID of the guild the command was run in
@@ -58,11 +58,11 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Updates the number of points the provided [inputUserId] has in the provided [inputGuildId] in the database
+	 * Updates the number of points the provided [inputUserId] has in the provided [inputGuildId] in the database.
 	 *
-	 * @param inputUserId The ID of the user to get the point value for
-	 * @param inputGuildId The ID of the guild the command was run in
-	 * @param remove Remove a warn strike, or add a warn strike
+	 * @param inputUserId The ID of the user to get the point value for.
+	 * @param inputGuildId The ID of the guild the command was run in.
+	 * @param remove Remove a warn strike, or add a warn strike.
 	 * @author tempest15
 	 */
 	suspend fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
@@ -79,7 +79,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [inputComponentId] the [ComponentData] will be returned from the database
+	 * Using the provided [inputComponentId] the [ComponentData] will be returned from the database.
 	 *
 	 * @param inputComponentId The ID of the component the event was triggered with
 	 * @return The component from the database
@@ -92,9 +92,9 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Add the given [newComponent] to the database
+	 * Add the given [newComponent] to the database.
 	 *
-	 * @param newComponent The data for the component to be added
+	 * @param newComponent The data for the component to be added.
 	 * @author tempest15
 	 */
 	suspend fun setComponent(newComponent: ComponentData) {
@@ -104,9 +104,9 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets Lily's status from the database
+	 * Gets Lily's status from the database.
 	 *
-	 * @return null or the set status in the database
+	 * @return null or the set status in the database.
 	 * @author NoComment1105
 	 */
 	fun getStatus(): String {
@@ -119,7 +119,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Add the given [newStatus] to the database
+	 * Add the given [newStatus] to the database.
 	 *
 	 * @param newStatus The new status you wish to set
 	 * @author NoComment1105
@@ -131,12 +131,12 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets the given tag using it's [name] and returns its [TagsData]. If the tag does not exist
+	 * Gets the given tag using it's [name] and returns its [TagsData]. If the tag does not exist.
 	 * it will return null
 	 *
-	 * @param inputGuildId The ID of the guild the command was run in
-	 * @param name The named identifier of the tag
-	 * @return null or the result from the database
+	 * @param inputGuildId The ID of the guild the command was run in.
+	 * @param name The named identifier of the tag.
+	 * @return null or the result from the database.
 	 * @author NoComment1105
 	 */
 	suspend fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
@@ -145,10 +145,10 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets all tags in the given [inputGuildId]
+	 * Gets all tags in the given [inputGuildId].
 	 *
-	 * @param inputGuildId The ID of the guild
-	 * @return A [List] of tags for the specified [inputGuildId]
+	 * @param inputGuildId The ID of the guild.
+	 * @return A [List] of tags for the specified [inputGuildId].
 	 * @author NoComment1105
 	 */
 	suspend fun getAllTags(inputGuildId: Snowflake): List<TagsData> {
@@ -157,12 +157,12 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Adds a tag to the database, using the provided parameters
+	 * Adds a tag to the database, using the provided parameters.
 	 *
-	 * @param inputGuildId The ID of the guild the command was run in. Used to keep things guild specific
-	 * @param name The named identifier of the tag being created
-	 * @param tagTitle The title of the tag being created
-	 * @param tagValue The contents of the tag being created
+	 * @param inputGuildId The ID of the guild the command was run in. Used to keep things guild specific.
+	 * @param name The named identifier of the tag being created.
+	 * @param tagTitle The title of the tag being created.
+	 * @param tagValue The contents of the tag being created.
 	 * @author NoComment1105
 	 */
 	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
@@ -171,10 +171,10 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Deletes the tag [name] from the [database]
+	 * Deletes the tag [name] from the [database].
 	 *
-	 * @param inputGuildId The guild the tag was created in
-	 * @param name The named identifier of the tag being deleted
+	 * @param inputGuildId The guild the tag was created in.
+	 * @param name The named identifier of the tag being deleted.
 	 * @author NoComment1105
 	 */
 	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
@@ -183,10 +183,8 @@ object DatabaseHelper {
 	}
 }
 
-// Note that all values should always be nullable in case the database is empty.
-
 @Serializable
-data class ConfigData (
+data class ConfigData(
 	val guildId: Snowflake,
 	val moderatorsPing: Snowflake,
 	val modActionLog: Snowflake,
@@ -197,21 +195,21 @@ data class ConfigData (
 )
 
 @Serializable
-data class WarnData (
+data class WarnData(
 	val userId: Snowflake,
 	val guildId: Snowflake,
 	val strikes: Int
 )
 
 @Serializable
-data class ComponentData (
+data class ComponentData(
 	val componentId: String,
 	val roleId: Snowflake,
 	val addOrRemove: String
 )
 
 @Serializable
-data class StatusData (
+data class StatusData(
 	val key: String, // this is just so we can find the status and should always be set to "LilyStatus"
 	val status: String
 )

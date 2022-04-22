@@ -50,7 +50,6 @@ class TemporaryModeration : Extension() {
 	override val name = "temporary-moderation"
 
 	override suspend fun setup() {
-
 		/**
 		 * Clear Command
 		 * @author IMS212
@@ -422,11 +421,9 @@ class TemporaryModeration : Extension() {
 					val targetChannel = channelParent ?: channelArg.asChannelOf()
 
 					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
-					if (channelPerms != null) {
-						if (channelPerms.denied.contains(Permission.SendMessages)) {
-							respond { content = "This channel is already locked!" }
-							return@action
-						}
+					if (channelPerms != null && channelPerms.denied.contains(Permission.SendMessages)) {
+						respond { content = "This channel is already locked!" }
+						return@action
 					}
 
 					targetChannel.createEmbed {
@@ -517,12 +514,12 @@ class TemporaryModeration : Extension() {
 				check { configPresent() }
 
 				@Suppress("DuplicatedCode")
-				action{
+				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLogChannel = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
-					var channelParent : TextChannel? = null
+					var channelParent: TextChannel? = null
 					if (channelArg is TextChannelThread) {
 						channelParent = channelArg.getParent()
 					}

@@ -29,7 +29,6 @@ suspend fun CheckContext<*>.configPresent() {
 	) {
 		fail("Unable to access config for this guild! Please inform a member of staff")
 	} else pass()
-
 }
 
 /**

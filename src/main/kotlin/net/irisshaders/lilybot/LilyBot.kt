@@ -60,7 +60,6 @@ private val gitHubLogger = KotlinLogging.logger { }
 
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
-
 		applicationCommands {
 			enabled = true
 		}
@@ -113,7 +112,6 @@ suspend fun main() {
 		} catch (exception: IOException) {
 			exception.printStackTrace()
 			gitHubLogger.error("Failed to log into GitHub!")
-			throw IOException(exception)
 		}
 	}
 

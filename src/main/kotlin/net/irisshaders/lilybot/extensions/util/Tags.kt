@@ -26,7 +26,6 @@ class Tags : Extension() {
 	override val name = "tags"
 
 	override suspend fun setup() {
-
 		publicSlashCommand(::TagArgs) {
 			name = "tag"
 			description = "Call a tag from this guild! Use /tag-help for more info."
@@ -34,7 +33,6 @@ class Tags : Extension() {
 			check { anyGuild() }
 
 			action {
-
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.name == null) {
 					respondEphemeral {
 						content = "Unable to find tag! Does this tag exist?"

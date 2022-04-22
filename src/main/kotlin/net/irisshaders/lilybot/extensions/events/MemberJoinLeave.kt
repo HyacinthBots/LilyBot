@@ -13,7 +13,7 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 
 /**
- * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild
+ * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild.
  * @author NoComment1105
  */
 class MemberJoinLeave : Extension() {
