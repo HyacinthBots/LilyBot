@@ -9,34 +9,22 @@ import org.litote.kmongo.eq
 object DatabaseHelper {
 
 	/**
-	 * Using the provided [inputGuildId] and [inputColumn] a value or null will be returned from the database
+	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database.
 	 *
-	 * @param inputGuildId The ID of the guild the command was run in
-	 * @param inputColumn The config value associated with that guild that you want
-	 * @return null or the result from the database
+	 * @param inputGuildId The ID of the guild the command was run in.
+	 * @return The config for [inputGuildId]
 	 * @author NoComment1105
 	 * @author tempest15
 	 */
-	suspend fun getConfig(inputGuildId: Snowflake, inputColumn: String): Snowflake? {
+	suspend fun getConfig(inputGuildId: Snowflake): ConfigData? {
 		val collection = database.getCollection<ConfigData>()
-		val selectedConfig = collection.findOne(ConfigData::guildId eq inputGuildId) ?: return null
-
-		return when (inputColumn) {
-			"guildId" -> selectedConfig.guildId
-			"moderatorsPing" -> selectedConfig.moderatorsPing
-			"modActionLog" -> selectedConfig.modActionLog
-			"messageLogs" -> selectedConfig.messageLogs
-			"joinChannel" -> selectedConfig.joinChannel
-			"supportChannel" -> selectedConfig.supportChannel
-			"supportTeam" -> selectedConfig.supportTeam
-			else -> null
-		}
+		return collection.findOne(ConfigData::guildId eq inputGuildId)
 	}
 
 	/**
-	 * Adds the given [newConfig] to the database
+	 * Adds the given [newConfig] to the database.
 	 *
-	 * @param newConfig The new config values you want to set
+	 * @param newConfig The new config values you want to set.
 	 * @author tempest15
 	 */
 	suspend fun setConfig(newConfig: ConfigData) {
@@ -46,7 +34,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Clears the config for the provided [inputGuildId]
+	 * Clears the config for the provided [inputGuildId].
 	 *
 	 * @param inputGuildId The ID of the guild the command was run in
 	 * @author tempest15
@@ -57,37 +45,28 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database
+	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database.
 	 *
 	 * @param inputUserId The ID of the user to get the point value for
 	 * @param inputGuildId The ID of the guild the command was run in
 	 * @return null or the result from the database
 	 * @author tempest15
 	 */
-	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): Int {
+	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? {
 		val collection = database.getCollection<WarnData>()
-		val selectedUserInGuild = collection.findOne(
-			WarnData::userId eq inputUserId,
-			WarnData::guildId eq inputGuildId
-		)
-
-		return if (selectedUserInGuild != null) {
-			selectedUserInGuild.strikes!!
-		} else {
-			0
-		}
+		return collection.findOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 	}
 
 	/**
-	 * Updates the number of points the provided [inputUserId] has in the provided [inputGuildId] in the database
+	 * Updates the number of points the provided [inputUserId] has in the provided [inputGuildId] in the database.
 	 *
-	 * @param inputUserId The ID of the user to get the point value for
-	 * @param inputGuildId The ID of the guild the command was run in
-	 * @param remove Remove a warn strike, or add a warn strike
+	 * @param inputUserId The ID of the user to get the point value for.
+	 * @param inputGuildId The ID of the guild the command was run in.
+	 * @param remove Remove a warn strike, or add a warn strike.
 	 * @author tempest15
 	 */
 	suspend fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
-		val currentStrikes = getWarn(inputUserId, inputGuildId)
+		val currentStrikes = getWarn(inputUserId, inputGuildId)?.strikes ?: 0
 		val collection = database.getCollection<WarnData>()
 		collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 		collection.insertOne(
@@ -100,30 +79,22 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [inputComponentId] and [inputColumn] a value or null will be returned from the database
+	 * Using the provided [inputComponentId] the [ComponentData] will be returned from the database.
 	 *
 	 * @param inputComponentId The ID of the component the event was triggered with
-	 * @param inputColumn The config value associated with that component that you want
-	 * @return null or the result from the database
+	 * @return The component from the database
 	 * @author tempest15
 	 */
-	suspend fun getComponent(inputComponentId: String, inputColumn: String): Any? {
+	suspend fun getComponent(inputComponentId: String): ComponentData? {
 		// this returns any because it can return either a string or a snowflake
 		val collection = database.getCollection<ComponentData>()
-		val selectedComponent = collection.findOne(ComponentData::componentId eq inputComponentId)
-
-		return when (inputColumn) {
-			"componentId" -> selectedComponent!!.componentId
-			"roleId" -> selectedComponent!!.roleId
-			"addOrRemove" -> selectedComponent!!.addOrRemove
-			else -> null
-		}
+		return collection.findOne(ComponentData::componentId eq inputComponentId)
 	}
 
 	/**
-	 * Add the given [newComponent] to the database
+	 * Add the given [newComponent] to the database.
 	 *
-	 * @param newComponent The data for the component to be added
+	 * @param newComponent The data for the component to be added.
 	 * @author tempest15
 	 */
 	suspend fun setComponent(newComponent: ComponentData) {
@@ -133,9 +104,9 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets Lily's status from the database
+	 * Gets Lily's status from the database.
 	 *
-	 * @return null or the set status in the database
+	 * @return null or the set status in the database.
 	 * @author NoComment1105
 	 */
 	fun getStatus(): String {
@@ -148,7 +119,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Add the given [newStatus] to the database
+	 * Add the given [newStatus] to the database.
 	 *
 	 * @param newStatus The new status you wish to set
 	 * @author NoComment1105
@@ -160,34 +131,24 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets the given tag using it's [name] and returns the [column] selected. If the tag does not exist
+	 * Gets the given tag using it's [name] and returns its [TagsData]. If the tag does not exist.
 	 * it will return null
 	 *
-q	 * @param inputGuildId The ID of the guild the command was run in
-	 * @param name The named identifier of the tag
-	 * @param column The tag data you are requesting
-	 * @return The requested [column] value or null
+	 * @param inputGuildId The ID of the guild the command was run in.
+	 * @param name The named identifier of the tag.
+	 * @return null or the result from the database.
 	 * @author NoComment1105
 	 */
-	suspend fun getTag(inputGuildId: Snowflake, name: String, column: String): Any? {
-		val selectedTag: TagsData?
+	suspend fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
 		val collection = database.getCollection<TagsData>()
-		selectedTag = collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name) ?: return null
-
-		return when (column) {
-			"guildId" -> selectedTag.guildId
-			"name" -> selectedTag.name
-			"tagTitle" -> selectedTag.tagTitle
-			"tagValue" -> selectedTag.tagValue
-			else -> null
-		}
+		return collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 	}
 
 	/**
-	 * Gets all tags in the given [inputGuildId]
+	 * Gets all tags in the given [inputGuildId].
 	 *
-	 * @param inputGuildId The ID of the guild
-	 * @return A [List] of tags for the specified [inputGuildId]
+	 * @param inputGuildId The ID of the guild.
+	 * @return A [List] of tags for the specified [inputGuildId].
 	 * @author NoComment1105
 	 */
 	suspend fun getAllTags(inputGuildId: Snowflake): List<TagsData> {
@@ -196,12 +157,12 @@ q	 * @param inputGuildId The ID of the guild the command was run in
 	}
 
 	/**
-	 * Adds a tag to the database, using the provided parameters
+	 * Adds a tag to the database, using the provided parameters.
 	 *
-	 * @param inputGuildId The ID of the guild the command was run in. Used to keep things guild specific
-	 * @param name The named identifier of the tag being created
-	 * @param tagTitle The title of the tag being created
-	 * @param tagValue The contents of the tag being created
+	 * @param inputGuildId The ID of the guild the command was run in. Used to keep things guild specific.
+	 * @param name The named identifier of the tag being created.
+	 * @param tagTitle The title of the tag being created.
+	 * @param tagValue The contents of the tag being created.
 	 * @author NoComment1105
 	 */
 	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
@@ -210,10 +171,10 @@ q	 * @param inputGuildId The ID of the guild the command was run in
 	}
 
 	/**
-	 * Deletes the tag [name] from the [database]
+	 * Deletes the tag [name] from the [database].
 	 *
-	 * @param inputGuildId The guild the tag was created in
-	 * @param name The named identifier of the tag being deleted
+	 * @param inputGuildId The guild the tag was created in.
+	 * @param name The named identifier of the tag being deleted.
 	 * @author NoComment1105
 	 */
 	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
@@ -222,43 +183,41 @@ q	 * @param inputGuildId The ID of the guild the command was run in
 	}
 }
 
-// Note that all values should always be nullable in case the database is empty.
-
 @Serializable
 data class ConfigData(
-	val guildId: Snowflake?,
-	val moderatorsPing: Snowflake?,
-	val modActionLog: Snowflake?,
-	val messageLogs: Snowflake?,
-	val joinChannel: Snowflake?,
+	val guildId: Snowflake,
+	val moderatorsPing: Snowflake,
+	val modActionLog: Snowflake,
+	val messageLogs: Snowflake,
+	val joinChannel: Snowflake,
 	val supportChannel: Snowflake?,
 	val supportTeam: Snowflake?,
 )
 
 @Serializable
 data class WarnData(
-	val userId: Snowflake?,
-	val guildId: Snowflake?,
-	val strikes: Int?
+	val userId: Snowflake,
+	val guildId: Snowflake,
+	val strikes: Int
 )
 
 @Serializable
 data class ComponentData(
-	val componentId: String?,
-	val roleId: Snowflake?,
-	val addOrRemove: String?
+	val componentId: String,
+	val roleId: Snowflake,
+	val addOrRemove: String
 )
 
 @Serializable
 data class StatusData(
-	val key: String?, // this is just so we can find the status and should always be set to "LilyStatus"
-	val status: String?
+	val key: String, // this is just so we can find the status and should always be set to "LilyStatus"
+	val status: String
 )
 
 @Serializable
 data class TagsData(
-	val guildId: Snowflake?,
-	val name: String?,
-	val tagTitle: String?,
-	val tagValue: String?
+	val guildId: Snowflake,
+	val name: String,
+	val tagTitle: String,
+	val tagValue: String
 )

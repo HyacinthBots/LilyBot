@@ -1,6 +1,3 @@
-@file:OptIn(ExperimentalTime::class)
-
-
 package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
@@ -18,28 +15,27 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.HttpClient
+import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.statement.readBytes
 import io.ktor.http.Parameters
 import kotlinx.datetime.Clock
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import java.io.ByteArrayInputStream
+import java.io.IOException
 import java.util.zip.GZIPInputStream
-import kotlin.time.ExperimentalTime
-import kotlinx.serialization.json.Json
 
 class LogUploading : Extension() {
 	override val name = "log-uploading"
 
-	@Suppress("PrivatePropertyName")
-	private val LOG_FILE_EXTENSIONS = setOf("log", "gz", "txt")
+	private val logFileExtensions = setOf("log", "gz", "txt")
 
 	override suspend fun setup() {
 		/**
-		 * Upload files that have the extensions specified in [LOG_FILE_EXTENSIONS] to mclo.gs,
+		 * Upload files that have the extensions specified in [logFileExtensions] to mclo.gs,
 		 * giving a user confirmation.
 		 *
 		 * @author Caio_MGT
@@ -52,9 +48,10 @@ class LogUploading : Extension() {
 				eventMessage.attachments.forEach { attachment ->
 					val attachmentFileName = attachment.filename
 					val attachmentFileExtension = attachmentFileName.substring(
-						attachmentFileName.lastIndexOf(".") + 1)
+						attachmentFileName.lastIndexOf(".") + 1
+					)
 
-					if (attachmentFileExtension in LOG_FILE_EXTENSIONS) {
+					if (attachmentFileExtension in logFileExtensions) {
 						val logBytes = attachment.download()
 
 						val builder = StringBuilder()
@@ -141,11 +138,11 @@ class LogUploading : Extension() {
 															}
 														}
 													}
-												} catch (e: Exception) {
+												} catch (e: IOException) {
 													// Just swallow this exception
 													// If something has gone wrong here, something is wrong
 													// somewhere else, so it's probably fine
-													//-----------------------------------------------------
+													// -----------------------------------------------------
 													// This honestly makes no sense, why would you do this?
 													// It certainly made debugging harder. - CaioMGT
 												}
@@ -183,17 +180,22 @@ class LogUploading : Extension() {
 	private suspend fun postToMCLogs(text: String): String {
 		val client = HttpClient()
 		val response = client.post("https://api.mclo.gs/1/log") {
-			setBody(FormDataContent(Parameters.build {
+			setBody(
+			    FormDataContent(
+			        Parameters.build {
 				append("content", text)
-			}))
+			}
+			    )
+			)
 		}.readBytes().decodeToString()
 		client.close()
 		// ignoreUnknownKeys is necessary to not cause any errors due to missing values in the JSON
-		val log = Json { ignoreUnknownKeys = true }.decodeFromString<LogData>(response)
+		val json = Json { ignoreUnknownKeys = true }
+		val log = json.decodeFromString<LogData>(response)
 		if (log.success) {
 			return "https://mclo.gs/" + log.id
 		} else {
-			throw Exception("Failed to upload log: " + log.error)
+			throw IOException("Failed to upload log: " + log.error)
 		}
 	}
 }

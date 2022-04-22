@@ -37,10 +37,9 @@ import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.DatabaseHelper.getWarn
 import net.irisshaders.lilybot.utils.baseModerationEmbed
+import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
-import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.isBotOrModerator
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
@@ -51,7 +50,6 @@ class TemporaryModeration : Extension() {
 	override val name = "temporary-moderation"
 
 	override suspend fun setup() {
-
 		/**
 		 * Clear Command
 		 * @author IMS212
@@ -62,11 +60,12 @@ class TemporaryModeration : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ManageMessages) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
 
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val messageAmount = arguments.messages
 				val textChannel = channel as GuildMessageChannelBehavior
 
@@ -104,17 +103,17 @@ class TemporaryModeration : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
 
 				isBotOrModerator(userArg, "warn") ?: return@action
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
-				val newStrikes = getWarn(userArg.id, guild!!.id)
+				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)?.strikes
 
 				respond {
 					content = "Warned user."
@@ -180,30 +179,32 @@ class TemporaryModeration : Extension() {
 						DISCORD_BLACK,
 						user.asUser()
 					)
-				} else if (newStrikes > 3) {
-					dm = userDMEmbed(
-						userArg,
-						"Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}",
-						"**Reason:** ${arguments.reason}\n\n" +
-								"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
-								"For more information about the warn system, please see [this document]" +
-								"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
-						DISCORD_RED
-					)
+				} else if (newStrikes != null) {
+					if (newStrikes > 3) {
+						dm = userDMEmbed(
+							userArg,
+							"Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}",
+							"**Reason:** ${arguments.reason}\n\n" +
+									"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
+									"For more information about the warn system, please see [this document]" +
+									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)",
+							DISCORD_RED
+						)
 
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+						guild?.getMember(userArg.id)?.edit {
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+						}
+
+						responseEmbedInChannel(
+							actionLog,
+							"Timeout",
+							"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
+									"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action." +
+									"Reason: ${arguments.reason}\n\n",
+							DISCORD_BLACK,
+							user.asUser()
+						)
 					}
-
-					responseEmbedInChannel(
-						actionLog,
-						"Timeout",
-						"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
-								"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other action." +
-								"Reason: ${arguments.reason}\n\n",
-						DISCORD_BLACK,
-						user.asUser()
-					)
 				}
 
 				actionLog.createEmbed {
@@ -233,15 +234,16 @@ class TemporaryModeration : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				val targetUser = guild?.getMember(userArg.id)
-				if (getWarn(targetUser!!.id, guild!!.id) == 0) {
+				val userStrikes = DatabaseHelper.getWarn(targetUser!!.id, guild!!.id)?.strikes
+				if (userStrikes == 0 || userStrikes == null) {
 					respond {
 						content = "This user does not have any warning strikes!"
 					}
@@ -249,7 +251,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, true)
-				val newStrikes = getWarn(userArg.id, guild!!.id)
+				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)
 
 				respond {
 					content = "Removed strike from user"
@@ -290,11 +292,11 @@ class TemporaryModeration : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
 
@@ -355,17 +357,11 @@ class TemporaryModeration : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = DatabaseHelper.getConfig(guild!!.id, "modActionLog")
-				if (actionLogId == null) {
-					respond {
-						content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-					}
-					return@action
-				}
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				// Set timeout to null, or no timeout
@@ -404,17 +400,18 @@ class TemporaryModeration : Extension() {
 			name = "lock"
 			description = "The parent command for all locking commands"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ModerateMembers) }
-
 			ephemeralSubCommand(::LockChannelArgs) {
 				name = "channel"
 				description = "Lock a channel so only mods can send messages"
 
+				check { anyGuild() }
+				check { hasPermission(Permission.ModerateMembers) }
+				check { configPresent() }
+
 				@Suppress("DuplicatedCode")
 				action {
-					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -424,11 +421,9 @@ class TemporaryModeration : Extension() {
 					val targetChannel = channelParent ?: channelArg.asChannelOf()
 
 					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
-					if (channelPerms != null) {
-						if (channelPerms.denied.contains(Permission.SendMessages)) {
-							respond { content = "This channel is already locked!" }
-							return@action
-						}
+					if (channelPerms != null && channelPerms.denied.contains(Permission.SendMessages)) {
+						respond { content = "This channel is already locked!" }
+						return@action
 					}
 
 					targetChannel.createEmbed {
@@ -444,7 +439,7 @@ class TemporaryModeration : Extension() {
 						denied += Permission.UseApplicationCommands
 					}
 
-					actionLogChannel.createEmbed {
+					actionLog.createEmbed {
 						title = "Channel Locked"
 						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
 						footer {
@@ -463,9 +458,13 @@ class TemporaryModeration : Extension() {
 				name = "server"
 				description = "Lock the server so only mods can send messages"
 
+				check { anyGuild() }
+				check { hasPermission(Permission.ModerateMembers) }
+				check { configPresent() }
+
 				action {
-					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLogChannel = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -506,20 +505,21 @@ class TemporaryModeration : Extension() {
 			name = "unlock"
 			description = "The parent command for all unlocking commands"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ModerateMembers) }
-
 			ephemeralSubCommand(::UnlockChannelArgs) {
 				name = "channel"
 				description = "Unlock a channel so everyone can send messages"
 
+				check { anyGuild() }
+				check { hasPermission(Permission.ModerateMembers) }
+				check { configPresent() }
+
 				@Suppress("DuplicatedCode")
-				action{
-					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+				action {
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLogChannel = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
-					var channelParent : TextChannel? = null
+					var channelParent: TextChannel? = null
 					if (channelArg is TextChannelThread) {
 						channelParent = channelArg.getParent()
 					}
@@ -568,9 +568,13 @@ class TemporaryModeration : Extension() {
 				name = "server"
 				description = "Unlock the server so everyone can send messages"
 
+				check { anyGuild() }
+				check { hasPermission(Permission.ModerateMembers) }
+				check { configPresent() }
+
 				action {
-					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-					val actionLogChannel = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLogChannel = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (everyoneRole.permissions.contains(Permission.SendMessages)) {

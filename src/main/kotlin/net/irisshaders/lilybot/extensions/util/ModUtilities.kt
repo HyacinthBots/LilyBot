@@ -21,14 +21,13 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import net.irisshaders.lilybot.utils.getConfigPrivateResponse
+import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 class ModUtilities : Extension() {
 	override val name = "mod-utilities"
 
 	override suspend fun setup() {
-
 		/**
 		 * Say Command
 		 * @author NoComment1105
@@ -43,15 +42,20 @@ class ModUtilities : Extension() {
 						respond { content = "**Error:** You do not have the `Moderate Members` permission" }
 						return@action
 					}
-					val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-
-					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+					val config = DatabaseHelper.getConfig(guild!!.id)
+					if (config == null) {
+						respond {
+							content =
+								"**Error:** Unable to access config for this guild! Please inform a member of staff"
+						}
+						return@action
+					}
+					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 					val targetChannel = if (arguments.targetChannel == null) {
 						channel
 					} else {
 						guild?.getChannel(arguments.targetChannel!!.id) as MessageChannelBehavior
 					}
-
 
 					try {
 						if (arguments.embedMessage) {
@@ -118,6 +122,7 @@ class ModUtilities : Extension() {
 			description = "Set Lily's current presence/status."
 
 			check { hasPermission(Permission.Administrator) }
+			check { configPresent() }
 
 			action {
 				// lock this command to the testing guild
@@ -126,9 +131,8 @@ class ModUtilities : Extension() {
 					return@action
 				}
 
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 				this@ephemeralSlashCommand.kord.editPresence {
 					status = PresenceStatus.Online

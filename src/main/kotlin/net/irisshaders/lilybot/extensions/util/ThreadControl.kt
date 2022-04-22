@@ -4,8 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-@file:OptIn(ExperimentalTime::class)
-
 package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.checks.isInThread
@@ -19,10 +17,9 @@ import com.kotlindiscord.kord.extensions.types.edit
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
-import net.irisshaders.lilybot.utils.getConfigPublicResponse
-import kotlin.time.ExperimentalTime
+import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.configPresent
 
-@Suppress("DuplicatedCode")
 class ThreadControl : Extension() {
 
 	override val name = "thread-control"
@@ -37,15 +34,16 @@ class ThreadControl : Extension() {
 				description = "Rename a thread!"
 
 				check { isInThread() }
+				check { configPresent() }
 
 				action {
 					val threadChannel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
 
-					if (moderatorRoleId in roles || threadChannel.ownerId == user.id) {
+					if (config.moderatorsPing in roles || threadChannel.ownerId == user.id) {
 						threadChannel.edit {
 							name = arguments.newThreadName
 
@@ -79,15 +77,16 @@ class ThreadControl : Extension() {
 				description = "Archive this thread"
 
 				check { isInThread() }
+				check { configPresent() }
 
 				action {
 					val threadChannel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 					val roles = member.roles.toList().map { it.id }
 
-					val moderatorRoleId = getConfigPublicResponse("moderatorsPing") ?: return@action
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
 
-					if (moderatorRoleId in roles) {
+					if (config.moderatorsPing in roles) {
 						threadChannel.edit {
 							this.archived = true
 							this.locked = arguments.lock

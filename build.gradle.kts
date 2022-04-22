@@ -4,9 +4,11 @@ plugins {
     application
 
     kotlin("jvm")
-    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("plugin.serialization")
 
     id("com.github.johnrengelman.shadow")
+    id("io.gitlab.arturbosch.detekt")
+    id("com.github.jakemarsden.git-hooks")
 }
 
 group = "net.irisshaders.lilybot"
@@ -42,6 +44,7 @@ repositories {
 }
 
 dependencies {
+    detektPlugins(libs.detekt)
 
     implementation(libs.kord.extensions)
     implementation(libs.kord.phishing)
@@ -70,6 +73,12 @@ application {
     mainClassName = "net.irisshaders.lilybot.LilyBotKt"
 }
 
+gitHooks {
+    setHooks(
+        mapOf("pre-commit" to "detekt")
+    )
+}
+
 tasks.withType<KotlinCompile>().forEach {
     it.kotlinOptions.jvmTarget = "17"
 
@@ -86,4 +95,11 @@ tasks.jar {
             "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
         )
     }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config = files("$rootDir/detekt.yml")
+
+    autoCorrect = true
 }

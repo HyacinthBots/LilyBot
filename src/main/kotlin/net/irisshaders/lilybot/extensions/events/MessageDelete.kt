@@ -1,6 +1,3 @@
-@file:OptIn(ExperimentalTime::class)
-
-
 package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
@@ -12,7 +9,6 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageDeleteEvent
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import kotlin.time.ExperimentalTime
 
 class MessageDelete : Extension() {
 	override val name = "message-delete"
@@ -29,15 +25,15 @@ class MessageDelete : Extension() {
 				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
 
 				// Try to get the message logs channel, return@action if null
-				val messageLogId = DatabaseHelper.getConfig(event.guild!!.id, "messageLogs") ?: return@action
+				val config = DatabaseHelper.getConfig(event.guild!!.id) ?: return@action
 
 				val guild = kord.getGuild(event.guildId!!)
-				val messageLogChannel = guild?.getChannel(messageLogId) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
 				val messageContent = event.message?.asMessageOrNull()?.content.toString()
 				val eventMessage = event.message
 				val messageLocation = event.channel.id.value
 
-				messageLogChannel.createEmbed {
+				messageLog.createEmbed {
 					color = DISCORD_PINK
 					title = "Message Deleted"
 					description = "Location: <#$messageLocation>"

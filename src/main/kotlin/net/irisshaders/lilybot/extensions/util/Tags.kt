@@ -19,14 +19,13 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.getConfigPrivateResponse
+import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 class Tags : Extension() {
 	override val name = "tags"
 
 	override suspend fun setup() {
-
 		publicSlashCommand(::TagArgs) {
 			name = "tag"
 			description = "Call a tag from this guild! Use /tag-help for more info."
@@ -34,8 +33,7 @@ class Tags : Extension() {
 			check { anyGuild() }
 
 			action {
-
-				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName, "name") == null) {
+				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.name == null) {
 					respondEphemeral {
 						content = "Unable to find tag! Does this tag exist?"
 					}
@@ -45,8 +43,8 @@ class Tags : Extension() {
 				respond {
 					embed {
 						color = DISCORD_BLURPLE
-						title = DatabaseHelper.getTag(guild!!.id, arguments.tagName, "tagTitle")!!.toString()
-						description = DatabaseHelper.getTag(guild!!.id, arguments.tagName, "tagValue")!!.toString()
+						title = DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.tagTitle!!.toString()
+						description = DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.tagValue!!.toString()
 						timestamp = Clock.System.now()
 					}
 				}
@@ -90,10 +88,11 @@ class Tags : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-				val actionLog = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 				actionLog.createEmbed {
 					color = DISCORD_GREEN
@@ -130,17 +129,18 @@ class Tags : Extension() {
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
+			check { configPresent() }
 
 			action {
-				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName, "name") == null) {
+				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.name == null) {
 					respond {
 						content = "Unable to find tag! Does this tag exist?"
 					}
 					return@action
 				}
 
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-				val actionLog = guild!!.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 				responseEmbedInChannel(
 					actionLog,
@@ -169,7 +169,7 @@ class Tags : Extension() {
 				val map = mutableMapOf<String, String>()
 
 				tags.forEach {
-					map[it.name!!] = it.name
+					map[it.name] = it.name
 				}
 
 				suggestStringMap(map)

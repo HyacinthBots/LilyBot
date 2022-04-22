@@ -22,15 +22,15 @@ import dev.kord.core.entity.Message
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import net.irisshaders.lilybot.utils.getConfigPublicResponse
+import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 
 class PublicUtilities : Extension() {
 	override val name = "public-utilities"
-
 
 	override suspend fun setup() {
 		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
@@ -85,10 +85,11 @@ class PublicUtilities : Extension() {
 				description = "Request a new nickname for the server!"
 
 				check { anyGuild() }
+				check { configPresent() }
 
 				action {
-					val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
-					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
@@ -199,16 +200,11 @@ class PublicUtilities : Extension() {
 
 												action {
 													when (this.selected[0]) {
-														"inappropriate" -> {
-															reason = "is inappropriate for this server."
-														}
-														"impersonation" -> {
-															reason = "impersonates another user."
-														}
-														"hoisting" -> {
-															reason = "deliberately hoists you up the user ladder, " +
-																	"which is not allowed."
-														}
+														"inappropriate" -> reason = "is inappropriate for this server."
+														"impersonation" -> reason = "impersonates another user."
+														"hoisting" ->
+														    reason = "deliberately hoists you up the user " +
+																"ladder, which is not allowed."
 													}
 
 													userDMEmbed(
@@ -275,10 +271,11 @@ class PublicUtilities : Extension() {
 				description = "Clear your current nickname"
 
 				check { anyGuild() }
+				check { configPresent() }
 
 				action {
-					val actionLogId = getConfigPublicResponse("modActionLog") ?: return@action
-					val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 					if (user.fetchMember(guild!!.id).nickname == null) {
 						respond { content = "You have no nickname to clear!" }
