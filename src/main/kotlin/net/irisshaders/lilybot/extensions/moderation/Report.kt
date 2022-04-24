@@ -143,7 +143,7 @@ class Report : Extension() {
 					" will be treated as spam and punished accordingly."
 		}.edit {
 			components {
-				ephemeralButton(row = 0) {
+				ephemeralButton(0) {
 					label = "Yes"
 					style = ButtonStyle.Success
 
@@ -164,7 +164,7 @@ class Report : Extension() {
 						)
 					}
 				}
-				ephemeralButton(row = 0) {
+				ephemeralButton(0) {
 					label = "No"
 					style = ButtonStyle.Danger
 
@@ -215,14 +215,14 @@ class Report : Extension() {
 			timestamp = Clock.System.now()
 		}.edit {
 			components {
-				ephemeralButton(row = 0) {
+				ephemeralButton(0) {
 					label = "Delete the reported message"
 					style = ButtonStyle.Danger
 
 					action {
 						// TODO once modals become a thing, avoid just consuming this error
 						try {
-							reportedMessage.delete(reason = "Deleted via report.")
+							reportedMessage.delete("Deleted via report.")
 							response?.edit { components { removeAll() } }
 						} catch (e: RestRequestException) {
 							messageLog.createMessage {
@@ -232,7 +232,7 @@ class Report : Extension() {
 					}
 				}
 
-				ephemeralSelectMenu(row = 1) {
+				ephemeralSelectMenu(1) {
 					placeholder = "Select a quick-action"
 					option(
 						label = "10-Minute Timeout",
