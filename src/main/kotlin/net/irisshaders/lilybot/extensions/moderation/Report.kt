@@ -10,6 +10,7 @@ import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
@@ -21,10 +22,12 @@ import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.MessageChannel
+import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
@@ -52,33 +55,32 @@ class Report : Extension() {
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
+				val reportedMessage: Message
+				val messageAuthor: Member?
 
 				try {
-					val reportedMessage = event.interaction.getTarget()
-					val messageAuthor = reportedMessage.getAuthorAsMember()
-
-					respond {
-						content = "Message reported to staff."
-					}
-
-					// Call the create report function with the provided information
-					createReport(
-						user,
-						messageLog,
-						messageAuthor,
-						reportedMessage,
-						config.moderatorsPing,
-						config.modActionLog
-					)
+					reportedMessage = event.interaction.getTarget()
+					messageAuthor = reportedMessage.getAuthorAsMember()
 				} catch (e: KtorRequestException) {
 					respond {
 						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 					}
+					return@action
 				} catch (e: EntityNotFoundException) {
 					respond {
 						content = "Sorry, I can't find this message. Please ping the moderators instead."
 					}
+					return@action
 				}
+
+				confirmationMessage(
+					user,
+					messageLog,
+					messageAuthor,
+					reportedMessage,
+					config.moderatorsPing,
+					config.modActionLog
+				)
 			}
 		}
 
@@ -92,37 +94,85 @@ class Report : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-
 				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
+				val channel: MessageChannel
+				val reportedMessage: Message
+				val messageAuthor: Member?
 
 				try {
 					// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
-					val channel = guild?.getChannel(
+					channel = guild?.getChannel(
 						Snowflake(arguments.message.split("/")[5])
 					) as MessageChannel
-					val reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
-					val messageAuthor = reportedMessage.getAuthorAsMember()
-
-					respond {
-						content = "Message reported to staff"
-					}
-
-					// Create a report with the provided information
-					createReport(
-						user,
-						messageLog,
-						messageAuthor,
-						reportedMessage,
-						config.moderatorsPing,
-						config.modActionLog
-					)
+					reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
+					messageAuthor = reportedMessage.getAuthorAsMember()
 				} catch (e: KtorRequestException) {
 					respond {
 						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 					}
+					return@action
 				} catch (e: EntityNotFoundException) {
 					respond {
 						content = "Sorry, I can't find this message. Please ping the moderators instead."
+					}
+					return@action
+				}
+
+				confirmationMessage(
+					user,
+					messageLog,
+					messageAuthor,
+					reportedMessage,
+					config.moderatorsPing,
+					config.modActionLog
+				)
+			}
+		}
+	}
+	private suspend fun EphemeralInteractionContext.confirmationMessage(
+		user: UserBehavior,
+		messageLog: GuildMessageChannelBehavior,
+		messageAuthor: Member?,
+		reportedMessage: Message,
+		moderatorRole: Snowflake,
+		modActionLog: Snowflake
+	) {
+		var response: EphemeralFollowupMessage? = null
+		response = respond {
+			content = "Would you like to report this message? This will ping moderators, and false reporting" +
+					" will be treated as spam and punished accordingly."
+		}.edit {
+			components {
+				ephemeralButton(0) {
+					label = "Yes"
+					style = ButtonStyle.Success
+
+					action {
+						response?.edit {
+							content = "Message reported to staff."
+							components { removeAll() }
+						}
+
+						// Call the create report function with the provided information
+						createReport(
+							user,
+							messageLog,
+							messageAuthor,
+							reportedMessage,
+							moderatorRole,
+							modActionLog
+						)
+					}
+				}
+				ephemeralButton(0) {
+					label = "No"
+					style = ButtonStyle.Danger
+
+					action {
+						response?.edit {
+							content = "Message not reported."
+							components { removeAll() }
+						}
 					}
 				}
 			}
@@ -137,9 +187,10 @@ class Report : Extension() {
 		moderatorRole: Snowflake,
 		modActionLog: Snowflake
 	) {
+		var response: Message? = null
 		messageLog.createMessage { content = "<@&$moderatorRole>" }
 
-		messageLog.createEmbed {
+		response = messageLog.createEmbed {
 			color = DISCORD_RED
 			title = "Message reported"
 			description = "A message was reported in ${reportedMessage.getChannel().mention}"
@@ -164,14 +215,15 @@ class Report : Extension() {
 			timestamp = Clock.System.now()
 		}.edit {
 			components {
-				ephemeralButton(row = 0) {
+				ephemeralButton(0) {
 					label = "Delete the reported message"
 					style = ButtonStyle.Danger
 
 					action {
 						// TODO once modals become a thing, avoid just consuming this error
 						try {
-							reportedMessage.delete(reason = "Deleted via report.")
+							reportedMessage.delete("Deleted via report.")
+							response?.edit { components { removeAll() } }
 						} catch (e: RestRequestException) {
 							messageLog.createMessage {
 								content = "The message you tried to delete may have already been deleted!"
@@ -180,7 +232,7 @@ class Report : Extension() {
 					}
 				}
 
-				ephemeralSelectMenu(row = 1) {
+				ephemeralSelectMenu(1) {
 					placeholder = "Select a quick-action"
 					option(
 						label = "10-Minute Timeout",
@@ -222,6 +274,7 @@ class Report : Extension() {
 						val actionLog = guild?.getChannel(modActionLog) as GuildMessageChannelBehavior
 						when (this.selected[0]) {
 							"10-timeout" -> {
+								response?.edit { components { removeAll() } }
 								guild?.getMember(messageAuthor!!.id)?.edit {
 									timeoutUntil = Clock.System.now().plus(Duration.parse("PT10M"))
 								}
@@ -237,6 +290,7 @@ class Report : Extension() {
 								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 10)
 							}
 							"20-timeout" -> {
+								response?.edit { components { removeAll() } }
 								guild?.getMember(messageAuthor!!.id)?.edit {
 									timeoutUntil = Clock.System.now().plus(Duration.parse("PT20M"))
 								}
@@ -252,6 +306,7 @@ class Report : Extension() {
 								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 20)
 							}
 							"30-timeout" -> {
+								response?.edit { components { removeAll() } }
 								guild?.getMember(messageAuthor!!.id)?.edit {
 									timeoutUntil = Clock.System.now().plus(Duration.parse("PT30M"))
 								}
@@ -267,6 +322,7 @@ class Report : Extension() {
 								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 30)
 							}
 							"kick-user" -> {
+								response?.edit { components { removeAll() } }
 								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been kicked from ${guild?.fetchGuild()?.name}",
@@ -277,6 +333,7 @@ class Report : Extension() {
 								quickLogEmbed("Kicked a User", actionLog, messageAuthor.asUser())
 							}
 							"soft-ban-user" -> {
+								response?.edit { components { removeAll() } }
 								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been soft-banned from ${guild?.fetchGuild()?.name}",
@@ -292,6 +349,7 @@ class Report : Extension() {
 								quickLogEmbed("Soft-Banned a User", actionLog, messageAuthor.asUser())
 							}
 							"ban-user" -> {
+								response?.edit { components { removeAll() } }
 								userDMEmbed(
 									messageAuthor!!.asUser(),
 									"You have been banned from ${guild?.fetchGuild()?.name}",
