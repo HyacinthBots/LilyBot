@@ -1,10 +1,12 @@
 package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.sentry.tag
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
@@ -139,12 +141,26 @@ class LogUploading : Extension() {
 														}
 													}
 												} catch (e: IOException) {
-													// Just swallow this exception
-													// If something has gone wrong here, something is wrong
-													// somewhere else, so it's probably fine
-													// -----------------------------------------------------
-													// This honestly makes no sense, why would you do this?
-													// It certainly made debugging harder. - CaioMGT
+													// If the upload fails, we'll just show the error
+													uploadMessage.edit {
+														embed {
+															color = DISCORD_RED
+															title = "Failed to upload `$attachmentFileName` to mclo.gs"
+															timestamp = Clock.System.now()
+															description = "Error: " + e.toString()
+															footer {
+																text = "Uploaded by ${eventMessage.author?.tag}"
+																icon = eventMessage.author?.avatar?.url
+															}
+														}
+													}
+													// Capture Exception to Sentry
+													this.sentry.captureException(e, "Log Uploading failed") {
+														tag("log_file_name", attachmentFileName)
+														tag("extension", extension.name)
+														tag("id", eventMessage.id.toString())
+													}
+													e.printStackTrace()
 												}
 											} else {
 												respond { content = "Only the uploader can use this menu." }
