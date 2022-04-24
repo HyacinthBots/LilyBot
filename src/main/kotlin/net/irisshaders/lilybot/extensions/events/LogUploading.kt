@@ -149,6 +149,7 @@ class LogUploading : Extension() {
 															description = "Error: " + e.toString()
 														}
 													}
+													e.printStackTrace()
 												}
 											} else {
 												respond { content = "Only the uploader can use this menu." }
