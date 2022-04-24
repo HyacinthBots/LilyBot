@@ -1,6 +1,7 @@
 package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -139,12 +140,15 @@ class LogUploading : Extension() {
 														}
 													}
 												} catch (e: IOException) {
-													// Just swallow this exception
-													// If something has gone wrong here, something is wrong
-													// somewhere else, so it's probably fine
-													// -----------------------------------------------------
-													// This honestly makes no sense, why would you do this?
-													// It certainly made debugging harder. - CaioMGT
+													// If the upload fails, we'll just show the error
+													uploadMessage.edit {
+														embed {
+															color = DISCORD_RED
+															title = "Failed to upload `$attachmentFileName` to mclo.gs"
+															timestamp = Clock.System.now()
+															description = "Error: " + e.toString()
+														}
+													}
 												}
 											} else {
 												respond { content = "Only the uploader can use this menu." }
