@@ -148,6 +148,10 @@ class LogUploading : Extension() {
 															title = "Failed to upload `$attachmentFileName` to mclo.gs"
 															timestamp = Clock.System.now()
 															description = "Error: " + e.toString()
+															footer {
+																text = "Uploaded by ${eventMessage.author?.tag}"
+																icon = eventMessage.author?.avatar?.url
+															}
 														}
 													}
 													// Capture Exception to Sentry
