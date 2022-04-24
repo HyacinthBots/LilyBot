@@ -60,6 +60,8 @@ a lightweight logging that wraps slf4j with kotlin extensions
 * [TOML](https://github.com/Jezza/toml), a library for custom commands 
 * [Shadow Gradle Plugin](https://github.com/johnrengelman/shadow),
   a tool which allows us to make a big fatjar containing all dependencies
+* [detekt](https://detekt.dev/index.html), a static code analysis tool for the Kotlin programming language. This helps 
+us keep our code clean and nicely formatted.
 
 **This repo is open to contributions by the community. If you plan on contributing, please check our
 [Contributor Guidelines](https://github.com/IrisShaders/LilyBot/blob/main/CONTRIBUTING.md).**
