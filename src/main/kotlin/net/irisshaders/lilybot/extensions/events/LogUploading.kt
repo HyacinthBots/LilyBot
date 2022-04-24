@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.sentry.tag
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
@@ -148,6 +149,12 @@ class LogUploading : Extension() {
 															timestamp = Clock.System.now()
 															description = "Error: " + e.toString()
 														}
+													}
+													// Capture Exception to Sentry
+													sentry.captureException(e, "Log Uploading failed") {
+														tag("log_file_name", attachmentFileName)
+														tag("extension", extension.name)
+														tag("id", eventMessage.id.toString())
 													}
 													e.printStackTrace()
 												}
