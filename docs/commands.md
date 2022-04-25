@@ -257,3 +257,15 @@ Result: Posts the tag embed you requested
 Name: `tag-help`
 
 Result: Displays a help command with all this information, in greater detail.
+
+### Request Nickname
+Name: `nickname request`
+
+* `nickname` - The new nickname you are requesting
+
+Result: Sends a request to the moderators for a new nickname. This feature is designed for servers that disable nickname change permissions on users
+
+### Clear Nickname
+Name: `nickname clear`
+
+Result: Clears the nickname of the user that ran the command
