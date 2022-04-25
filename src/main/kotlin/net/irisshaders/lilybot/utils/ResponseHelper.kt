@@ -24,11 +24,11 @@ import kotlinx.datetime.Clock
  * @author Maximumpower55, NoComment1105
  */
 suspend fun responseEmbedInChannel(
-    channel: MessageChannelBehavior,
-    embedTitle: String?,
+	channel: MessageChannelBehavior,
+	embedTitle: String?,
 	embedDescription: String?,
-    embedColor: Color?,
-    requestedBy: User?
+	embedColor: Color?,
+	requestedBy: User?
 ): Message = channel.createEmbed {
 	if (embedTitle != null) title = embedTitle
 	if (embedDescription != null) description = embedDescription
