@@ -11,7 +11,7 @@ import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.types.respondEphemeral
 import dev.kord.rest.builder.message.create.embed
-import io.ktor.utils.io.errors.*
+import io.ktor.utils.io.errors.IOException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.github
 import org.kohsuke.github.GHDirection
@@ -30,7 +30,6 @@ import java.text.DecimalFormat
 import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.pow
-
 
 class Github : Extension() {
 	override val name = "github"
@@ -113,7 +112,6 @@ class Github : Extension() {
 
 					respond {
 						embed {
-
 							val open: Boolean = issue?.state == GHIssueState.OPEN
 							var merged = false
 							var draft = false
@@ -244,7 +242,6 @@ class Github : Extension() {
 				description = "Search GitHub for a specific repository"
 
 				action {
-
 					if (!arguments.repository.contains("/")) {
 						sentry.breadcrumb(BreadcrumbType.Error) {
 							category = "extensions.util.Github.repository.InputCheck"
@@ -361,7 +358,6 @@ class Github : Extension() {
 						val isOrg: Boolean = ghUser?.type.equals("Organization")
 
 						if (!isOrg) {
-
 							sentry.breadcrumb(BreadcrumbType.Info) {
 								category = "extensions.util.Github.user.isOrg"
 								message = "User is not Organisation"
@@ -418,7 +414,6 @@ class Github : Extension() {
 								}
 							}
 						} else {
-
 							sentry.breadcrumb(BreadcrumbType.Info) {
 								category = "extensions.util.Github.user.isOrg"
 								message = "User is Organisation"
@@ -451,7 +446,6 @@ class Github : Extension() {
 								}
 							}
 						}
-
 					} catch (ioException: IOException) {
 						ioException.printStackTrace()
 					}

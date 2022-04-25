@@ -1,13 +1,12 @@
-@file:OptIn(ExperimentalTime::class)
-
-
 package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.sentry.tag
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
@@ -18,26 +17,30 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.HttpClient
+import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.post
-import io.ktor.client.statement.HttpResponse
-import io.ktor.util.toByteArray
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.readBytes
+import io.ktor.http.Parameters
 import kotlinx.datetime.Clock
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import java.io.ByteArrayInputStream
+import java.io.IOException
 import java.util.zip.GZIPInputStream
-import kotlin.time.ExperimentalTime
 
 class LogUploading : Extension() {
 	override val name = "log-uploading"
 
-	@Suppress("PrivatePropertyName")
-	private val LOG_FILE_EXTENSIONS = setOf("log", "gz", "txt")
+	private val logFileExtensions = setOf("log", "gz", "txt")
 
 	override suspend fun setup() {
 		/**
-		 * Upload files that have the extensions specified in [LOG_FILE_EXTENSIONS] to hastebin,
+		 * Upload files that have the extensions specified in [logFileExtensions] to mclo.gs,
 		 * giving a user confirmation.
 		 *
+		 * @author Caio_MGT
 		 * @author maximumpower55
 		 */
 		event<MessageCreateEvent> {
@@ -47,9 +50,10 @@ class LogUploading : Extension() {
 				eventMessage.attachments.forEach { attachment ->
 					val attachmentFileName = attachment.filename
 					val attachmentFileExtension = attachmentFileName.substring(
-						attachmentFileName.lastIndexOf(".") + 1)
+						attachmentFileName.lastIndexOf(".") + 1
+					)
 
-					if (attachmentFileExtension in LOG_FILE_EXTENSIONS) {
+					if (attachmentFileExtension in logFileExtensions) {
 						val logBytes = attachment.download()
 
 						val builder = StringBuilder()
@@ -86,10 +90,10 @@ class LogUploading : Extension() {
 
 							confirmationMessage = responseEmbedInChannel(
 								eventMessage.channel,
-								"Do you want to upload this file to Hastebin?",
-								"Hastebin is a website that allows users to share plain text through " +
-										"public posts called “pastes.”\nIt's easier for the support team to view " +
-										"the file on Hastebin, do you want it to be uploaded?",
+								"Do you want to upload this file to mclo.gs?",
+								"mclo.gs is a website that allows users to share minecraft logs through " +
+										"public posts.\nIt's easier for the support team to view " +
+										"the file on mclo.gs, do you want it to be uploaded?",
 								DISCORD_PINK,
 								eventMessage.author
 							).edit {
@@ -106,7 +110,7 @@ class LogUploading : Extension() {
 
 												val uploadMessage = eventMessage.channel.createEmbed {
 													color = DISCORD_PINK
-													title = "Uploading `$attachmentFileName` to Hastebin..."
+													title = "Uploading `$attachmentFileName` to mclo.gs..."
 													timestamp = Clock.System.now()
 
 													footer {
@@ -116,12 +120,12 @@ class LogUploading : Extension() {
 												}
 
 												try {
-													val response = postToHasteBin(builder.toString())
+													val response = postToMCLogs(builder.toString())
 
 													uploadMessage.edit {
 														embed {
 															color = DISCORD_PINK
-															title = "`$attachmentFileName` uploaded to Hastebin"
+															title = "`$attachmentFileName` uploaded to mclo.gs"
 															timestamp = Clock.System.now()
 
 															footer {
@@ -136,10 +140,27 @@ class LogUploading : Extension() {
 															}
 														}
 													}
-												} catch (e: Exception) {
-													// Just swallow this exception
-													// If something has gone wrong here, something is wrong
-													// somewhere else, so it's probably fine
+												} catch (e: IOException) {
+													// If the upload fails, we'll just show the error
+													uploadMessage.edit {
+														embed {
+															color = DISCORD_RED
+															title = "Failed to upload `$attachmentFileName` to mclo.gs"
+															timestamp = Clock.System.now()
+															description = "Error: " + e.toString()
+															footer {
+																text = "Uploaded by ${eventMessage.author?.tag}"
+																icon = eventMessage.author?.avatar?.url
+															}
+														}
+													}
+													// Capture Exception to Sentry
+													this.sentry.captureException(e, "Log Uploading failed") {
+														tag("log_file_name", attachmentFileName)
+														tag("extension", extension.name)
+														tag("id", eventMessage.id.toString())
+													}
+													e.printStackTrace()
 												}
 											} else {
 												respond { content = "Only the uploader can use this menu." }
@@ -168,22 +189,29 @@ class LogUploading : Extension() {
 		}
 	}
 
-	private suspend fun postToHasteBin(text: String): String {
+	@kotlinx.serialization.Serializable
+	data class LogData(val success: Boolean, val id: String? = null, val error: String? = null)
+	// setting these to null is necessary in case a value is missing, which would cause an error.
+
+	private suspend fun postToMCLogs(text: String): String {
 		val client = HttpClient()
-
-		var response = client.post<HttpResponse>("https://www.toptal.com/developers/hastebin/documents") {
-			body = text
-		}.content.toByteArray().decodeToString()
-
-		if (response.contains("\"key\"")) {
-			response = "https://www.toptal.com/developers/hastebin/" + response.substring(
-				response.indexOf(":") + 2,
-				response.length - 2
+		val response = client.post("https://api.mclo.gs/1/log") {
+			setBody(
+			    FormDataContent(
+			        Parameters.build {
+				append("content", text)
+			}
+			    )
 			)
-		}
-
+		}.readBytes().decodeToString()
 		client.close()
-
-		return response
+		// ignoreUnknownKeys is necessary to not cause any errors due to missing values in the JSON
+		val json = Json { ignoreUnknownKeys = true }
+		val log = json.decodeFromString<LogData>(response)
+		if (log.success) {
+			return "https://mclo.gs/" + log.id
+		} else {
+			throw IOException("Failed to upload log: " + log.error)
+		}
 	}
 }

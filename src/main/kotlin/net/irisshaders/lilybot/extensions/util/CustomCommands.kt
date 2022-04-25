@@ -12,12 +12,19 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.config
 
 /**
- * This class reads in the config TOML file and converts each array of info into a usable discord slash command
+ * This class reads in the config TOML file and converts each array of info into a usable discord slash command.
  * @author IMS212
  */
+@Deprecated(
+	"Deprecated in favour of tags stored in the database. This will be removed in 3.1.+",
+	ReplaceWith(
+		"Tags",
+		"net.irisshaders.lilybot.extensions.util.Tags"
+	),
+	DeprecationLevel.WARNING
+)
 class CustomCommands : Extension() {
 	override var name = "custom-commands"
-
 
 	override suspend fun setup() {
 		// Reads all toml arrays titled "command"
@@ -35,7 +42,7 @@ class CustomCommands : Extension() {
 	}
 
 	/**
-	 * This function adds commands from the Toml config
+	 * This function adds commands from the Toml config.
 	 *
 	 * @param names The name of the command. What you type to run the command
 	 * @param desc The information tooltip that appears when you type the command
@@ -54,7 +61,6 @@ class CustomCommands : Extension() {
 		subCmds: TomlArray?
 	) {
 		publicSlashCommand {
-
 			name = names
 			description = desc
 			if (subCmds == null) {
@@ -65,6 +71,9 @@ class CustomCommands : Extension() {
 							title = cmdTitle
 							description = cmdValue
 							timestamp = Clock.System.now()
+							footer {
+								text = "This feature is deprecated. Please use /tag instead"
+							}
 						}
 					}
 				}
@@ -81,6 +90,9 @@ class CustomCommands : Extension() {
 									timestamp = Clock.System.now()
 									title = sub.getOrDefault("title", null) as String
 									description = sub.getOrDefault("description", "") as String
+									footer {
+										text = "This feature is deprecated. Please use /tag instead"
+									}
 								}
 							}
 						}

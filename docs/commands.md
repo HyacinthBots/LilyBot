@@ -37,9 +37,9 @@ This command can only be executed in the test guild specified in your `.env` fil
 ## Moderation Commands
 These commands are for use by moderators.
 They utilize built-in permission checks.
-All moderation commands are logged to the action-log established in the config.
+All moderation commands are logged to the `modActionLog` established in the config.
 A Direct Message is sent to the target user containing the sanction they received and the provided reason.
-If Lily fails to DM them, this failure will be noted in the action-log embed.
+If Lily fails to DM them, this failure will be noted in the logging embed.
 
 ### Clear
 Name: `clear`
@@ -66,7 +66,8 @@ Arguments:
 * `messages` - Number of days of messages to delete - Integer
 * `reason` - Reason for the ban - Optional String
 
-Result: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last `messages` day(s).
+Result: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last
+`messages` day(s).
 
 ### Unban
 Name: `unban`
@@ -114,9 +115,46 @@ Arguments:
 
 Result: Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function.
 
+### Lock Server
+Name: `lock-server`
 
+Arguments:
+* `reason` - Reason for locking the server - Optional String
 
+Result: Locks the server.
 
+### Lock Channel
+Name: `lock-channel`
+
+Arguments:
+* `channel` - Channel to lock - Channel (default executed channel)
+* `reason` - Reason for locking the channel - Optional String
+
+Result: Locks `channel` so only the moderator role can send messages, create threads, or add reactions.
+
+### Lock Server
+Name: `lock-server`
+
+Arguments:
+* `reason` - Reason for locking the server - Optional String
+
+Result: Locks the whole server so only members with the moderator role can send messages, create threads,
+or add reactions.
+
+### Unlock Channel
+Name: `unlock-channel`
+
+Arguments:
+* `channel` - Channel to unlock - Channel (default executed channel)
+
+Result: Unlocks `channel` so anyone can send messages, create threads, or add reactions.
+
+### Unlock Server
+Name: `unlock-server`
+
+No arguments.
+
+Result: Unlocks the whole server so anyone can send messages, create threads, or add reactions.
 
 ## Utility Commands
 These commands are just handy to have around. Moderator only commands are at the top and clearly marked.
@@ -184,3 +222,50 @@ Arguments:
 * `newName` - New name for the thread executed in - String
 
 Result: Renames the thread executed in **if executed by a moderator or the thread owner**.
+
+
+## Tags
+Tag commands are guild specific commands, that can be added at runtime. They are all embed commands. You will be assisted by auto-complete when typing these commands. 
+
+### Create tags (MODS ONLY)
+Name: `tag-create`
+
+Arguments:
+* `tagName` - The named identifier of the tag you wish to create. This is what you'd use to call the tag in the `tag` command
+* `tagTitle` - The tag embed title
+* `tagValue` - The tag embed description
+
+Result: Creates a tag for the guild you ran this command in
+
+### Delete tags (MODS ONLY)
+Name: `tag-delete`
+
+Arguments:
+* `tagName` - The named identifier of the tag you wish to delete
+
+Result: Deletes the tag for the guild you ran this command in
+
+### Use tags
+Name: `tag`
+
+Arguments:
+* `tagName` - The named identifier of the tag you wish to run
+
+Result: Posts the tag embed you requested
+
+### Help
+Name: `tag-help`
+
+Result: Displays a help command with all this information, in greater detail.
+
+### Request Nickname
+Name: `nickname request`
+
+* `nickname` - The new nickname you are requesting
+
+Result: Sends a request to the moderators for a new nickname. This feature is designed for servers that disable nickname change permissions on users
+
+### Clear Nickname
+Name: `nickname clear`
+
+Result: Clears the nickname of the user that ran the command
