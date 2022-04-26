@@ -189,6 +189,11 @@ class Tags : Extension() {
 		val tagValue by string {
 			name = "value"
 			description = "The content of the tag embed you're making"
+
+			mutate {
+				it.replace("\\n", "\n")
+					.replace("\n ", "\n")
+			}
 		}
 	}
 }
