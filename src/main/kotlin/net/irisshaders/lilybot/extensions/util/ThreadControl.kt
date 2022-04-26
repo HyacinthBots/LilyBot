@@ -14,9 +14,10 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.edit
+import com.kotlindiscord.kord.extensions.utils.hasPermission
+import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.channel.thread.ThreadChannel
-import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -39,11 +40,10 @@ class ThreadControl : Extension() {
 				action {
 					val threadChannel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
-					val roles = member.roles.toList().map { it.id }
 
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val databaseThreadOwner = DatabaseHelper.getThreadOwner(threadChannel.id)
 
-					if (config.moderatorsPing in roles || threadChannel.ownerId == user.id) {
+					if (member.hasPermission(Permission.ModerateMembers) || databaseThreadOwner == member.id) {
 						threadChannel.edit {
 							name = arguments.newThreadName
 
@@ -54,21 +54,11 @@ class ThreadControl : Extension() {
 						}
 
 						return@action
-					}
-
-					if (threadChannel.ownerId != user.id) {
+					} else {
 						edit { content = "**Error:** This is not your thread!" }
 
 						return@action
 					}
-
-					threadChannel.edit {
-						name = arguments.newThreadName
-
-						reason = "Renamed by ${member.tag}"
-					}
-
-					edit { content = "Thread Renamed." }
 				}
 			}
 
@@ -82,11 +72,16 @@ class ThreadControl : Extension() {
 				action {
 					val threadChannel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
-					val roles = member.roles.toList().map { it.id }
 
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val databaseThreadOwner = DatabaseHelper.getThreadOwner(threadChannel.id)
 
-					if (config.moderatorsPing in roles) {
+					if (threadChannel.isArchived) {
+						edit { content = "**Error:** This channel is already archived!" }
+
+						return@action
+					}
+
+					if (member.hasPermission(Permission.ModerateMembers) || databaseThreadOwner == member.id) {
 						threadChannel.edit {
 							this.archived = true
 							this.locked = arguments.lock
@@ -103,41 +98,16 @@ class ThreadControl : Extension() {
 						}
 
 						return@action
-					} else if (threadChannel.ownerId == user.id) {
-						threadChannel.edit {
-							this.archived = true
-
-							reason = "Archived by ${user.asUser().tag}"
-						}
-
-						edit {
-							content = "Thread archived!"
-						}
+					} else {
+						edit { content = "**Error:** This is not your thread!" }
 
 						return@action
 					}
-
-					if (threadChannel.ownerId != user.id) {
-						edit { content = "This is not your thread!" }
-
-						return@action
-					}
-
-					if (threadChannel.isArchived) {
-						edit { content = "**Error:** This channel is already archived!" }
-
-						return@action
-					}
-
-					threadChannel.edit {
-						archived = true
-
-						reason = "Archived by ${user.asUser().tag}"
-					}
-
-					edit { content = "Thread archived!" }
 				}
 			}
+
+			// todo add pin message command
+			// todo add transfer ownership command
 		}
 	}
 
@@ -151,7 +121,7 @@ class ThreadControl : Extension() {
 	inner class ThreadArchiveArgs : Arguments() {
 		val lock by defaultingBoolean {
 			name = "lock"
-			description = "Whether to lock this thread, if you are a moderator. Default is false"
+			description = "Whether to lock the thread. Default is false"
 			defaultValue = false
 		}
 	}

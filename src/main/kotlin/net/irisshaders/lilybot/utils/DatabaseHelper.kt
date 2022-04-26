@@ -157,6 +157,48 @@ object DatabaseHelper {
 	}
 
 	/**
+	 * Using the provided [inputThreadId] the owner's ID or null is returned from the database.
+	 *
+	 * @param [inputThreadId] The ID of the thread you wish to find the owner for
+	 *
+	 * @return null or the thread owner's ID
+	 * @author tempest15
+	 */
+	suspend fun getThreadOwner(inputThreadId: Snowflake): Snowflake? {
+		val collection = database.getCollection<ThreadData>()
+		val selectedThread = collection.findOne(ThreadData::threadId eq inputThreadId) ?: return null
+		return selectedThread.ownerId
+	}
+
+	/**
+	 * Using the provided [inputOwnerId] the list of threads that person owns is returned from the database.
+	 *
+	 * @param [inputOwnerId] The ID of the member whose threads you wish to find
+	 *
+	 * @return null or a list of threads the member owns
+	 * @author tempest15
+	 */
+	suspend fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> {
+		val collection = database.getCollection<ThreadData>()
+		return collection.find(ThreadData::ownerId eq inputOwnerId).toList()
+	}
+
+	/**
+	 * Add or update the ownership of the given [inputThreadId] to the given [newOwnerId].
+	 *
+	 * @param [inputThreadId] The ID of the thread you wish to update or set the owner for
+	 * @param [newOwnerId] The new owner of the thread
+	 *
+	 * @return null or the thread owner's ID
+	 * @author tempest15
+	 */
+	suspend fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake) {
+		val collection = database.getCollection<ThreadData>()
+		collection.deleteOne(ThreadData::threadId eq inputThreadId)
+		collection.insertOne(ThreadData(inputThreadId, newOwnerId))
+	}
+
+	/**
 	 * Adds a tag to the database, using the provided parameters.
 	 *
 	 * @param inputGuildId The ID of the guild the command was run in. Used to keep things guild specific.
@@ -220,4 +262,10 @@ data class TagsData(
 	val name: String,
 	val tagTitle: String,
 	val tagValue: String
+)
+
+@Serializable
+data class ThreadData(
+	val threadId: Snowflake,
+	val ownerId: Snowflake,
 )
