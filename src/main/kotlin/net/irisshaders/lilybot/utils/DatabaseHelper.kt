@@ -159,7 +159,7 @@ object DatabaseHelper {
 	/**
 	 * Using the provided [inputThreadId] the owner's ID or null is returned from the database.
 	 *
-	 * @param [inputThreadId] The ID of the thread you wish to find the owner for
+	 * @param inputThreadId The ID of the thread you wish to find the owner for
 	 *
 	 * @return null or the thread owner's ID
 	 * @author tempest15
@@ -173,7 +173,7 @@ object DatabaseHelper {
 	/**
 	 * Using the provided [inputOwnerId] the list of threads that person owns is returned from the database.
 	 *
-	 * @param [inputOwnerId] The ID of the member whose threads you wish to find
+	 * @param inputOwnerId The ID of the member whose threads you wish to find
 	 *
 	 * @return null or a list of threads the member owns
 	 * @author tempest15
@@ -186,8 +186,8 @@ object DatabaseHelper {
 	/**
 	 * Add or update the ownership of the given [inputThreadId] to the given [newOwnerId].
 	 *
-	 * @param [inputThreadId] The ID of the thread you wish to update or set the owner for
-	 * @param [newOwnerId] The new owner of the thread
+	 * @param inputThreadId The ID of the thread you wish to update or set the owner for
+	 * @param newOwnerId The new owner of the thread
 	 *
 	 * @return null or the thread owner's ID
 	 * @author tempest15
