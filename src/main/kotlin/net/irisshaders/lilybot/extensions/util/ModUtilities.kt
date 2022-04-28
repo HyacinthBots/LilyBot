@@ -158,6 +158,11 @@ class ModUtilities : Extension() {
 		val messageArgument by string {
 			name = "message"
 			description = "The text of the message to be sent"
+
+			mutate {
+				it.replace("\\n", "\n")
+					.replace("\n ", "\n")
+			}
 		}
 		val targetChannel by optionalChannel {
 			name = "channel"
