@@ -32,7 +32,6 @@ import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.MONGO_URI
 import net.irisshaders.lilybot.utils.SENTRY_DSN
 import org.bson.UuidRepresentation
@@ -47,7 +46,7 @@ import java.nio.file.Path
 val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
 
-// Connect to the database
+// Connect to the database using the provided connection URL
 private val settings = MongoClientSettings
 	.builder()
 	.uuidRepresentation(UuidRepresentation.STANDARD)
@@ -60,19 +59,17 @@ private val gitHubLogger = KotlinLogging.logger { }
 
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
-		applicationCommands {
-			enabled = true
-		}
-
 		members {
-			lockMemberRequests = true
+			lockMemberRequests = true // Collect members one at a time to avoid hitting rate limits
 			all()
 		}
 
+		// Enable the members intent to allow us to get accurate member counts for join logging
 		intents {
 			+Intent.GuildMembers
 		}
 
+		// Add the extensions to the bot
 		extensions {
 			add(::Config)
 			add(::CustomCommands)
@@ -90,6 +87,8 @@ suspend fun main() {
 			add(::ThreadControl)
 			add(::ThreadInviter)
 
+			// The anti-phishing extension, allows users to check links with a command, also kicks users who send scam
+			// links, rather than ban to allow them to rejoin if they regain control of their account
 			extPhishing {
 				appName = "Lily Bot"
 				detectionAction = DetectionAction.Kick
@@ -97,21 +96,23 @@ suspend fun main() {
 				requiredCommandPermission = null
 			}
 
-			extMappings { }
+			extMappings { } // Enable the mappings extension
 
 			sentry {
-				enableIfDSN(SENTRY_DSN)
+				enableIfDSN(SENTRY_DSN) // Use the nullable sentry function to allow the bot to be used without a DSN
 			}
 		}
 
+		// Pull the status from the database and set it to `Playing <status>
 		presence { playing(DatabaseHelper.getStatus()) }
 
+		// Connect to GitHub to allow the GitHub commands to function
 		try {
-			github = GitHubBuilder().withOAuthToken(GITHUB_OAUTH).build()
-			gitHubLogger.info("Logged into GitHub!")
+			github = GitHubBuilder().build()
+			gitHubLogger.info("Connected to GitHub!")
 		} catch (exception: IOException) {
 			exception.printStackTrace()
-			gitHubLogger.error("Failed to log into GitHub!")
+			gitHubLogger.error("Failed to connect to GitHub!")
 		}
 	}
 

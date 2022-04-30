@@ -10,6 +10,11 @@ import dev.kord.core.event.message.MessageDeleteEvent
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 
+/**
+ * The class for logging deletion of messages to the guild action log.
+ *
+ * @since 2.0
+ */
 class MessageDelete : Extension() {
 	override val name = "message-delete"
 
@@ -17,12 +22,15 @@ class MessageDelete : Extension() {
 		/**
 		 * Logs deleted messages in a guild to the message log channel designated in the config for that guild
 		 * @author NoComment1105
+		 * @since 2.0
 		 */
 		event<MessageDeleteEvent> {
 			// Don't try to create if the message is in DMs
 			check { anyGuild() }
+
 			action {
-				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
+				// Fail if the user is a bot
+				if (event.message?.author?.isBot == true) return@action
 
 				// Try to get the message logs channel, return@action if null
 				val config = DatabaseHelper.getConfig(event.guild!!.id) ?: return@action
@@ -44,6 +52,7 @@ class MessageDelete : Extension() {
 						value = messageContent.ifEmpty { "Failed to get content of message" }
 						inline = false
 					}
+					// If the message has an attachment, add the link to it to the embed
 					if (eventMessage?.attachments != null && eventMessage.attachments.isNotEmpty()) {
 						val attachmentUrls = StringBuilder()
 						for (attachment in eventMessage.attachments) {

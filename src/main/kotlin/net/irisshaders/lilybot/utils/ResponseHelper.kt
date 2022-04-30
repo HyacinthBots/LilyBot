@@ -22,6 +22,7 @@ import kotlinx.datetime.Clock
  * @param requestedBy The user that requested the embed. If null, the footer will be empty.
  * @return An embed in the channel.
  * @author Maximumpower55, NoComment1105
+ * @since 2.0
  */
 suspend fun responseEmbedInChannel(
 	channel: MessageChannelBehavior,
@@ -29,7 +30,7 @@ suspend fun responseEmbedInChannel(
 	embedDescription: String?,
 	embedColor: Color?,
 	requestedBy: User?
-): Message = channel.createEmbed {
+) = channel.createEmbed {
 	if (embedTitle != null) title = embedTitle
 	if (embedDescription != null) description = embedDescription
 	color = embedColor ?: DISCORD_BLACK
@@ -51,13 +52,14 @@ suspend fun responseEmbedInChannel(
  * @param embedColor The colour of the embed, or [DISCORD_BLACK] if null.
  * @return An embed that is DM'd to the user.
  * @author NoComment1105
+ * @since 3.0.0
  */
 suspend fun userDMEmbed(
 	user: User,
 	embedTitle: String?,
 	embedDescription: String?,
 	embedColor: Color?
-): Message? = user.dm {
+) = user.dm {
 	embed {
 		if (embedTitle != null) title = embedTitle
 		if (embedDescription != null) description = embedDescription
@@ -74,6 +76,7 @@ suspend fun userDMEmbed(
  * @param targetUser The targeted user in the action.
  * @param commandUser The user that ran the command.
  * @author NoComment1105
+ * @since 3.0.0
  */
 suspend fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User, commandUser: UserBehavior) {
 	field {
@@ -98,6 +101,7 @@ suspend fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User, 
  *
  * @param dm The direct message that is sent to the user.
  * @author NoComment1105
+ * @since 3.0.0
  */
 fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?) {
 	field {

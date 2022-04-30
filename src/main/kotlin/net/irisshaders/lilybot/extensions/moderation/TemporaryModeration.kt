@@ -46,6 +46,11 @@ import net.irisshaders.lilybot.utils.userDMEmbed
 import java.lang.Integer.min
 import kotlin.time.Duration
 
+/**
+ * The class for temporary moderation actions, such as timeouts and warnings.
+ *
+ * @since 3.0.0
+ */
 class TemporaryModeration : Extension() {
 	override val name = "temporary-moderation"
 
@@ -53,6 +58,7 @@ class TemporaryModeration : Extension() {
 		/**
 		 * Clear Command
 		 * @author IMS212
+		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::ClearArgs) {
 			name = "clear"
@@ -70,7 +76,6 @@ class TemporaryModeration : Extension() {
 				val textChannel = channel as GuildMessageChannelBehavior
 
 				// Get the specified amount of messages into an array list of Snowflakes and delete them
-
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
 					Snowflake.max, min(messageAmount, 100)
 				).map { it.id }.toList()
@@ -93,9 +98,8 @@ class TemporaryModeration : Extension() {
 
 		/**
 		 * Warn Command
-		 * @author chalkyjeans
-		 * @author Miss-Corruption
-		 * @author NoComment1105
+		 * @author chalkyjeans, Miss-Corruption, NoComment1105
+		 * @since 2.0.0
 		 */
 		ephemeralSlashCommand(::WarnArgs) {
 			name = "warn"
@@ -110,6 +114,7 @@ class TemporaryModeration : Extension() {
 				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
+				// Clarify the user is not a bot or a moderator
 				isBotOrModerator(userArg, "warn") ?: return@action
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
@@ -227,6 +232,7 @@ class TemporaryModeration : Extension() {
 		 * Remove warn command
 		 *
 		 * @author NoComment1105
+		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand(::RemoveWarnArgs) {
 			name = "remove-warn"
@@ -283,8 +289,8 @@ class TemporaryModeration : Extension() {
 		/**
 		 * Timeout command
 		 *
-		 * @author NoComment1105
-		 * @author IMS212
+		 * @author NoComment1105, IMS212
+		 * @since v2.0
 		 */
 		ephemeralSlashCommand(::TimeoutArgs) {
 			name = "timeout"
@@ -300,6 +306,7 @@ class TemporaryModeration : Extension() {
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
 
+				// Clarify the user is not bot or a moderator
 				isBotOrModerator(userArg, "timeout") ?: return@action
 
 				try {
@@ -350,6 +357,7 @@ class TemporaryModeration : Extension() {
 		 * Timeout removal command
 		 *
 		 * @author IMS212
+		 * @since v2.0
 		 */
 		ephemeralSlashCommand(::RemoveTimeoutArgs) {
 			name = "remove-timeout"
@@ -395,6 +403,7 @@ class TemporaryModeration : Extension() {
 		 * Server and channel locking commands
 		 *
 		 * @author tempest15
+		 * @since v3.1.0
 		 */
 		ephemeralSlashCommand {
 			name = "lock"
@@ -500,6 +509,7 @@ class TemporaryModeration : Extension() {
 		 * Server and channel unlocking commands
 		 *
 		 * @author tempest15
+		 * @since v3.1.0
 		 */
 		ephemeralSlashCommand {
 			name = "unlock"
@@ -607,6 +617,7 @@ class TemporaryModeration : Extension() {
 	}
 
 	inner class ClearArgs : Arguments() {
+		/** The number of messages the user wants to remove. */
 		val messages by int {
 			name = "messages"
 			description = "Number of messages to delete"
@@ -614,15 +625,20 @@ class TemporaryModeration : Extension() {
 	}
 
 	inner class TimeoutArgs : Arguments() {
+		/** The requested user to timeout. */
 		val userArgument by user {
 			name = "user"
 			description = "Person to timeout"
 		}
+
+		/** The time the timeout should last for. */
 		val duration by coalescingDefaultingDuration {
 			name = "duration"
 			description = "Duration of timeout"
 			defaultValue = DateTimePeriod(0, 0, 0, 6, 0, 0, 0)
 		}
+
+		/** The reason for the timeout. */
 		val reason by defaultingString {
 			name = "reason"
 			description = "Reason for timeout"
@@ -631,6 +647,7 @@ class TemporaryModeration : Extension() {
 	}
 
 	inner class RemoveTimeoutArgs : Arguments() {
+		/** The requested user to remove the timeout from. */
 		val userArgument by user {
 			name = "user"
 			description = "Person to remove timeout from"
@@ -638,10 +655,13 @@ class TemporaryModeration : Extension() {
 	}
 
 	inner class WarnArgs : Arguments() {
+		/** The requested user to warn. */
 		val userArgument by user {
 			name = "user"
 			description = "Person to warn"
 		}
+
+		/** The reason for the warning. */
 		val reason by defaultingString {
 			name = "reason"
 			description = "Reason for warn"
@@ -650,6 +670,7 @@ class TemporaryModeration : Extension() {
 	}
 
 	inner class RemoveWarnArgs : Arguments() {
+		/** The requested user to remove the warning from. */
 		val userArgument by user {
 			name = "user"
 			description = "Person to remove warn from"
@@ -657,11 +678,13 @@ class TemporaryModeration : Extension() {
 	}
 
 	inner class LockChannelArgs : Arguments() {
+		/** The channel that the user wants to lock. */
 		val channel by optionalChannel {
 			name = "channel"
 			description = "Channel to lock. Defaults to current channel"
 		}
 
+		/** The reason for the locking. */
 		val reason by defaultingString {
 			name = "reason"
 			description = "Reason for locking the channel"
@@ -670,6 +693,7 @@ class TemporaryModeration : Extension() {
 	}
 
 	inner class LockServerArgs : Arguments() {
+		/** The reason for the locking. */
 		val reason by defaultingString {
 			name = "reason"
 			description = "Reason for locking the server"
@@ -678,6 +702,7 @@ class TemporaryModeration : Extension() {
 	}
 
 	inner class UnlockChannelArgs : Arguments() {
+		/** The channel to unlock. */
 		val channel by optionalChannel {
 			name = "channel"
 			description = "Channel to unlock. Defaults to current channel"

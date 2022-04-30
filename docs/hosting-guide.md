@@ -43,7 +43,6 @@ CUSTOM_COMMANDS_PATH=
 TEST_GUILD_ID=
 ONLINE_STATUS_CHANNEL=
 MONGO_URI=
-GITHUB_OAUTH=
 SENTRY_DSN=
 ```
 
@@ -111,7 +110,7 @@ We suggest joining [our discord](https://discord.gg/hy2329fcTZ)
 for support, announcements of releases, Lily's online status, and even more!
 
 
-## Step 8 - Configuring Lily by editing commands.toml (optional)
+## Step 8 - Configuring Lily by editing commands.toml (optional) (DEPRECATED)
 You can add your own custom commands in a file with the `.toml` suffix.
 You will need to specify the path and name of this file in the `CONFIG_PATH` section of your `.env` file.
 The default `commands.toml` is what is used on the Iris server.

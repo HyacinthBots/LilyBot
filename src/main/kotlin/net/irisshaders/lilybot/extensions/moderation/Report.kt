@@ -39,7 +39,7 @@ import kotlin.time.Duration
 
 /**
  * The message reporting feature in the bot.
- * @author NoComment1105
+ * @since v2.0
  */
 class Report : Extension() {
 	override val name = "report"
@@ -129,6 +129,19 @@ class Report : Extension() {
 			}
 		}
 	}
+
+	/**
+	 * Create an [EphemeralFollowupMessage] for the user to provide confirmation of if they want to report the message
+	 * to save fake moderator pings.
+	 *
+	 * @param user The user that reported the message
+	 * @param messageLog The channel to send the report embed to
+	 * @param messageAuthor The author of the reported message
+	 * @param reportedMessage The message being reported
+	 * @param moderatorRole The role to ping when a report is submitted
+	 * @param modActionLog The channel so send punishment logs too
+	 * @since 3.1.0
+	 */
 	private suspend fun EphemeralInteractionContext.confirmationMessage(
 		user: UserBehavior,
 		messageLog: GuildMessageChannelBehavior,
@@ -179,6 +192,17 @@ class Report : Extension() {
 		}
 	}
 
+	/**
+	 * Create an embed in the [messageLog] for moderators to respond to with appropriate action.
+	 *
+	 * @param user The user that reported the message
+	 * @param messageLog The channel to send the report embed to
+	 * @param messageAuthor The author of the reported message
+	 * @param reportedMessage The message being reported
+	 * @param moderatorRole The role to ping when a report is submitted
+	 * @param modActionLog The channel so send punishment logs too
+	 * @since 2.0
+	 */
 	private suspend fun createReport(
 		user: UserBehavior,
 		messageLog: GuildMessageChannelBehavior,
@@ -187,7 +211,7 @@ class Report : Extension() {
 		moderatorRole: Snowflake,
 		modActionLog: Snowflake
 	) {
-		var response: Message? = null
+		var response: Message? = null // Create this here to allow us to edit within the variable
 		messageLog.createMessage { content = "<@&$moderatorRole>" }
 
 		response = messageLog.createEmbed {
@@ -223,6 +247,7 @@ class Report : Extension() {
 						// TODO once modals become a thing, avoid just consuming this error
 						try {
 							reportedMessage.delete("Deleted via report.")
+							// Remove components (buttons) to prevent errors if pressed after action was taken
 							response?.edit { components { removeAll() } }
 						} catch (e: RestRequestException) {
 							messageLog.createMessage {
@@ -274,6 +299,7 @@ class Report : Extension() {
 						val actionLog = guild?.getChannel(modActionLog) as GuildMessageChannelBehavior
 						when (this.selected[0]) {
 							"10-timeout" -> {
+								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								guild?.getMember(messageAuthor!!.id)?.edit {
 									timeoutUntil = Clock.System.now().plus(Duration.parse("PT10M"))
@@ -290,6 +316,7 @@ class Report : Extension() {
 								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 10)
 							}
 							"20-timeout" -> {
+								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								guild?.getMember(messageAuthor!!.id)?.edit {
 									timeoutUntil = Clock.System.now().plus(Duration.parse("PT20M"))
@@ -306,6 +333,7 @@ class Report : Extension() {
 								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 20)
 							}
 							"30-timeout" -> {
+								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								guild?.getMember(messageAuthor!!.id)?.edit {
 									timeoutUntil = Clock.System.now().plus(Duration.parse("PT30M"))
@@ -322,6 +350,7 @@ class Report : Extension() {
 								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 30)
 							}
 							"kick-user" -> {
+								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								userDMEmbed(
 									messageAuthor!!.asUser(),
@@ -333,6 +362,7 @@ class Report : Extension() {
 								quickLogEmbed("Kicked a User", actionLog, messageAuthor.asUser())
 							}
 							"soft-ban-user" -> {
+								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								userDMEmbed(
 									messageAuthor!!.asUser(),
@@ -349,6 +379,7 @@ class Report : Extension() {
 								quickLogEmbed("Soft-Banned a User", actionLog, messageAuthor.asUser())
 							}
 							"ban-user" -> {
+								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								userDMEmbed(
 									messageAuthor!!.asUser(),
@@ -369,11 +400,20 @@ class Report : Extension() {
 		}
 	}
 
+	/**
+	 * A quick function for creating timeout embeds after actions have been performed.
+	 *
+	 * @param actionLog The channel for sending the embed too
+	 * @param user The user being sanctioned
+	 * @param duration The time they're to be timed out for
+	 * @return The embed
+	 * @since 2.0
+	 */
 	private suspend fun quickTimeoutEmbed(
 		actionLog: GuildMessageChannelBehavior,
 		user: User,
 		duration: Int
-	): Message = actionLog.createEmbed {
+	) = actionLog.createEmbed {
 		title = "Timeout"
 
 		field {
@@ -393,11 +433,20 @@ class Report : Extension() {
 		}
 	}
 
+	/**
+	 * A quick function for creating embeds after actions have been performed.
+	 *
+	 * @param moderationAction The action taken by the moderator
+	 * @param actionLog The channel for sending the embed too
+	 * @param user The user being sanctioned
+	 * @return The embed
+	 * @since v2.0
+	 */
 	private suspend fun quickLogEmbed(
 		moderationAction: String,
 		actionLog: GuildMessageChannelBehavior,
         user: User
-	): Message = actionLog.createEmbed {
+	) = actionLog.createEmbed {
 		title = moderationAction
 
 		field {
@@ -413,6 +462,7 @@ class Report : Extension() {
 	}
 
 	inner class ManualReportArgs : Arguments() {
+		/** The link to the message being reported. */
 		val message by string {
 			name = "messageLink"
 			description = "Link to the message to report"
