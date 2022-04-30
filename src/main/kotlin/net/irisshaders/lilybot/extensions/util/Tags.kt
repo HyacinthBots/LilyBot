@@ -43,6 +43,10 @@ class Tags : Extension() {
 
 				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!
 
+				// This is not the best way to do this. Ideally the ping would be in the same message as the embed.
+				// A Discord limitation makes this not possible. Setting KordEx `allowedMentions` should work.
+				if (arguments.user != null) channel.createMessage(arguments.user!!.mention)
+
 				respond {
 					embed {
 						color = DISCORD_BLURPLE
