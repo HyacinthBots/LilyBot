@@ -20,7 +20,7 @@ import net.irisshaders.lilybot.utils.responseEmbedInChannel
 /**
  * The class for configuring LilyBot in your guilds.
  *
- * @since v2.1.0
+ * @since 2.1.0
  */
 class Config : Extension() {
 
@@ -30,7 +30,7 @@ class Config : Extension() {
 		/**
 		 * The parent command for the commands to handle configuration
 		 * @author NoComment1105, tempest15
-		 * @since v2.1.0
+		 * @since 2.1.0
 		 */
 		ephemeralSlashCommand {
 			name = "config"

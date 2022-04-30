@@ -130,7 +130,7 @@ class TerminalModeration : Extension() {
 					// Unban the user if they're banned
 					guild?.unban(userArg.id)
 				} else {
-					// Response with an error if they aren't
+					// Respond with an error if they aren't
 					respond { content = "**Error:** User is not banned" }
 					return@action
 				}

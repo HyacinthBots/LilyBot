@@ -25,7 +25,7 @@ import net.irisshaders.lilybot.utils.responseEmbedInChannel
 /**
  * The class for the runtime command tag system.
  *
- * @since v3.1.0
+ * @since 3.1.0
  */
 class Tags : Extension() {
 	override val name = "tags"
@@ -35,7 +35,7 @@ class Tags : Extension() {
 		 * The command for calling tags.
 		 *
 		 * @author NoComment1105
-		 * @since v3.1.0
+		 * @since 3.1.0
 		 */
 		publicSlashCommand(::TagArgs) {
 			name = "tag"
@@ -66,7 +66,7 @@ class Tags : Extension() {
 		 * The help command for tags.
 		 *
 		 * @author NoComment1105
-		 * @since v3.1.0
+		 * @since 3.1.0
 		 */
 		publicSlashCommand {
 			name = "tag-help"
@@ -101,7 +101,7 @@ class Tags : Extension() {
 		 * The command for creating tags, requires moderate members to prevent you average user creating commands.
 		 *
 		 * @author NoComment1105
-		 * @since v3.1.0
+		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand(::CreateTagArgs) {
 			name = "tag-create"
@@ -148,7 +148,7 @@ class Tags : Extension() {
 		 * The command for deleting tags
 		 *
 		 * @author NoComment1105
-		 * @since v3.1.0
+		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand(::TagArgs) {
 			name = "tag-delete"

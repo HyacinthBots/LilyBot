@@ -27,7 +27,7 @@ import net.irisshaders.lilybot.utils.responseEmbedInChannel
 /**
  * This class contains a few utility commands that can be used by moderators only in guilds.
  *
- * @since v3.1.0
+ * @since 3.1.0
  */
 class ModUtilities : Extension() {
 	override val name = "mod-utilities"

@@ -33,7 +33,7 @@ import net.irisshaders.lilybot.utils.userDMEmbed
  * This class contains a few utility commands that can be used by the public in guilds, or that are often seen by the
  * public.
  *
- * @since v3.1.0
+ * @since 3.1.0
  */
 class PublicUtilities : Extension() {
 	override val name = "public-utilities"
@@ -83,7 +83,7 @@ class PublicUtilities : Extension() {
 		/**
 		 * Nickname request command
 		 * @author NoComment1105
-		 * @since v3.1.0
+		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand {
 			name = "nickname"

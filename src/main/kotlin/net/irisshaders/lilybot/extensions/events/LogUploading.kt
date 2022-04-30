@@ -202,7 +202,7 @@ class LogUploading : Extension() {
 	 * @param id The ID of the log uploaded
 	 * @param error Any errors that were returned by the upload
 	 *
-	 * @since v3.1.0
+	 * @since 3.1.0
 	 */
 	@kotlinx.serialization.Serializable
 	data class LogData(val success: Boolean, val id: String? = null, val error: String? = null)
@@ -212,7 +212,7 @@ class LogUploading : Extension() {
 	 *
 	 * @param text The content of the log
 	 * @return The link to the log upload
-	 * @since v3.1.0
+	 * @since 3.1.0
 	 */
 	private suspend fun postToMCLogs(text: String): String {
 		val client = HttpClient()

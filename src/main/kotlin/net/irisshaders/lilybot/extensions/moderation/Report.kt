@@ -39,7 +39,7 @@ import kotlin.time.Duration
 
 /**
  * The message reporting feature in the bot.
- * @since v2.0
+ * @since 2.0
  */
 class Report : Extension() {
 	override val name = "report"
@@ -440,7 +440,7 @@ class Report : Extension() {
 	 * @param actionLog The channel for sending the embed too
 	 * @param user The user being sanctioned
 	 * @return The embed
-	 * @since v2.0
+	 * @since 2.0
 	 */
 	private suspend fun quickLogEmbed(
 		moderationAction: String,

@@ -290,7 +290,7 @@ class TemporaryModeration : Extension() {
 		 * Timeout command
 		 *
 		 * @author NoComment1105, IMS212
-		 * @since v2.0
+		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::TimeoutArgs) {
 			name = "timeout"
@@ -357,7 +357,7 @@ class TemporaryModeration : Extension() {
 		 * Timeout removal command
 		 *
 		 * @author IMS212
-		 * @since v2.0
+		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::RemoveTimeoutArgs) {
 			name = "remove-timeout"
@@ -403,7 +403,7 @@ class TemporaryModeration : Extension() {
 		 * Server and channel locking commands
 		 *
 		 * @author tempest15
-		 * @since v3.1.0
+		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand {
 			name = "lock"
@@ -509,7 +509,7 @@ class TemporaryModeration : Extension() {
 		 * Server and channel unlocking commands
 		 *
 		 * @author tempest15
-		 * @since v3.1.0
+		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand {
 			name = "unlock"
