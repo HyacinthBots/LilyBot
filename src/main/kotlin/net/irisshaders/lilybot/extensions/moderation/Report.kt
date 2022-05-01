@@ -106,12 +106,12 @@ class Report : Extension() {
 					) as MessageChannel
 					reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
 					messageAuthor = reportedMessage.getAuthorAsMember()
-				} catch (e: KtorRequestException) {
+				} catch (e: KtorRequestException) { // In the event of a report in a channel the bot can't see
 					respond {
 						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 					}
 					return@action
-				} catch (e: EntityNotFoundException) {
+				} catch (e: EntityNotFoundException) { // In the event of the message already being deleted.
 					respond {
 						content = "Sorry, I can't find this message. Please ping the moderators instead."
 					}
@@ -131,8 +131,8 @@ class Report : Extension() {
 	}
 
 	/**
-	 * Create an [EphemeralFollowupMessage] for the user to provide confirmation of if they want to report the message
-	 * to save fake moderator pings.
+	 * Create an [EphemeralFollowupMessage] for the user to provide confirmation on whether they want to report the
+	 * message, to save fake moderator pings.
 	 *
 	 * @param user The user that reported the message
 	 * @param messageLog The channel to send the report embed to

@@ -37,8 +37,8 @@ class MessageDelete : Extension() {
 
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
-				val messageContent = event.message?.asMessageOrNull()?.content.toString()
 				val eventMessage = event.message
+				val messageContent = eventMessage?.asMessageOrNull()?.content.toString()
 				val messageLocation = event.channel.id.value
 
 				messageLog.createEmbed {
