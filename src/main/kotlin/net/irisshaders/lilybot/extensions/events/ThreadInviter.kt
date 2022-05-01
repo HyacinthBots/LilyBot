@@ -77,7 +77,7 @@ class ThreadInviter : Extension() {
 
 				DatabaseHelper.getOwnerThreads(event.member!!.id).forEach {
 					val thread = guild.getChannel(it.threadId) as TextChannelThread
-					if (thread.parent == supportChannel) {
+					if (thread.parent == supportChannel && !thread.isArchived) {
 						userThreadExists = true
 						existingUserThread = thread
 					}

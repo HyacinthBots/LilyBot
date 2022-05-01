@@ -102,11 +102,7 @@ class ThreadControl : Extension() {
 					val threadChannel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
 
-					var oldOwnerId = DatabaseHelper.getThreadOwner(threadChannel.id)
-					if (oldOwnerId == null) {
-						restoreDefaultOwner(threadChannel)
-						oldOwnerId = threadChannel.ownerId
-					}
+					val oldOwnerId = DatabaseHelper.getThreadOwner(threadChannel.id) ?: threadChannel.ownerId
 					val oldOwner = guild!!.getMember(oldOwnerId)
 
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
@@ -168,9 +164,5 @@ class ThreadControl : Extension() {
 
 		respond { content = "**Error:** This is not your thread!" }
 		return false
-	}
-
-	private suspend fun restoreDefaultOwner(inputThread: ThreadChannel) {
-		DatabaseHelper.setThreadOwner(inputThread.id, inputThread.ownerId)
 	}
 }

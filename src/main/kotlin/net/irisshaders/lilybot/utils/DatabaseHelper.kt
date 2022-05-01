@@ -1,7 +1,11 @@
 package net.irisshaders.lilybot.utils
 
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
+import dev.kord.core.entity.channel.thread.TextChannelThread
+import dev.kord.core.kordLogger
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
@@ -196,6 +200,28 @@ object DatabaseHelper {
 		val collection = database.getCollection<ThreadData>()
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
 		collection.insertOne(ThreadData(inputThreadId, newOwnerId))
+	}
+
+	/**
+	 * This function deletes the ownership data stored in the database for any thread older than a week.
+	 *
+	 * @author tempest15
+	 * @since 3.2.0
+	 */
+	suspend fun cleanupThreadData(kordInstance: Kord) {
+		val collection = database.getCollection<ThreadData>()
+		val threads = collection.find().toList()
+		var deletedThreads = 0
+		threads.forEach {
+			val thread = kordInstance.getChannel(it.threadId) as TextChannelThread? ?: return@forEach
+			val latestMessage = thread.getLastMessage() ?: return@forEach
+			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
+			if (timeSinceLatestMessage.inWholeDays > 7) {
+				collection.deleteOne(ThreadData::threadId eq thread.id)
+				deletedThreads = + 1
+			}
+		}
+		kordLogger.info("Deleted $deletedThreads old threads from the database")
 	}
 
 	/**

@@ -33,15 +33,21 @@ class PublicUtilities : Extension() {
 	override val name = "public-utilities"
 
 	override suspend fun setup() {
-		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
-
 		/**
-		 * Online notification
+		 * Online notification.
 		 * @author IMS212
 		 */
+		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
 		responseEmbedInChannel(
 			onlineLog, "Lily is now online!", null, DISCORD_GREEN, null
 		)
+
+		/**
+		 * Thread data cleanup call.
+		 * @author tempest15
+		 * @since 3.2.0
+		 */
+		DatabaseHelper.cleanupThreadData(kord)
 
 		/**
 		 * Ping Command
