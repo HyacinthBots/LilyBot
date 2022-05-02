@@ -3,14 +3,16 @@ package net.irisshaders.lilybot.utils
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.TextChannelThread
-import dev.kord.core.kordLogger
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
+import mu.KotlinLogging
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
 
 object DatabaseHelper {
+
+	private val databaseLogger = KotlinLogging.logger { }
 
 	/**
 	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database.
@@ -250,7 +252,7 @@ object DatabaseHelper {
 				deletedThreads = + 1
 			}
 		}
-		kordLogger.info("Deleted $deletedThreads old threads from the database")
+		databaseLogger.info("Deleted $deletedThreads old threads from the database")
 	}
 }
 
