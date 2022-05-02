@@ -12,3 +12,6 @@ val ONLINE_STATUS_CHANNEL = Snowflake(env("ONLINE_STATUS_CHANNEL"))
 val MONGO_URI = envOrNull("MONGO_URI") ?: "mongodb://localhost:27017"
 val GITHUB_OAUTH = envOrNull("GITHUB_OAUTH")
 val SENTRY_DSN = envOrNull("SENTRY_DSN")
+
+/** The mode to use the bot in, either `production` or `development`. */
+val MODE = env("MODE")

@@ -13,7 +13,7 @@ import com.kotlindiscord.kord.extensions.types.respondEphemeral
 import dev.kord.rest.builder.message.create.embed
 import io.ktor.utils.io.errors.IOException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.github
+import net.irisshaders.lilybot.utils.github
 import org.kohsuke.github.GHDirection
 import org.kohsuke.github.GHException
 import org.kohsuke.github.GHFileNotFoundException
