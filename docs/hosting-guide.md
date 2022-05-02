@@ -45,6 +45,7 @@ ONLINE_STATUS_CHANNEL=
 MONGO_URI=
 GITHUB_OAUTH=
 SENTRY_DSN=
+MODE=
 ```
 
 To get the token for your bot, return to the Discord developers portal for your bot,
@@ -70,6 +71,9 @@ and clicking generate new token. You don't need to select any scopes. DO NOT SHA
 
 `SENTRY_DSN` is a connection string for Sentry, a logging tool.
 You can find out more about it [here]( https://sentry.io/welcome/).
+
+`MODE` is the name of the environment you are running in. If you're running in production, you'll want "production" 
+as your mode string.
 
 ## Step 4.5 - Using Docker (optional)
 Lily does support Docker and the official production instance utilizes it.

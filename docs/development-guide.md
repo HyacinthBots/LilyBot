@@ -37,6 +37,7 @@ ONLINE_STATUS_CHANNEL=
 MONGO_URI=
 GITHUB_OAUTH=
 SENTRY_DSN=
+MODE=
 ```
 
 To get a token, join [our discord](https://discord.gg/hy2329fcTZ) and ask.
@@ -60,7 +61,10 @@ You can make one by going to [Settings/Developer settings/Personal access tokens
 and clicking generate new token. You don't need to select any scopes. DO NOT SHARE THIS WITH ANYONE.
 
 `SENTRY_DSN` is a connection string for Sentry, a logging tool.
-You can find out more about it [here]( https://sentry.io/welcome/).
+You can find out more about it [here](https://sentry.io/welcome/).
+
+`MODE` is the name of the environment you are running in. If you're doing development, you'll want "development" as your
+mode string.
 
 ## Step 4 - Starting your Mongo database
 Open a terminal window and start your Mongo database using the respective command for your OS.
