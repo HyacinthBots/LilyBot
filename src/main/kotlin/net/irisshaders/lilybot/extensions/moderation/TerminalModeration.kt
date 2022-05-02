@@ -166,7 +166,6 @@ class TerminalModeration : Extension() {
 				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
-				// Clarify the user is not a bot or a moderator
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
 
 				// DM the user before the ban task is run

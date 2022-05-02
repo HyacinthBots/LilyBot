@@ -45,6 +45,7 @@ import java.nio.file.Path
 
 val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
+private val gitHubLogger = KotlinLogging.logger { }
 
 // Connect to the database using the provided connection URL
 private val settings = MongoClientSettings
@@ -55,7 +56,6 @@ private val settings = MongoClientSettings
 
 private val client = KMongo.createClient(settings).coroutine
 val database = client.getDatabase("LilyBot")
-private val gitHubLogger = KotlinLogging.logger { }
 
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
@@ -87,8 +87,11 @@ suspend fun main() {
 			add(::ThreadControl)
 			add(::ThreadInviter)
 
-			// The anti-phishing extension, allows users to check links with a command, also kicks users who send scam
-			// links, rather than ban to allow them to rejoin if they regain control of their account
+			/*
+			The anti-phishing extension automatically deletes and logs scam links. It also allows users to check links
+			with a command. It kicks users who send scam links, rather than ban, to allow them to rejoin if they regain
+			control of their account
+			 */
 			extPhishing {
 				appName = "Lily Bot"
 				detectionAction = DetectionAction.Kick

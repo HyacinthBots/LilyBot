@@ -23,7 +23,7 @@ import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 /**
- * The class for the runtime command tag system.
+ * The class that holds the commands to create tags commands.
  *
  * @since 3.1.0
  */
@@ -63,7 +63,7 @@ class Tags : Extension() {
 		}
 
 		/**
-		 * The help command for tags.
+		 * A command to provide information on what tags are and how they work.
 		 *
 		 * @author NoComment1105
 		 * @since 3.1.0
@@ -98,7 +98,7 @@ class Tags : Extension() {
 		}
 
 		/**
-		 * The command for creating tags, requires moderate members to prevent you average user creating commands.
+		 * The command for creating tags.
 		 *
 		 * @author NoComment1105
 		 * @since 3.1.0
@@ -145,7 +145,7 @@ class Tags : Extension() {
 		}
 
 		/**
-		 * The command for deleting tags
+		 * The command for deleting tags.
 		 *
 		 * @author NoComment1105
 		 * @since 3.1.0

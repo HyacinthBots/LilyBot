@@ -24,5 +24,5 @@ val ONLINE_STATUS_CHANNEL = Snowflake(env("ONLINE_STATUS_CHANNEL"))
 /** The string for connection to the database, defaults to local host. */
 val MONGO_URI = envOrNull("MONGO_URI") ?: "mongodb://localhost:27017"
 
-/** The DSN connection for using sentry, if null, sentry won't be used. */
+/** Sentry connection DSN. If null, Sentry won't be used. */
 val SENTRY_DSN = envOrNull("SENTRY_DSN")

@@ -110,7 +110,7 @@ We suggest joining [our discord](https://discord.gg/hy2329fcTZ)
 for support, announcements of releases, Lily's online status, and even more!
 
 
-## Step 8 - Configuring Lily by editing commands.toml (optional) (DEPRECATED)
+## Step 8 - Configuring Lily by editing commands.toml (optional) (DEPRECATED, see below)
 You can add your own custom commands in a file with the `.toml` suffix.
 You will need to specify the path and name of this file in the `CONFIG_PATH` section of your `.env` file.
 The default `commands.toml` is what is used on the Iris server.
@@ -169,3 +169,5 @@ description = "Be decent to one another. We're all human. Any and all forms of b
 
 Be aware that it may take Discord a moment to refresh any commands changed in this way.
 You will need to restart the bot after you make any changes in this way.
+
+#### This feature is deprecated in favour of Tags, which you can find documents for [here](https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#tags). This feature will be removed in the next sizeable update.

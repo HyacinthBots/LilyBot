@@ -23,6 +23,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.readBytes
 import io.ktor.http.Parameters
 import kotlinx.datetime.Clock
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
@@ -196,15 +197,18 @@ class LogUploading : Extension() {
 	}
 
 	/**
-	 * Setting these to null is necessary in case a value is missing, which would cause an error.
+	 * This data class will store the data of the log being uploaded by [postToMCLogs].
+	 *
+	 * **NOTE:** Setting these to null is necessary in case a value is missing, which would cause an error.
 	 *
 	 * @param success Whether the log upload was a success or not
 	 * @param id The ID of the log uploaded
 	 * @param error Any errors that were returned by the upload
 	 *
+	 * @author CaioMGT
 	 * @since 3.1.0
 	 */
-	@kotlinx.serialization.Serializable
+	@Serializable
 	data class LogData(val success: Boolean, val id: String? = null, val error: String? = null)
 
 	/**
@@ -212,6 +216,7 @@ class LogUploading : Extension() {
 	 *
 	 * @param text The content of the log
 	 * @return The link to the log upload
+	 * @author Maximumpower55, CaioMGT
 	 * @since 3.1.0
 	 */
 	private suspend fun postToMCLogs(text: String): String {

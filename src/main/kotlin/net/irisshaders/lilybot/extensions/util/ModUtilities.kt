@@ -25,7 +25,7 @@ import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 /**
- * This class contains a few utility commands that can be used by moderators only in guilds.
+ * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
  *
  * @since 3.1.0
  */

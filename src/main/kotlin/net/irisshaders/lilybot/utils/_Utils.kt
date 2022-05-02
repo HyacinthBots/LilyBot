@@ -20,7 +20,7 @@ suspend fun CheckContext<*>.configPresent() {
 		return
 	}
 
-	// Prevent commands being run in DM's, although [anyGuild] should still be used as backup
+	// Prevent commands being run in DMs, although [anyGuild] should still be used as backup
 	if (guildFor(event) == null) fail("Must be in a server")
 
 	// Check all not-null values in the database are not null

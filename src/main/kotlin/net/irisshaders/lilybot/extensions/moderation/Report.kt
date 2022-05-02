@@ -299,7 +299,6 @@ class Report : Extension() {
 						val actionLog = guild?.getChannel(modActionLog) as GuildMessageChannelBehavior
 						when (this.selected[0]) {
 							"10-timeout" -> {
-								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								guild?.getMember(messageAuthor!!.id)?.edit {
 									timeoutUntil = Clock.System.now().plus(Duration.parse("PT10M"))
@@ -316,7 +315,6 @@ class Report : Extension() {
 								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 10)
 							}
 							"20-timeout" -> {
-								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								guild?.getMember(messageAuthor!!.id)?.edit {
 									timeoutUntil = Clock.System.now().plus(Duration.parse("PT20M"))
@@ -333,7 +331,6 @@ class Report : Extension() {
 								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 20)
 							}
 							"30-timeout" -> {
-								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								guild?.getMember(messageAuthor!!.id)?.edit {
 									timeoutUntil = Clock.System.now().plus(Duration.parse("PT30M"))
@@ -350,7 +347,6 @@ class Report : Extension() {
 								quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 30)
 							}
 							"kick-user" -> {
-								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								userDMEmbed(
 									messageAuthor!!.asUser(),
@@ -362,7 +358,6 @@ class Report : Extension() {
 								quickLogEmbed("Kicked a User", actionLog, messageAuthor.asUser())
 							}
 							"soft-ban-user" -> {
-								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								userDMEmbed(
 									messageAuthor!!.asUser(),
@@ -379,7 +374,6 @@ class Report : Extension() {
 								quickLogEmbed("Soft-Banned a User", actionLog, messageAuthor.asUser())
 							}
 							"ban-user" -> {
-								// Remove components (buttons) to prevent errors if pressed after action was taken
 								response?.edit { components { removeAll() } }
 								userDMEmbed(
 									messageAuthor!!.asUser(),
@@ -407,6 +401,7 @@ class Report : Extension() {
 	 * @param user The user being sanctioned
 	 * @param duration The time they're to be timed out for
 	 * @return The embed
+	 * @author MissCorruption
 	 * @since 2.0
 	 */
 	private suspend fun quickTimeoutEmbed(
@@ -440,6 +435,7 @@ class Report : Extension() {
 	 * @param actionLog The channel for sending the embed too
 	 * @param user The user being sanctioned
 	 * @return The embed
+	 * @author MissCorruption
 	 * @since 2.0
 	 */
 	private suspend fun quickLogEmbed(

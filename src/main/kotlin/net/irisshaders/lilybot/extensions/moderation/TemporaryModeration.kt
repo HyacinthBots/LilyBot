@@ -114,7 +114,6 @@ class TemporaryModeration : Extension() {
 				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
-				// Clarify the user is not a bot or a moderator
 				isBotOrModerator(userArg, "warn") ?: return@action
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
