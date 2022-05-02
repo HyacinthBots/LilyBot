@@ -43,14 +43,15 @@ class PublicUtilities : Extension() {
 		)
 
 		/**
-		 * Thread data cleanup call.
+		 * This function is called to remove any threads in the database that haven't had a message sent in the last
+		 * week. It only runs on startup.
 		 * @author tempest15
 		 * @since 3.2.0
 		 */
 		DatabaseHelper.cleanupThreadData(kord)
 
 		/**
-		 * Ping Command
+		 * Ping Command.
 		 * @author IMS212
 		 * @author NoComment1105
 		 */

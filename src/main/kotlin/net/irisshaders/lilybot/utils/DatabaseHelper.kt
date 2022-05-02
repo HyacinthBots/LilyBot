@@ -161,11 +161,38 @@ object DatabaseHelper {
 	}
 
 	/**
+	 * Adds a tag to the database, using the provided parameters.
+	 *
+	 * @param inputGuildId The ID of the guild the command was run in. Used to keep things guild specific.
+	 * @param name The named identifier of the tag being created.
+	 * @param tagTitle The title of the tag being created.
+	 * @param tagValue The contents of the tag being created.
+	 * @author NoComment1105
+	 */
+	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
+		val collection = database.getCollection<TagsData>()
+		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue))
+	}
+
+	/**
+	 * Deletes the tag [name] from the [database].
+	 *
+	 * @param inputGuildId The guild the tag was created in.
+	 * @param name The named identifier of the tag being deleted.
+	 * @author NoComment1105
+	 */
+	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
+		val collection = database.getCollection<TagsData>()
+		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
+	}
+
+	/**
 	 * Using the provided [inputThreadId] the owner's ID or null is returned from the database.
 	 *
 	 * @param inputThreadId The ID of the thread you wish to find the owner for
 	 *
 	 * @return null or the thread owner's ID
+	 * @since 3.2.0
 	 * @author tempest15
 	 */
 	suspend fun getThreadOwner(inputThreadId: Snowflake): Snowflake? {
@@ -180,6 +207,7 @@ object DatabaseHelper {
 	 * @param inputOwnerId The ID of the member whose threads you wish to find
 	 *
 	 * @return null or a list of threads the member owns
+	 * @since 3.2.0
 	 * @author tempest15
 	 */
 	suspend fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> {
@@ -194,6 +222,7 @@ object DatabaseHelper {
 	 * @param newOwnerId The new owner of the thread
 	 *
 	 * @return null or the thread owner's ID
+	 * @since 3.2.0
 	 * @author tempest15
 	 */
 	suspend fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake) {
@@ -222,32 +251,6 @@ object DatabaseHelper {
 			}
 		}
 		kordLogger.info("Deleted $deletedThreads old threads from the database")
-	}
-
-	/**
-	 * Adds a tag to the database, using the provided parameters.
-	 *
-	 * @param inputGuildId The ID of the guild the command was run in. Used to keep things guild specific.
-	 * @param name The named identifier of the tag being created.
-	 * @param tagTitle The title of the tag being created.
-	 * @param tagValue The contents of the tag being created.
-	 * @author NoComment1105
-	 */
-	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
-		val collection = database.getCollection<TagsData>()
-		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue))
-	}
-
-	/**
-	 * Deletes the tag [name] from the [database].
-	 *
-	 * @param inputGuildId The guild the tag was created in.
-	 * @param name The named identifier of the tag being deleted.
-	 * @author NoComment1105
-	 */
-	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
-		val collection = database.getCollection<TagsData>()
-		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 	}
 }
 
@@ -290,6 +293,12 @@ data class TagsData(
 	val tagValue: String
 )
 
+/**
+ * The data for threads.
+ *
+ * @param threadId The ID of the thread
+ * @param ownerId The ID of the thread's owner
+ */
 @Serializable
 data class ThreadData(
 	val threadId: Snowflake,

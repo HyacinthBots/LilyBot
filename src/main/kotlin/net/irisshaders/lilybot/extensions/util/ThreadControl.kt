@@ -154,8 +154,10 @@ class ThreadControl : Extension() {
 		}
 	}
 
-	private suspend fun EphemeralSlashCommandContext<*>.ownsThreadOrModerator
-				(inputThread: ThreadChannel, inputMember: Member): Boolean {
+	private suspend fun EphemeralSlashCommandContext<*>.ownsThreadOrModerator(
+		inputThread: ThreadChannel,
+		inputMember: Member
+	): Boolean {
 		val databaseThreadOwner = DatabaseHelper.getThreadOwner(inputThread.id)
 
 		if (inputMember.hasPermission(Permission.ModerateMembers) || databaseThreadOwner == inputMember.id) {
