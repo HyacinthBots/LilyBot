@@ -55,7 +55,12 @@ class MessageDelete : Extension() {
 					if (eventMessage?.attachments != null && eventMessage.attachments.isNotEmpty()) {
 						val attachmentUrls = StringBuilder()
 						for (attachment in eventMessage.attachments) {
-							attachmentUrls.append(attachment.data.url + "\n")
+							attachmentUrls.append(
+							    "https://media.discordapp.net/attachments/" +
+									"${attachment.data.url.split("/")[4]}/" + // Get the channel
+									"${attachment.data.url.split("/")[5]}/" + // Get the message ID
+									attachment.data.filename + "\n"
+							)
 						}
 						field {
 							name = "Attachments:"
