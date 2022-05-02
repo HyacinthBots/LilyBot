@@ -70,6 +70,12 @@ class TerminalModeration : Extension() {
 					logger.info("Unable to find user! Skipping timeout removal")
 				}
 
+				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
+				if (arguments.messages > 7 || arguments.messages < 0) {
+					respond { content = "Invalid `messages` parameter! This number must be between 0 and 7!" }
+					return@action
+				}
+
 				// Run the ban task
 				guild?.ban(userArg.id, builder = {
 					this.reason = arguments.reason
@@ -164,6 +170,12 @@ class TerminalModeration : Extension() {
 							"You are free to rejoin without the need to be unbanned",
 					null
 				)
+
+				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
+				if (arguments.messages > 7 || arguments.messages < 0) {
+					respond { content = "Invalid `messages` parameter! This number must be between 0 and 7!" }
+					return@action
+				}
 
 				try {
 					guild?.getMember(userArg.id)
