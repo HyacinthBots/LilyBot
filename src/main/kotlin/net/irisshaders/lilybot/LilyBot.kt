@@ -3,6 +3,8 @@
 
 package net.irisshaders.lilybot
 
+import com.github.jezza.Toml
+import com.github.jezza.TomlTable
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
@@ -28,6 +30,7 @@ import net.irisshaders.lilybot.extensions.util.RoleMenu
 import net.irisshaders.lilybot.extensions.util.Tags
 import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
+import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.MONGO_URI
@@ -38,7 +41,10 @@ import org.kohsuke.github.GitHubBuilder
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
 
+val config: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
 var github: GitHub? = null
 
 // Connect to the database

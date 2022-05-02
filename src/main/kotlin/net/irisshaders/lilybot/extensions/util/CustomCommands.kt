@@ -1,6 +1,5 @@
 package net.irisshaders.lilybot.extensions.util
 
-import com.github.jezza.Toml
 import com.github.jezza.TomlArray
 import com.github.jezza.TomlTable
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
@@ -10,11 +9,7 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.CUSTOM_COMMANDS_PATH
-import java.nio.file.Files
-import java.nio.file.Path
-
-private val commandsToml: TomlTable = Toml.from(Files.newInputStream(Path.of(CUSTOM_COMMANDS_PATH)))
+import net.irisshaders.lilybot.config
 
 /**
  * This class reads in the config TOML file and converts each array of info into a usable discord slash command.
@@ -33,7 +28,7 @@ class CustomCommands : Extension() {
 
 	override suspend fun setup() {
 		// Reads all toml arrays titled "command"
-		val commands: TomlArray = commandsToml.get("command") as TomlArray
+		val commands: TomlArray = config.get("command") as TomlArray
 		for (cmds in commands) {
 			val cmd = cmds as TomlTable
 			addCommand(
