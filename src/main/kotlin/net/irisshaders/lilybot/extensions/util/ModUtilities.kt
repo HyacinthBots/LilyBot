@@ -36,8 +36,7 @@ class ModUtilities : Extension() {
 	override suspend fun setup() {
 		/**
 		 * Say Command
-		 * @author NoComment1105
-		 * @author tempest15
+		 * @author NoComment1105, tempest15
 		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::SayArgs) {
@@ -98,11 +97,6 @@ class ModUtilities : Extension() {
 						field {
 							name = "Color:"
 							value = arguments.color.toString()
-							inline = true
-						}
-						field {
-							name = "Timestamp:"
-							value = if (arguments.timestamp) "Yes" else "No"
 							inline = true
 						}
 					}
@@ -194,7 +188,8 @@ class ModUtilities : Extension() {
 		/** What color the embed should be. */
 		val color by defaultingColor {
 			name = "color"
-			description = "The color of the embed. Default's to Discord's Blurple. Only works with embeds"
+			description = "The color of the embed. Can be either a hex code or one of Discord's supported colors. " +
+					"Default's to Discord's Blurple. Only works with embeds"
 			defaultValue = DISCORD_BLURPLE
 		}
 	}
