@@ -39,14 +39,12 @@ class PublicUtilities : Extension() {
 	override val name = "public-utilities"
 
 	override suspend fun setup() {
-		// The channel specifically for sending online notifications to
-		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
-
 		/**
 		 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
 		 * @author IMS212
 		 * @since v2.0
 		 */
+		// The channel specifically for sending online notifications to
 		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
 		responseEmbedInChannel(
 			onlineLog, "Lily is now online!", null, DISCORD_GREEN, null

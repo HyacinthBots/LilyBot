@@ -173,7 +173,7 @@ class Tags : Extension() {
 			check { configPresent() }
 
 			action {
-				// Check to make sure the tag exists in the datbase
+				// Check to make sure the tag exists in the database
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.name == null) {
 					respond {
 						content = "Unable to find tag! Does this tag exist?"
@@ -201,7 +201,7 @@ class Tags : Extension() {
 		}
 	}
 
-	inner class TagArgs : Arguments() {
+	inner class CallTagArgs : Arguments() {
 		/** The named identifier of the tag the user would like. */
 		val tagName by string {
 			name = "name"
@@ -258,7 +258,7 @@ class Tags : Extension() {
 			description = "The title of the tag embed you're making"
 		}
 
-		/** The value of the tag being create. */
+		/** The value of the tag being created. */
 		val tagValue by string {
 			name = "value"
 			description = "The content of the tag embed you're making"
