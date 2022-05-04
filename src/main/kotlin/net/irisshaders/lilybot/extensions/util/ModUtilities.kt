@@ -52,7 +52,8 @@ class ModUtilities : Extension() {
 				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val targetChannel =
 					if (arguments.channel != null) {
-						arguments.channel as MessageChannelBehavior
+						// This odd syntax is necessary for casting to MessageChannelBehavior
+						guild!!.getChannel(arguments.channel!!.id) as MessageChannelBehavior
 					} else {
 						channel
 					}
@@ -80,7 +81,7 @@ class ModUtilities : Extension() {
 
 				actionLog.createEmbed {
 					title = "Say command used"
-					description = "`${arguments.message}`"
+					description = "```${arguments.message}```"
 					color = DISCORD_BLACK
 					timestamp = Clock.System.now()
 					field {
@@ -93,15 +94,17 @@ class ModUtilities : Extension() {
 						value = if (arguments.embed) "Embed" else "Message"
 						inline = true
 					}
-					field {
-						name = "Color:"
-						value = arguments.color.toString()
-						inline = true
-					}
-					field {
-						name = "Timestamp:"
-						value = if (arguments.timestamp) "Yes" else "No"
-						inline = true
+					if (arguments.embed) {
+						field {
+							name = "Color:"
+							value = arguments.color.toString()
+							inline = true
+						}
+						field {
+							name = "Timestamp:"
+							value = if (arguments.timestamp) "Yes" else "No"
+							inline = true
+						}
 					}
 					footer {
 						text = user.asUser().tag
