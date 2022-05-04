@@ -8,7 +8,6 @@ COPY commands.toml /bot/commands.toml
 
 # Only place env vars below that are fine to be publicised. Private stuff needs to be
 # applied deployment-side.
-# Also required: GITHUB_OAUTH, JDBC_URL
 # Optional: SENTRY_DSN
 
 ENV CUSTOM_COMMANDS_PATH=/bot/commands.toml

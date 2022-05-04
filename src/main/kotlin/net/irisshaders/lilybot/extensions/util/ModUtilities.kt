@@ -24,6 +24,11 @@ import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
+/**
+ * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
+ *
+ * @since 3.1.0
+ */
 class ModUtilities : Extension() {
 	override val name = "mod-utilities"
 
@@ -31,12 +36,14 @@ class ModUtilities : Extension() {
 		/**
 		 * Say Command
 		 * @author NoComment1105
+		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::SayArgs) {
 			name = "say"
 			description = "Say something through Lily."
 
 			action {
+				// Allow say to be run in dms and in guild, if guild is null just skip straight to sending the message.
 				if (guild != null) {
 					if (!user.asMember(guild!!.id).hasPermission(Permission.ModerateMembers)) {
 						respond { content = "**Error:** You do not have the `Moderate Members` permission" }
@@ -116,6 +123,7 @@ class ModUtilities : Extension() {
 		/**
 		 * Presence Command
 		 * @author IMS
+		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::PresenceArgs) {
 			name = "set-status"
@@ -125,7 +133,7 @@ class ModUtilities : Extension() {
 			check { configPresent() }
 
 			action {
-				// lock this command to the testing guild
+				// Lock this command to the testing guild
 				if (guild?.id != TEST_GUILD_ID) {
 					respond { content = "**Error:** This command can only be run in Lily's testing guild." }
 					return@action
@@ -134,11 +142,13 @@ class ModUtilities : Extension() {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
+				// Update the presence in the action
 				this@ephemeralSlashCommand.kord.editPresence {
 					status = PresenceStatus.Online
 					playing(arguments.presenceArgument)
 				}
 
+				// Store the new presence in the database for if there is a restart
 				DatabaseHelper.setStatus(arguments.presenceArgument)
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
@@ -155,19 +165,25 @@ class ModUtilities : Extension() {
 	}
 
 	inner class SayArgs : Arguments() {
+		/** The message the user wishes to send. */
 		val messageArgument by string {
 			name = "message"
 			description = "The text of the message to be sent"
 
+			// Fix newline escape characters
 			mutate {
 				it.replace("\\n", "\n")
 					.replace("\n ", "\n")
 			}
 		}
+
+		/** The channel to aim the message at. */
 		val targetChannel by optionalChannel {
 			name = "channel"
 			description = "The channel the message should be sent in"
 		}
+
+		/** Whether to embed the message or not. */
 		val embedMessage by defaultingBoolean {
 			name = "embed"
 			description = "If the message should be sent as an embed"
@@ -176,6 +192,7 @@ class ModUtilities : Extension() {
 	}
 
 	inner class PresenceArgs : Arguments() {
+		/** The new presence set by the command user. */
 		val presenceArgument by string {
 			name = "presence"
 			description = "The new value Lily's presence should be set to"

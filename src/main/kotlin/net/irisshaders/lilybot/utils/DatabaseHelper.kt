@@ -10,6 +10,11 @@ import mu.KotlinLogging
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
 
+/**
+ * The object containing functions for interacting with the database.
+ *
+ * @since 3.0.0
+ */
 object DatabaseHelper {
 
 	private val databaseLogger = KotlinLogging.logger { }
@@ -92,7 +97,6 @@ object DatabaseHelper {
 	 * @author tempest15
 	 */
 	suspend fun getComponent(inputComponentId: String): ComponentData? {
-		// this returns any because it can return either a string or a snowflake
 		val collection = database.getCollection<ComponentData>()
 		return collection.findOne(ComponentData::componentId eq inputComponentId)
 	}
@@ -256,6 +260,17 @@ object DatabaseHelper {
 	}
 }
 
+/**
+ * The data for guild configuration.
+ *
+ * @param guildId The ID of the guild the config is for
+ * @param moderatorsPing The ID of the moderator ping role
+ * @param modActionLog The ID of the guild's action/audit log channel
+ * @param messageLogs The ID of the guild's message logging channel
+ * @param joinChannel The ID of the guild's member flow channel
+ * @param supportChannel The ID of the support channel for the guild, nullable
+ * @param supportTeam The ID of the support team for the guild, nullable
+ */
 @Serializable
 data class ConfigData(
 	val guildId: Snowflake,
@@ -267,6 +282,13 @@ data class ConfigData(
 	val supportTeam: Snowflake?,
 )
 
+/**
+ * The data for warnings in guilds.
+ *.
+ * @param userId The ID of the user with warnings
+ * @param guildId The ID of the guild they received the warning in
+ * @param strikes The amount of strikes they have received
+ */
 @Serializable
 data class WarnData(
 	val userId: Snowflake,
@@ -274,6 +296,13 @@ data class WarnData(
 	val strikes: Int
 )
 
+/**
+ * The data for role menu components.
+ *
+ * @param componentId The ID of the components
+ * @param roleId The ID of the role the component will add
+ * @param addOrRemove Whether to add or remove the role from the user, when the component is clicked
+ */
 @Serializable
 data class ComponentData(
 	val componentId: String,
@@ -281,12 +310,26 @@ data class ComponentData(
 	val addOrRemove: String
 )
 
+/**
+ * The data for the bot status.
+ *
+ * @param key This is just so we can find the status and should always be set to "LilyStatus"
+ * @param status The string value that will be seen in the bots presence
+ */
 @Serializable
 data class StatusData(
-	val key: String, // this is just so we can find the status and should always be set to "LilyStatus"
+	val key: String,
 	val status: String
 )
 
+/**
+ * The data of guild tags, which are stored in the database.
+ *
+ * @param guildId The ID of the guild the tag will be saved for
+ * @param name The named identifier of the tag
+ * @param tagTitle The title of the created tag
+ * @param tagValue The value of the created tag
+ */
 @Serializable
 data class TagsData(
 	val guildId: Snowflake,

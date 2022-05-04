@@ -23,10 +23,21 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
+/**
+ * The class that holds the commands to create tags commands.
+ *
+ * @since 3.1.0
+ */
 class Tags : Extension() {
 	override val name = "tags"
 
 	override suspend fun setup() {
+		/**
+		 * The command for calling tags.
+		 *
+		 * @author NoComment1105
+		 * @since 3.1.0
+		 */
 		publicSlashCommand(::CallTagArgs) {
 			name = "tag"
 			description = "Call a tag from this guild! Use /tag-help for more info."
@@ -58,6 +69,12 @@ class Tags : Extension() {
 			}
 		}
 
+		/**
+		 * A command to provide information on what tags are and how they work.
+		 *
+		 * @author NoComment1105
+		 * @since 3.1.0
+		 */
 		publicSlashCommand {
 			name = "tag-help"
 			description = "Explains how the tag command works!"
@@ -89,6 +106,12 @@ class Tags : Extension() {
 			}
 		}
 
+		/**
+		 * The command for creating tags.
+		 *
+		 * @author NoComment1105
+		 * @since 3.1.0
+		 */
 		ephemeralSlashCommand(::CreateTagArgs) {
 			name = "tag-create"
 			description = "Create a tag for your guild! Use /tag-help for more info."
@@ -135,6 +158,12 @@ class Tags : Extension() {
 			}
 		}
 
+		/**
+		 * The command for deleting tags.
+		 *
+		 * @author NoComment1105
+		 * @since 3.1.0
+		 */
 		ephemeralSlashCommand(::DeleteTagArgs) {
 			name = "tag-delete"
 			description = "Delete a tag from your guild. Use /tag-help for more info."
@@ -144,7 +173,8 @@ class Tags : Extension() {
 			check { configPresent() }
 
 			action {
-				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
+				// Check to make sure the tag exists in the database
+				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.name == null) {
 					respond {
 						content = "Unable to find tag! Does this tag exist?"
 					}
@@ -172,6 +202,7 @@ class Tags : Extension() {
 	}
 
 	inner class CallTagArgs : Arguments() {
+		/** The named identifier of the tag the user would like. */
 		val tagName by string {
 			name = "name"
 			description = "The name of the tag you want to call"
@@ -203,28 +234,36 @@ class Tags : Extension() {
 				val tags = DatabaseHelper.getAllTags(data.guildId.value!!)
 				val map = mutableMapOf<String, String>()
 
+				// Add each tag in the database to the tag variable
 				tags.forEach {
 					map[it.name] = it.name
 				}
 
+				// Provide the autocomplete with the tags map
 				suggestStringMap(map)
 			}
 		}
 	}
 
 	inner class CreateTagArgs : Arguments() {
+		/** The named identifier of the tag being created. */
 		val tagName by string {
 			name = "name"
 			description = "The name of the tag you're making"
 		}
+
+		/** The title of the tag being created. */
 		val tagTitle by string {
 			name = "title"
 			description = "The title of the tag embed you're making"
 		}
+
+		/** The value of the tag being created. */
 		val tagValue by string {
 			name = "value"
 			description = "The content of the tag embed you're making"
 
+			// Fix newline escape characters
 			mutate {
 				it.replace("\\n", "\n")
 					.replace("\n ", "\n")
