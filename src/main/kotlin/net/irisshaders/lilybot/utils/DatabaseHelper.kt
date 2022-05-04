@@ -1,8 +1,12 @@
 package net.irisshaders.lilybot.utils
 
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
+import mu.KotlinLogging
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
 
@@ -12,6 +16,8 @@ import org.litote.kmongo.eq
  * @since 3.0.0
  */
 object DatabaseHelper {
+
+	private val databaseLogger = KotlinLogging.logger { }
 
 	/**
 	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database.
@@ -185,6 +191,73 @@ object DatabaseHelper {
 		val collection = database.getCollection<TagsData>()
 		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 	}
+
+	/**
+	 * Using the provided [inputThreadId] the owner's ID or null is returned from the database.
+	 *
+	 * @param inputThreadId The ID of the thread you wish to find the owner for
+	 *
+	 * @return null or the thread owner's ID
+	 * @since 3.2.0
+	 * @author tempest15
+	 */
+	suspend fun getThreadOwner(inputThreadId: Snowflake): Snowflake? {
+		val collection = database.getCollection<ThreadData>()
+		val selectedThread = collection.findOne(ThreadData::threadId eq inputThreadId) ?: return null
+		return selectedThread.ownerId
+	}
+
+	/**
+	 * Using the provided [inputOwnerId] the list of threads that person owns is returned from the database.
+	 *
+	 * @param inputOwnerId The ID of the member whose threads you wish to find
+	 *
+	 * @return null or a list of threads the member owns
+	 * @since 3.2.0
+	 * @author tempest15
+	 */
+	suspend fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> {
+		val collection = database.getCollection<ThreadData>()
+		return collection.find(ThreadData::ownerId eq inputOwnerId).toList()
+	}
+
+	/**
+	 * Add or update the ownership of the given [inputThreadId] to the given [newOwnerId].
+	 *
+	 * @param inputThreadId The ID of the thread you wish to update or set the owner for
+	 * @param newOwnerId The new owner of the thread
+	 *
+	 * @return null or the thread owner's ID
+	 * @since 3.2.0
+	 * @author tempest15
+	 */
+	suspend fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake) {
+		val collection = database.getCollection<ThreadData>()
+		collection.deleteOne(ThreadData::threadId eq inputThreadId)
+		collection.insertOne(ThreadData(inputThreadId, newOwnerId))
+	}
+
+	/**
+	 * This function deletes the ownership data stored in the database for any thread older than a week.
+	 *
+	 * @author tempest15
+	 * @since 3.2.0
+	 */
+	suspend fun cleanupThreadData(kordInstance: Kord) {
+		val collection = database.getCollection<ThreadData>()
+		val threads = collection.find().toList()
+		var deletedThreads = 0
+		threads.forEach {
+			val thread = kordInstance.getChannel(it.threadId) as TextChannelThread? ?: return@forEach
+			val latestMessage = thread.getLastMessage() ?: return@forEach
+			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
+			if (timeSinceLatestMessage.inWholeDays > 7) {
+				collection.deleteOne(ThreadData::threadId eq thread.id)
+				deletedThreads = + 1
+			}
+		}
+		databaseLogger.info("Deleted $deletedThreads old threads from the database")
+	}
 }
 
 /**
@@ -263,4 +336,16 @@ data class TagsData(
 	val name: String,
 	val tagTitle: String,
 	val tagValue: String
+)
+
+/**
+ * The data for threads.
+ *
+ * @param threadId The ID of the thread
+ * @param ownerId The ID of the thread's owner
+ */
+@Serializable
+data class ThreadData(
+	val threadId: Snowflake,
+	val ownerId: Snowflake,
 )

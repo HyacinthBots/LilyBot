@@ -38,30 +38,29 @@ class ThreadInviter : Extension() {
 		 * @author IMS212
 		 */
 		event<MessageCreateEvent> {
-			// Don't try to create if the message is in DMs
+			/*
+			Don't try to create a thread if
+			 - the message is in DMs
+			 - a config isn't set
+			 - the message is a slash command
+			 - the thread was manually created or the message is already in a thread
+			 - the message was sent by Lily or another bot
+			 - the message is in an announcements channel
+			 */
 			check { anyGuild() }
-			// Don't try to create if the message is a slash command
-			check { failIf { event.message.type == MessageType.ChatInputCommand } }
-			// Don't try and run this if the thread is manually created
+			check { configPresent() }
 			check {
 			    failIf {
-			        event.message.type == MessageType.ThreadCreated ||
-					event.message.type == MessageType.ThreadStarterMessage
-			    }
-			}
-			// Don't try and create if Lily or another bot sent the message
-			check { failIf { event.message.author?.id == kord.selfId || event.message.author?.isBot == true } }
-			// Don't try to create if the message is already in a thread
-			check { failIf { event.message.getChannel() is TextChannelThread } }
-			// Don't try to create if the message is in an announcements channel
-			check {
-			    failIf {
-			        event.message.getChannel() is NewsChannel ||
+					event.message.type == MessageType.ChatInputCommand ||
+					event.message.type == MessageType.ThreadCreated ||
+					event.message.type == MessageType.ThreadStarterMessage ||
+					event.message.getChannel() is TextChannelThread ||
+					event.message.author?.id == kord.selfId ||
+					event.message.author?.isBot == true ||
+					event.message.getChannel() is NewsChannel ||
 					event.message.getChannel() is NewsChannelThread
 			    }
 			}
-
-			check { configPresent() }
 			action {
 				val config = DatabaseHelper.getConfig(event.guildId!!)!!
 
@@ -74,14 +73,13 @@ class ThreadInviter : Extension() {
 				val guild = event.getGuild()
 				val supportChannel = guild?.getChannel(config.supportChannel) as MessageChannelBehavior
 
-				// fail if the message is not in the support channel
 				if (textChannel != supportChannel) return@action
 
-				// TODO: this is incredibly stupid, there has to be a better way to do this.
-				textChannel.activeThreads.collect {
-					if (it.name == "Support thread for " + event.member!!.asUser().username) {
+				DatabaseHelper.getOwnerThreads(event.member!!.id).forEach {
+					val thread = guild.getChannel(it.threadId) as TextChannelThread
+					if (thread.parent == supportChannel && !thread.isArchived) {
 						userThreadExists = true
-						existingUserThread = it
+						existingUserThread = thread
 					}
 				}
 
@@ -100,6 +98,9 @@ class ThreadInviter : Extension() {
 							"Support thread for " + event.member!!.asUser().username,
 							ArchiveDuration.Hour
 						)
+
+					DatabaseHelper.setThreadOwner(thread.id, event.member!!.id)
+
 					val editMessage = thread.createMessage("edit message")
 
 					editMessage.edit {
@@ -139,6 +140,8 @@ class ThreadInviter : Extension() {
 				val config = DatabaseHelper.getConfig(event.channel.guildId)!!
 				val modRole = event.channel.guild.getRole(config.moderatorsPing)
 				val threadOwner = event.channel.owner.asUser()
+
+				DatabaseHelper.setThreadOwner(event.channel.id, threadOwner.id)
 
 				var supportConfigSet = true
 				if (config.supportTeam == null || config.supportChannel == null) {

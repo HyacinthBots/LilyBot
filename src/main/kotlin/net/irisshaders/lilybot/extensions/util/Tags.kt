@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalUser
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -37,25 +38,31 @@ class Tags : Extension() {
 		 * @author NoComment1105
 		 * @since 3.1.0
 		 */
-		publicSlashCommand(::TagArgs) {
+		publicSlashCommand(::CallTagArgs) {
 			name = "tag"
 			description = "Call a tag from this guild! Use /tag-help for more info."
 
 			check { anyGuild() }
 
 			action {
-				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.name == null) {
+				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
 					respondEphemeral {
-						content = "Unable to find tag! Does this tag exist?"
+						content = "Unable to find the requested tag. Be sure it exists and you've typed it correctly."
 					}
 					return@action
 				}
 
+				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!
+
+				// This is not the best way to do this. Ideally the ping would be in the same message as the embed.
+				// A Discord limitation makes this not possible. Setting KordEx `allowedMentions` should work.
+				if (arguments.user != null) channel.createMessage(arguments.user!!.mention)
+
 				respond {
 					embed {
 						color = DISCORD_BLURPLE
-						title = DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.tagTitle!!.toString()
-						description = DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.tagValue!!.toString()
+						title = tagFromDatabase.tagTitle
+						description = tagFromDatabase.tagValue
 						timestamp = Clock.System.now()
 					}
 				}
@@ -78,18 +85,20 @@ class Tags : Extension() {
 						title = "How does the tag system work?"
 						description =
 							"The tag command allows users to add guild specific 'tag' commands at runtime to their " +
-									"guild. **Tags are like custom commands**, they can do say what ever you want them " +
-									"to say.\n\n**To create a tag**, if you have the Moderate Members permission, run " +
-									"the following command:\n`/tag-create <name> <title> <value>`\nYou will be " +
-									"prompted to enter a name for the tag, a title for the tag, and the value for the" +
-									" tag. This is what will appear in the embed of your tag. You can enter any " +
-									"character you like into all of these inputs.\n\n**To use a tag**, run the " +
-									"following command\n`/tag <name>`\nYou will be prompted to enter a tag name, " +
-									"but will have an autocomplete window to aid you. The window will list all the " +
-									"tags that the guild has.\n\n**To delete a tag**, if you have the Moderate Members " +
-									"permission, run the following command\n`/tag-delete <name>`\nYou will be " +
-									"prompted to enter the name of the tag, again aided by autocomplete, and then " +
-									"the tag will be completed.\n\n**Guilds can have any number of tags they like.**"
+									"guild. **Tags are like custom commands**, they can do say what ever you want " +
+									"them to say.\n\n**To create a tag**, if you have the Moderate Members " +
+									"permission, run the following command:\n`/create-tag <name> <title> <value>`\n " +
+									"You will be prompted to enter a name for the tag, a title for the tag, and the " +
+									"value for the  tag. This is what will appear in the embed of your tag. You can " +
+									"enter any character you like into all of these inputs.\n\n**To use a tag**, " +
+									"run the following command:\n`/tag <name>`\nYou will be prompted to enter a " +
+									"tag name, but will have an autocomplete window to aid you. The window will " +
+									"list all the tags that the guild has.\n\n**To delete a tag**, if you have " +
+									"the Moderate Members permission, run the following command:\n" +
+									"`/delete-tag <name>`\nYou will be prompted to enter the name of the tag, " +
+									"again aided by autocomplete.\n\n**Guilds can have any number of tags " +
+									"they like.** The limit on `tagValue` for tags is 1024 characters, " +
+									"which is the embed description limit enforced by Discord."
 						color = DISCORD_BLURPLE
 						timestamp = Clock.System.now()
 					}
@@ -115,6 +124,13 @@ class Tags : Extension() {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
+				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) != null) {
+					respond { content = "A tag with that name already exists in this guild." }
+					return@action
+				}
+
+				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
+
 				actionLog.createEmbed {
 					color = DISCORD_GREEN
 					title = "Tag created!"
@@ -126,7 +142,7 @@ class Tags : Extension() {
 					}
 					field {
 						name = "Tag value:"
-						value = "`${arguments.tagValue}`"
+						value = "```${arguments.tagValue}```"
 						inline = false
 					}
 					footer {
@@ -135,8 +151,6 @@ class Tags : Extension() {
 					}
 					timestamp = Clock.System.now()
 				}
-
-				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
 
 				respond {
 					content = "Tag: `${arguments.tagName}` created"
@@ -150,9 +164,9 @@ class Tags : Extension() {
 		 * @author NoComment1105
 		 * @since 3.1.0
 		 */
-		ephemeralSlashCommand(::TagArgs) {
+		ephemeralSlashCommand(::DeleteTagArgs) {
 			name = "tag-delete"
-			description = "Delete a tag from your guild. Use /tag-help for more info"
+			description = "Delete a tag from your guild. Use /tag-help for more info."
 
 			check { anyGuild() }
 			check { hasPermission(Permission.ModerateMembers) }
@@ -170,6 +184,8 @@ class Tags : Extension() {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
+				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
+
 				responseEmbedInChannel(
 					actionLog,
 					"Tag deleted!",
@@ -177,8 +193,6 @@ class Tags : Extension() {
 					DISCORD_RED,
 					user.asUser()
 				)
-
-				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
 
 				respond {
 					content = "Tag: `${arguments.tagName}` deleted"
@@ -191,13 +205,36 @@ class Tags : Extension() {
 		/** The named identifier of the tag the user would like. */
 		val tagName by string {
 			name = "name"
-			description = "The name of the tag"
+			description = "The name of the tag you want to call"
 
 			autoComplete {
 				val tags = DatabaseHelper.getAllTags(data.guildId.value!!)
 				val map = mutableMapOf<String, String>()
 
-				// Add eac tag in the database to the tag variable
+				tags.forEach {
+					map[it.name] = it.name
+				}
+
+				suggestStringMap(map)
+			}
+		}
+
+		val user by optionalUser {
+			name = "user"
+			description = "The user to mention with the tag (optional)"
+		}
+	}
+
+	inner class DeleteTagArgs : Arguments() {
+		val tagName by string {
+			name = "name"
+			description = "The name of the tag you want to delete"
+
+			autoComplete {
+				val tags = DatabaseHelper.getAllTags(data.guildId.value!!)
+				val map = mutableMapOf<String, String>()
+
+				// Add each tag in the database to the tag variable
 				tags.forEach {
 					map[it.name] = it.name
 				}
@@ -211,7 +248,7 @@ class Tags : Extension() {
 	inner class CreateTagArgs : Arguments() {
 		/** The named identifier of the tag being created. */
 		val tagName by string {
-			name = "tagName"
+			name = "name"
 			description = "The name of the tag you're making"
 		}
 

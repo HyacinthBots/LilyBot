@@ -45,14 +45,23 @@ class PublicUtilities : Extension() {
 		/**
 		 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
 		 * @author IMS212
-		 * @since < v 2.0
+		 * @since v2.0
 		 */
+		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
 		responseEmbedInChannel(
 			onlineLog, "Lily is now online!", null, DISCORD_GREEN, null
 		)
 
 		/**
-		 * Ping Command
+		 * This function is called to remove any threads in the database that haven't had a message sent in the last
+		 * week. It only runs on startup.
+		 * @author tempest15
+		 * @since 3.2.0
+		 */
+		DatabaseHelper.cleanupThreadData(kord)
+
+		/**
+		 * Ping Command.
 		 * @author IMS212
 		 * @since 2.0
 		 */
