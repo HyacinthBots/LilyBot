@@ -2,28 +2,24 @@ package net.irisshaders.lilybot.extensions.config
 
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import dev.kord.core.event.guild.MemberJoinEvent
-import dev.kord.core.event.guild.MemberLeaveEvent
+import dev.kord.core.event.guild.GuildCreateEvent
+import dev.kord.core.event.guild.GuildDeleteEvent
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 
 class JoinLeaveDetection : Extension() {
-	override val name = "joinleavedetection"
+	override val name = "join-leave-detection"
 
 	override suspend fun setup() {
-		event<MemberLeaveEvent> {
+		event<GuildDeleteEvent> {
 			action {
-				if (event.user.id != kord.selfId) return@action // We only care if Lily is leaving, so ignore others
-
 				DatabaseHelper.setLeaveTime(event.guildId, Clock.System.now())
 			}
 		}
 
-		event<MemberJoinEvent> {
+		event<GuildCreateEvent> {
 			action {
-				if (event.member.id != kord.selfId) return@action // We only care if Lily is joining, so ignore others
-
-				DatabaseHelper.setLeaveTime(event.guildId, null)
+				DatabaseHelper.deleteLeaveTime(event.guild.id)
 			}
 		}
 	}

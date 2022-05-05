@@ -269,22 +269,22 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.2.0
 	 */
-	suspend fun setLeaveTime(inputGuildId: Snowflake, time: Instant?) {
+	suspend fun setLeaveTime(inputGuildId: Snowflake, time: Instant) {
 		val collection = database.getCollection<GuildLeaveTimeData>()
 		collection.insertOne(GuildLeaveTimeData(inputGuildId, time))
 	}
 
 	/**
-	 * Gets the time LilyBot left a guild.
+	 * This function deletes a [GuildLeaveTimeData] from the database.
 	 *
-	 * @param inputGuildId The guild you're getting the time for
+	 * @param inputGuildId The guild to delete the [GuildLeaveTimeData] for
 	 *
-	 * @author NoComment1105
+	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun getLeaveTime(inputGuildId: Snowflake): GuildLeaveTimeData? {
+	suspend fun deleteLeaveTime(inputGuildId: Snowflake) {
 		val collection = database.getCollection<GuildLeaveTimeData>()
-		return collection.findOne(GuildLeaveTimeData::guildId eq inputGuildId)
+		collection.deleteOne(GuildLeaveTimeData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -294,16 +294,16 @@ object DatabaseHelper {
 	 * @since 3.2.0
 	 */
 	suspend fun cleanupGuildData() {
-		val leaveTimeDataCollection = database.getCollection<GuildLeaveTimeData>()
-		val leaveTimeData = leaveTimeDataCollection.find().toList()
+		val collection = database.getCollection<GuildLeaveTimeData>()
+		val leaveTimeData = collection.find().toList()
 		var clearedConfigs = 0
 
 		leaveTimeData.forEach {
-			val leaveDuration = Clock.System.now() - it.guildLeaveTime!!
+			val leaveDuration = Clock.System.now() - it.guildLeaveTime
 
 			if (leaveDuration.inWholeDays > 30) {
 				clearConfig(it.guildId)
-				leaveTimeDataCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
+				collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				clearedConfigs += 1
 			}
 		}
@@ -405,5 +405,5 @@ data class ThreadData(
 @Serializable
 data class GuildLeaveTimeData(
 	val guildId: Snowflake,
-	val guildLeaveTime: Instant?
+	val guildLeaveTime: Instant
 )
