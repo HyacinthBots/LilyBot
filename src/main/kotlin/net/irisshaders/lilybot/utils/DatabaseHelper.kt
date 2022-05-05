@@ -5,6 +5,7 @@ import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database
@@ -258,6 +259,57 @@ object DatabaseHelper {
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
 	}
+
+	/**
+	 * Adds the time Lily bot left a guild with a config.
+	 *
+	 * @param inputGuildId The guild the event took place in
+	 * @param time The current time
+	 *
+	 * @author NoComment1105
+	 * @since 3.2.0
+	 */
+	suspend fun setLeaveTime(inputGuildId: Snowflake, time: Instant?) {
+		val collection = database.getCollection<GuildLeaveTimeData>()
+		collection.insertOne(GuildLeaveTimeData(inputGuildId, time))
+	}
+
+	/**
+	 * Gets the time LilyBot left a guild.
+	 *
+	 * @param inputGuildId The guild you're getting the time for
+	 *
+	 * @author NoComment1105
+	 * @since 3.2.0
+	 */
+	suspend fun getLeaveTime(inputGuildId: Snowflake): GuildLeaveTimeData? {
+		val collection = database.getCollection<GuildLeaveTimeData>()
+		return collection.findOne(GuildLeaveTimeData::guildId eq inputGuildId)
+	}
+
+	/**
+	 * This function deletes the config data stored in the database, if Lily left a guild more than a month ago.
+	 *
+	 * @author NoComment1105
+	 * @since 3.2.0
+	 */
+	suspend fun cleanupGuildData() {
+		val leaveTimeDataCollection = database.getCollection<GuildLeaveTimeData>()
+		val leaveTimeData = leaveTimeDataCollection.find().toList()
+		var clearedConfigs = 0
+
+		leaveTimeData.forEach {
+			val leaveDuration = Clock.System.now() - it.guildLeaveTime!!
+
+			if (leaveDuration.inWholeDays > 30) {
+				clearConfig(it.guildId)
+				leaveTimeDataCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
+				clearedConfigs += 1
+			}
+		}
+
+		databaseLogger.info("Deleted $clearedConfigs old configs from the database")
+	}
 }
 
 /**
@@ -348,4 +400,10 @@ data class TagsData(
 data class ThreadData(
 	val threadId: Snowflake,
 	val ownerId: Snowflake,
+)
+
+@Serializable
+data class GuildLeaveTimeData(
+	val guildId: Snowflake,
+	val guildLeaveTime: Instant?
 )
