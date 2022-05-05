@@ -38,7 +38,7 @@ class MemberJoinLeave : Extension() {
 
 					field {
 						name = "Welcome:"
-						value = eventMember.tag
+						value = "${eventMember.mention} (${eventMember.tag})"
 						inline = true
 					}
 					field {
