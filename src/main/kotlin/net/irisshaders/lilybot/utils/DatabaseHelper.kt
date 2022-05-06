@@ -310,7 +310,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * This function deletes the config data stored in the database, if Lily left a guild more than a month ago.
+	 * This function deletes the [ConfigData] stored in the database for guilds Lily left a month or more ago.
 	 *
 	 * @author NoComment1105
 	 * @since 3.2.0
@@ -321,15 +321,17 @@ object DatabaseHelper {
 		var deletedGuildData = 0
 
 		leaveTimeData.forEach {
+			// Calculate the time since Lily left the guild.
 			val leaveDuration = Clock.System.now() - it.guildLeaveTime
 
 			if (leaveDuration.inWholeDays > 30) {
+				// If the bot has been out of the guild for more than 30 days, delete any related data.
 				clearConfig(it.guildId)
 				clearTags(it.guildId)
 				clearWarn(it.guildId)
-				// once role menu is rewritten, component data should also be cleared here
+				// Once role menu is rewritten, component data should also be cleared here.
 				collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
-				deletedGuildData += 1
+				deletedGuildData += 1 // Increment the counter for logging
 			}
 		}
 
@@ -347,6 +349,7 @@ object DatabaseHelper {
  * @param joinChannel The ID of the guild's member flow channel
  * @param supportChannel The ID of the support channel for the guild, nullable
  * @param supportTeam The ID of the support team for the guild, nullable
+ * @since 3.0.0
  */
 @Serializable
 data class ConfigData(
@@ -365,6 +368,7 @@ data class ConfigData(
  * @param userId The ID of the user with warnings
  * @param guildId The ID of the guild they received the warning in
  * @param strikes The amount of strikes they have received
+ * @since 3.0.0
  */
 @Serializable
 data class WarnData(
@@ -379,6 +383,7 @@ data class WarnData(
  * @param componentId The ID of the components
  * @param roleId The ID of the role the component will add
  * @param addOrRemove Whether to add or remove the role from the user, when the component is clicked
+ * @since 3.0.0
  */
 @Serializable
 data class ComponentData(
@@ -392,6 +397,7 @@ data class ComponentData(
  *
  * @param key This is just so we can find the status and should always be set to "LilyStatus"
  * @param status The string value that will be seen in the bots presence
+ * @since 3.0.0
  */
 @Serializable
 data class StatusData(
@@ -406,6 +412,7 @@ data class StatusData(
  * @param name The named identifier of the tag
  * @param tagTitle The title of the created tag
  * @param tagValue The value of the created tag
+ * @since 3.1.0
  */
 @Serializable
 data class TagsData(
@@ -420,6 +427,7 @@ data class TagsData(
  *
  * @param threadId The ID of the thread
  * @param ownerId The ID of the thread's owner
+ * @since 3.2.0
  */
 @Serializable
 data class ThreadData(
@@ -427,6 +435,13 @@ data class ThreadData(
 	val ownerId: Snowflake,
 )
 
+/**
+ * The data for when Lily leaves a guild.
+ *
+ * @param guildId The ID of the guild Lily left
+ * @param guildLeaveTime The [Instant] that Lily left the guild
+ * @since 3.2.0
+ */
 @Serializable
 data class GuildLeaveTimeData(
 	val guildId: Snowflake,
