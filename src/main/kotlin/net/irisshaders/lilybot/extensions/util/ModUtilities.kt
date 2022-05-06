@@ -2,15 +2,16 @@ package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
@@ -35,87 +36,74 @@ class ModUtilities : Extension() {
 	override suspend fun setup() {
 		/**
 		 * Say Command
-		 * @author NoComment1105
+		 * @author NoComment1105, tempest15
 		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::SayArgs) {
 			name = "say"
 			description = "Say something through Lily."
 
+			check { anyGuild() }
+			check { configPresent() }
+			check { hasPermission(Permission.ModerateMembers) }
 			action {
-				// Allow say to be run in dms and in guild, if guild is null just skip straight to sending the message.
-				if (guild != null) {
-					if (!user.asMember(guild!!.id).hasPermission(Permission.ModerateMembers)) {
-						respond { content = "**Error:** You do not have the `Moderate Members` permission" }
-						return@action
-					}
-					val config = DatabaseHelper.getConfig(guild!!.id)
-					if (config == null) {
-						respond {
-							content =
-								"**Error:** Unable to access config for this guild! Please inform a member of staff"
-						}
-						return@action
-					}
-					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
-					val targetChannel = if (arguments.targetChannel == null) {
-						channel
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val targetChannel =
+					if (arguments.channel != null) {
+						// This odd syntax is necessary for casting to MessageChannelBehavior
+						guild!!.getChannel(arguments.channel!!.id) as MessageChannelBehavior
 					} else {
-						guild?.getChannel(arguments.targetChannel!!.id) as MessageChannelBehavior
+						channel
 					}
 
-					try {
-						if (arguments.embedMessage) {
-							targetChannel.createEmbed {
-								color = DISCORD_BLURPLE
-								description = arguments.messageArgument
+				try {
+					if (arguments.embed) {
+						targetChannel.createEmbed {
+							color = arguments.color
+							description = arguments.message
+							if (arguments.timestamp) {
 								timestamp = Clock.System.now()
 							}
-						} else {
-							targetChannel.createMessage {
-								content = arguments.messageArgument
-							}
-						}
-					} catch (e: KtorRequestException) {
-						respond { content = "Lily does not have permission to send messages in this channel." }
-						return@action
-					}
-
-					respond { content = "Message sent." }
-
-					actionLog.createEmbed {
-						title = "Say command used"
-						description = "`${arguments.messageArgument}`"
-						color = DISCORD_BLACK
-						timestamp = Clock.System.now()
-						field {
-							name = "Channel:"
-							value = targetChannel.mention
-							inline = true
-						}
-						field {
-							name = "Type:"
-							value = if (arguments.embedMessage) "Embed" else "Message"
-							inline = true
-						}
-						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
-						}
-					}
-				} else {
-					if (arguments.embedMessage) {
-						channel.createEmbed {
-							color = DISCORD_BLURPLE
-							description = arguments.messageArgument
-							timestamp = Clock.System.now()
 						}
 					} else {
-						channel.createMessage {
-							content = arguments.messageArgument
+						targetChannel.createMessage {
+							content = arguments.message
 						}
 					}
-					respond { content = "Message sent!" }
+				} catch (e: KtorRequestException) {
+					respond { content = "Lily does not have permission to send messages in this channel." }
+					return@action
+				}
+
+				respond { content = "Message sent." }
+
+				actionLog.createEmbed {
+					title = "Say command used"
+					description = "```${arguments.message}```"
+					color = DISCORD_BLACK
+					timestamp = Clock.System.now()
+					field {
+						name = "Channel:"
+						value = targetChannel.mention
+						inline = true
+					}
+					field {
+						name = "Type:"
+						value = if (arguments.embed) "Embed" else "Message"
+						inline = true
+					}
+					if (arguments.embed) {
+						field {
+							name = "Color:"
+							value = arguments.color.toString()
+							inline = true
+						}
+					}
+					footer {
+						text = user.asUser().tag
+						icon = user.asUser().avatar?.url
+					}
 				}
 			}
 		}
@@ -166,9 +154,9 @@ class ModUtilities : Extension() {
 
 	inner class SayArgs : Arguments() {
 		/** The message the user wishes to send. */
-		val messageArgument by string {
+		val message by string {
 			name = "message"
-			description = "The text of the message to be sent"
+			description = "The text of the message to be sent."
 
 			// Fix newline escape characters
 			mutate {
@@ -178,16 +166,31 @@ class ModUtilities : Extension() {
 		}
 
 		/** The channel to aim the message at. */
-		val targetChannel by optionalChannel {
+		val channel by optionalChannel {
 			name = "channel"
-			description = "The channel the message should be sent in"
+			description = "The channel the message should be sent in."
 		}
 
 		/** Whether to embed the message or not. */
-		val embedMessage by defaultingBoolean {
+		val embed by defaultingBoolean {
 			name = "embed"
-			description = "If the message should be sent as an embed"
+			description = "If the message should be sent as an embed."
 			defaultValue = false
+		}
+
+		/** If the embed should have a timestamp. */
+		val timestamp by defaultingBoolean {
+			name = "timestamp"
+			description = "If the message should be sent with a timestamp. Only works with embeds."
+			defaultValue = true
+		}
+
+		/** What color the embed should be. */
+		val color by defaultingColor {
+			name = "color"
+			description = "The color of the embed. Can be either a hex code or one of Discord's supported colors. " +
+					"Default's to Discord's Blurple. Only works with embeds"
+			defaultValue = DISCORD_BLURPLE
 		}
 	}
 
