@@ -91,6 +91,17 @@ object DatabaseHelper {
 	}
 
 	/**
+	 * Clears all warn strikes for the provided [inputGuildId].
+	 *
+	 * @param inputGuildId The ID of the guild the command was run in
+	 * @author tempest15
+	 */
+	private suspend fun clearWarn(inputGuildId: Snowflake) {
+		val collection = database.getCollection<WarnData>()
+		collection.deleteMany(WarnData::guildId eq inputGuildId)
+	}
+
+	/**
 	 * Using the provided [inputComponentId] the [ComponentData] will be returned from the database.
 	 *
 	 * @param inputComponentId The ID of the component the event was triggered with
@@ -191,6 +202,17 @@ object DatabaseHelper {
 	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
 		val collection = database.getCollection<TagsData>()
 		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
+	}
+
+	/**
+	 * Clears all tags for the provided [inputGuildId].
+	 *
+	 * @param inputGuildId The ID of the guild the command was run in
+	 * @author tempest15
+	 */
+	private suspend fun clearTags(inputGuildId: Snowflake) {
+		val collection = database.getCollection<TagsData>()
+		collection.deleteMany(TagsData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -296,19 +318,22 @@ object DatabaseHelper {
 	suspend fun cleanupGuildData() {
 		val collection = database.getCollection<GuildLeaveTimeData>()
 		val leaveTimeData = collection.find().toList()
-		var clearedConfigs = 0
+		var deletedGuildData = 0
 
 		leaveTimeData.forEach {
 			val leaveDuration = Clock.System.now() - it.guildLeaveTime
 
 			if (leaveDuration.inWholeDays > 30) {
 				clearConfig(it.guildId)
+				clearTags(it.guildId)
+				clearWarn(it.guildId)
+				// once role menu is rewritten, component data should also be cleared here
 				collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
-				clearedConfigs += 1
+				deletedGuildData += 1
 			}
 		}
 
-		databaseLogger.info("Deleted $clearedConfigs old configs from the database")
+		databaseLogger.info("Deleted old data for $deletedGuildData guilds from the database")
 	}
 }
 
