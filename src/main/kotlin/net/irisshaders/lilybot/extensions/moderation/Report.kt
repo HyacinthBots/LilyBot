@@ -39,7 +39,7 @@ import kotlin.time.Duration
 
 /**
  * The message reporting feature in the bot.
- * @author NoComment1105
+ * @since 2.0
  */
 class Report : Extension() {
 	override val name = "report"
@@ -106,12 +106,12 @@ class Report : Extension() {
 					) as MessageChannel
 					reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
 					messageAuthor = reportedMessage.getAuthorAsMember()
-				} catch (e: KtorRequestException) {
+				} catch (e: KtorRequestException) { // In the event of a report in a channel the bot can't see
 					respond {
 						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 					}
 					return@action
-				} catch (e: EntityNotFoundException) {
+				} catch (e: EntityNotFoundException) { // In the event of the message already being deleted.
 					respond {
 						content = "Sorry, I can't find this message. Please ping the moderators instead."
 					}
@@ -129,6 +129,19 @@ class Report : Extension() {
 			}
 		}
 	}
+
+	/**
+	 * Create an [EphemeralFollowupMessage] for the user to provide confirmation on whether they want to report the
+	 * message, to save fake moderator pings.
+	 *
+	 * @param user The user that reported the message
+	 * @param messageLog The channel to send the report embed to
+	 * @param messageAuthor The author of the reported message
+	 * @param reportedMessage The message being reported
+	 * @param moderatorRole The role to ping when a report is submitted
+	 * @param modActionLog The channel so send punishment logs too
+	 * @since 3.1.0
+	 */
 	private suspend fun EphemeralInteractionContext.confirmationMessage(
 		user: UserBehavior,
 		messageLog: GuildMessageChannelBehavior,
@@ -179,6 +192,17 @@ class Report : Extension() {
 		}
 	}
 
+	/**
+	 * Create an embed in the [messageLog] for moderators to respond to with appropriate action.
+	 *
+	 * @param user The user that reported the message
+	 * @param messageLog The channel to send the report embed to
+	 * @param messageAuthor The author of the reported message
+	 * @param reportedMessage The message being reported
+	 * @param moderatorRole The role to ping when a report is submitted
+	 * @param modActionLog The channel so send punishment logs too
+	 * @since 2.0
+	 */
 	private suspend fun createReport(
 		user: UserBehavior,
 		messageLog: GuildMessageChannelBehavior,
@@ -187,7 +211,7 @@ class Report : Extension() {
 		moderatorRole: Snowflake,
 		modActionLog: Snowflake
 	) {
-		var response: Message? = null
+		var response: Message? = null // Create this here to allow us to edit within the variable
 		messageLog.createMessage { content = "<@&$moderatorRole>" }
 
 		response = messageLog.createEmbed {
@@ -223,6 +247,7 @@ class Report : Extension() {
 						// TODO once modals become a thing, avoid just consuming this error
 						try {
 							reportedMessage.delete("Deleted via report.")
+							// Remove components (buttons) to prevent errors if pressed after action was taken
 							response?.edit { components { removeAll() } }
 						} catch (e: RestRequestException) {
 							messageLog.createMessage {
@@ -369,11 +394,21 @@ class Report : Extension() {
 		}
 	}
 
+	/**
+	 * A quick function for creating timeout embeds after actions have been performed.
+	 *
+	 * @param actionLog The channel for sending the embed too
+	 * @param user The user being sanctioned
+	 * @param duration The time they're to be timed out for
+	 * @return The embed
+	 * @author MissCorruption
+	 * @since 2.0
+	 */
 	private suspend fun quickTimeoutEmbed(
 		actionLog: GuildMessageChannelBehavior,
 		user: User,
 		duration: Int
-	): Message = actionLog.createEmbed {
+	) = actionLog.createEmbed {
 		title = "Timeout"
 
 		field {
@@ -393,11 +428,21 @@ class Report : Extension() {
 		}
 	}
 
+	/**
+	 * A quick function for creating embeds after actions have been performed.
+	 *
+	 * @param moderationAction The action taken by the moderator
+	 * @param actionLog The channel for sending the embed too
+	 * @param user The user being sanctioned
+	 * @return The embed
+	 * @author MissCorruption
+	 * @since 2.0
+	 */
 	private suspend fun quickLogEmbed(
 		moderationAction: String,
 		actionLog: GuildMessageChannelBehavior,
         user: User
-	): Message = actionLog.createEmbed {
+	) = actionLog.createEmbed {
 		title = moderationAction
 
 		field {
@@ -413,6 +458,7 @@ class Report : Extension() {
 	}
 
 	inner class ManualReportArgs : Arguments() {
+		/** The link to the message being reported. */
 		val message by string {
 			name = "messageLink"
 			description = "Link to the message to report"

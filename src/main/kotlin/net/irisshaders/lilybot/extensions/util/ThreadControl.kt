@@ -8,15 +8,20 @@ package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.checks.isInThread
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.member
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.edit
+import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.hasPermission
+import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.threads.edit
+import dev.kord.core.entity.Member
 import dev.kord.core.entity.channel.thread.ThreadChannel
-import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -39,36 +44,16 @@ class ThreadControl : Extension() {
 				action {
 					val threadChannel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
-					val roles = member.roles.toList().map { it.id }
-
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
-
-					if (config.moderatorsPing in roles || threadChannel.ownerId == user.id) {
-						threadChannel.edit {
-							name = arguments.newThreadName
-
-							reason = "Renamed by ${member.tag}"
-						}
-						edit {
-							content = "Thread Renamed!"
-						}
-
-						return@action
-					}
-
-					if (threadChannel.ownerId != user.id) {
-						edit { content = "**Error:** This is not your thread!" }
-
-						return@action
-					}
+					if (!ownsThreadOrModerator(threadChannel, member)) return@action
 
 					threadChannel.edit {
 						name = arguments.newThreadName
-
 						reason = "Renamed by ${member.tag}"
 					}
 
-					edit { content = "Thread Renamed." }
+					respond {
+						content = "Thread Renamed!"
+					}
 				}
 			}
 
@@ -82,60 +67,66 @@ class ThreadControl : Extension() {
 				action {
 					val threadChannel = channel.asChannel() as ThreadChannel
 					val member = user.asMember(guild!!.id)
-					val roles = member.roles.toList().map { it.id }
-
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
-
-					if (config.moderatorsPing in roles) {
-						threadChannel.edit {
-							this.archived = true
-							this.locked = arguments.lock
-
-							reason = "Archived by ${user.asUser().tag}"
-						}
-
-						edit {
-							content = "Thread archived"
-
-							if (arguments.lock) content += " and locked"
-
-							content += "!"
-						}
-
-						return@action
-					} else if (threadChannel.ownerId == user.id) {
-						threadChannel.edit {
-							this.archived = true
-
-							reason = "Archived by ${user.asUser().tag}"
-						}
-
-						edit {
-							content = "Thread archived!"
-						}
-
-						return@action
-					}
-
-					if (threadChannel.ownerId != user.id) {
-						edit { content = "This is not your thread!" }
-
-						return@action
-					}
+					if (!ownsThreadOrModerator(threadChannel, member)) return@action
 
 					if (threadChannel.isArchived) {
 						edit { content = "**Error:** This channel is already archived!" }
-
 						return@action
 					}
 
 					threadChannel.edit {
-						archived = true
+						this.archived = true
+						this.locked = arguments.lock && member.hasPermission(Permission.ModerateMembers)
 
 						reason = "Archived by ${user.asUser().tag}"
 					}
 
-					edit { content = "Thread archived!" }
+					respond {
+						content = "Thread archived"
+						if (arguments.lock && member.hasPermission(Permission.ModerateMembers)) {
+							content += " and locked"
+						}
+						content += "!"
+					}
+				}
+			}
+
+			ephemeralSubCommand(::ThreadTransferArgs) {
+				name = "transfer"
+				description = "Transfer ownership of this thread"
+
+				check { isInThread() }
+				check { configPresent() }
+
+				action {
+					val threadChannel = channel.asChannel() as ThreadChannel
+					val member = user.asMember(guild!!.id)
+
+					val oldOwnerId = DatabaseHelper.getThreadOwner(threadChannel.id) ?: threadChannel.ownerId
+					val oldOwner = guild!!.getMember(oldOwnerId)
+
+					if (!ownsThreadOrModerator(threadChannel, member)) return@action
+
+					if (arguments.newOwner.id == oldOwnerId) {
+						respond { content = "That person already owns the thread!" }
+						return@action
+					}
+
+					if (arguments.newOwner.isBot) {
+						respond { content = "You cannot transfer ownership of a thread to a bot." }
+						return@action
+					}
+
+					DatabaseHelper.setThreadOwner(threadChannel.id, arguments.newOwner.id)
+
+					respond { content = "Ownership transferred." }
+
+					var content = "Thread ownership transferred from ${oldOwner.mention} " +
+							"to ${arguments.newOwner.mention}."
+
+					if (member != oldOwner) content += " Transferred by ${member.mention}"
+
+					threadChannel.createMessage(content)
 				}
 			}
 		}
@@ -151,8 +142,29 @@ class ThreadControl : Extension() {
 	inner class ThreadArchiveArgs : Arguments() {
 		val lock by defaultingBoolean {
 			name = "lock"
-			description = "Whether to lock this thread, if you are a moderator. Default is false"
+			description = "Whether to lock the thread if you are a moderator. Default is false"
 			defaultValue = false
 		}
+	}
+
+	inner class ThreadTransferArgs : Arguments() {
+		val newOwner by member {
+			name = "newOwner"
+			description = "The user you want to transfer ownership of the thread to"
+		}
+	}
+
+	private suspend fun EphemeralSlashCommandContext<*>.ownsThreadOrModerator(
+		inputThread: ThreadChannel,
+		inputMember: Member
+	): Boolean {
+		val databaseThreadOwner = DatabaseHelper.getThreadOwner(inputThread.id)
+
+		if (inputMember.hasPermission(Permission.ModerateMembers) || databaseThreadOwner == inputMember.id) {
+			return true
+		}
+
+		respond { content = "**Error:** This is not your thread!" }
+		return false
 	}
 }

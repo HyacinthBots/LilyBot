@@ -20,8 +20,10 @@ suspend fun CheckContext<*>.configPresent() {
 		return
 	}
 
+	// Prevent commands being run in DMs, although [anyGuild] should still be used as backup
 	if (guildFor(event) == null) fail("Must be in a server")
 
+	// Check all not-null values in the database are not null
 	if (DatabaseHelper.getConfig(guildFor(event)!!.id)?.modActionLog == null ||
 		DatabaseHelper.getConfig(guildFor(event)!!.id)?.moderatorsPing == null ||
 		DatabaseHelper.getConfig(guildFor(event)!!.id)?.messageLogs == null ||
@@ -72,5 +74,5 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
 		kordLogger.warn { "isBot and isModerator checks failed on $commandName." }
 	}
 
-	return "success"
+	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
 }

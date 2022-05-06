@@ -29,24 +29,39 @@ import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 
+/**
+ * This class contains a few utility commands that can be used by the public in guilds, or that are often seen by the
+ * public.
+ *
+ * @since 3.1.0
+ */
 class PublicUtilities : Extension() {
 	override val name = "public-utilities"
 
 	override suspend fun setup() {
-		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
-
 		/**
-		 * Online notification
+		 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
 		 * @author IMS212
+		 * @since v2.0
 		 */
+		// The channel specifically for sending online notifications to
+		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
 		responseEmbedInChannel(
 			onlineLog, "Lily is now online!", null, DISCORD_GREEN, null
 		)
 
 		/**
-		 * Ping Command
+		 * This function is called to remove any threads in the database that haven't had a message sent in the last
+		 * week. It only runs on startup.
+		 * @author tempest15
+		 * @since 3.2.0
+		 */
+		DatabaseHelper.cleanupThreadData(kord)
+
+		/**
+		 * Ping Command.
 		 * @author IMS212
-		 * @author NoComment1105
+		 * @since 2.0
 		 */
 		publicSlashCommand {
 			name = "ping"
@@ -75,6 +90,7 @@ class PublicUtilities : Extension() {
 		/**
 		 * Nickname request command
 		 * @author NoComment1105
+		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand {
 			name = "nickname"
@@ -93,6 +109,7 @@ class PublicUtilities : Extension() {
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
+					// Declare the embed outside the action to allow us to reference it inside the action
 					var actionLogEmbed: Message? = null
 
 					respond { content = "Nickname request sent!" }
@@ -178,6 +195,7 @@ class PublicUtilities : Extension() {
 								label = "Deny"
 								style = ButtonStyle.Danger
 
+								// Declare the reason outside the action to allow us to reference it in the action
 								var reason: String? = null
 
 								action {
@@ -277,6 +295,7 @@ class PublicUtilities : Extension() {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
+					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {
 						respond { content = "You have no nickname to clear!" }
 						return@action
@@ -308,6 +327,7 @@ class PublicUtilities : Extension() {
 	}
 
 	inner class NickRequestArgs : Arguments() {
+		/** The new nickname that the command user requested. */
 		val newNick by string {
 			name = "nickname"
 			description = "The new nickname you would like"

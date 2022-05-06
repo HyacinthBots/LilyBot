@@ -7,7 +7,6 @@ COPY build/libs/LilyBot-*-all.jar /usr/local/lib/LilyBot.jar
 
 # Only place env vars below that are fine to be publicised. Private stuff needs to be
 # applied deployment-side.
-# Also required: GITHUB_OAUTH, JDBC_URL
 # Optional: SENTRY_DSN
 
 ENV TEST_GUILD_ID=934324779811483718
