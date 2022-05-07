@@ -194,20 +194,20 @@ Result: Reports the message pointed to by `message-link` by pinging `moderatorRo
 Name: `github issue`
 
 Arguments:
-* `repository` - GitHub repository the issue is in, by the format "USER-NAME/REPO-NAME" - String
+* `repository` - GitHub repository the issue is in, by the format "USER-NAME/REPO-NAME" or URL - String
 * `issue-number` - Number of the issue to be searched for - Integer
 
 ### GitHub Repo
 Name: `github repo`
 
 Arguments:
-* `repository` - GitHub repository to be searched for, by the format "USER-NAME/REPO-NAME" - String
+* `repository` - GitHub repository to be searched for, by the format "USER-NAME/REPO-NAME" or URL - String
 
 ### GitHub User
 Name: `github user`
 
 Arguments:
-* `username` - GitHub user or repository to be searched for - String
+* `username` - GitHub user or repository to be searched for, can be a username or URL - String
 
 ### Archive Thread
 Name: `thread archive`

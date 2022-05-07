@@ -10,6 +10,7 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.types.respondEphemeral
+import dev.kord.core.kordLogger
 import dev.kord.rest.builder.message.create.embed
 import io.ktor.utils.io.errors.IOException
 import kotlinx.datetime.Clock
@@ -73,10 +74,13 @@ class Github : Extension() {
 					var issue: GHIssue?
 
 					try {
-						issue = github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
-						sentry.breadcrumb(BreadcrumbType.Info) {
-							category = "extensions.util.Github.issue.getIssue"
-							message = "Found issue"
+						issue = if (arguments.repository.contains("http", true)) {
+							github?.getRepository(
+								"${arguments.repository.split("/")[3]}/" +
+										arguments.repository.split("/")[4]
+							)?.getIssue(arguments.issue)
+						} else {
+							github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
 						}
 					} catch (e: HttpException) {
 						val iterator: PagedIterator<GHIssue>? = github?.searchIssues()
@@ -269,7 +273,14 @@ class Github : Extension() {
 					var repo: GHRepository?
 
 					try {
-						repo = github!!.getRepository(arguments.repository)
+						repo = if (arguments.repository.contains("http", true)) {
+							github?.getRepository(
+								"${arguments.repository.split("/")[3]}/" +
+										arguments.repository.split("/")[4]
+							)
+						} else {
+							github?.getRepository(arguments.repository)
+						}
 						sentry.breadcrumb(BreadcrumbType.Info) {
 							category = "extensions.util.Github.repository.getRepository"
 							message = "Repository found"
@@ -346,7 +357,11 @@ class Github : Extension() {
 					val ghUser: GHUser?
 
 					try {
-						ghUser = github!!.getUser(arguments.username)
+						ghUser = if (arguments.username.contains("http", true)) {
+							github?.getUser(arguments.username.split("/")[3])
+						} else {
+							github?.getUser(arguments.username)
+						}
 						sentry.breadcrumb(BreadcrumbType.Info) {
 							category = "extensions.util.Github.user.getUser"
 							message = "User found"
