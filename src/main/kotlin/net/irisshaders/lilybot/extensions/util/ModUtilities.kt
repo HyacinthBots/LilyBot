@@ -189,7 +189,7 @@ class ModUtilities : Extension() {
 		val color by defaultingColor {
 			name = "color"
 			description = "The color of the embed. Can be either a hex code or one of Discord's supported colors. " +
-					"Default's to Discord's Blurple. Only works with embeds"
+					"Embeds only"
 			defaultValue = DISCORD_BLURPLE
 		}
 	}
