@@ -10,7 +10,6 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.types.respondEphemeral
-import dev.kord.core.kordLogger
 import dev.kord.rest.builder.message.create.embed
 import io.ktor.utils.io.errors.IOException
 import kotlinx.datetime.Clock
