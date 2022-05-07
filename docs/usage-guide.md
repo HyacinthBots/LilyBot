@@ -1,21 +1,16 @@
 # Using LilyBot
 
 This is a guide on how to **add the official instance of Lily to your sever**.
-If you're looking to host Lily for yourself,
-try our [hosting guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/hosting-guide.md).
 If you're looking to set up a development environment for Lily,
 try our [development guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/development-guide.md).
 
 If you have issues with this guide, please join [our discord](https://discord.gg/hy2329fcTZ) for support.
 
 # Step 1 - Obtain an invitation link
-Currently, Lily is not a fully public bot.
-If you want to add her to your server, please contact `IMS#7902` or `NoComment#6411` on Discord.
-They will provide you with a link for inviting Lily to your server.
+Click on the official LilyBot instance, where you'll be able to use the `Add To Server` button
 
 # Step 2 - Using your invitation link
-Once you've received this link, simply open it in your browser. You may need to log into your Discord account.
-You should then select the server you want to add Lily to. You'll need to be an administrator in that server.
+The button will open new tab in your browser, where you can select the server you'd like to invite LilyBot too. You'll need to be an administrator in that server.
 Click `Authorize`.
 
 If all has gone successfully so far, you should see LilyBot in the sidebar of your server.
@@ -37,6 +32,3 @@ able to send messages when the server is locked.
 
 We suggest joining [our discord](https://discord.gg/hy2329fcTZ)
 for support, announcements of releases, Lily's online status, and even more!
-
-*Please note that it is not currently possible to edit Lily's custom commands per guild on the official instance.
-This functionality will be added in a later version.*
