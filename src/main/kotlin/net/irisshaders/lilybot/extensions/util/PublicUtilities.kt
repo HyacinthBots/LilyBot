@@ -59,6 +59,15 @@ class PublicUtilities : Extension() {
 		DatabaseHelper.cleanupThreadData(kord)
 
 		/**
+		 * This function is called to remove any guilds in the database that haven't had Lily in them for more than
+		 * a month. It only runs on startup
+		 *
+		 * @author NoComment1105
+		 * @since 3.2.0
+		 */
+		DatabaseHelper.cleanupGuildData()
+
+		/**
 		 * Ping Command.
 		 * @author IMS212
 		 * @since 2.0

@@ -56,6 +56,8 @@ class MemberJoinLeave : Extension() {
 		/** Create an embed in the join channel on user leave */
 		event<MemberLeaveEvent> {
 			action {
+				// If it's Lily leaving, return the action, otherwise the log will fill with errors
+				if (event.user.id == kord.selfId) return@action
 				val config = DatabaseHelper.getConfig(event.guildId) ?: return@action
 
 				val eventUser = event.user

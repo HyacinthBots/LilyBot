@@ -5,6 +5,7 @@ import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database
@@ -87,6 +88,17 @@ object DatabaseHelper {
 				if (!remove) currentStrikes.plus(1) else currentStrikes.minus(1)
 			)
 		)
+	}
+
+	/**
+	 * Clears all warn strikes for the provided [inputGuildId].
+	 *
+	 * @param inputGuildId The ID of the guild the command was run in
+	 * @author tempest15
+	 */
+	private suspend fun clearWarn(inputGuildId: Snowflake) {
+		val collection = database.getCollection<WarnData>()
+		collection.deleteMany(WarnData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -193,6 +205,17 @@ object DatabaseHelper {
 	}
 
 	/**
+	 * Clears all tags for the provided [inputGuildId].
+	 *
+	 * @param inputGuildId The ID of the guild the command was run in
+	 * @author tempest15
+	 */
+	private suspend fun clearTags(inputGuildId: Snowflake) {
+		val collection = database.getCollection<TagsData>()
+		collection.deleteMany(TagsData::guildId eq inputGuildId)
+	}
+
+	/**
 	 * Using the provided [inputThreadId] the owner's ID or null is returned from the database.
 	 *
 	 * @param inputThreadId The ID of the thread you wish to find the owner for
@@ -258,6 +281,62 @@ object DatabaseHelper {
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
 	}
+
+	/**
+	 * Adds the time Lily bot left a guild with a config.
+	 *
+	 * @param inputGuildId The guild the event took place in
+	 * @param time The current time
+	 *
+	 * @author NoComment1105
+	 * @since 3.2.0
+	 */
+	suspend fun setLeaveTime(inputGuildId: Snowflake, time: Instant) {
+		val collection = database.getCollection<GuildLeaveTimeData>()
+		collection.insertOne(GuildLeaveTimeData(inputGuildId, time))
+	}
+
+	/**
+	 * This function deletes a [GuildLeaveTimeData] from the database.
+	 *
+	 * @param inputGuildId The guild to delete the [GuildLeaveTimeData] for
+	 *
+	 * @author tempest15
+	 * @since 3.2.0
+	 */
+	suspend fun deleteLeaveTime(inputGuildId: Snowflake) {
+		val collection = database.getCollection<GuildLeaveTimeData>()
+		collection.deleteOne(GuildLeaveTimeData::guildId eq inputGuildId)
+	}
+
+	/**
+	 * This function deletes the [ConfigData] stored in the database for guilds Lily left a month or more ago.
+	 *
+	 * @author NoComment1105
+	 * @since 3.2.0
+	 */
+	suspend fun cleanupGuildData() {
+		val collection = database.getCollection<GuildLeaveTimeData>()
+		val leaveTimeData = collection.find().toList()
+		var deletedGuildData = 0
+
+		leaveTimeData.forEach {
+			// Calculate the time since Lily left the guild.
+			val leaveDuration = Clock.System.now() - it.guildLeaveTime
+
+			if (leaveDuration.inWholeDays > 30) {
+				// If the bot has been out of the guild for more than 30 days, delete any related data.
+				clearConfig(it.guildId)
+				clearTags(it.guildId)
+				clearWarn(it.guildId)
+				// Once role menu is rewritten, component data should also be cleared here.
+				collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
+				deletedGuildData += 1 // Increment the counter for logging
+			}
+		}
+
+		databaseLogger.info("Deleted old data for $deletedGuildData guilds from the database")
+	}
 }
 
 /**
@@ -270,6 +349,7 @@ object DatabaseHelper {
  * @param joinChannel The ID of the guild's member flow channel
  * @param supportChannel The ID of the support channel for the guild, nullable
  * @param supportTeam The ID of the support team for the guild, nullable
+ * @since 3.0.0
  */
 @Serializable
 data class ConfigData(
@@ -288,6 +368,7 @@ data class ConfigData(
  * @param userId The ID of the user with warnings
  * @param guildId The ID of the guild they received the warning in
  * @param strikes The amount of strikes they have received
+ * @since 3.0.0
  */
 @Serializable
 data class WarnData(
@@ -302,6 +383,7 @@ data class WarnData(
  * @param componentId The ID of the components
  * @param roleId The ID of the role the component will add
  * @param addOrRemove Whether to add or remove the role from the user, when the component is clicked
+ * @since 3.0.0
  */
 @Serializable
 data class ComponentData(
@@ -315,6 +397,7 @@ data class ComponentData(
  *
  * @param key This is just so we can find the status and should always be set to "LilyStatus"
  * @param status The string value that will be seen in the bots presence
+ * @since 3.0.0
  */
 @Serializable
 data class StatusData(
@@ -329,6 +412,7 @@ data class StatusData(
  * @param name The named identifier of the tag
  * @param tagTitle The title of the created tag
  * @param tagValue The value of the created tag
+ * @since 3.1.0
  */
 @Serializable
 data class TagsData(
@@ -343,9 +427,23 @@ data class TagsData(
  *
  * @param threadId The ID of the thread
  * @param ownerId The ID of the thread's owner
+ * @since 3.2.0
  */
 @Serializable
 data class ThreadData(
 	val threadId: Snowflake,
 	val ownerId: Snowflake,
+)
+
+/**
+ * The data for when Lily leaves a guild.
+ *
+ * @param guildId The ID of the guild Lily left
+ * @param guildLeaveTime The [Instant] that Lily left the guild
+ * @since 3.2.0
+ */
+@Serializable
+data class GuildLeaveTimeData(
+	val guildId: Snowflake,
+	val guildLeaveTime: Instant
 )
