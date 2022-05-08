@@ -57,9 +57,6 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.logging)
 
-    // TOML reader
-    implementation(libs.toml)
-
     // Github API
     implementation(libs.github.api)
 

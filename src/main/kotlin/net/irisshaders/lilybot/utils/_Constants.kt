@@ -7,14 +7,6 @@ import dev.kord.common.entity.Snowflake
 /** The Bot Token. */
 val BOT_TOKEN = env("TOKEN")
 
-/** The path to the custom commands file. */
-@Deprecated(
-	"Deprecated in favour of tags stored in the database. This will be removed in 3.1.+",
-	ReplaceWith("No longer needed", ""),
-	DeprecationLevel.WARNING
-)
-val CUSTOM_COMMANDS_PATH = env("CUSTOM_COMMANDS_PATH")
-
 /** The ID of the guild used for testing features. */
 val TEST_GUILD_ID = Snowflake(env("TEST_GUILD_ID"))
 
