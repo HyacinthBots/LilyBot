@@ -25,8 +25,8 @@ object DatabaseHelper {
 	 *
 	 * @param inputGuildId The ID of the guild the command was run in.
 	 * @return The config for [inputGuildId]
-	 * @author NoComment1105
-	 * @author tempest15
+	 * @author NoComment1105, tempest15
+	 * @since 3.0.0
 	 */
 	suspend fun getConfig(inputGuildId: Snowflake): ConfigData? {
 		val collection = database.getCollection<ConfigData>()
@@ -38,6 +38,7 @@ object DatabaseHelper {
 	 *
 	 * @param newConfig The new config values you want to set.
 	 * @author tempest15
+	 * @since 3.0.0
 	 */
 	suspend fun setConfig(newConfig: ConfigData) {
 		val collection = database.getCollection<ConfigData>()
@@ -50,6 +51,7 @@ object DatabaseHelper {
 	 *
 	 * @param inputGuildId The ID of the guild the command was run in
 	 * @author tempest15
+	 * @since 3.0.0
 	 */
 	suspend fun clearConfig(inputGuildId: Snowflake) {
 		val collection = database.getCollection<ConfigData>()
@@ -63,6 +65,7 @@ object DatabaseHelper {
 	 * @param inputGuildId The ID of the guild the command was run in
 	 * @return null or the result from the database
 	 * @author tempest15
+	 * @since 3.0.0
 	 */
 	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? {
 		val collection = database.getCollection<WarnData>()
@@ -76,6 +79,7 @@ object DatabaseHelper {
 	 * @param inputGuildId The ID of the guild the command was run in.
 	 * @param remove Remove a warn strike, or add a warn strike.
 	 * @author tempest15
+	 * @since 3.0.0
 	 */
 	suspend fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
 		val currentStrikes = getWarn(inputUserId, inputGuildId)?.strikes ?: 0
@@ -95,6 +99,7 @@ object DatabaseHelper {
 	 *
 	 * @param inputGuildId The ID of the guild the command was run in
 	 * @author tempest15
+	 * @since 3.0.0
 	 */
 	private suspend fun clearWarn(inputGuildId: Snowflake) {
 		val collection = database.getCollection<WarnData>()
@@ -107,6 +112,7 @@ object DatabaseHelper {
 	 * @param inputComponentId The ID of the component the event was triggered with
 	 * @return The component from the database
 	 * @author tempest15
+	 * @since 2.1.0
 	 */
 	suspend fun getComponent(inputComponentId: String): ComponentData? {
 		val collection = database.getCollection<ComponentData>()
@@ -118,6 +124,7 @@ object DatabaseHelper {
 	 *
 	 * @param newComponent The data for the component to be added.
 	 * @author tempest15
+	 * @since 3.0.0
 	 */
 	suspend fun setComponent(newComponent: ComponentData) {
 		val collection = database.getCollection<ComponentData>()
@@ -130,6 +137,7 @@ object DatabaseHelper {
 	 *
 	 * @return null or the set status in the database.
 	 * @author NoComment1105
+	 * @since 3.0.0
 	 */
 	fun getStatus(): String {
 		var selectedStatus: StatusData?
@@ -145,6 +153,7 @@ object DatabaseHelper {
 	 *
 	 * @param newStatus The new status you wish to set
 	 * @author NoComment1105
+	 * @since 3.0.0
 	 */
 	suspend fun setStatus(newStatus: String) {
 		val collection = database.getCollection<StatusData>()
@@ -160,6 +169,7 @@ object DatabaseHelper {
 	 * @param name The named identifier of the tag.
 	 * @return null or the result from the database.
 	 * @author NoComment1105
+	 * @since 3.1.0
 	 */
 	suspend fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
 		val collection = database.getCollection<TagsData>()
@@ -172,6 +182,7 @@ object DatabaseHelper {
 	 * @param inputGuildId The ID of the guild.
 	 * @return A [List] of tags for the specified [inputGuildId].
 	 * @author NoComment1105
+	 * @since 3.1.0
 	 */
 	suspend fun getAllTags(inputGuildId: Snowflake): List<TagsData> {
 		val collection = database.getCollection<TagsData>()
@@ -186,6 +197,7 @@ object DatabaseHelper {
 	 * @param tagTitle The title of the tag being created.
 	 * @param tagValue The contents of the tag being created.
 	 * @author NoComment1105
+	 * @since 3.1.0
 	 */
 	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
 		val collection = database.getCollection<TagsData>()
@@ -198,6 +210,7 @@ object DatabaseHelper {
 	 * @param inputGuildId The guild the tag was created in.
 	 * @param name The named identifier of the tag being deleted.
 	 * @author NoComment1105
+	 * @since 3.1.0
 	 */
 	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
 		val collection = database.getCollection<TagsData>()
@@ -209,6 +222,7 @@ object DatabaseHelper {
 	 *
 	 * @param inputGuildId The ID of the guild the command was run in
 	 * @author tempest15
+	 * @since 3.1.0
 	 */
 	private suspend fun clearTags(inputGuildId: Snowflake) {
 		val collection = database.getCollection<TagsData>()
@@ -221,8 +235,8 @@ object DatabaseHelper {
 	 * @param inputThreadId The ID of the thread you wish to find the owner for
 	 *
 	 * @return null or the thread owner's ID
-	 * @since 3.2.0
 	 * @author tempest15
+	 * @since 3.2.0
 	 */
 	suspend fun getThreadOwner(inputThreadId: Snowflake): Snowflake? {
 		val collection = database.getCollection<ThreadData>()
@@ -236,8 +250,8 @@ object DatabaseHelper {
 	 * @param inputOwnerId The ID of the member whose threads you wish to find
 	 *
 	 * @return null or a list of threads the member owns
-	 * @since 3.2.0
 	 * @author tempest15
+	 * @since 3.2.0
 	 */
 	suspend fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> {
 		val collection = database.getCollection<ThreadData>()
@@ -251,8 +265,8 @@ object DatabaseHelper {
 	 * @param newOwnerId The new owner of the thread
 	 *
 	 * @return null or the thread owner's ID
-	 * @since 3.2.0
 	 * @author tempest15
+	 * @since 3.2.0
 	 */
 	suspend fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake) {
 		val collection = database.getCollection<ThreadData>()

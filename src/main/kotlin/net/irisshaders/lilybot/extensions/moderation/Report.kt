@@ -140,6 +140,7 @@ class Report : Extension() {
 	 * @param reportedMessage The message being reported
 	 * @param moderatorRole The role to ping when a report is submitted
 	 * @param modActionLog The channel so send punishment logs too
+	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
 	private suspend fun EphemeralInteractionContext.confirmationMessage(
@@ -201,6 +202,7 @@ class Report : Extension() {
 	 * @param reportedMessage The message being reported
 	 * @param moderatorRole The role to ping when a report is submitted
 	 * @param modActionLog The channel so send punishment logs too
+	 * @author MissCorruption
 	 * @since 2.0
 	 */
 	private suspend fun createReport(
