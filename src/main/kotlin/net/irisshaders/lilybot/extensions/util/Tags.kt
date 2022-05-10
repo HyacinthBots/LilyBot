@@ -87,7 +87,7 @@ class Tags : Extension() {
 							"The tag command allows users to add guild specific 'tag' commands at runtime to their " +
 									"guild. **Tags are like custom commands**, they can do say what ever you want " +
 									"them to say.\n\n**To create a tag**, if you have the Moderate Members " +
-									"permission, run the following command:\n`/create-tag <name> <title> <value>`\n " +
+									"permission, run the following command:\n`/tag-create <name> <title> <value>`\n " +
 									"You will be prompted to enter a name for the tag, a title for the tag, and the " +
 									"value for the  tag. This is what will appear in the embed of your tag. You can " +
 									"enter any character you like into all of these inputs.\n\n**To use a tag**, " +
@@ -95,7 +95,7 @@ class Tags : Extension() {
 									"tag name, but will have an autocomplete window to aid you. The window will " +
 									"list all the tags that the guild has.\n\n**To delete a tag**, if you have " +
 									"the Moderate Members permission, run the following command:\n" +
-									"`/delete-tag <name>`\nYou will be prompted to enter the name of the tag, " +
+									"`/tag-delete <name>`\nYou will be prompted to enter the name of the tag, " +
 									"again aided by autocomplete.\n\n**Guilds can have any number of tags " +
 									"they like.** The limit on `tagValue` for tags is 1024 characters, " +
 									"which is the embed description limit enforced by Discord."
