@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "net.irisshaders.lilybot"
-version = "3.1.1"
+version = "3.2.0"
 
 repositories {
     mavenCentral()
@@ -56,9 +56,6 @@ dependencies {
     implementation(libs.groovy)
     implementation(libs.logback)
     implementation(libs.logging)
-
-    // TOML reader
-    implementation(libs.toml)
 
     // Github API
     implementation(libs.github.api)

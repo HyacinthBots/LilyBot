@@ -15,11 +15,13 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 /**
  * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild.
  * @author NoComment1105
+ * @since 2.0
  */
 class MemberJoinLeave : Extension() {
 	override val name = "member-join-leave"
 
 	override suspend fun setup() {
+		/** Create an embed in the join channel on user join */
 		event<MemberJoinEvent> {
 			action {
 				val config = DatabaseHelper.getConfig(event.guildId) ?: return@action
@@ -36,7 +38,7 @@ class MemberJoinLeave : Extension() {
 
 					field {
 						name = "Welcome:"
-						value = eventMember.tag
+						value = "${eventMember.mention} (${eventMember.tag})"
 						inline = true
 					}
 					field {
@@ -51,8 +53,11 @@ class MemberJoinLeave : Extension() {
 			}
 		}
 
+		/** Create an embed in the join channel on user leave */
 		event<MemberLeaveEvent> {
 			action {
+				// If it's Lily leaving, return the action, otherwise the log will fill with errors
+				if (event.user.id == kord.selfId) return@action
 				val config = DatabaseHelper.getConfig(event.guildId) ?: return@action
 
 				val eventUser = event.user

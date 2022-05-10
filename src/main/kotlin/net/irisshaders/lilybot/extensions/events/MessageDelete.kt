@@ -9,7 +9,13 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageDeleteEvent
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.configPresent
 
+/**
+ * The class for logging deletion of messages to the guild message log.
+ *
+ * @since 2.0
+ */
 class MessageDelete : Extension() {
 	override val name = "message-delete"
 
@@ -17,20 +23,21 @@ class MessageDelete : Extension() {
 		/**
 		 * Logs deleted messages in a guild to the message log channel designated in the config for that guild
 		 * @author NoComment1105
+		 * @since 2.0
 		 */
 		event<MessageDeleteEvent> {
-			// Don't try to create if the message is in DMs
 			check { anyGuild() }
-			action {
-				if (event.message?.author?.isBot == true || event.message?.author?.id == kord.selfId) return@action
+			check { configPresent() }
 
-				// Try to get the message logs channel, return@action if null
-				val config = DatabaseHelper.getConfig(event.guild!!.id) ?: return@action
+			action {
+				if (event.message?.author?.isBot == true) return@action
+
+				val config = DatabaseHelper.getConfig(event.guild!!.id)!!
 
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
-				val messageContent = event.message?.asMessageOrNull()?.content.toString()
 				val eventMessage = event.message
+				val messageContent = eventMessage?.asMessageOrNull()?.content.toString()
 				val messageLocation = event.channel.id.value
 
 				messageLog.createEmbed {
@@ -44,10 +51,16 @@ class MessageDelete : Extension() {
 						value = messageContent.ifEmpty { "Failed to get content of message" }
 						inline = false
 					}
+					// If the message has an attachment, add the link to it to the embed
 					if (eventMessage?.attachments != null && eventMessage.attachments.isNotEmpty()) {
 						val attachmentUrls = StringBuilder()
 						for (attachment in eventMessage.attachments) {
-							attachmentUrls.append(attachment.data.url + "\n")
+							attachmentUrls.append(
+							    "https://media.discordapp.net/attachments/" +
+									"${attachment.data.url.split("/")[4]}/" + // Get the channel
+									"${attachment.data.url.split("/")[5]}/" + // Get the message ID
+									attachment.data.filename + "\n"
+							)
 						}
 						field {
 							name = "Attachments:"

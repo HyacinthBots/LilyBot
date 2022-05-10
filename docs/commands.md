@@ -165,11 +165,13 @@ Name: `role-mennu`
 Arguments:
 * `role` - Role users will be able to select through the menu - Role
 * `title` - Title of the embed to be created along with the menu - Optional String (default: Role Selection Menu)
-* `description` - Text of the embed to be created along with the menu - Optional String (default: Use the button below to add/remove the `role` role.)
+* `description` - Text of the embed to be created along with the menu - Optional String
+(default: `Use the button below to add/remove the <role> role.`)
 * `channel` - Channel for the embed and menu to be created in - Optional Channel (default: channel executed in)
 * `color` - Color for the embed - Optional Color (default: black)
 
-Result: Creates a menu with buttons to add and remove `role` in `channel` along with an `color` colored embed with description `description` and title `title`.
+Result: Creates a menu with buttons to add and remove `role` in `channel` along with an `color` colored embed with
+description `description` and title `title`.
 
 ### Say (MODS ONLY)
 Name: `say`
@@ -192,20 +194,20 @@ Result: Reports the message pointed to by `message-link` by pinging `moderatorRo
 Name: `github issue`
 
 Arguments:
-* `repository` - GitHub repository the issue is in, by the format "USER-NAME/REPO-NAME" - String
+* `repository` - GitHub repository the issue is in, by the format "USER-NAME/REPO-NAME" or URL - String
 * `issue-number` - Number of the issue to be searched for - Integer
 
 ### GitHub Repo
 Name: `github repo`
 
 Arguments:
-* `repository` - GitHub repository to be searched for, by the format "USER-NAME/REPO-NAME" - String
+* `repository` - GitHub repository to be searched for, by the format "USER-NAME/REPO-NAME" or URL - String
 
 ### GitHub User
 Name: `github user`
 
 Arguments:
-* `username` - GitHub user or repository to be searched for - String
+* `username` - GitHub user or repository to be searched for, can be a username or URL - String
 
 ### Archive Thread
 Name: `thread archive`
@@ -213,7 +215,8 @@ Name: `thread archive`
 Arguments:
 * `lock` - If the thread executed in should be locked - Boolean (default: false)
 
-Result: Archives the thread executed in **if executed by a moderator or the thread owner**. Locks the thread if executed by a moderator and `lock` is true.
+Result: Archives the thread executed in **if executed by a moderator or the thread owner**.
+Locks the thread if executed by a moderator and `lock` is true.
 
 ### Rename Thread
 Name: `thread rename`
@@ -223,33 +226,42 @@ Arguments:
 
 Result: Renames the thread executed in **if executed by a moderator or the thread owner**.
 
+### Transfer Thread
+Name: `thread transfer`
+
+Arguments:
+* `newOwner` - The person you want to transfer ownership of the thread to - User
+
+Result: Transfers ownership of the thread executed in to `newOwner` **if executed by a moderator or the thread owner**.
+Creates a message in the executed thread noting this transfer.
 
 ## Tags
-Tag commands are guild specific commands, that can be added at runtime. They are all embed commands. You will be assisted by auto-complete when typing these commands. 
+Tag commands are guild specific commands, that can be added at runtime. They are all embed commands.
+You will be assisted by auto-complete when typing these commands. 
 
-### Create tags (MODS ONLY)
+### Create a Tag (MODS ONLY)
 Name: `tag-create`
 
 Arguments:
-* `tagName` - The named identifier of the tag you wish to create. This is what you'd use to call the tag in the `tag` command
-* `tagTitle` - The tag embed title
-* `tagValue` - The tag embed description
+* `tagName` - The named identifier of the tag you wish to create. - String
+* `tagTitle` - The tag embed title - String
+* `tagValue` - The tag embed description - String
 
 Result: Creates a tag for the guild you ran this command in
 
-### Delete tags (MODS ONLY)
+### Delete a Tag (MODS ONLY)
 Name: `tag-delete`
 
 Arguments:
-* `tagName` - The named identifier of the tag you wish to delete
+* `tagName` - The named identifier of the tag you wish to delete - String
 
 Result: Deletes the tag for the guild you ran this command in
 
-### Use tags
+### Use a Tag
 Name: `tag`
 
 Arguments:
-* `tagName` - The named identifier of the tag you wish to run
+* `tagName` - The named identifier of the tag you wish to run - String
 
 Result: Posts the tag embed you requested
 
@@ -261,9 +273,10 @@ Result: Displays a help command with all this information, in greater detail.
 ### Request Nickname
 Name: `nickname request`
 
-* `nickname` - The new nickname you are requesting
+* `nickname` - The new nickname you are requesting - String
 
-Result: Sends a request to the moderators for a new nickname. This feature is designed for servers that disable nickname change permissions on users
+Result: Sends a request to the moderators for a new nickname. This feature is designed for servers that disable
+nickname change permissions on users
 
 ### Clear Nickname
 Name: `nickname clear`

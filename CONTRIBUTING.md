@@ -100,7 +100,7 @@ The listed types are based on the labels that can be assigned to PR's in the Lil
 
 **Description**: Used for pull requests that merge develop into main
 
-**Final Comment Period**: 3 days
+**Final Comment Period**: 2 days
 
 ### Other
 

@@ -23,6 +23,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.readBytes
 import io.ktor.http.Parameters
 import kotlinx.datetime.Clock
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
@@ -30,9 +31,15 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
 
+/**
+ * The class for the uploading of logs to mclo.gs.
+ *
+ * @since 2.0
+ */
 class LogUploading : Extension() {
 	override val name = "log-uploading"
 
+	/** The file extensions that will be read and decoded by this system. */
 	private val logFileExtensions = setOf("log", "gz", "txt")
 
 	override suspend fun setup() {
@@ -40,8 +47,8 @@ class LogUploading : Extension() {
 		 * Upload files that have the extensions specified in [logFileExtensions] to mclo.gs,
 		 * giving a user confirmation.
 		 *
-		 * @author Caio_MGT
-		 * @author maximumpower55
+		 * @author Caio_MGT, maximumpower55
+		 * @since 2.0
 		 */
 		event<MessageCreateEvent> {
 			action {
@@ -147,7 +154,7 @@ class LogUploading : Extension() {
 															color = DISCORD_RED
 															title = "Failed to upload `$attachmentFileName` to mclo.gs"
 															timestamp = Clock.System.now()
-															description = "Error: " + e.toString()
+															description = "Error: $e"
 															footer {
 																text = "Uploaded by ${eventMessage.author?.tag}"
 																icon = eventMessage.author?.avatar?.url
@@ -189,10 +196,29 @@ class LogUploading : Extension() {
 		}
 	}
 
-	@kotlinx.serialization.Serializable
+	/**
+	 * This data class will store the data of the log being uploaded by [postToMCLogs].
+	 *
+	 * **NOTE:** Setting these to null is necessary in case a value is missing, which would cause an error.
+	 *
+	 * @param success Whether the log upload was a success or not
+	 * @param id The ID of the log uploaded
+	 * @param error Any errors that were returned by the upload
+	 *
+	 * @author CaioMGT
+	 * @since 3.1.0
+	 */
+	@Serializable
 	data class LogData(val success: Boolean, val id: String? = null, val error: String? = null)
-	// setting these to null is necessary in case a value is missing, which would cause an error.
 
+	/**
+	 * This function coordinates the uploading of a user provided log to mclo.gs, allowing support to view logs easily.
+	 *
+	 * @param text The content of the log
+	 * @return The link to the log upload
+	 * @author Maximumpower55, CaioMGT
+	 * @since 3.1.0
+	 */
 	private suspend fun postToMCLogs(text: String): String {
 		val client = HttpClient()
 		val response = client.post("https://api.mclo.gs/1/log") {
@@ -205,8 +231,7 @@ class LogUploading : Extension() {
 			)
 		}.readBytes().decodeToString()
 		client.close()
-		// ignoreUnknownKeys is necessary to not cause any errors due to missing values in the JSON
-		val json = Json { ignoreUnknownKeys = true }
+		val json = Json { ignoreUnknownKeys = true } // to avoid causing any errors due to missing values in the JSON
 		val log = json.decodeFromString<LogData>(response)
 		if (log.success) {
 			return "https://mclo.gs/" + log.id

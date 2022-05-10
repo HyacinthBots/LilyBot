@@ -17,15 +17,20 @@ import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
+/**
+ * The class for configuring LilyBot in your guilds.
+ *
+ * @since 2.1.0
+ */
 class Config : Extension() {
 
 	override val name = "config"
 
 	override suspend fun setup() {
 		/**
-		 * Commands to handle configuration
-		 * @author NoComment1105
-		 * @author tempest15
+		 * The parent command for the commands to handle configuration
+		 * @author NoComment1105, tempest15
+		 * @since 2.1.0
 		 */
 		ephemeralSlashCommand {
 			name = "config"
@@ -98,7 +103,7 @@ class Config : Extension() {
 							user.asUser()
 						)
 
-						// clear the config (do this last)
+						// Clear the config (do this last)
 						DatabaseHelper.clearConfig(guild!!.id)
 					}
 				}
@@ -107,26 +112,37 @@ class Config : Extension() {
 	}
 
 	inner class Config : Arguments() {
+		/** The role for pinging moderators. */
 		val moderatorPing by role {
 			name = "moderatorRole"
 			description = "Your Moderator role"
 		}
+
+		/** The channel for sending action logging to. */
 		val modActionLog by channel {
 			name = "modActionLog"
 			description = "Your Mod Action Log channel"
 		}
+
+		/** The channel for sending message logs to. */
 		val messageLogs by channel {
 			name = "messageLogs"
 			description = "Your Message Logs Channel"
 		}
+
+		/** The channel for sending join logs to. */
 		val joinChannel by channel {
 			name = "joinChannel"
 			description = "Your Join Logs Channel"
 		}
+
+		/** The role for the support team. */
 		val supportTeam by optionalRole {
 			name = "supportTeamRole"
 			description = "Your Support Team role"
 		}
+
+		/** The channel for creating support threads in. */
 		val supportChannel by optionalChannel {
 			name = "supportChannel"
 			description = "Your Support Channel"
