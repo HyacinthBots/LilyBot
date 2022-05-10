@@ -112,7 +112,7 @@ object DatabaseHelper {
 	 * @param inputComponentId The ID of the component the event was triggered with
 	 * @return The component from the database
 	 * @author tempest15
-	 * @since 2.1.0
+	 * @since 3.0.0
 	 */
 	suspend fun getComponent(inputComponentId: String): ComponentData? {
 		val collection = database.getCollection<ComponentData>()
