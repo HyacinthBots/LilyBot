@@ -133,7 +133,7 @@ class ThreadControl : Extension() {
 	}
 
 	inner class ThreadRenameArgs : Arguments() {
-		/** The new name for the thread */
+		/** The new name for the thread. */
 		val newThreadName by string {
 			name = "newName"
 			description = "The new name to give to the thread"
@@ -141,7 +141,7 @@ class ThreadControl : Extension() {
 	}
 
 	inner class ThreadArchiveArgs : Arguments() {
-		/** Whether to lock the thread or not */
+		/** Whether to lock the thread or not. */
 		val lock by defaultingBoolean {
 			name = "lock"
 			description = "Whether to lock the thread if you are a moderator. Default is false"
@@ -150,7 +150,7 @@ class ThreadControl : Extension() {
 	}
 
 	inner class ThreadTransferArgs : Arguments() {
-		/** The new thread owner */
+		/** The new thread owner. */
 		val newOwner by member {
 			name = "newOwner"
 			description = "The user you want to transfer ownership of the thread to"
@@ -158,7 +158,7 @@ class ThreadControl : Extension() {
 	}
 
 	/**
-	 * Run a check to see if the provided [Member] owns this [ThreadChannel]
+	 * Run a check to see if the provided [Member] owns this [ThreadChannel].
 	 *
 	 * @param inputThread The thread being checked
 	 * @param inputMember The Member to check
