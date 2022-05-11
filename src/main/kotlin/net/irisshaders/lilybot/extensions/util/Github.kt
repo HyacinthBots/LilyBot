@@ -79,7 +79,16 @@ class Github : Extension() {
 										arguments.repository.split("/")[4]
 							)?.getIssue(arguments.issue)
 						} else {
-							github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
+							try {
+								github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
+							} catch (e: GHFileNotFoundException) {
+								respond {
+									embed {
+										title = "Unable to find issue number! Make sure this issue exists"
+									}
+								}
+								return@action
+							}
 						}
 					} catch (e: HttpException) {
 						val iterator: PagedIterator<GHIssue>? = github?.searchIssues()
@@ -117,7 +126,14 @@ class Github : Extension() {
 						}
 
 						val num = issue!!.number
-						issue = github?.getRepository(arguments.repository)?.getIssue(num)
+						try {
+							issue = github?.getRepository(arguments.repository)?.getIssue(num)
+						} catch (e: GHFileNotFoundException) {
+							respond {
+								content = "Unable to find issue number! Make sure this issue exists"
+							}
+							return@action
+						}
 					}
 
 					respond {
