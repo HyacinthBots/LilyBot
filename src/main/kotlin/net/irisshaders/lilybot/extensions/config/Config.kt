@@ -1,5 +1,6 @@
 package net.irisshaders.lilybot.extensions.config
 
+import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
@@ -13,6 +14,8 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.createEmbed
+import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
@@ -67,13 +70,27 @@ class Config : Extension() {
 
 					// Log the config being set in the action log
 					val actionLogChannel = guild?.getChannel(arguments.modActionLog.id) as GuildMessageChannelBehavior
-					responseEmbedInChannel(
-						actionLogChannel,
-						"Configuration set!",
-						"A Guild Manager has set a config for this guild!",
-						null,
-						user.asUser()
-					)
+					actionLogChannel.createEmbed {
+						title = "Configuration set!"
+						description = "A guild manager has set a config for this guild!"
+						color = DISCORD_BLACK
+						timestamp = Clock.System.now()
+						field {
+							name = "Set values:"
+							value = """
+								Moderators Ping = ${arguments.moderatorPing.mention}
+								Mod Action Log = ${arguments.modActionLog.mention}
+								Message Logs = ${arguments.messageLogs.mention}
+								Join Channel = ${arguments.joinChannel.mention}
+								Support Team = ${arguments.supportTeam?.mention ?: "null"}
+								Support Channel = ${arguments.supportChannel?.mention ?: "null"}
+							""".trimIndent()
+						}
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+					}
 				}
 			}
 
