@@ -41,7 +41,7 @@ class Config : Extension() {
 				description = "Set the config"
 
 				check { anyGuild() }
-				check { hasPermission(Permission.Administrator) }
+				check { hasPermission(Permission.ManageGuild) }
 
 				action {
 					// If an action log ID doesn't exist, set the config
@@ -70,7 +70,7 @@ class Config : Extension() {
 					responseEmbedInChannel(
 						actionLogChannel,
 						"Configuration set!",
-						"An administrator has set a config for this guild!",
+						"A Guild Manager has set a config for this guild!",
 						null,
 						user.asUser()
 					)
@@ -82,7 +82,7 @@ class Config : Extension() {
 				description = "Clear the config!"
 
 				check { anyGuild() }
-				check { hasPermission(Permission.Administrator) }
+				check { hasPermission(Permission.ManageGuild) }
 
 				action {
 					// If an action log ID resists, inform the user their config isn't set.
@@ -98,7 +98,7 @@ class Config : Extension() {
 						responseEmbedInChannel(
 							actionLogChannel,
 							"Configuration cleared!",
-							"An administrator has cleared the configuration for this guild!",
+							"A Guild Manager has cleared the configuration for this guild!",
 							null,
 							user.asUser()
 						)
