@@ -55,6 +55,7 @@ Name: `kick`
 Arguments:
 * `kickUser` – Person to kick - User
 * `reason` - Reason for the Kick - Optional String
+* `image` - The URL to an image to provide extra context for the action - Optional String
 
 Result: Kicks `kickUser` from the server with reason `reason`.
 
@@ -65,6 +66,7 @@ Arguments:
 * `banUser` – Person to ban - User
 * `messages` - Number of days of messages to delete - Integer
 * `reason` - Reason for the ban - Optional String
+* `image` - The URL to an image to provide extra context for the action - Optional String
 
 Result: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last
 `messages` day(s).
@@ -84,6 +86,7 @@ Arguments:
 * `softBanUser` - Person to soft ban - User
 * `messages` - Number of days of messages to delete - Integer (default 3)
 * `reason` - Reason for the ban - Optional String
+* `image` - The URL to an image to provide extra context for the action - Optional String
 
 Result: Bans `softBanUser`, deletes the last `messages` days of messages from them, and unbans them.
 
@@ -93,6 +96,7 @@ Name: `warn`
 Arguments:
 * `warnUser` - Person to warn - User
 * `reason` - Reason for warn - Optional String
+* `image` - The URL to an image to provide extra context for the action - Optional String
 
 Result: Warns `warnUser` with a DM and adds a strike to their points total.
 Depending on their new points total, action is taken based on the below table.
@@ -112,6 +116,7 @@ Arguments:
 * `timeoutUser` - Person to timeout - User
 * `duration` - Duration of timeout - Duration [e.g. 6h or 30s] (default 6h)
 * `reason` - Reason for timeout - Optional String
+* `image` - The URL to an image to provide extra context for the action - Optional String
 
 Result: Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function.
 
