@@ -63,6 +63,11 @@ class TerminalModeration : Extension() {
 				// Clarify the user is not a bot or moderator
 				isBotOrModerator(userArg, "ban") ?: return@action
 
+				if (arguments.image != null && !arguments.image!!.contains("http", true)) {
+					respond { content = "Invalid Image! Please try again." }
+					return@action
+				}
+
 				// DM the user before the ban task is run, to avoid error, null if fails
 				val dm = userDMEmbed(
 					userArg,
@@ -176,6 +181,11 @@ class TerminalModeration : Extension() {
 
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
 
+				if (arguments.image != null && !arguments.image!!.contains("http", true)) {
+					respond { content = "Invalid Image! Please try again." }
+					return@action
+				}
+
 				// DM the user before the ban task is run
 				val dm = userDMEmbed(
 					userArg,
@@ -250,6 +260,11 @@ class TerminalModeration : Extension() {
 
 				// Clarify the user isn't a bot or a moderator
 				isBotOrModerator(userArg, "kick") ?: return@action
+
+				if (arguments.image != null && !arguments.image!!.contains("http", true)) {
+					respond { content = "Invalid Image! Please try again." }
+					return@action
+				}
 
 				// DM the user about it before the kick
 				val dm = userDMEmbed(
