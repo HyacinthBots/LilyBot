@@ -320,7 +320,7 @@ class TerminalModeration : Extension() {
 		/** An image that the user wishes to provide for context to the kick. */
 		val image by optionalString {
 			name = "image"
-			description = "The URL to an image you'd like to provide"
+			description = "The URL to an image you'd like to provide as extra context for the action"
 		}
 	}
 
@@ -347,7 +347,7 @@ class TerminalModeration : Extension() {
 		/** An image that the user wishes to provide for context to the ban. */
 		val image by optionalString {
 			name = "image"
-			description = "The URL to an image you'd like to provide"
+			description = "The URL to an image you'd like to provide as extra context for the action"
 		}
 	}
 
@@ -383,7 +383,7 @@ class TerminalModeration : Extension() {
 		/** An image that the user wishes to provide for context to the soft-ban. */
 		val image by optionalString {
 			name = "image"
-			description = "The URL to an image you'd like to provide"
+			description = "The URL to an image you'd like to provide as extra context for the action"
 		}
 	}
 }
