@@ -8,6 +8,7 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -39,7 +40,7 @@ class TerminalModeration : Extension() {
 	override val name = "terminal-moderation"
 
 	override suspend fun setup() {
-		val logger = KotlinLogging.logger { }
+		val logger = KotlinLogging.logger("TerminalModeration")
 
 		/**
 		 * Ban command
@@ -97,6 +98,7 @@ class TerminalModeration : Extension() {
 					color = DISCORD_BLACK
 					title = "Banned a user"
 					description = "${userArg.mention} has been banned!"
+					image = arguments.image
 
 					baseModerationEmbed(arguments.reason, userArg, user)
 					field {
@@ -210,6 +212,7 @@ class TerminalModeration : Extension() {
 					color = DISCORD_BLACK
 					title = "Soft-banned a user"
 					description = "${userArg.mention} has been soft banned"
+					image = arguments.image
 
 					baseModerationEmbed(arguments.reason, userArg, user)
 					field {
@@ -274,9 +277,12 @@ class TerminalModeration : Extension() {
 					color = DISCORD_BLACK
 					title = "Kicked User"
 					description = "${userArg.mention} has been kicked"
+					image = arguments.image
 
 					baseModerationEmbed(arguments.reason, userArg, user)
 					dmNotificationStatusEmbedField(dm)
+
+					timestamp = Clock.System.now()
 				}
 			}
 		}
@@ -294,6 +300,12 @@ class TerminalModeration : Extension() {
 			name = "reason"
 			description = "The reason for the Kick"
 			defaultValue = "No Reason Provided"
+		}
+
+		/** An image that the user wishes to provide for context to the kick. */
+		val image by optionalString {
+			name = "image"
+			description = "The URL to an image you'd like to provide"
 		}
 	}
 
@@ -315,6 +327,12 @@ class TerminalModeration : Extension() {
 			name = "reason"
 			description = "The reason for the ban"
 			defaultValue = "No Reason Provided"
+		}
+
+		/** An image that the user wishes to provide for context to the ban. */
+		val image by optionalString {
+			name = "image"
+			description = "The URL to an image you'd like to provide"
 		}
 	}
 
@@ -345,6 +363,12 @@ class TerminalModeration : Extension() {
 			name = "reason"
 			description = "The reason for the ban"
 			defaultValue = "No Reason Provided"
+		}
+
+		/** An image that the user wishes to provide for context to the soft-ban. */
+		val image by optionalString {
+			name = "image"
+			description = "The URL to an image you'd like to provide"
 		}
 	}
 }

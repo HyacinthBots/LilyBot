@@ -11,6 +11,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefa
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -215,6 +216,7 @@ class TemporaryModeration : Extension() {
 					title = "Warning"
 					color = DISCORD_BLACK
 					timestamp = Clock.System.now()
+					image = arguments.image
 
 					baseModerationEmbed(arguments.reason, userArg, user)
 					field {
@@ -339,6 +341,7 @@ class TemporaryModeration : Extension() {
 					title = "Timeout"
 					color = DISCORD_BLACK
 					timestamp = Clock.System.now()
+					image = arguments.image
 
 					baseModerationEmbed(arguments.reason, userArg, user)
 					field {
@@ -643,6 +646,12 @@ class TemporaryModeration : Extension() {
 			description = "Reason for timeout"
 			defaultValue = "No reason provided"
 		}
+
+		/** An image that the user wishes to provide for context to the kick. */
+		val image by optionalString {
+			name = "image"
+			description = "The URL to an image you'd like to provide"
+		}
 	}
 
 	inner class RemoveTimeoutArgs : Arguments() {
@@ -665,6 +674,12 @@ class TemporaryModeration : Extension() {
 			name = "reason"
 			description = "Reason for warn"
 			defaultValue = "No reason provided"
+		}
+
+		/** An image that the user wishes to provide for context to the kick. */
+		val image by optionalString {
+			name = "image"
+			description = "The URL to an image you'd like to provide"
 		}
 	}
 
