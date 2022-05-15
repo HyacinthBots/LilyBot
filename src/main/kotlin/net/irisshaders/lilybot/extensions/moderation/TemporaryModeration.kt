@@ -39,6 +39,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.baseModerationEmbed
+import net.irisshaders.lilybot.utils.checkImages
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.isBotOrModerator
@@ -120,6 +121,8 @@ class TemporaryModeration : Extension() {
 				}
 
 				isBotOrModerator(userArg, "warn") ?: return@action
+
+				checkImages(arguments.image) ?: return@action
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
 				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)?.strikes
@@ -310,13 +313,11 @@ class TemporaryModeration : Extension() {
 				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
-				if (arguments.image != null && !arguments.image!!.contains("http", true)) {
-					respond { content = "Invalid Image! Please try again." }
-					return@action
-				}
 
 				// Clarify the user is not bot or a moderator
 				isBotOrModerator(userArg, "timeout") ?: return@action
+
+				checkImages(arguments.image) ?: return@action
 
 				try {
 					// Run the timeout task

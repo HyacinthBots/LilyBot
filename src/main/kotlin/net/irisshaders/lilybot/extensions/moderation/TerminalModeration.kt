@@ -25,6 +25,7 @@ import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.baseModerationEmbed
+import net.irisshaders.lilybot.utils.checkImages
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.isBotOrModerator
@@ -63,10 +64,7 @@ class TerminalModeration : Extension() {
 				// Clarify the user is not a bot or moderator
 				isBotOrModerator(userArg, "ban") ?: return@action
 
-				if (arguments.image != null && !arguments.image!!.contains("http", true)) {
-					respond { content = "Invalid Image! Please try again." }
-					return@action
-				}
+				checkImages(arguments.image) ?: return@action
 
 				// DM the user before the ban task is run, to avoid error, null if fails
 				val dm = userDMEmbed(
@@ -181,10 +179,7 @@ class TerminalModeration : Extension() {
 
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
 
-				if (arguments.image != null && !arguments.image!!.contains("http", true)) {
-					respond { content = "Invalid Image! Please try again." }
-					return@action
-				}
+				checkImages(arguments.image) ?: return@action
 
 				// DM the user before the ban task is run
 				val dm = userDMEmbed(
@@ -261,10 +256,7 @@ class TerminalModeration : Extension() {
 				// Clarify the user isn't a bot or a moderator
 				isBotOrModerator(userArg, "kick") ?: return@action
 
-				if (arguments.image != null && !arguments.image!!.contains("http", true)) {
-					respond { content = "Invalid Image! Please try again." }
-					return@action
-				}
+				checkImages(arguments.image) ?: return@action
 
 				// DM the user about it before the kick
 				val dm = userDMEmbed(

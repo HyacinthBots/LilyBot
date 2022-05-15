@@ -18,3 +18,6 @@ val MONGO_URI = envOrNull("MONGO_URI") ?: "mongodb://localhost:27017"
 
 /** Sentry connection DSN. If null, Sentry won't be used. */
 val SENTRY_DSN = envOrNull("SENTRY_DSN")
+
+/** The [String] values required to be present when using an image in an embed. */
+val URL_REQUIREMENTS = listOf("https", "http", ".co", ":", "//")
