@@ -115,10 +115,6 @@ class TemporaryModeration : Extension() {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
-				if (arguments.image != null && !arguments.image!!.contains("http", true)) {
-					respond { content = "Invalid Image! Please try again." }
-					return@action
-				}
 
 				isBotOrModerator(userArg, "warn") ?: return@action
 
