@@ -24,12 +24,14 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.supplier.EntitySupplyStrategy
+import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -39,7 +41,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.baseModerationEmbed
-import net.irisshaders.lilybot.utils.checkImages
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.isBotOrModerator
@@ -117,8 +118,6 @@ class TemporaryModeration : Extension() {
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "warn") ?: return@action
-
-				checkImages(arguments.image) ?: return@action
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
 				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)?.strikes
@@ -215,19 +214,24 @@ class TemporaryModeration : Extension() {
 					}
 				}
 
-				actionLog.createEmbed {
-					title = "Warning"
-					color = DISCORD_BLACK
-					timestamp = Clock.System.now()
-					image = arguments.image
+				val embed = EmbedBuilder()
+				embed.color = DISCORD_BLACK
+				embed.title = "Warning"
+				embed.image = arguments.image
+				embed.baseModerationEmbed(arguments.reason, userArg, user)
+				embed.dmNotificationStatusEmbedField(dm)
+				embed.timestamp = Clock.System.now()
+				embed.field {
+					name = "Total Strikes:"
+					value = newStrikes.toString()
+					inline = false
+				}
 
-					baseModerationEmbed(arguments.reason, userArg, user)
-					field {
-						name = "Total Strikes:"
-						value = newStrikes.toString()
-						inline = false
-					}
-					dmNotificationStatusEmbedField(dm)
+				try {
+					actionLog.createMessage { embeds.add(embed) }
+				} catch (e: KtorRequestException) {
+					embed.image = null
+					actionLog.createMessage { embeds.add(embed) }
 				}
 			}
 		}
@@ -313,8 +317,6 @@ class TemporaryModeration : Extension() {
 				// Clarify the user is not bot or a moderator
 				isBotOrModerator(userArg, "timeout") ?: return@action
 
-				checkImages(arguments.image) ?: return@action
-
 				try {
 					// Run the timeout task
 					guild?.getMember(userArg.id)?.edit {
@@ -342,20 +344,25 @@ class TemporaryModeration : Extension() {
 					content = "Timed out ${userArg.id}"
 				}
 
-				actionLog.createEmbed {
-					title = "Timeout"
-					color = DISCORD_BLACK
-					timestamp = Clock.System.now()
-					image = arguments.image
+				val embed = EmbedBuilder()
+				embed.color = DISCORD_BLACK
+				embed.title = "Timeout"
+				embed.image = arguments.image
+				embed.baseModerationEmbed(arguments.reason, userArg, user)
+				embed.dmNotificationStatusEmbedField(dm)
+				embed.timestamp = Clock.System.now()
+				embed.field {
+					name = "Duration:"
+					value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
+						.replace("PT", "") + ")"
+					inline = false
+				}
 
-					baseModerationEmbed(arguments.reason, userArg, user)
-					field {
-						name = "Duration:"
-						value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
-							.replace("PT", "") + ")"
-						inline = false
-					}
-					dmNotificationStatusEmbedField(dm)
+				try {
+					actionLog.createMessage { embeds.add(embed) }
+				} catch (e: KtorRequestException) {
+					embed.image = null
+					actionLog.createMessage { embeds.add(embed) }
 				}
 			}
 		}

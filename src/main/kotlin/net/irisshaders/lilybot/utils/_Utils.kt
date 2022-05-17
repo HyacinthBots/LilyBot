@@ -78,31 +78,3 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
 
 	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
 }
-
-/**
- * This function will check image inputs from commands and verify they contain all the required [String]s to form
- * a good URL, and avoid any KtorRequestExceptions. It uses [String]s from [URL_REQUIREMENTS] and checks them against
- * a provided [imageURL]. The [imageURL] must contain everything in [URL_REQUIREMENTS] or else the function will
- * return null, to allow the command it has been called in to be returned using an elvis.
- *
- * @param imageURL The URL of the image provided
- * @return **null** if the [imageURL] is bad, "success" if the [imageURL] is good
- * @author NoComment1105
- * @since 3.3.0
- */
-suspend fun EphemeralSlashCommandContext<*>.checkImages(imageURL: String?): String? {
-	var success = 0
-
-	for (i in URL_REQUIREMENTS) {
-		if (imageURL != null && imageURL.contains(i, true)) {
-			success++
-		}
-	}
-
-	return if (success != URL_REQUIREMENTS.size) {
-		respond { content = "Invalid Image! Please try again." }
-		null
-	} else {
-		"success"
-	}
-}
