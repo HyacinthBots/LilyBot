@@ -6,8 +6,10 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSla
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.entity.User
 import dev.kord.core.exception.EntityNotFoundException
-import dev.kord.core.kordLogger
 import kotlinx.coroutines.flow.toList
+import mu.KotlinLogging
+
+private val utilsLogger = KotlinLogging.logger("Checks Logger")
 
 /**
  * This is a check to verify that no element of the guild config is null, since these are all non-nullable values, if
@@ -71,7 +73,7 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
 		}
 		// Just to catch any errors in the checks
 	} catch (exception: EntityNotFoundException) {
-		kordLogger.warn { "isBot and isModerator checks failed on $commandName." }
+		utilsLogger.warn { "isBot and isModerator checks failed on $commandName." }
 	}
 
 	return "success" // Nothing should be done with the success, checks should be based on if this function returns null

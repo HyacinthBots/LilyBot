@@ -18,7 +18,7 @@ import org.litote.kmongo.eq
  */
 object DatabaseHelper {
 
-	private val databaseLogger = KotlinLogging.logger { }
+	private val databaseLogger = KotlinLogging.logger("Database Logger")
 
 	/**
 	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database.

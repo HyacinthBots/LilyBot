@@ -39,7 +39,7 @@ import org.litote.kmongo.reactivestreams.KMongo
 import java.io.IOException
 
 var github: GitHub? = null
-private val gitHubLogger = KotlinLogging.logger { }
+private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
 
 // Connect to the database using the provided connection URL
 private val settings = MongoClientSettings
