@@ -82,7 +82,7 @@ class Github : Extension() {
 							try {
 								github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
 							} catch (e: GHFileNotFoundException) {
-								respond {
+								respondEphemeral {
 									embed {
 										title = "Unable to find issue number! Make sure this issue exists"
 									}
@@ -119,7 +119,7 @@ class Github : Extension() {
 
 							respondEphemeral {
 								embed {
-									title = "Invalid Issue number. Make sure this issue exists!"
+									title = "Invalid issue number. Make sure this issue exists!"
 								}
 							}
 							return@action
@@ -130,7 +130,9 @@ class Github : Extension() {
 							issue = github?.getRepository(arguments.repository)?.getIssue(num)
 						} catch (e: GHFileNotFoundException) {
 							respond {
-								content = "Unable to find issue number! Make sure this issue exists"
+								embed {
+									title = "Unable to find issue number! Make sure this issue exists"
+								}
 							}
 							return@action
 						}
