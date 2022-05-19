@@ -42,7 +42,7 @@ class TerminalModeration : Extension() {
 	override val name = "terminal-moderation"
 
 	override suspend fun setup() {
-		val logger = KotlinLogging.logger("TerminalModeration")
+		val logger = KotlinLogging.logger("Terminal Moderation Logger")
 
 		/**
 		 * Ban command

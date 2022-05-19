@@ -47,7 +47,8 @@ class Tags : Extension() {
 			action {
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
 					respondEphemeral {
-						content = "Unable to find the requested tag. Be sure it exists and you've typed it correctly."
+						content = "Unable to find tag `${arguments.tagName}`. " +
+								"Be sure it exists and you've typed it correctly."
 					}
 					return@action
 				}
@@ -176,7 +177,7 @@ class Tags : Extension() {
 				// Check to make sure the tag exists in the database
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.name == null) {
 					respond {
-						content = "Unable to find tag! Does this tag exist?"
+						content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?"
 					}
 					return@action
 				}
