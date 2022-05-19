@@ -16,6 +16,7 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.github
 import org.kohsuke.github.GHDirection
 import org.kohsuke.github.GHException
+import org.kohsuke.github.GHFileNotFoundException
 import org.kohsuke.github.GHIssue
 import org.kohsuke.github.GHIssueState
 import org.kohsuke.github.GHLabel
