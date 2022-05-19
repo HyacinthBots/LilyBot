@@ -8,6 +8,7 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -16,9 +17,11 @@ import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
-import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.exception.EntityNotFoundException
+import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
@@ -93,20 +96,25 @@ class TerminalModeration : Extension() {
 					content = "Banned a user"
 				}
 
-				actionLog.createEmbed {
-					color = DISCORD_BLACK
-					title = "Banned a user"
-					description = "${userArg.mention} has been banned!"
+				val embed = EmbedBuilder()
+				embed.color = DISCORD_BLACK
+				embed.title = "Banned a user"
+				embed.description = "${userArg.mention} has been banned!"
+				embed.image = arguments.image
+				embed.baseModerationEmbed(arguments.reason, userArg, user)
+				embed.dmNotificationStatusEmbedField(dm)
+				embed.timestamp = Clock.System.now()
+				embed.field {
+					name = "Days of messages deleted:"
+					value = arguments.messages.toString()
+					inline = false
+				}
 
-					baseModerationEmbed(arguments.reason, userArg, user)
-					field {
-						name = "Days of messages deleted:"
-						value = arguments.messages.toString()
-						inline = false
-					}
-					dmNotificationStatusEmbedField(dm)
-
-					timestamp = Clock.System.now()
+				try {
+					actionLog.createMessage { embeds.add(embed) }
+				} catch (e: KtorRequestException) {
+					embed.image = null
+					actionLog.createMessage { embeds.add(embed) }
 				}
 			}
 		}
@@ -206,20 +214,25 @@ class TerminalModeration : Extension() {
 					content = "Soft-Banned User"
 				}
 
-				actionLog.createEmbed {
-					color = DISCORD_BLACK
-					title = "Soft-banned a user"
-					description = "${userArg.mention} has been soft banned"
+				val embed = EmbedBuilder()
+				embed.color = DISCORD_BLACK
+				embed.title = "Soft-Banned a user"
+				embed.description = "${userArg.mention} has been soft-banned!"
+				embed.image = arguments.image
+				embed.baseModerationEmbed(arguments.reason, userArg, user)
+				embed.dmNotificationStatusEmbedField(dm)
+				embed.timestamp = Clock.System.now()
+				embed.field {
+					name = "Days of messages deleted"
+					value = arguments.messages.toString()
+					inline = false
+				}
 
-					baseModerationEmbed(arguments.reason, userArg, user)
-					field {
-						name = "Days of messages deleted"
-						value = arguments.messages.toString()
-						inline = false
-					}
-					dmNotificationStatusEmbedField(dm)
-
-					timestamp = Clock.System.now()
+				try {
+					actionLog.createMessage { embeds.add(embed) }
+				} catch (e: KtorRequestException) {
+					embed.image = null
+					actionLog.createMessage { embeds.add(embed) }
 				}
 
 				// Unban the user, as you're supposed to in soft-ban
@@ -270,13 +283,20 @@ class TerminalModeration : Extension() {
 					content = "Kicked User"
 				}
 
-				actionLog.createEmbed {
-					color = DISCORD_BLACK
-					title = "Kicked User"
-					description = "${userArg.mention} has been kicked"
+				val embed = EmbedBuilder()
+				embed.color = DISCORD_BLACK
+				embed.title = "Kicked a user"
+				embed.description = "${userArg.mention} has been kicked!"
+				embed.image = arguments.image
+				embed.baseModerationEmbed(arguments.reason, userArg, user)
+				embed.dmNotificationStatusEmbedField(dm)
+				embed.timestamp = Clock.System.now()
 
-					baseModerationEmbed(arguments.reason, userArg, user)
-					dmNotificationStatusEmbedField(dm)
+				try {
+					actionLog.createMessage { embeds.add(embed) }
+				} catch (e: KtorRequestException) {
+					embed.image = null
+					actionLog.createMessage { embeds.add(embed) }
 				}
 			}
 		}
@@ -294,6 +314,12 @@ class TerminalModeration : Extension() {
 			name = "reason"
 			description = "The reason for the Kick"
 			defaultValue = "No Reason Provided"
+		}
+
+		/** An image that the user wishes to provide for context to the kick. */
+		val image by optionalString {
+			name = "image"
+			description = "The URL to an image you'd like to provide as extra context for the action"
 		}
 	}
 
@@ -315,6 +341,12 @@ class TerminalModeration : Extension() {
 			name = "reason"
 			description = "The reason for the ban"
 			defaultValue = "No Reason Provided"
+		}
+
+		/** An image that the user wishes to provide for context to the ban. */
+		val image by optionalString {
+			name = "image"
+			description = "The URL to an image you'd like to provide as extra context for the action"
 		}
 	}
 
@@ -345,6 +377,12 @@ class TerminalModeration : Extension() {
 			name = "reason"
 			description = "The reason for the ban"
 			defaultValue = "No Reason Provided"
+		}
+
+		/** An image that the user wishes to provide for context to the soft-ban. */
+		val image by optionalString {
+			name = "image"
+			description = "The URL to an image you'd like to provide as extra context for the action"
 		}
 	}
 }

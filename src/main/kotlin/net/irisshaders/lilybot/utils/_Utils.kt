@@ -16,6 +16,7 @@ private val utilsLogger = KotlinLogging.logger("Checks Logger")
  * any one of them is null, we fail with the unable to access config error message.
  *
  * @author NoComment1105
+ * @since 3.2.0
  */
 suspend fun CheckContext<*>.configPresent() {
 	if (!passed) {
@@ -46,6 +47,7 @@ suspend fun CheckContext<*>.configPresent() {
  * @param commandName The name of the command. Used for the responses and error message
  * @return *null*, if user is a bot/moderator. *success* if it isn't
  * @author NoComment1105
+ * @since 2.1.0
  */
 suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
 	val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderatorsPing
