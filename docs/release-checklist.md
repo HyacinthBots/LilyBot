@@ -11,3 +11,4 @@ This is a list of everything that needs to happen to release a new version of Li
 * Wait for build and deploy
 * Publish release on GitHub
 * Announce on Discord
+* Clean up issues, specifically remove the `fixed in next release` tag
