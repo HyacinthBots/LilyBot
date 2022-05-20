@@ -4,7 +4,6 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
 import com.kotlindiscord.kord.extensions.utils.waitFor
-import kotlin.time.Duration.Companion.seconds
 import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
@@ -12,7 +11,8 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
-import io.ktor.util.*
+import io.ktor.util.generateNonce
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnsafeAPI::class)
 suspend fun ConfigExtension.configCommand() = unsafeSlashCommand {
@@ -25,8 +25,7 @@ suspend fun ConfigExtension.configCommand() = unsafeSlashCommand {
 		val id = generateNonce()
 		val response = event.interaction.modal("Support Module", "supportModuleModal") {
 			actionRow {
-				textInput(TextInputStyle.Paragraph, "msgInput", "Support Message")
-				{
+				textInput(TextInputStyle.Paragraph, "msgInput", "Support Message") {
 					placeholder = "This is where your ad could be!"
 				}
 			}
