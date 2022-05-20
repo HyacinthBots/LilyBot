@@ -1,66 +1,38 @@
 package net.irisshaders.lilybot.utils
 
-import com.kotlindiscord.kord.extensions.commands.application.message.EphemeralMessageCommandContext
+import com.kotlindiscord.kord.extensions.checks.guildFor
+import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.entity.User
 import dev.kord.core.exception.EntityNotFoundException
-import dev.kord.core.kordLogger
 import kotlinx.coroutines.flow.toList
+import mu.KotlinLogging
+
+private val utilsLogger = KotlinLogging.logger("Checks Logger")
 
 /**
- * This is a simple function to get a value from the configuration database in an [EphemeralSlashCommandContext],
- * null check it, and respond accordingly. It takes a string input of the column that is requested and gets it, if it's
- * null a private error message (i.e. for commands staff run), and null is returned. If null this should be handled with
- * an elvis operator to return the action.
+ * This is a check to verify that no element of the guild config is null, since these are all non-nullable values, if
+ * any one of them is null, we fail with the unable to access config error message.
  *
- * @param inputColumn The column you wish to get from the database
- * @return The column value from the database or null
  * @author NoComment1105
  */
-suspend fun EphemeralSlashCommandContext<*>.getConfigPrivateResponse(inputColumn: String) =
-	DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
-		respond {
-			content = "**Error:** Unable to access config for this guild! Is your configuration set?"
-		}
-		null
-}
+suspend fun CheckContext<*>.configPresent() {
+	if (!passed) {
+		return
+	}
 
+	// Prevent commands being run in DMs, although [anyGuild] should still be used as backup
+	if (guildFor(event) == null) fail("Must be in a server")
 
-/**
- * This is a simple function to get a value from the configuration database in an [EphemeralSlashCommandContext],
- * null check it, and respond accordingly. It takes a string input of the column that is requested and gets it, if it's
- * null a public error message (i.e. for commands the people run), and null is returned. If null this should be handled
- * with an elvis operator to return the action.
- *
- * @param inputColumn The column you wish to get from the database
- * @return The column value from the database or a public error and null
- * @author NoComment1105
- */
-suspend fun EphemeralSlashCommandContext<*>.getConfigPublicResponse(inputColumn: String) =
-	DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
-		respond {
-			content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
-		}
-		null
-}
-
-/**
- * This is a simple function to get a value from the configuration database in an [EphemeralMessageCommandContext],
- * null check it, and respond accordingly. It takes a string input of the column that is requested and gets it, if it's
- * null a private error message (i.e. for commands staff run), and null is returned. If null this should be handled with
- * an elvis operator to return the action.
- *
- * @param inputColumn The column you wish to get from the database
- * @return The column value from the database or a private error and null
- * @author NoComment1105
- */
-suspend fun EphemeralMessageCommandContext.getConfigPublicResponse(inputColumn: String) =
-	DatabaseHelper.getConfig(guild!!.id, inputColumn) ?: run {
-		respond {
-			content = "**Error:** Unable to access config for this guild! Please inform a member of staff!"
-		}
-		null
+	// Check all not-null values in the database are not null
+	if (DatabaseHelper.getConfig(guildFor(event)!!.id)?.modActionLog == null ||
+		DatabaseHelper.getConfig(guildFor(event)!!.id)?.moderatorsPing == null ||
+		DatabaseHelper.getConfig(guildFor(event)!!.id)?.messageLogs == null ||
+		DatabaseHelper.getConfig(guildFor(event)!!.id)?.joinChannel == null
+	) {
+		fail("Unable to access config for this guild! Please inform a member of staff")
+	} else pass()
 }
 
 /**
@@ -76,8 +48,13 @@ suspend fun EphemeralMessageCommandContext.getConfigPublicResponse(inputColumn: 
  * @author NoComment1105
  */
 suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
-	val moderatorRoleId = getConfigPrivateResponse("moderatorsPing")
-
+	val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderatorsPing
+	if (moderatorRoleId == null) {
+		respond {
+			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
+		}
+		return null
+	}
 	try {
 		// Get the users roles into a List of Snowflakes
 		val roles = user.asMember(guild!!.id).roles.toList().map { it.id }
@@ -87,17 +64,17 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
 				content = "You cannot $commandName bot users!"
 			}
 			return null
-		// If the moderator ping role is in roles, return
+			// If the moderator ping role is in roles, return
 		} else if (moderatorRoleId in roles) {
 			respond {
 				content = "You cannot $commandName moderators!"
 			}
 			return null
 		}
-	// Just to catch any errors in the checks
+		// Just to catch any errors in the checks
 	} catch (exception: EntityNotFoundException) {
-		kordLogger.warn { "isBot and isModerator checks failed on $commandName." }
+		utilsLogger.warn { "isBot and isModerator checks failed on $commandName." }
 	}
 
-	return "success"
+	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
 }

@@ -37,9 +37,9 @@ This command can only be executed in the test guild specified in your `.env` fil
 ## Moderation Commands
 These commands are for use by moderators.
 They utilize built-in permission checks.
-All moderation commands are logged to the action-log established in the config.
+All moderation commands are logged to the `modActionLog` established in the config.
 A Direct Message is sent to the target user containing the sanction they received and the provided reason.
-If Lily fails to DM them, this failure will be noted in the action-log embed.
+If Lily fails to DM them, this failure will be noted in the logging embed.
 
 ### Clear
 Name: `clear`
@@ -66,7 +66,8 @@ Arguments:
 * `messages` - Number of days of messages to delete - Integer
 * `reason` - Reason for the ban - Optional String
 
-Result: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last `messages` day(s).
+Result: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last
+`messages` day(s).
 
 ### Unban
 Name: `unban`
@@ -114,9 +115,46 @@ Arguments:
 
 Result: Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function.
 
+### Lock Server
+Name: `lock-server`
 
+Arguments:
+* `reason` - Reason for locking the server - Optional String
 
+Result: Locks the server.
 
+### Lock Channel
+Name: `lock-channel`
+
+Arguments:
+* `channel` - Channel to lock - Channel (default executed channel)
+* `reason` - Reason for locking the channel - Optional String
+
+Result: Locks `channel` so only the moderator role can send messages, create threads, or add reactions.
+
+### Lock Server
+Name: `lock-server`
+
+Arguments:
+* `reason` - Reason for locking the server - Optional String
+
+Result: Locks the whole server so only members with the moderator role can send messages, create threads,
+or add reactions.
+
+### Unlock Channel
+Name: `unlock-channel`
+
+Arguments:
+* `channel` - Channel to unlock - Channel (default executed channel)
+
+Result: Unlocks `channel` so anyone can send messages, create threads, or add reactions.
+
+### Unlock Server
+Name: `unlock-server`
+
+No arguments.
+
+Result: Unlocks the whole server so anyone can send messages, create threads, or add reactions.
 
 ## Utility Commands
 These commands are just handy to have around. Moderator only commands are at the top and clearly marked.
@@ -127,11 +165,13 @@ Name: `role-mennu`
 Arguments:
 * `role` - Role users will be able to select through the menu - Role
 * `title` - Title of the embed to be created along with the menu - Optional String (default: Role Selection Menu)
-* `description` - Text of the embed to be created along with the menu - Optional String (default: Use the button below to add/remove the `role` role.)
+* `description` - Text of the embed to be created along with the menu - Optional String
+(default: `Use the button below to add/remove the <role> role.`)
 * `channel` - Channel for the embed and menu to be created in - Optional Channel (default: channel executed in)
 * `color` - Color for the embed - Optional Color (default: black)
 
-Result: Creates a menu with buttons to add and remove `role` in `channel` along with an `color` colored embed with description `description` and title `title`.
+Result: Creates a menu with buttons to add and remove `role` in `channel` along with an `color` colored embed with
+description `description` and title `title`.
 
 ### Say (MODS ONLY)
 Name: `say`
@@ -154,20 +194,20 @@ Result: Reports the message pointed to by `message-link` by pinging `moderatorRo
 Name: `github issue`
 
 Arguments:
-* `repository` - GitHub repository the issue is in, by the format "USER-NAME/REPO-NAME" - String
+* `repository` - GitHub repository the issue is in, by the format "USER-NAME/REPO-NAME" or URL - String
 * `issue-number` - Number of the issue to be searched for - Integer
 
 ### GitHub Repo
 Name: `github repo`
 
 Arguments:
-* `repository` - GitHub repository to be searched for, by the format "USER-NAME/REPO-NAME" - String
+* `repository` - GitHub repository to be searched for, by the format "USER-NAME/REPO-NAME" or URL - String
 
 ### GitHub User
 Name: `github user`
 
 Arguments:
-* `username` - GitHub user or repository to be searched for - String
+* `username` - GitHub user or repository to be searched for, can be a username or URL - String
 
 ### Archive Thread
 Name: `thread archive`
@@ -175,7 +215,8 @@ Name: `thread archive`
 Arguments:
 * `lock` - If the thread executed in should be locked - Boolean (default: false)
 
-Result: Archives the thread executed in **if executed by a moderator or the thread owner**. Locks the thread if executed by a moderator and `lock` is true.
+Result: Archives the thread executed in **if executed by a moderator or the thread owner**.
+Locks the thread if executed by a moderator and `lock` is true.
 
 ### Rename Thread
 Name: `thread rename`
@@ -184,3 +225,60 @@ Arguments:
 * `newName` - New name for the thread executed in - String
 
 Result: Renames the thread executed in **if executed by a moderator or the thread owner**.
+
+### Transfer Thread
+Name: `thread transfer`
+
+Arguments:
+* `newOwner` - The person you want to transfer ownership of the thread to - User
+
+Result: Transfers ownership of the thread executed in to `newOwner` **if executed by a moderator or the thread owner**.
+Creates a message in the executed thread noting this transfer.
+
+## Tags
+Tag commands are guild specific commands, that can be added at runtime. They are all embed commands.
+You will be assisted by auto-complete when typing these commands. 
+
+### Create a Tag (MODS ONLY)
+Name: `tag-create`
+
+Arguments:
+* `tagName` - The named identifier of the tag you wish to create. - String
+* `tagTitle` - The tag embed title - String
+* `tagValue` - The tag embed description - String
+
+Result: Creates a tag for the guild you ran this command in
+
+### Delete a Tag (MODS ONLY)
+Name: `tag-delete`
+
+Arguments:
+* `tagName` - The named identifier of the tag you wish to delete - String
+
+Result: Deletes the tag for the guild you ran this command in
+
+### Use a Tag
+Name: `tag`
+
+Arguments:
+* `tagName` - The named identifier of the tag you wish to run - String
+
+Result: Posts the tag embed you requested
+
+### Help
+Name: `tag-help`
+
+Result: Displays a help command with all this information, in greater detail.
+
+### Request Nickname
+Name: `nickname request`
+
+* `nickname` - The new nickname you are requesting - String
+
+Result: Sends a request to the moderators for a new nickname. This feature is designed for servers that disable
+nickname change permissions on users
+
+### Clear Nickname
+Name: `nickname clear`
+
+Result: Clears the nickname of the user that ran the command

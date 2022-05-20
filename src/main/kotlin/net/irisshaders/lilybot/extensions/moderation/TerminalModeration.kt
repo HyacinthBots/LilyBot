@@ -1,9 +1,8 @@
-@file:OptIn(ExperimentalTime::class)
-
 package net.irisshaders.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
@@ -23,37 +22,44 @@ import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.baseModerationEmbed
+import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
-import net.irisshaders.lilybot.utils.getConfigPrivateResponse
 import net.irisshaders.lilybot.utils.isBotOrModerator
 import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
-import kotlin.time.ExperimentalTime
 
+/**
+ * The class for permanent moderation actions, such as ban and kick.
+ *
+ * @since 3.0.0
+ */
 class TerminalModeration : Extension() {
 	override val name = "terminal-moderation"
 
 	override suspend fun setup() {
-		val logger = KotlinLogging.logger { }
+		val logger = KotlinLogging.logger("Terminal Moderation Logger")
 
 		/**
 		 * Ban command
 		 * @author IMS212
+		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::BanArgs) {
 			name = "ban"
 			description = "Bans a user."
 
-			// Require the Ban Member permission
+			check { anyGuild() }
 			check { hasPermission(Permission.BanMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
+				// Clarify the user is not a bot or moderator
 				isBotOrModerator(userArg, "ban") ?: return@action
 
 				// DM the user before the ban task is run, to avoid error, null if fails
@@ -69,6 +75,12 @@ class TerminalModeration : Extension() {
 						?.edit { timeoutUntil = null } // remove timeout if they had a timeout when banned
 				} catch (e: EntityNotFoundException) {
 					logger.info("Unable to find user! Skipping timeout removal")
+				}
+
+				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
+				if (arguments.messages > 7 || arguments.messages < 0) {
+					respond { content = "Invalid `messages` parameter! This number must be between 0 and 7!" }
+					return@action
 				}
 
 				// Run the ban task
@@ -102,26 +114,29 @@ class TerminalModeration : Extension() {
 		/**
 		 *  Unban command
 		 *  @author NoComment1105
+		 *  @since 2.0
 		 */
 		ephemeralSlashCommand(::UnbanArgs) {
 			name = "unban"
 			description = "Unbans a user"
 
-			// Require Ban Members permission, only this check
-			// to avoid your everyday user from unbanning people
+			check { anyGuild() }
 			check { hasPermission(Permission.BanMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
+				// Get all the bans into a list
 				val bans = guild!!.bans.toList().map { it.userId }
 
-				// Unban the user
+				// Search the list for the banned user
 				if (userArg.id in bans) {
+					// Unban the user if they're banned
 					guild?.unban(userArg.id)
 				} else {
+					// Respond with an error if they aren't
 					respond { content = "**Error:** User is not banned" }
 					return@action
 				}
@@ -142,18 +157,19 @@ class TerminalModeration : Extension() {
 		/**
 		 * Soft ban command
 		 * @author NoComment1105
+		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::SoftBanArgs) {
 			name = "soft-ban"
 			description = "Soft-bans a user"
 
-			// Requires Ban Members Permission
+			check { anyGuild() }
 			check { hasPermission(Permission.BanMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
@@ -167,7 +183,18 @@ class TerminalModeration : Extension() {
 					null
 				)
 
-				guild?.getMember(userArg.id)?.edit { timeoutUntil = null }
+				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
+				if (arguments.messages > 7 || arguments.messages < 0) {
+					respond { content = "Invalid `messages` parameter! This number must be between 0 and 7!" }
+					return@action
+				}
+
+				try {
+					guild?.getMember(userArg.id)
+						?.edit { timeoutUntil = null } // Remove timeout if they had a timeout when banned
+				} catch (e: EntityNotFoundException) {
+					logger.info("Unable to find user! Skipping timeout removal")
+				}
 
 				// Ban the user, mark it as a soft-ban clearly
 				guild?.ban(userArg.id, builder = {
@@ -203,20 +230,22 @@ class TerminalModeration : Extension() {
 		/**
 		 * Kick command
 		 * @author IMS212
+		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::KickArgs) {
 			name = "kick"
 			description = "Kicks a user."
 
-			// Require Kick Members permission
+			check { anyGuild() }
 			check { hasPermission(Permission.KickMembers) }
+			check { configPresent() }
 
 			action {
-				val actionLogId = getConfigPrivateResponse("modActionLog") ?: return@action
-
-				val actionLog = guild?.getChannel(actionLogId) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val userArg = arguments.userArgument
 
+				// Clarify the user isn't a bot or a moderator
 				isBotOrModerator(userArg, "kick") ?: return@action
 
 				// DM the user about it before the kick
@@ -226,6 +255,13 @@ class TerminalModeration : Extension() {
 					"**Reason:**\n${arguments.reason}",
 					null
 				)
+
+				try {
+					guild?.getMember(userArg.id)
+						?.edit { timeoutUntil = null } // Remove timeout if they had a timeout when kicked
+				} catch (e: EntityNotFoundException) {
+					logger.info("Unable to find user! Skipping timeout removal")
+				}
 
 				// Run the kick task
 				guild?.kick(userArg.id, arguments.reason)
@@ -247,10 +283,13 @@ class TerminalModeration : Extension() {
 	}
 
 	inner class KickArgs : Arguments() {
+		/** The user to kick. */
 		val userArgument by user {
 			name = "kickUser"
 			description = "Person to kick"
 		}
+
+		/** The reason for the kick. */
 		val reason by defaultingString {
 			name = "reason"
 			description = "The reason for the Kick"
@@ -259,14 +298,19 @@ class TerminalModeration : Extension() {
 	}
 
 	inner class BanArgs : Arguments() {
+		/** The user to ban. */
 		val userArgument by user {
 			name = "banUser"
 			description = "Person to ban"
 		}
+
+		/** The number of days worth of messages to delete. */
 		val messages by int {
 			name = "messages"
 			description = "Messages"
 		}
+
+		/** The reason for the ban. */
 		val reason by defaultingString {
 			name = "reason"
 			description = "The reason for the ban"
@@ -275,6 +319,7 @@ class TerminalModeration : Extension() {
 	}
 
 	inner class UnbanArgs : Arguments() {
+		/** The ID of the user to unban. */
 		val userArgument by user {
 			name = "unbanUserId"
 			description = "Person Unbanned"
@@ -282,15 +327,20 @@ class TerminalModeration : Extension() {
 	}
 
 	inner class SoftBanArgs : Arguments() {
+		/** The user to soft-ban. */
 		val userArgument by user {
 			name = "softBanUser"
 			description = "Person to Soft ban"
 		}
+
+		/** The number of days worth of messages to delete, defaults to 3 days. */
 		val messages by defaultingInt {
 			name = "messages"
 			description = "Messages"
 			defaultValue = 3
 		}
+
+		/** The reason for the soft-ban. */
 		val reason by defaultingString {
 			name = "reason"
 			description = "The reason for the ban"

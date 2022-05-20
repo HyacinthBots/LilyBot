@@ -11,7 +11,7 @@ import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.types.respondEphemeral
 import dev.kord.rest.builder.message.create.embed
-import io.ktor.utils.io.errors.*
+import io.ktor.utils.io.errors.IOException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.github
 import org.kohsuke.github.GHDirection
@@ -31,15 +31,20 @@ import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.pow
 
-
+/**
+ * This class contains the GitHub commands that allow users to look up Issues, Repositories and Users on GitHub through
+ * commands in Discord.
+ *
+ * @since 2.0
+ */
 class Github : Extension() {
 	override val name = "github"
 
 	override suspend fun setup() {
 		/**
 		 * GitHub Commands
-		 * @author NoComment1105
-		 * Java version author: chalkyjeans
+		 * @author NoComment1105, chalkyjeans (old java version author)
+		 * @since 2.0
 		 */
 		publicSlashCommand {
 			name = "github"
@@ -50,6 +55,7 @@ class Github : Extension() {
 				description = "Look up an issue on a specific repository"
 
 				action {
+					// Clarify the input is formatted correctly, inform the user if not.
 					if (!arguments.repository.contains("/")) {
 						sentry.breadcrumb(BreadcrumbType.Error) {
 							category = "extensions.util.Github.issue.InputCheck"
@@ -67,10 +73,22 @@ class Github : Extension() {
 					var issue: GHIssue?
 
 					try {
-						issue = github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
-						sentry.breadcrumb(BreadcrumbType.Info) {
-							category = "extensions.util.Github.issue.getIssue"
-							message = "Found issue"
+						issue = if (arguments.repository.contains("http", true)) {
+							github?.getRepository(
+								"${arguments.repository.split("/")[3]}/" +
+										arguments.repository.split("/")[4]
+							)?.getIssue(arguments.issue)
+						} else {
+							try {
+								github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
+							} catch (e: GHFileNotFoundException) {
+								respondEphemeral {
+									embed {
+										title = "Unable to find issue number! Make sure this issue exists"
+									}
+								}
+								return@action
+							}
 						}
 					} catch (e: HttpException) {
 						val iterator: PagedIterator<GHIssue>? = github?.searchIssues()
@@ -101,20 +119,28 @@ class Github : Extension() {
 
 							respondEphemeral {
 								embed {
-									title = "Invalid Issue number. Make sure this issue exists!"
+									title = "Invalid issue number. Make sure this issue exists!"
 								}
 							}
 							return@action
 						}
 
-						val num: Int = issue!!.number
-						issue = github?.getRepository(arguments.repository)?.getIssue(num)
+						val num = issue!!.number
+						try {
+							issue = github?.getRepository(arguments.repository)?.getIssue(num)
+						} catch (e: GHFileNotFoundException) {
+							respond {
+								embed {
+									title = "Unable to find issue number! Make sure this issue exists"
+								}
+							}
+							return@action
+						}
 					}
 
 					respond {
 						embed {
-
-							val open: Boolean = issue?.state == GHIssueState.OPEN
+							val open = issue?.state == GHIssueState.OPEN
 							var merged = false
 							var draft = false
 
@@ -147,6 +173,7 @@ class Github : Extension() {
 							}
 
 							field {
+								// Grab the first 400 characters of the body, if it's not null
 								if (issue.body != null) {
 									value = if (issue.body.length > 400) {
 										issue.body.substring(0, 399) + "..."
@@ -156,6 +183,7 @@ class Github : Extension() {
 								}
 							}
 
+							// Use colours similar to that of GitHub's issue status colours
 							if (merged) {
 								color = dev.kord.common.Color(111, 66, 193)
 								field {
@@ -244,7 +272,7 @@ class Github : Extension() {
 				description = "Search GitHub for a specific repository"
 
 				action {
-
+					// Clarify the input is formatted correctly, inform the user if not
 					if (!arguments.repository.contains("/")) {
 						sentry.breadcrumb(BreadcrumbType.Error) {
 							category = "extensions.util.Github.repository.InputCheck"
@@ -262,7 +290,14 @@ class Github : Extension() {
 					var repo: GHRepository?
 
 					try {
-						repo = github!!.getRepository(arguments.repository)
+						repo = if (arguments.repository.contains("http", true)) {
+							github?.getRepository(
+								"${arguments.repository.split("/")[3]}/" +
+										arguments.repository.split("/")[4]
+							)
+						} else {
+							github?.getRepository(arguments.repository)
+						}
 						sentry.breadcrumb(BreadcrumbType.Info) {
 							category = "extensions.util.Github.repository.getRepository"
 							message = "Repository found"
@@ -339,7 +374,11 @@ class Github : Extension() {
 					val ghUser: GHUser?
 
 					try {
-						ghUser = github!!.getUser(arguments.username)
+						ghUser = if (arguments.username.contains("http", true)) {
+							github?.getUser(arguments.username.split("/")[3])
+						} else {
+							github?.getUser(arguments.username)
+						}
 						sentry.breadcrumb(BreadcrumbType.Info) {
 							category = "extensions.util.Github.user.getUser"
 							message = "User found"
@@ -361,7 +400,6 @@ class Github : Extension() {
 						val isOrg: Boolean = ghUser?.type.equals("Organization")
 
 						if (!isOrg) {
-
 							sentry.breadcrumb(BreadcrumbType.Info) {
 								category = "extensions.util.Github.user.isOrg"
 								message = "User is not Organisation"
@@ -418,7 +456,6 @@ class Github : Extension() {
 								}
 							}
 						} else {
-
 							sentry.breadcrumb(BreadcrumbType.Info) {
 								category = "extensions.util.Github.user.isOrg"
 								message = "User is Organisation"
@@ -451,7 +488,6 @@ class Github : Extension() {
 								}
 							}
 						}
-
 					} catch (ioException: IOException) {
 						ioException.printStackTrace()
 					}
@@ -460,26 +496,38 @@ class Github : Extension() {
 		}
 	}
 
+	/**
+	 * Convert an input of [bytes] - which is what GitHub sends repository sizes in - and convert it to more friendly
+	 * values such as KB, MB and such.
+	 *
+	 * @param bytes The repository size provided by GitHub
+	 * @return The friendly repository size
+	 * @since 2.0
+	 * @author NoComment1105, chalkyjean (java version author)
+	 */
 	private fun bytesToFriendly(bytes: Int): String {
-		val k = 1024
+		val byteValue = 1024.0
 		val measure = arrayOf("B", "KB", "MB", "GB", "TB")
 
-		val i: Double = if (bytes == 0) {
+		val i = if (bytes == 0) {
 			0.0
 		} else {
-			floor(ln(bytes.toDouble()) / ln(k.toDouble()))
+			floor(ln(bytes.toDouble()) / ln(byteValue))
 		}
 
-		val df = DecimalFormat("#.##")
+		val df = DecimalFormat("#.##") // Set the formatted response to 2 decimal places
 
-		return df.format(bytes / k.toDouble().pow(i)) + " " + measure[(i + 1).toInt()]
+		return df.format(bytes / byteValue.pow(i)) + " " + measure[(i + 1).toInt()]
 	}
 
 	inner class IssueArgs : Arguments() {
+		/** The repository being searched for, must contain a `/`. */
 		val repository by string {
 			name = "repository"
 			description = "The GitHub repository you would like to search"
 		}
+
+		/** The issue number being searched for. */
 		val issue by int {
 			name = "issue-number"
 			description = "The issue number you would like to search for"
@@ -487,6 +535,7 @@ class Github : Extension() {
 	}
 
 	inner class RepoArgs : Arguments() {
+		/** The repository being searched for, must contain a `/`. */
 		val repository by string {
 			name = "repository"
 			description = "The GitHub repository you would like to search for"
@@ -494,6 +543,7 @@ class Github : Extension() {
 	}
 
 	inner class UserArgs : Arguments() {
+		/** The name of the User/Organisation being searched for. */
 		val username by string {
 			name = "username"
 			description = "The name of the User/Organisation you wish to search for"

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalTime::class)
-
 package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
@@ -13,24 +11,25 @@ import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import kotlin.time.ExperimentalTime
 
 /**
- * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild
+ * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild.
  * @author NoComment1105
+ * @since 2.0
  */
 class MemberJoinLeave : Extension() {
 	override val name = "member-join-leave"
 
 	override suspend fun setup() {
+		/** Create an embed in the join channel on user join */
 		event<MemberJoinEvent> {
 			action {
-				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel") ?: return@action
+				val config = DatabaseHelper.getConfig(event.guildId) ?: return@action
 
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannel(joinChannelId) as GuildMessageChannelBehavior
+				val joinChannel = event.getGuild().getChannel(config.joinChannel) as GuildMessageChannelBehavior
 
 				joinChannel.createEmbed {
 					color = DISCORD_GREEN
@@ -39,7 +38,7 @@ class MemberJoinLeave : Extension() {
 
 					field {
 						name = "Welcome:"
-						value = eventMember.tag
+						value = "${eventMember.mention} (${eventMember.tag})"
 						inline = true
 					}
 					field {
@@ -54,15 +53,17 @@ class MemberJoinLeave : Extension() {
 			}
 		}
 
+		/** Create an embed in the join channel on user leave */
 		event<MemberLeaveEvent> {
 			action {
-				val joinChannelId = DatabaseHelper.getConfig(event.guildId, "joinChannel")
-					?: return@action
+				// If it's Lily leaving, return the action, otherwise the log will fill with errors
+				if (event.user.id == kord.selfId) return@action
+				val config = DatabaseHelper.getConfig(event.guildId) ?: return@action
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannel(joinChannelId) as GuildMessageChannelBehavior
+				val joinChannel = event.getGuild().getChannel(config.joinChannel) as GuildMessageChannelBehavior
 
 				joinChannel.createEmbed {
 					color = DISCORD_RED

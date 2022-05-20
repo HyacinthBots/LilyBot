@@ -4,13 +4,15 @@ plugins {
     application
 
     kotlin("jvm")
-    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("plugin.serialization")
 
     id("com.github.johnrengelman.shadow")
+    id("io.gitlab.arturbosch.detekt")
+    id("com.github.jakemarsden.git-hooks")
 }
 
 group = "net.irisshaders.lilybot"
-version = "2.1.0"
+version = "3.2.0"
 
 repositories {
     mavenCentral()
@@ -42,6 +44,7 @@ repositories {
 }
 
 dependencies {
+    detektPlugins(libs.detekt)
 
     implementation(libs.kord.extensions)
     implementation(libs.kord.phishing)
@@ -57,9 +60,6 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.logging)
 
-    // TOML reader
-    implementation(libs.toml)
-
     // Github API
     implementation(libs.github.api)
 
@@ -73,10 +73,20 @@ application {
     mainClassName = "net.irisshaders.lilybot.LilyBotKt"
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+gitHooks {
+    setHooks(
+        mapOf("pre-commit" to "detekt")
+    )
+}
 
-    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+tasks.withType<KotlinCompile>().forEach {
+    it.kotlinOptions.jvmTarget = "17"
+
+    it.kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+
+    it.incremental = true
+    it.sourceCompatibility = "17"
+    it.targetCompatibility = "17"
 }
 
 tasks.jar {
@@ -85,4 +95,11 @@ tasks.jar {
             "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
         )
     }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config = files("$rootDir/detekt.yml")
+
+    autoCorrect = true
 }

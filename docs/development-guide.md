@@ -3,9 +3,6 @@
 This is a guide on how to set up Lily **for development purposes**.
 If you're looking to add Lily to your server,
 try our [usage guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/usage-guide.md).
-If you're looking to host Lily for yourself,
-try our [hosting guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/hosting-guide.md).
-
 If you have issues with this guide, please join [our discord](https://discord.gg/hy2329fcTZ) for support.
 
 ## Step 1 - Install tools
@@ -31,21 +28,15 @@ You should fill your file using the format below with the relevant details fille
 
 ```
 TOKEN=
-CUSTOM_COMMANDS_PATH=
 TEST_GUILD_ID=
 ONLINE_STATUS_CHANNEL=
 MONGO_URI=
-GITHUB_OAUTH=
 SENTRY_DSN=
 ```
 
 To get a token, join [our discord](https://discord.gg/hy2329fcTZ) and ask.
 We'll provide you with a token for one of the testing instances in that server.
 You can also find example `.env` files there. Please don't share these tokens.
-
-The path for custom commands should be set to `commands.toml` unless you've defined your own.
-If you want to learn more about setting your own custom commands,
-try our [hosting guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/hosting-guide.md).
 
 To get any channel or guild IDs, you will need to have Discord's `Developer Mode` enabled.
 This is located in `User Settings/Advanced/Developer Mode`.
@@ -74,6 +65,10 @@ This command can be found in the same place as the one for starting the database
 Congrats! You now have a development instance of Lily fully up and running.
 For more information on all of Lily's commands,
 check out the [command list](https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md).
+
+If you're running this your own server, please be sure to allow the `Send Messages`, `Send Messages In Threads`,
+`Add Reactions`, and `Use Application Commands` permissions for your moderator role and any other role you want to be
+able to send messages when the server is locked.
 
 We suggest joining [our discord](https://discord.gg/hy2329fcTZ)
 for support, announcements of releases, Lily's online status, and even more!

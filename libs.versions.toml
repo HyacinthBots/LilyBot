@@ -2,12 +2,12 @@
 kotlin = "1.6.10"  # Note: Plugin versions must be updated in the settings.gradle.kts too
 
 groovy = "3.0.9"
-kord-extensions = "1.5.2-20220318.133517-36"
+kord-extensions = "1.5.3-20220517.171319-10"
 logging = "2.1.21"
 logback = "1.2.8"
-toml-reader = "1.2"
-github-api = "1.303"
-kmongo = "4.5.0"
+github-api = "1.306"
+kmongo = "4.6.0"
+detekt = "1.20.0"
 
 [libraries]
 groovy = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
@@ -18,6 +18,6 @@ kord-unsafe = { module = "com.kotlindiscord.kord.extensions:unsafe", name = "uns
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logging = { module = "io.github.microutils:kotlin-logging", version.ref = "logging" }
-toml = { module = "com.github.jezza:toml", version.ref = "toml-reader" }
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
 kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
+detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
