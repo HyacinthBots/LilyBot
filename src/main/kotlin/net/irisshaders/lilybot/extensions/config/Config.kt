@@ -72,11 +72,13 @@ suspend fun ConfigExtension.configCommand() = unsafeSlashCommand(::Config) {
 				}
 				return@action
 			}
+
 			val supportMsg = interaction.textInputs["msgInput"]!!.value!!
 			val supportTeam = interaction.textInputs["teamInput"]!!.value!!
 			val supportChannel = interaction.textInputs["supChannel"]!!.value!!
 			val supportDuration = interaction.textInputs["supDuration"]!!.value!!
 			val modalResponse = interaction.deferEphemeralResponse()
+
 			modalResponse.respond {
 				embed {
 					title = "Module configured: Support"
@@ -92,6 +94,53 @@ suspend fun ConfigExtension.configCommand() = unsafeSlashCommand(::Config) {
 					field {
 						name = "Support Duration"
 						value = supportDuration
+					}
+					footer {
+						text = "Configured by: ${user.asUser().tag}"
+					}
+				}
+			}
+		}
+
+		if (module == "moderation") {
+			val response = event.interaction.modal("Moderation Module", "moderationModal") {
+				actionRow {
+					textInput(TextInputStyle.Short, "moderatorRole", "Moderation Role") {
+						placeholder = "Role ID or name"
+					}
+				}
+				actionRow {
+					textInput(TextInputStyle.Short, "actionLog", "Action Log") {
+						placeholder = "Channel ID"
+					}
+				}
+			}
+
+			val interaction = response.kord.waitFor<ModalSubmitInteractionCreateEvent>(60.seconds.inWholeMilliseconds) {
+				interaction.modalId == "moderationModal"
+			}?.interaction
+			if (interaction == null) {
+				response.createEphemeralFollowup {
+					embed {
+						description = "Configuration timed out"
+					}
+				}
+				return@action
+			}
+
+			val moderationRole = interaction.textInputs["moderatorRole"]!!.value!!
+			val actionLog = interaction.textInputs["actionLog"]!!.value!!
+			val modalResponse = interaction.deferEphemeralResponse()
+			modalResponse.respond {
+				embed {
+					title = "Module configured: Moderation"
+					field {
+						name = "Moderators"
+						value = moderationRole
+					}
+					field {
+						name = "Action Log"
+						value = actionLog
 					}
 					footer {
 						text = "Configured by: ${user.asUser().tag}"
