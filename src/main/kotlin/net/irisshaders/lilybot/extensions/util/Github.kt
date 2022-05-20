@@ -24,7 +24,6 @@ import org.kohsuke.github.GHOrganization
 import org.kohsuke.github.GHPullRequest
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GHUser
-import org.kohsuke.github.HttpException
 import org.kohsuke.github.PagedIterator
 import java.text.DecimalFormat
 import kotlin.math.floor
@@ -90,7 +89,7 @@ class Github : Extension() {
 								return@action
 							}
 						}
-					} catch (e: HttpException) {
+					} catch (e: IOException) {
 						val iterator: PagedIterator<GHIssue>? = github?.searchIssues()
 							?.q("${arguments.issue} repo:${arguments.repository}")
 							?.order(GHDirection.DESC)
@@ -383,7 +382,7 @@ class Github : Extension() {
 							category = "extensions.util.Github.user.getUser"
 							message = "User found"
 						}
-					} catch (exception: GHFileNotFoundException) {
+					} catch (exception: IOException) {
 						sentry.breadcrumb(BreadcrumbType.Error) {
 							category = "extensions.util.Github.user.getUser"
 							message = "Unable to find user"
