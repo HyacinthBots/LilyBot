@@ -13,7 +13,7 @@ import com.mongodb.MongoClientSettings
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
-import net.irisshaders.lilybot.extensions.config.Config
+import net.irisshaders.lilybot.extensions.config.ConfigExtension
 import net.irisshaders.lilybot.extensions.events.LogUploading
 import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
 import net.irisshaders.lilybot.extensions.events.MessageDelete
@@ -33,6 +33,7 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.GITHUB_OAUTH
 import net.irisshaders.lilybot.utils.MONGO_URI
 import net.irisshaders.lilybot.utils.SENTRY_DSN
+import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import org.bson.UuidRepresentation
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -62,6 +63,7 @@ suspend fun main() {
 
 		applicationCommands {
 			enabled = true
+			defaultGuild(TEST_GUILD_ID)
 		}
 
 		members {
@@ -74,7 +76,7 @@ suspend fun main() {
 		}
 
 		extensions {
-			add(::Config)
+			add(::ConfigExtension)
 			add(::CustomCommands)
 			add(::Github)
 			add(::MemberJoinLeave)
