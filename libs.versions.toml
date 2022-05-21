@@ -2,11 +2,11 @@
 kotlin = "1.6.10"  # Note: Plugin versions must be updated in the settings.gradle.kts too
 
 groovy = "3.0.9"
-kord-extensions = "1.5.3-20220505.185229-7"
+kord-extensions = "1.5.4-20220520.190845-1"
 logging = "2.1.21"
 logback = "1.2.8"
 github-api = "1.306"
-kmongo = "4.5.1"
+kmongo = "4.6.0"
 detekt = "1.20.0"
 
 [libraries]

@@ -16,6 +16,7 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.github
 import org.kohsuke.github.GHDirection
 import org.kohsuke.github.GHException
+import org.kohsuke.github.GHFileNotFoundException
 import org.kohsuke.github.GHIssue
 import org.kohsuke.github.GHIssueState
 import org.kohsuke.github.GHLabel
@@ -77,7 +78,16 @@ class Github : Extension() {
 										arguments.repository.split("/")[4]
 							)?.getIssue(arguments.issue)
 						} else {
-							github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
+							try {
+								github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
+							} catch (e: GHFileNotFoundException) {
+								respondEphemeral {
+									embed {
+										title = "Unable to find issue number! Make sure this issue exists"
+									}
+								}
+								return@action
+							}
 						}
 					} catch (e: IOException) {
 						val iterator: PagedIterator<GHIssue>? = github?.searchIssues()
@@ -108,14 +118,23 @@ class Github : Extension() {
 
 							respondEphemeral {
 								embed {
-									title = "Invalid Issue number. Make sure this issue exists!"
+									title = "Invalid issue number. Make sure this issue exists!"
 								}
 							}
 							return@action
 						}
 
 						val num = issue!!.number
-						issue = github?.getRepository(arguments.repository)?.getIssue(num)
+						try {
+							issue = github?.getRepository(arguments.repository)?.getIssue(num)
+						} catch (e: GHFileNotFoundException) {
+							respond {
+								embed {
+									title = "Unable to find issue number! Make sure this issue exists"
+								}
+							}
+							return@action
+						}
 					}
 
 					respond {

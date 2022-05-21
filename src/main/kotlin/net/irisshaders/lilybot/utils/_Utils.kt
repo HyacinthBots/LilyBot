@@ -6,14 +6,17 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSla
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.entity.User
 import dev.kord.core.exception.EntityNotFoundException
-import dev.kord.core.kordLogger
 import kotlinx.coroutines.flow.toList
+import mu.KotlinLogging
+
+private val utilsLogger = KotlinLogging.logger("Checks Logger")
 
 /**
  * This is a check to verify that no element of the guild config is null, since these are all non-nullable values, if
  * any one of them is null, we fail with the unable to access config error message.
  *
  * @author NoComment1105
+ * @since 3.2.0
  */
 suspend fun CheckContext<*>.configPresent() {
 	if (!passed) {
@@ -44,6 +47,7 @@ suspend fun CheckContext<*>.configPresent() {
  * @param commandName The name of the command. Used for the responses and error message
  * @return *null*, if user is a bot/moderator. *success* if it isn't
  * @author NoComment1105
+ * @since 2.1.0
  */
 suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
 	val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderatorsPing
@@ -71,7 +75,7 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
 		}
 		// Just to catch any errors in the checks
 	} catch (exception: EntityNotFoundException) {
-		kordLogger.warn { "isBot and isModerator checks failed on $commandName." }
+		utilsLogger.warn { "isBot and isModerator checks failed on $commandName." }
 	}
 
 	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
