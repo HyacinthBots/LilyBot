@@ -23,6 +23,7 @@ import dev.kord.core.entity.channel.thread.NewsChannelThread
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -76,10 +77,14 @@ class ThreadInviter : Extension() {
 				if (textChannel != supportChannel) return@action
 
 				DatabaseHelper.getOwnerThreads(event.member!!.id).forEach {
-					val thread = guild.getChannel(it.threadId) as TextChannelThread
-					if (thread.parent == supportChannel && !thread.isArchived) {
-						userThreadExists = true
-						existingUserThread = thread
+					try {
+						val thread = guild.getChannel(it.threadId) as TextChannelThread
+						if (thread.parent == supportChannel && !thread.isArchived) {
+							userThreadExists = true
+							existingUserThread = thread
+						}
+					} catch (e: EntityNotFoundException) {
+						DatabaseHelper.removeThread(it.threadId)
 					}
 				}
 
