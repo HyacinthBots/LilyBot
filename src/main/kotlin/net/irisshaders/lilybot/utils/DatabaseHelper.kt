@@ -275,13 +275,13 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * This function deletes the ownership data stored in the database for the given [threadId].
+	 * This function deletes the ownership data stored in the database for the given [inputThreadId].
 	 *
-	 * @param threadId The ID of the thread to delete
+	 * @param inputThreadId The ID of the thread to delete
 	 */
-	suspend fun removeThread(threadId: Snowflake) {
+	suspend fun deleteThread(inputThreadId: Snowflake) {
 		val collection = database.getCollection<ThreadData>()
-		collection.deleteOne(ThreadData::threadId eq threadId)
+		collection.deleteOne(ThreadData::threadId eq inputThreadId)
 	}
 
 	/**

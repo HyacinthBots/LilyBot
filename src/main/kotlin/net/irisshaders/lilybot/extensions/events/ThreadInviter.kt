@@ -84,7 +84,7 @@ class ThreadInviter : Extension() {
 							existingUserThread = thread
 						}
 					} catch (e: EntityNotFoundException) {
-						DatabaseHelper.removeThread(it.threadId)
+						DatabaseHelper.deleteThread(it.threadId)
 					}
 				}
 
