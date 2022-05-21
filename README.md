@@ -39,8 +39,6 @@ using the [Kord API](https://github.com/kordlib/kord) and
 ### How can I use LilyBot myself!?
 * If you're looking to add Lily to your server, try our
 [usage guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/usage-guide.md).
-* If you're looking to host Lily for yourself, try our
-[hosting guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/hosting-guide.md).
 * If you're looking to set up a development environment for Lily, try our
 [development guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/development-guide.md).
 
@@ -57,7 +55,6 @@ an integrated commands and extensions framework for Kord.
 * [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging),
 a lightweight logging that wraps slf4j with kotlin extensions
 * [Github-API](https://github.com/hub4j/github-api), the API utilized by the GitHub commands
-* [TOML](https://github.com/Jezza/toml), a library for custom commands 
 * [Shadow Gradle Plugin](https://github.com/johnrengelman/shadow),
   a tool which allows us to make a big fatjar containing all dependencies
 * [detekt](https://detekt.dev/index.html), a static code analysis tool for the Kotlin programming language. This helps 
