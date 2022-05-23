@@ -320,7 +320,7 @@ class TerminalModeration : Extension() {
 		val reason by defaultingString {
 			name = "reason"
 			description = "The reason for the Kick"
-			defaultValue = "No Reason Provided"
+			defaultValue = "No reason provided"
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
@@ -347,7 +347,7 @@ class TerminalModeration : Extension() {
 		val reason by defaultingString {
 			name = "reason"
 			description = "The reason for the ban"
-			defaultValue = "No Reason Provided"
+			defaultValue = "No reason provided"
 		}
 
 		/** An image that the user wishes to provide for context to the ban. */
@@ -368,7 +368,7 @@ class TerminalModeration : Extension() {
 		val reason by defaultingString {
 			name = "reason"
 			description = "The reason for the un-ban"
-			defaultValue = "No Reason Provided"
+			defaultValue = "No reason provided"
 		}
 	}
 
@@ -390,7 +390,7 @@ class TerminalModeration : Extension() {
 		val reason by defaultingString {
 			name = "reason"
 			description = "The reason for the ban"
-			defaultValue = "No Reason Provided"
+			defaultValue = "No reason provided"
 		}
 
 		/** An image that the user wishes to provide for context to the soft-ban. */
