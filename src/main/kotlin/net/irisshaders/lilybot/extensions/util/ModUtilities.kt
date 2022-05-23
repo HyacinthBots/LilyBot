@@ -43,9 +43,11 @@ class ModUtilities : Extension() {
 			name = "say"
 			description = "Say something through Lily."
 
-			check { anyGuild() }
-			check { configPresent() }
-			check { hasPermission(Permission.ModerateMembers) }
+			check {
+				anyGuild()
+				configPresent()
+				hasPermission(Permission.ModerateMembers)
+			}
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
@@ -117,8 +119,10 @@ class ModUtilities : Extension() {
 			name = "set-status"
 			description = "Set Lily's current presence/status."
 
-			check { hasPermission(Permission.Administrator) }
-			check { configPresent() }
+			check {
+				hasPermission(Permission.Administrator)
+				configPresent()
+			}
 
 			action {
 				// Lock this command to the testing guild

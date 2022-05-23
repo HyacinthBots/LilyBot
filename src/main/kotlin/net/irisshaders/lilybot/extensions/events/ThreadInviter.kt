@@ -23,6 +23,7 @@ import dev.kord.core.entity.channel.thread.NewsChannelThread
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -47,19 +48,19 @@ class ThreadInviter : Extension() {
 			 - the message was sent by Lily or another bot
 			 - the message is in an announcements channel
 			 */
-			check { anyGuild() }
-			check { configPresent() }
 			check {
-			    failIf {
+				anyGuild()
+				configPresent()
+				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
-					event.message.type == MessageType.ThreadCreated ||
-					event.message.type == MessageType.ThreadStarterMessage ||
-					event.message.getChannel() is TextChannelThread ||
-					event.message.author?.id == kord.selfId ||
-					event.message.author?.isBot == true ||
-					event.message.getChannel() is NewsChannel ||
-					event.message.getChannel() is NewsChannelThread
-			    }
+							event.message.type == MessageType.ThreadCreated ||
+							event.message.type == MessageType.ThreadStarterMessage ||
+							event.message.getChannel() is TextChannelThread ||
+							event.message.author?.id == kord.selfId ||
+							event.message.author?.isBot == true ||
+							event.message.getChannel() is NewsChannel ||
+							event.message.getChannel() is NewsChannelThread
+				}
 			}
 			action {
 				val config = DatabaseHelper.getConfig(event.guildId!!)!!
@@ -76,10 +77,14 @@ class ThreadInviter : Extension() {
 				if (textChannel != supportChannel) return@action
 
 				DatabaseHelper.getOwnerThreads(event.member!!.id).forEach {
-					val thread = guild.getChannel(it.threadId) as TextChannelThread
-					if (thread.parent == supportChannel && !thread.isArchived) {
-						userThreadExists = true
-						existingUserThread = thread
+					try {
+						val thread = guild.getChannel(it.threadId) as TextChannelThread
+						if (thread.parent == supportChannel && !thread.isArchived) {
+							userThreadExists = true
+							existingUserThread = thread
+						}
+					} catch (e: EntityNotFoundException) {
+						DatabaseHelper.deleteThread(it.threadId)
 					}
 				}
 
@@ -93,10 +98,12 @@ class ThreadInviter : Extension() {
 					response.delete(10000L, false)
 				} else {
 					val thread =
+						// Create a thread with the message sent, title it with the users tag and set the archive
+						// duration to the channels settings. If they're null, set it to one day
 						textChannel.startPublicThreadWithMessage(
 							event.message.id,
 							"Support thread for " + event.member!!.asUser().username,
-							ArchiveDuration.Hour
+							event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 						)
 
 					DatabaseHelper.setThreadOwner(thread.id, event.member!!.id)
@@ -132,9 +139,13 @@ class ThreadInviter : Extension() {
 		 * A copy of this license can be found at https://mozilla.org/MPL/2.0/.
 		 */
 		event<ThreadChannelCreateEvent> {
-			check { failIf(event.channel.ownerId == kord.selfId) }
-			check { failIf(event.channel.member != null) }
-			check { configPresent() }
+			check {
+				failIf {
+					event.channel.ownerId == kord.selfId ||
+							event.channel.member != null
+				}
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(event.channel.guildId)!!

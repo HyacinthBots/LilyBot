@@ -39,9 +39,11 @@ class RoleMenu : Extension() {
 			name = "role-menu"
 			description = "Creates a menu that allows users to select a role."
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ManageMessages) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.ManageMessages)
+				configPresent()
+			}
 
 			action {
 				val descriptionAppendix = "\n\nUse the button below to add/remove the ${arguments.role.mention} role."

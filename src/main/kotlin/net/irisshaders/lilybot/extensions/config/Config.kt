@@ -43,8 +43,10 @@ class Config : Extension() {
 				name = "set"
 				description = "Set the config"
 
-				check { anyGuild() }
-				check { hasPermission(Permission.ManageGuild) }
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageGuild)
+				}
 
 				action {
 					// If an action log ID doesn't exist, set the config
@@ -98,8 +100,10 @@ class Config : Extension() {
 				name = "clear"
 				description = "Clear the config!"
 
-				check { anyGuild() }
-				check { hasPermission(Permission.ManageGuild) }
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageGuild)
+				}
 
 				action {
 					// If an action log ID resists, inform the user their config isn't set.

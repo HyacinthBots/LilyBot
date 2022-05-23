@@ -23,10 +23,7 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
-import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.configPresent
-import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 
 /**
@@ -39,34 +36,6 @@ class PublicUtilities : Extension() {
 	override val name = "public-utilities"
 
 	override suspend fun setup() {
-		/**
-		 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
-		 * @author IMS212
-		 * @since v2.0
-		 */
-		// The channel specifically for sending online notifications to
-		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
-		responseEmbedInChannel(
-			onlineLog, "Lily is now online!", null, DISCORD_GREEN, null
-		)
-
-		/**
-		 * This function is called to remove any threads in the database that haven't had a message sent in the last
-		 * week. It only runs on startup.
-		 * @author tempest15
-		 * @since 3.2.0
-		 */
-		DatabaseHelper.cleanupThreadData(kord)
-
-		/**
-		 * This function is called to remove any guilds in the database that haven't had Lily in them for more than
-		 * a month. It only runs on startup
-		 *
-		 * @author NoComment1105
-		 * @since 3.2.0
-		 */
-		DatabaseHelper.cleanupGuildData()
-
 		/**
 		 * Ping Command.
 		 * @author IMS212
@@ -109,8 +78,10 @@ class PublicUtilities : Extension() {
 				name = "request"
 				description = "Request a new nickname for the server!"
 
-				check { anyGuild() }
-				check { configPresent() }
+				check {
+					anyGuild()
+					configPresent()
+				}
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -297,8 +268,10 @@ class PublicUtilities : Extension() {
 				name = "clear"
 				description = "Clear your current nickname"
 
-				check { anyGuild() }
-				check { configPresent() }
+				check {
+					anyGuild()
+					configPresent()
+				}
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
