@@ -117,9 +117,11 @@ class Tags : Extension() {
 			name = "tag-create"
 			description = "Create a tag for your guild! Use /tag-help for more info."
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ModerateMembers) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.ModerateMembers)
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -169,9 +171,11 @@ class Tags : Extension() {
 			name = "tag-delete"
 			description = "Delete a tag from your guild. Use /tag-help for more info."
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ModerateMembers) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.ModerateMembers)
+				configPresent()
+			}
 
 			action {
 				// Check to make sure the tag exists in the database

@@ -67,9 +67,11 @@ class TemporaryModeration : Extension() {
 			name = "clear"
 			description = "Clears messages."
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ManageMessages) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.ManageMessages)
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -108,9 +110,11 @@ class TemporaryModeration : Extension() {
 			name = "warn"
 			description = "Warn a member for any infractions."
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ModerateMembers) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.ModerateMembers)
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -246,9 +250,11 @@ class TemporaryModeration : Extension() {
 			name = "remove-warn"
 			description = "Remove a warning strike from a user"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ModerateMembers) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.ModerateMembers)
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -304,9 +310,11 @@ class TemporaryModeration : Extension() {
 			name = "timeout"
 			description = "Timeout a user"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ModerateMembers) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.ModerateMembers)
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -377,9 +385,11 @@ class TemporaryModeration : Extension() {
 			name = "remove-timeout"
 			description = "Remove timeout on a user"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.ModerateMembers) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.ModerateMembers)
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -427,9 +437,11 @@ class TemporaryModeration : Extension() {
 				name = "channel"
 				description = "Lock a channel so only mods can send messages"
 
-				check { anyGuild() }
-				check { hasPermission(Permission.ModerateMembers) }
-				check { configPresent() }
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					configPresent()
+				}
 
 				@Suppress("DuplicatedCode")
 				action {
@@ -481,9 +493,11 @@ class TemporaryModeration : Extension() {
 				name = "server"
 				description = "Lock the server so only mods can send messages"
 
-				check { anyGuild() }
-				check { hasPermission(Permission.ModerateMembers) }
-				check { configPresent() }
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					configPresent()
+				}
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -533,9 +547,11 @@ class TemporaryModeration : Extension() {
 				name = "channel"
 				description = "Unlock a channel so everyone can send messages"
 
-				check { anyGuild() }
-				check { hasPermission(Permission.ModerateMembers) }
-				check { configPresent() }
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					configPresent()
+				}
 
 				@Suppress("DuplicatedCode")
 				action {
@@ -592,9 +608,11 @@ class TemporaryModeration : Extension() {
 				name = "server"
 				description = "Unlock the server so everyone can send messages"
 
-				check { anyGuild() }
-				check { hasPermission(Permission.ModerateMembers) }
-				check { configPresent() }
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					configPresent()
+				}
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!

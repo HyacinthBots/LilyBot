@@ -48,19 +48,19 @@ class ThreadInviter : Extension() {
 			 - the message was sent by Lily or another bot
 			 - the message is in an announcements channel
 			 */
-			check { anyGuild() }
-			check { configPresent() }
 			check {
-			    failIf {
+				anyGuild()
+				configPresent()
+				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
-					event.message.type == MessageType.ThreadCreated ||
-					event.message.type == MessageType.ThreadStarterMessage ||
-					event.message.getChannel() is TextChannelThread ||
-					event.message.author?.id == kord.selfId ||
-					event.message.author?.isBot == true ||
-					event.message.getChannel() is NewsChannel ||
-					event.message.getChannel() is NewsChannelThread
-			    }
+							event.message.type == MessageType.ThreadCreated ||
+							event.message.type == MessageType.ThreadStarterMessage ||
+							event.message.getChannel() is TextChannelThread ||
+							event.message.author?.id == kord.selfId ||
+							event.message.author?.isBot == true ||
+							event.message.getChannel() is NewsChannel ||
+							event.message.getChannel() is NewsChannelThread
+				}
 			}
 			action {
 				val config = DatabaseHelper.getConfig(event.guildId!!)!!
@@ -139,9 +139,13 @@ class ThreadInviter : Extension() {
 		 * A copy of this license can be found at https://mozilla.org/MPL/2.0/.
 		 */
 		event<ThreadChannelCreateEvent> {
-			check { failIf(event.channel.ownerId == kord.selfId) }
-			check { failIf(event.channel.member != null) }
-			check { configPresent() }
+			check {
+				failIf {
+					event.channel.ownerId == kord.selfId ||
+							event.channel.member != null
+				}
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(event.channel.guildId)!!

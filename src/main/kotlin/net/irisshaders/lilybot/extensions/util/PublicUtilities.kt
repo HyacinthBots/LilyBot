@@ -78,8 +78,10 @@ class PublicUtilities : Extension() {
 				name = "request"
 				description = "Request a new nickname for the server!"
 
-				check { anyGuild() }
-				check { configPresent() }
+				check {
+					anyGuild()
+					configPresent()
+				}
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -266,8 +268,10 @@ class PublicUtilities : Extension() {
 				name = "clear"
 				description = "Clear your current nickname"
 
-				check { anyGuild() }
-				check { configPresent() }
+				check {
+					anyGuild()
+					configPresent()
+				}
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
