@@ -17,6 +17,7 @@ import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.exception.EntityNotFoundException
@@ -30,7 +31,6 @@ import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.isBotOrModerator
-import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import net.irisshaders.lilybot.utils.userDMEmbed
 
 /**
@@ -152,13 +152,20 @@ class TerminalModeration : Extension() {
 					content = "Unbanned user"
 				}
 
-				responseEmbedInChannel(
-					actionLog,
-					"Unbanned a user",
-					"${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})",
-					DISCORD_GREEN,
-					user.asUser()
-				)
+				actionLog.createEmbed {
+					title = "Unbanned a user"
+					description = "${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})"
+					color = DISCORD_GREEN
+					timestamp = Clock.System.now()
+					field {
+						name = "Reason:"
+						value = arguments.reason
+					}
+					footer {
+						text = user.asUser().tag
+						icon = user.asUser().avatar?.url
+					}
+				}
 			}
 		}
 
@@ -354,7 +361,14 @@ class TerminalModeration : Extension() {
 		/** The ID of the user to unban. */
 		val userArgument by user {
 			name = "unbanUserId"
-			description = "Person Unbanned"
+			description = "Person to un-ban"
+		}
+
+		/** The reason for the un-ban. */
+		val reason by defaultingString {
+			name = "reason"
+			description = "The reason for the un-ban"
+			defaultValue = "No Reason Provided"
 		}
 	}
 
