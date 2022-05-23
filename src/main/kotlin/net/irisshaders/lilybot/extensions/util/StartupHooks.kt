@@ -14,7 +14,7 @@ import net.irisshaders.lilybot.utils.responseEmbedInChannel
  * the class don't get added to a server when the bot joins the server, and instead only present themselves after a
  * bot instance restart.
  *
- * @since 3.3.0
+ * @since 3.2.2
  */
 class StartupHooks : Extension() {
 	override val name = "startuphooks"
