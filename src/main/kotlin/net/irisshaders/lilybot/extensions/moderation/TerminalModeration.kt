@@ -53,9 +53,11 @@ class TerminalModeration : Extension() {
 			name = "ban"
 			description = "Bans a user."
 
-			check { anyGuild() }
-			check { hasPermission(Permission.BanMembers) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.BanMembers)
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -128,9 +130,11 @@ class TerminalModeration : Extension() {
 			name = "unban"
 			description = "Unbans a user"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.BanMembers) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.BanMembers)
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -171,9 +175,11 @@ class TerminalModeration : Extension() {
 			name = "soft-ban"
 			description = "Soft-bans a user"
 
-			check { anyGuild() }
-			check { hasPermission(Permission.BanMembers) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.BanMembers)
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -249,9 +255,11 @@ class TerminalModeration : Extension() {
 			name = "kick"
 			description = "Kicks a user."
 
-			check { anyGuild() }
-			check { hasPermission(Permission.KickMembers) }
-			check { configPresent() }
+			check {
+				anyGuild()
+				hasPermission(Permission.KickMembers)
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!

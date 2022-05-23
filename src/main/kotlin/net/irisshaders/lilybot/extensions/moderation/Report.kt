@@ -49,8 +49,10 @@ class Report : Extension() {
 			name = "Report"
 			locking = true // To prevent the command from being run more than once concurrently
 
-			check { anyGuild() }
-			check { configPresent() }
+			check {
+				anyGuild()
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
@@ -89,8 +91,10 @@ class Report : Extension() {
 			description = "Manually report a message"
 			locking = true
 
-			check { anyGuild() }
-			check { configPresent() }
+			check {
+				anyGuild()
+				configPresent()
+			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!

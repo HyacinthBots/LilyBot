@@ -38,8 +38,10 @@ class ThreadControl : Extension() {
 				name = "rename"
 				description = "Rename a thread!"
 
-				check { isInThread() }
-				check { configPresent() }
+				check {
+					isInThread()
+					configPresent()
+				}
 
 				action {
 					val threadChannel = channel.asChannel() as ThreadChannel
@@ -61,8 +63,10 @@ class ThreadControl : Extension() {
 				name = "archive"
 				description = "Archive this thread"
 
-				check { isInThread() }
-				check { configPresent() }
+				check {
+					isInThread()
+					configPresent()
+				}
 
 				action {
 					val threadChannel = channel.asChannel() as ThreadChannel
@@ -95,8 +99,10 @@ class ThreadControl : Extension() {
 				name = "transfer"
 				description = "Transfer ownership of this thread"
 
-				check { isInThread() }
-				check { configPresent() }
+				check {
+					isInThread()
+					configPresent()
+				}
 
 				action {
 					val threadChannel = channel.asChannel() as ThreadChannel

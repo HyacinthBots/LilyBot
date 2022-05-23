@@ -11,6 +11,7 @@ import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.configPresent
 
 /**
  * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild.
@@ -23,8 +24,9 @@ class MemberJoinLeave : Extension() {
 	override suspend fun setup() {
 		/** Create an embed in the join channel on user join */
 		event<MemberJoinEvent> {
+			check { configPresent() }
 			action {
-				val config = DatabaseHelper.getConfig(event.guildId) ?: return@action
+				val config = DatabaseHelper.getConfig(event.guildId)!!
 
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
@@ -55,10 +57,11 @@ class MemberJoinLeave : Extension() {
 
 		/** Create an embed in the join channel on user leave */
 		event<MemberLeaveEvent> {
+			check { configPresent() }
 			action {
 				// If it's Lily leaving, return the action, otherwise the log will fill with errors
 				if (event.user.id == kord.selfId) return@action
-				val config = DatabaseHelper.getConfig(event.guildId) ?: return@action
+				val config = DatabaseHelper.getConfig(event.guildId)!!
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()

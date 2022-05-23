@@ -26,8 +26,10 @@ class MessageDelete : Extension() {
 		 * @since 2.0
 		 */
 		event<MessageDeleteEvent> {
-			check { anyGuild() }
-			check { configPresent() }
+			check {
+				anyGuild()
+				configPresent()
+			}
 
 			action {
 				if (event.message?.author?.isBot == true) return@action
