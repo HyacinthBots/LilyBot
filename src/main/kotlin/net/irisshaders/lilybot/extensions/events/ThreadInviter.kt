@@ -98,10 +98,12 @@ class ThreadInviter : Extension() {
 					response.delete(10000L, false)
 				} else {
 					val thread =
+						// Create a thread with the message sent, title it with the users tag and set the archive
+						// duration to the channels settings. If they're null, set it to one day
 						textChannel.startPublicThreadWithMessage(
 							event.message.id,
 							"Support thread for " + event.member!!.asUser().username,
-							ArchiveDuration.Hour
+							event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 						)
 
 					DatabaseHelper.setThreadOwner(thread.id, event.member!!.id)
