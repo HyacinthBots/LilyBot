@@ -1,0 +1,6 @@
+[[command]]
+overview = "Config commands"
+name = "config set"
+args = "* `moderatorRole` - Moderator role that will be pinged for reports - Role\n* `modActionLog` - Channel for embeds created by mod actions to be sent - Channel\n* `messageLogs` - Channel for deleted messages to be logged - Channel\n* `joinChannel` - Channel for members joining or leaving to be logged - Channel\n* `supportChannel` - Channel for the support auto-threading system to be used in - Optional Channel\n* `supportTeamRole` - The role to be added to any threads created in the `supportchannel` - Optional Role"
+result = "Sets a configuration for the guild executed in."
+permissions = "Manage Guild"

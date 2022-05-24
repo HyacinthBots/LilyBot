@@ -62,6 +62,9 @@ dependencies {
 
     // KMongo
     implementation(libs.kmongo)
+
+    // TOML Reader
+    implementation(libs.toml)
 }
 
 application {
