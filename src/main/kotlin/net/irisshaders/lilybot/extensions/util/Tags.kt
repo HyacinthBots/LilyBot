@@ -12,11 +12,11 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.utils.suggestStringMap
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -38,7 +38,7 @@ class Tags : Extension() {
 		 * @author NoComment1105
 		 * @since 3.1.0
 		 */
-		publicSlashCommand(::CallTagArgs) {
+		ephemeralSlashCommand(::CallTagArgs) {
 			name = "tag"
 			description = "Call a tag from this guild! Use /tag-help for more info."
 
@@ -46,7 +46,7 @@ class Tags : Extension() {
 
 			action {
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
-					respondEphemeral {
+					respond {
 						content = "Unable to find tag `${arguments.tagName}`. " +
 								"Be sure it exists and you've typed it correctly."
 					}
@@ -55,16 +55,20 @@ class Tags : Extension() {
 
 				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!
 
-				// This is not the best way to do this. Ideally the ping would be in the same message as the embed.
-				// A Discord limitation makes this not possible. Setting KordEx `allowedMentions` should work.
-				if (arguments.user != null) channel.createMessage(arguments.user!!.mention)
+				respond { content = "Tag sent" }
 
-				respond {
+				// This is not the best way to do this. Ideally the ping would be in the same message as the embed in
+				// a `respond` builder. A Discord limitation makes this not possible.
+				channel.createMessage {
+					if (arguments.user != null) content = arguments.user!!.mention
 					embed {
 						color = DISCORD_BLURPLE
 						title = tagFromDatabase.tagTitle
 						description = tagFromDatabase.tagValue
-						timestamp = Clock.System.now()
+						footer {
+							text = "Tag requested by ${user.asUser().tag}"
+							icon = user.asUser().avatar!!.url
+						}
 					}
 				}
 			}
