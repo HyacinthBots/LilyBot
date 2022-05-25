@@ -5,9 +5,13 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalColour
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
+import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -18,6 +22,8 @@ import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.edit
+import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -111,6 +117,95 @@ class ModUtilities : Extension() {
 		}
 
 		/**
+		 * Message editing command
+		 *
+		 * @since 3.3.0
+		 */
+		ephemeralSlashCommand(::SayEditMessageArgs) {
+			name = "edit-say-message"
+			description = "Edit a message created by /say"
+
+			check {
+				anyGuild()
+				configPresent()
+				hasPermission(Permission.ModerateMembers)
+			}
+
+			action {
+				// The channel the message was sent in. Either the channel provided, or if null, the channel the
+				// command was executed in.
+				val channelOfMessage = if (arguments.channelOfMessage != null) {
+					guild!!.getChannel(arguments.channelOfMessage!!.id) as MessageChannelBehavior
+				} else {
+					channel
+				}
+
+				val message = channelOfMessage.getMessage(arguments.messageToEdit)
+
+				// If the message is not by LilyBot, return
+				if (message.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
+					respond { content = "This message is not by me, I cannot edit this!" }
+					return@action
+				}
+
+				message.edit { content = arguments.newContent }
+
+				respond { content = "Message edited" }
+			}
+		}
+
+		/**
+		 * Embed editing command
+		 *
+		 * @since 3.3.0
+		 */
+		ephemeralSlashCommand(::SayEditEmbedArgs) {
+			name = "edit-say-embed"
+			description = "Edit an embed created by /say"
+
+			check {
+				anyGuild()
+				configPresent()
+				hasPermission(Permission.ModerateMembers)
+			}
+
+			action {
+				// The channel the message was sent in. Either the channel provided, or if null, the channel the
+				// command was executed in.
+				val channelOfMessage = if (arguments.channelOfEmbed != null) {
+					guild!!.getChannel(arguments.channelOfEmbed!!.id) as MessageChannelBehavior
+				} else {
+					channel
+				}
+
+				// The messages that contains the embed that is going to be edited. If the message has no embed, or
+				// it's not by LilyBot, it returns
+				val messageContainingEmbed = channelOfMessage.getMessage(arguments.embedToEdit)
+				if (messageContainingEmbed.embeds.isEmpty()) {
+					respond { content = "This message does not contain an embed" }
+					return@action
+				} else if (messageContainingEmbed.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
+					respond { content = "This message is not by me! I cannot edit it" }
+					return@action
+				}
+
+				// The old description and color to the embed. We get it here before we start changing it.
+				val oldDescription = messageContainingEmbed.embeds[0].description
+				val oldColor = messageContainingEmbed.embeds[0].color
+
+				messageContainingEmbed.edit {
+					embed {
+						description = if (arguments.newContent != null) arguments.newContent else oldDescription
+						color = if (arguments.newColor != null) arguments.newColor else oldColor
+						timestamp = if (arguments.timestamp) messageContainingEmbed.timestamp else null
+					}
+				}
+
+				respond { content = "Embed updated" }
+			}
+		}
+
+		/**
 		 * Presence Command
 		 * @author IMS
 		 * @since 2.0
@@ -195,6 +290,69 @@ class ModUtilities : Extension() {
 			description = "The color of the embed. Can be either a hex code or one of Discord's supported colors. " +
 					"Embeds only"
 			defaultValue = DISCORD_BLURPLE
+		}
+	}
+
+	inner class SayEditMessageArgs : Arguments() {
+		/** The ID of the message to edit. */
+		val messageToEdit by snowflake {
+			name = "messageToEdit"
+			description = "The ID of the message to edit"
+		}
+
+		/** The new content of the message. */
+		val newContent by string {
+			name = "newContent"
+			description = "The new contents of the message"
+
+			// Fix newline escape characters
+			mutate {
+				it.replace("\\n", "\n")
+					.replace("\n", "\n")
+			}
+		}
+
+		/** The channel the message was originally sent in. */
+		val channelOfMessage by optionalChannel {
+			name = "channelOfMessage"
+			description = "The channel the message was originally sent in"
+		}
+	}
+
+	inner class SayEditEmbedArgs : Arguments() {
+		/** The ID of the embed to edit. */
+		val embedToEdit by snowflake {
+			name = "embedToEdit"
+			description = "The ID of the embed you'd like to edit"
+		}
+
+		/** Whether to add the timestamp of when the message was originally sent or not. */
+		val timestamp by boolean {
+			name = "timestamp"
+			description = "Whether to add the timestamp of when the message was originally sent or not"
+		}
+
+		/** The new content of the embed. */
+		val newContent by optionalString {
+			name = "newContent"
+			description = "The new content of the embed"
+
+			mutate {
+				it?.replace("\\n", "\n")
+					?.replace("\n", "\n")
+			}
+		}
+
+		/** The new color for the embed. */
+		val newColor by optionalColour {
+			name = "newColor"
+			description = "The new color of the embed"
+		}
+
+		/** The channel the embed was originally sent in. */
+		val channelOfEmbed by optionalChannel {
+			name = "channelOfEmbed"
+			description = "The channel of the embed"
 		}
 	}
 

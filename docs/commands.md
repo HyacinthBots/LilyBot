@@ -187,6 +187,27 @@ Arguments:
 
 Result: Sends a message in the executed channel with content `message`. This message will be an embed if `embed` is true.
 
+### Edit Say Messages (MODS ONLY)
+Name: `edit-say-message`
+
+Arguments:
+* `messageToEdit` - The ID of the message that you'd like to edit - Snowflake
+* `newContent` - The new content for the message - String
+* `channelOfMessage` - The channel the message was originally sent in - Optional Channel (default: channel executed in)
+
+Result: Edited message
+
+### Edit Say Embeds (MODS ONLY)
+Name: `edit-say-embeds`
+
+Arguments:
+* `embedToEdit` - The ID of the message contain the embed you'd like to edit - Snowflake
+* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Boolean
+* `newContent` - The new content for the message - String
+* `newColor` - The new color for the embed - Optional Color (default: Blurple)
+
+Result: Edited embed
+
 ### Manual Report
 Name: `manual-report`
 
