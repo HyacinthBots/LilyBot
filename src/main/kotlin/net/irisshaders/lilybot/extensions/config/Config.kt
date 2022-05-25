@@ -1,152 +1,172 @@
 package net.irisshaders.lilybot.extensions.config
 
+import com.kotlindiscord.kord.extensions.DISCORD_BLACK
+import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
-import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
-import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
-import com.kotlindiscord.kord.extensions.utils.waitFor
-import dev.kord.common.entity.TextInputStyle
-import dev.kord.core.behavior.interaction.modal
-import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
-import dev.kord.core.behavior.interaction.response.respond
-import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
-import dev.kord.rest.builder.message.create.embed
-import dev.kord.rest.builder.message.modify.embed
-import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import kotlin.time.Duration.Companion.seconds
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
+import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
+import com.kotlindiscord.kord.extensions.commands.converters.impl.role
+import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.common.entity.Permission
+import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.createEmbed
+import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.utils.ConfigData
+import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
-class Config : Arguments() {
-	val moduleChoice by stringChoice {
-		name = "module"
-		description = "The module you want to configure"
-		choice("Support", "support")
-		choice("Moderation", "moderation")
-		choice("Logging", "logging")
-		choice("Bot", "bot")
-	}
-}
+/**
+ * The class for configuring LilyBot in your guilds.
+ *
+ * @since 2.1.0
+ */
+class Config : Extension() {
 
-@OptIn(UnsafeAPI::class)
-suspend fun ConfigExtension.configCommand() = unsafeSlashCommand(::Config) {
-	name = "config"
-	description = "Configuring Lily's Modules"
-	guild(TEST_GUILD_ID)
+	override val name = "config"
 
-	initialResponse = InitialSlashCommandResponse.None
+	override suspend fun setup() {
+		/**
+		 * The parent command for the commands to handle configuration
+		 * @author NoComment1105, tempest15
+		 * @since 2.1.0
+		 */
+		ephemeralSlashCommand {
+			name = "config"
+			description = "Configuration set up commands!"
 
-	action {
-		val module = this.arguments.moduleChoice
-		if (module == "support") {
-			val response = event.interaction.modal("Support Module", "supportModuleModal") {
-				actionRow {
-					textInput(TextInputStyle.Paragraph, "msgInput", "Support Message") {
-						placeholder = "This is where your ad could be!"
-					}
+			ephemeralSubCommand(::Config) {
+				name = "set"
+				description = "Set the config"
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageGuild)
 				}
-				actionRow {
-					textInput(TextInputStyle.Short, "teamInput", "Support Team/Role") {
-						placeholder = "Role ID or name"
+
+				action {
+					// If an action log ID doesn't exist, set the config
+					// Otherwise, inform the user their config is already set
+					if (DatabaseHelper.getConfig(guild!!.id)?.modActionLog == null) {
+						val newConfig = ConfigData(
+							guild!!.id,
+							arguments.moderatorPing.id,
+							arguments.modActionLog.id,
+							arguments.messageLogs.id,
+							arguments.joinChannel.id,
+							arguments.supportChannel?.id,
+							arguments.supportTeam?.id,
+						)
+
+						DatabaseHelper.setConfig(newConfig)
+
+						respond { content = "Config Set for Guild ID: ${guild!!.id}!" }
+					} else {
+						respond { content = "**Error:** There is already a configuration set for this guild!" }
+						return@action
 					}
-				}
-				actionRow {
-					textInput(TextInputStyle.Short, "supChannel", "Support Channel") {
-						placeholder = "Channel ID"
-					}
-				}
-				actionRow {
-					textInput(TextInputStyle.Short, "supDuration", "Thread Auto-Archive Timer") {
-						placeholder = "Supported formats: 10min, 3h, 1d, 5w"
+
+					// Log the config being set in the action log
+					val actionLogChannel = guild?.getChannel(arguments.modActionLog.id) as GuildMessageChannelBehavior
+					actionLogChannel.createEmbed {
+						title = "Configuration set!"
+						description = "A guild manager has set a config for this guild!"
+						color = DISCORD_BLACK
+						timestamp = Clock.System.now()
+						field {
+							name = "Set values:"
+							value = """
+								Moderators Ping = ${arguments.moderatorPing.mention}
+								Mod Action Log = ${arguments.modActionLog.mention}
+								Message Logs = ${arguments.messageLogs.mention}
+								Join Channel = ${arguments.joinChannel.mention}
+								Support Team = ${arguments.supportTeam?.mention ?: "null"}
+								Support Channel = ${arguments.supportChannel?.mention ?: "null"}
+							""".trimIndent()
+						}
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
 					}
 				}
 			}
 
-			val interaction = response.kord.waitFor<ModalSubmitInteractionCreateEvent>(60.seconds.inWholeMilliseconds) {
-				interaction.modalId == "supportModuleModal"
-			}?.interaction
-			if (interaction == null) {
-				response.createEphemeralFollowup {
-					embed {
-						description = "Configuration timed out"
-					}
+			ephemeralSubCommand {
+				name = "clear"
+				description = "Clear the config!"
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageGuild)
 				}
-				return@action
-			}
 
-			val supportMsg = interaction.textInputs["msgInput"]!!.value!!
-			val supportTeam = interaction.textInputs["teamInput"]!!.value!!
-			val supportChannel = interaction.textInputs["supChannel"]!!.value!!
-			val supportDuration = interaction.textInputs["supDuration"]!!.value!!
-			val modalResponse = interaction.deferEphemeralResponse()
+				action {
+					// If an action log ID resists, inform the user their config isn't set.
+					// Otherwise, clear the config.
+					if (DatabaseHelper.getConfig(guild!!.id)?.modActionLog == null) {
+						respond { content = "**Error:** There is no configuration set for this guild!" }
+						return@action // Return to avoid the database trying to delete things that don't exist
+					} else {
+						respond { content = "Cleared config for Guild ID: ${guild!!.id}" }
+						// Log the config being cleared to the action log
+						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
+						val actionLogChannel = guild?.getChannel(actionLogId!!) as GuildMessageChannelBehavior
+						responseEmbedInChannel(
+							actionLogChannel,
+							"Configuration cleared!",
+							"A Guild Manager has cleared the configuration for this guild!",
+							null,
+							user.asUser()
+						)
 
-			modalResponse.respond {
-				embed {
-					title = "Module configured: Support"
-					description = supportMsg
-					field {
-						name = "Support Team"
-						value = supportTeam
-					}
-					field {
-						name = "Support Channel"
-						value = supportChannel
-					}
-					field {
-						name = "Support Duration"
-						value = supportDuration
-					}
-					footer {
-						text = "Configured by: ${user.asUser().tag}"
+						// Clear the config (do this last)
+						DatabaseHelper.clearConfig(guild!!.id)
 					}
 				}
 			}
 		}
+	}
 
-		if (module == "moderation") {
-			val response = event.interaction.modal("Moderation Module", "moderationModal") {
-				actionRow {
-					textInput(TextInputStyle.Short, "moderatorRole", "Moderation Role") {
-						placeholder = "Role ID or name"
-					}
-				}
-				actionRow {
-					textInput(TextInputStyle.Short, "actionLog", "Action Log") {
-						placeholder = "Channel ID"
-					}
-				}
-			}
+	inner class Config : Arguments() {
+		/** The role for pinging moderators. */
+		val moderatorPing by role {
+			name = "moderatorRole"
+			description = "Your Moderator role"
+		}
 
-			val interaction = response.kord.waitFor<ModalSubmitInteractionCreateEvent>(60.seconds.inWholeMilliseconds) {
-				interaction.modalId == "moderationModal"
-			}?.interaction
-			if (interaction == null) {
-				response.createEphemeralFollowup {
-					embed {
-						description = "Configuration timed out"
-					}
-				}
-				return@action
-			}
+		/** The channel for sending action logging to. */
+		val modActionLog by channel {
+			name = "modActionLog"
+			description = "Your Mod Action Log channel"
+		}
 
-			val moderationRole = interaction.textInputs["moderatorRole"]!!.value!!
-			val actionLog = interaction.textInputs["actionLog"]!!.value!!
-			val modalResponse = interaction.deferEphemeralResponse()
-			modalResponse.respond {
-				embed {
-					title = "Module configured: Moderation"
-					field {
-						name = "Moderators"
-						value = moderationRole
-					}
-					field {
-						name = "Action Log"
-						value = actionLog
-					}
-					footer {
-						text = "Configured by: ${user.asUser().tag}"
-					}
-				}
-			}
+		/** The channel for sending message logs to. */
+		val messageLogs by channel {
+			name = "messageLogs"
+			description = "Your Message Logs Channel"
+		}
+
+		/** The channel for sending join logs to. */
+		val joinChannel by channel {
+			name = "joinChannel"
+			description = "Your Join Logs Channel"
+		}
+
+		/** The role for the support team. */
+		val supportTeam by optionalRole {
+			name = "supportTeamRole"
+			description = "Your Support Team role"
+		}
+
+		/** The channel for creating support threads in. */
+		val supportChannel by optionalChannel {
+			name = "supportChannel"
+			description = "Your Support Channel"
 		}
 	}
 }
