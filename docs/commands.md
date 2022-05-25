@@ -191,22 +191,13 @@ Result: Sends a message in the executed channel with content `message`. This mes
 Name: `edit-say-message`
 
 Arguments:
-* `messageToEdit` - The ID of the message that you'd like to edit - Snowflake
-* `newContent` - The new content for the message - String
-* `channelOfMessage` - The channel the message was originally sent in - Optional Channel (default: channel executed in)
-
-Result: Edited message
-
-### Edit Say Embeds (MODS ONLY)
-Name: `edit-say-embeds`
-
-Arguments:
-* `embedToEdit` - The ID of the message contain the embed you'd like to edit - Snowflake
-* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Boolean
-* `newContent` - The new content for the message - String
+* `messageToEdit` - The ID of the message contain the embed you'd like to edit - Snowflake
+* `newContent` - The new content for the message - Optional String
 * `newColor` - The new color for the embed - Optional Color (default: Blurple)
+* `channelOfMessage` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)
+* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Defaulting Boolean (default: false)
 
-Result: Edited embed
+Result: Edited message/embed
 
 ### Manual Report
 Name: `manual-report`
