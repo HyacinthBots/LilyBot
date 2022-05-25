@@ -27,6 +27,7 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
+import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
@@ -157,7 +158,21 @@ class ModUtilities : Extension() {
 
 				// The messages that contains the embed that is going to be edited. If the message has no embed, or
 				// it's not by LilyBot, it returns
-				val message = channelOfMessage.getMessage(arguments.messageToEdit)
+				val message: Message
+				try {
+					message = channelOfMessage.getMessage(arguments.messageToEdit)
+				} catch (e: KtorRequestException) { // In the event of a report in a channel the bot can't see
+					respond {
+						content = "Sorry, I can't properly access this message."
+					}
+					return@action
+				} catch (e: EntityNotFoundException) { // In the event of the message already being deleted.
+					respond {
+						content = "Sorry, I can't find this message."
+					}
+					return@action
+				}
+
 				val originalContent = message.content
 				if (message.embeds.isEmpty()) {
 					if (message.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
