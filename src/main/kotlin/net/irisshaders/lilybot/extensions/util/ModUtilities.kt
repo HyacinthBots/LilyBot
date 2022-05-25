@@ -2,10 +2,10 @@ package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
+import com.kotlindiscord.kord.extensions.DISCORD_WHITE
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
@@ -13,9 +13,12 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalColour
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
+import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
@@ -23,6 +26,7 @@ import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.entity.Message
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
@@ -64,10 +68,11 @@ class ModUtilities : Extension() {
 					} else {
 						channel
 					}
+				val createdMessage: Message
 
 				try {
 					if (arguments.embed) {
-						targetChannel.createEmbed {
+						createdMessage = targetChannel.createEmbed {
 							color = arguments.color
 							description = arguments.message
 							if (arguments.timestamp) {
@@ -75,7 +80,7 @@ class ModUtilities : Extension() {
 							}
 						}
 					} else {
-						targetChannel.createMessage {
+						createdMessage = targetChannel.createMessage {
 							content = arguments.message
 						}
 					}
@@ -112,6 +117,13 @@ class ModUtilities : Extension() {
 						text = user.asUser().tag
 						icon = user.asUser().avatar?.url
 					}
+				}.edit {
+					components {
+						linkButton {
+							label = "Jump to message"
+							url = createdMessage.getJumpUrl()
+						}
+					}
 				}
 			}
 		}
@@ -121,7 +133,7 @@ class ModUtilities : Extension() {
 		 *
 		 * @since 3.3.0
 		 */
-		ephemeralSlashCommand(::SayEditMessageArgs) {
+		ephemeralSlashCommand(::SayEditArgs) {
 			name = "edit-say-message"
 			description = "Edit a message created by /say"
 
@@ -140,68 +152,109 @@ class ModUtilities : Extension() {
 					channel
 				}
 
-				val message = channelOfMessage.getMessage(arguments.messageToEdit)
-
-				// If the message is not by LilyBot, return
-				if (message.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
-					respond { content = "This message is not by me, I cannot edit this!" }
-					return@action
-				}
-
-				message.edit { content = arguments.newContent }
-
-				respond { content = "Message edited" }
-			}
-		}
-
-		/**
-		 * Embed editing command
-		 *
-		 * @since 3.3.0
-		 */
-		ephemeralSlashCommand(::SayEditEmbedArgs) {
-			name = "edit-say-embed"
-			description = "Edit an embed created by /say"
-
-			check {
-				anyGuild()
-				configPresent()
-				hasPermission(Permission.ModerateMembers)
-			}
-
-			action {
-				// The channel the message was sent in. Either the channel provided, or if null, the channel the
-				// command was executed in.
-				val channelOfMessage = if (arguments.channelOfEmbed != null) {
-					guild!!.getChannel(arguments.channelOfEmbed!!.id) as MessageChannelBehavior
-				} else {
-					channel
-				}
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 				// The messages that contains the embed that is going to be edited. If the message has no embed, or
 				// it's not by LilyBot, it returns
-				val messageContainingEmbed = channelOfMessage.getMessage(arguments.embedToEdit)
-				if (messageContainingEmbed.embeds.isEmpty()) {
-					respond { content = "This message does not contain an embed" }
-					return@action
-				} else if (messageContainingEmbed.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
-					respond { content = "This message is not by me! I cannot edit it" }
-					return@action
-				}
+				val message = channelOfMessage.getMessage(arguments.messageToEdit)
+				val originalContent = message.content
+				if (message.embeds.isEmpty()) {
+					if (message.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
+						respond { content = "I did not send this message, I cannot edit this!" }
+						return@action
+					} else if (arguments.newContent == null) {
+						respond { content = "Please specify a new message content" }
+						return@action
+					}
 
-				// The old description and color to the embed. We get it here before we start changing it.
-				val oldDescription = messageContainingEmbed.embeds[0].description
-				val oldColor = messageContainingEmbed.embeds[0].color
+					message.edit { content = arguments.newContent }
 
-				messageContainingEmbed.edit {
-					embed {
-						description = if (arguments.newContent != null) arguments.newContent else oldDescription
-						color = if (arguments.newColor != null) arguments.newColor else oldColor
-						timestamp = if (arguments.timestamp) messageContainingEmbed.timestamp else null
+					respond { content = "Message edited" }
+
+					actionLog.createEmbed {
+						title = "Say message edited"
+						color = DISCORD_WHITE
+						timestamp = Clock.System.now()
+						field {
+							name = "Original Content"
+							value = "```$originalContent```"
+						}
+						field {
+							name = "New Content"
+							value = "```${arguments.newContent}```"
+						}
+						footer {
+							text = "Edited by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
+						}
+					}.edit {
+						components {
+							linkButton {
+								label = "Jump to message"
+								url = message.getJumpUrl()
+							}
+						}
+					}
+				} else {
+					if (message.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
+						respond { content = "I did not send this message, I cannot edit this!" }
+						return@action
+					}
+
+					// The old description and color to the embed. We get it here before we start changing it.
+					val oldContent = message.embeds[0].description
+					val oldColor = message.embeds[0].color
+					val oldTimestamp = message.embeds[0].timestamp
+
+					message.edit {
+						embed {
+							description = arguments.newContent ?: oldContent
+							color = arguments.newColor ?: oldColor
+							timestamp = if (arguments.timestamp) message.timestamp else oldTimestamp
+						}
+					}
+
+					respond { content = "Embed updated" }
+
+					actionLog.createEmbed {
+						title = "Say message edited"
+						color = DISCORD_WHITE
+						timestamp = Clock.System.now()
+						field {
+							name = "Original content"
+							value = "```${oldContent ?: "none"}```"
+						}
+						field {
+							name = "New content"
+							value = "```${arguments.newContent ?: oldContent ?: "none"}```"
+						}
+						field {
+							name = "Old color"
+							value = oldColor.toString()
+						}
+						field {
+							name = "New color"
+							value =
+								if (arguments.newColor != null) arguments.newColor.toString() else oldColor.toString()
+						}
+						field {
+							name = "Has Timestamp"
+							value = arguments.timestamp.toString()
+						}
+						footer {
+							text = "Edited by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
+						}
+					}.edit {
+						components {
+							linkButton {
+								label = "Jump to message"
+								url = message.getJumpUrl()
+							}
+						}
 					}
 				}
-
-				respond { content = "Embed updated" }
 			}
 		}
 
@@ -293,43 +346,11 @@ class ModUtilities : Extension() {
 		}
 	}
 
-	inner class SayEditMessageArgs : Arguments() {
-		/** The ID of the message to edit. */
+	inner class SayEditArgs : Arguments() {
+		/** The ID of the embed to edit. */
 		val messageToEdit by snowflake {
 			name = "messageToEdit"
-			description = "The ID of the message to edit"
-		}
-
-		/** The new content of the message. */
-		val newContent by string {
-			name = "newContent"
-			description = "The new contents of the message"
-
-			// Fix newline escape characters
-			mutate {
-				it.replace("\\n", "\n")
-					.replace("\n", "\n")
-			}
-		}
-
-		/** The channel the message was originally sent in. */
-		val channelOfMessage by optionalChannel {
-			name = "channelOfMessage"
-			description = "The channel the message was originally sent in"
-		}
-	}
-
-	inner class SayEditEmbedArgs : Arguments() {
-		/** The ID of the embed to edit. */
-		val embedToEdit by snowflake {
-			name = "embedToEdit"
 			description = "The ID of the embed you'd like to edit"
-		}
-
-		/** Whether to add the timestamp of when the message was originally sent or not. */
-		val timestamp by boolean {
-			name = "timestamp"
-			description = "Whether to add the timestamp of when the message was originally sent or not"
 		}
 
 		/** The new content of the embed. */
@@ -350,9 +371,16 @@ class ModUtilities : Extension() {
 		}
 
 		/** The channel the embed was originally sent in. */
-		val channelOfEmbed by optionalChannel {
+		val channelOfMessage by optionalChannel {
 			name = "channelOfEmbed"
 			description = "The channel of the embed"
+		}
+
+		/** Whether to add the timestamp of when the message was originally sent or not. */
+		val timestamp by defaultingBoolean {
+			name = "timestamp"
+			description = "Whether to add the timestamp of when the message was originally sent or not"
+			defaultValue = false
 		}
 	}
 
