@@ -135,7 +135,7 @@ class ModUtilities : Extension() {
 		 * @since 3.3.0
 		 */
 		ephemeralSlashCommand(::SayEditArgs) {
-			name = "edit-say-message"
+			name = "edit-say"
 			description = "Edit a message created by /say"
 
 			check {
@@ -159,7 +159,7 @@ class ModUtilities : Extension() {
 
 				try {
 					message = channelOfMessage.getMessage(arguments.messageToEdit)
-				} catch (e: KtorRequestException) { // In the event of a report in a channel the bot can't see
+				} catch (e: KtorRequestException) { // In the event of the message being in a channel the bot can't see
 					respond {
 						content = "Sorry, I can't properly access this message."
 					}
@@ -367,13 +367,13 @@ class ModUtilities : Extension() {
 		/** The ID of the embed to edit. */
 		val messageToEdit by snowflake {
 			name = "messageToEdit"
-			description = "The ID of the embed you'd like to edit"
+			description = "The ID of the message you'd like to edit"
 		}
 
 		/** The new content of the embed. */
 		val newContent by optionalString {
 			name = "newContent"
-			description = "The new content of the embed"
+			description = "The new content of the message"
 
 			mutate {
 				it?.replace("\\n", "\n")
@@ -389,15 +389,15 @@ class ModUtilities : Extension() {
 
 		/** The channel the embed was originally sent in. */
 		val channelOfMessage by optionalChannel {
-			name = "channelOfEmbed"
-			description = "The channel of the embed"
+			name = "channelOfMessage"
+			description = "The channel of the message"
 		}
 
 		/** Whether to add the timestamp of when the message was originally sent or not. */
 		val timestamp by defaultingBoolean {
 			name = "timestamp"
 			description = "Whether to add the timestamp of when the message was originally sent or not"
-			defaultValue = false
+			defaultValue = true
 		}
 	}
 
