@@ -155,10 +155,8 @@ class ModUtilities : Extension() {
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
-
-				// The messages that contains the embed that is going to be edited. If the message has no embed, or
-				// it's not by LilyBot, it returns
 				val message: Message
+
 				try {
 					message = channelOfMessage.getMessage(arguments.messageToEdit)
 				} catch (e: KtorRequestException) { // In the event of a report in a channel the bot can't see
@@ -174,6 +172,8 @@ class ModUtilities : Extension() {
 				}
 
 				val originalContent = message.content
+				// The messages that contains the embed that is going to be edited. If the message has no embed, or
+				// it's not by LilyBot, it returns
 				if (message.embeds.isEmpty()) {
 					if (message.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
 						respond { content = "I did not send this message, I cannot edit this!" }
@@ -238,10 +238,12 @@ class ModUtilities : Extension() {
 						timestamp = Clock.System.now()
 						field {
 							name = "Original content"
+							// The old content, if null none
 							value = "```${oldContent ?: "none"}```"
 						}
 						field {
 							name = "New content"
+							// The new content, if null the old content, if null none
 							value = "```${arguments.newContent ?: oldContent ?: "none"}```"
 						}
 						field {
