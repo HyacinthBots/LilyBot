@@ -1,6 +1,7 @@
 package net.irisshaders.lilybot.extensions.config
 
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubCommand
@@ -16,8 +17,18 @@ import dev.kord.rest.builder.message.modify.embed
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import kotlin.time.Duration.Companion.seconds
 
+class Config : Extension() {
+	override val name: String = "config"
+	override val bundle: String = "config"
+
+	@OptIn(UnsafeAPI::class)
+	override suspend fun setup() {
+		configCommand()
+	}
+}
+
 @OptIn(UnsafeAPI::class)
-suspend fun ConfigExtension.configCommand() = unsafeSlashCommand {
+suspend fun Config.configCommand() = unsafeSlashCommand {
 	name = "config"
 	description = "Configuring Lily's Modules"
 	guild(TEST_GUILD_ID)
