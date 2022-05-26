@@ -7,7 +7,6 @@ class ConfigExtension : Extension() {
 	override val name: String = "config"
 	override val bundle: String = "config"
 
-	@Suppress("UnnecessaryOptInAnnotation")
 	@OptIn(UnsafeAPI::class)
 	override suspend fun setup() {
 		configCommand()

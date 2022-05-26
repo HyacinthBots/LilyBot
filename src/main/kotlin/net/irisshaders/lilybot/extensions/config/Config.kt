@@ -1,9 +1,9 @@
 package net.irisshaders.lilybot.extensions.config
 
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
+import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.TextInputStyle
@@ -16,28 +16,23 @@ import dev.kord.rest.builder.message.modify.embed
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import kotlin.time.Duration.Companion.seconds
 
-class Config : Arguments() {
-	val moduleChoice by stringChoice {
-		name = "module"
-		description = "The module you want to configure"
-		choice("Support", "support")
-		choice("Moderation", "moderation")
-		choice("Logging", "logging")
-		choice("Bot", "bot")
-	}
-}
-
 @OptIn(UnsafeAPI::class)
-suspend fun ConfigExtension.configCommand() = unsafeSlashCommand(::Config) {
+suspend fun ConfigExtension.configCommand() = unsafeSlashCommand {
 	name = "config"
 	description = "Configuring Lily's Modules"
 	guild(TEST_GUILD_ID)
 
-	initialResponse = InitialSlashCommandResponse.None
+	unsafeSubCommand {
+		name = "support"
+		description = "Configure the support module"
 
-	action {
-		val module = this.arguments.moduleChoice
-		if (module == "support") {
+		initialResponse = InitialSlashCommandResponse.None
+		check {
+			anyGuild()
+			// hasPermission(Permission.ManageGuild)
+		}
+
+		action {
 			val response = event.interaction.modal("Support Module", "supportModuleModal") {
 				actionRow {
 					textInput(TextInputStyle.Paragraph, "msgInput", "Support Message") {
@@ -52,11 +47,6 @@ suspend fun ConfigExtension.configCommand() = unsafeSlashCommand(::Config) {
 				actionRow {
 					textInput(TextInputStyle.Short, "supChannel", "Support Channel") {
 						placeholder = "Channel ID"
-					}
-				}
-				actionRow {
-					textInput(TextInputStyle.Short, "supDuration", "Thread Auto-Archive Timer") {
-						placeholder = "Supported formats: 10min, 3h, 1d, 5w"
 					}
 				}
 			}
@@ -76,7 +66,6 @@ suspend fun ConfigExtension.configCommand() = unsafeSlashCommand(::Config) {
 			val supportMsg = interaction.textInputs["msgInput"]!!.value!!
 			val supportTeam = interaction.textInputs["teamInput"]!!.value!!
 			val supportChannel = interaction.textInputs["supChannel"]!!.value!!
-			val supportDuration = interaction.textInputs["supDuration"]!!.value!!
 			val modalResponse = interaction.deferEphemeralResponse()
 
 			modalResponse.respond {
@@ -91,18 +80,26 @@ suspend fun ConfigExtension.configCommand() = unsafeSlashCommand(::Config) {
 						name = "Support Channel"
 						value = supportChannel
 					}
-					field {
-						name = "Support Duration"
-						value = supportDuration
-					}
 					footer {
 						text = "Configured by: ${user.asUser().tag}"
 					}
 				}
 			}
 		}
+	}
 
-		if (module == "moderation") {
+	unsafeSubCommand {
+		name = "moderation"
+		description = "Configure the moderation module"
+
+		initialResponse = InitialSlashCommandResponse.None
+
+		check {
+			anyGuild()
+			// hasPermission(Permission.ManageGuild)
+		}
+
+		action {
 			val response = event.interaction.modal("Moderation Module", "moderationModal") {
 				actionRow {
 					textInput(TextInputStyle.Short, "moderatorRole", "Moderation Role") {
@@ -147,6 +144,36 @@ suspend fun ConfigExtension.configCommand() = unsafeSlashCommand(::Config) {
 					}
 				}
 			}
+		}
+	}
+
+	unsafeSubCommand {
+		name = "logging"
+		description = "Configure Lily's logging modules"
+
+		initialResponse = InitialSlashCommandResponse.None
+
+		check {
+			anyGuild()
+			// hasPermission(Permission.ManageGuild)
+		}
+
+		action {
+		}
+	}
+
+	unsafeSubCommand {
+		name = "bot"
+		description = "Configure general aspects of the bot"
+
+		initialResponse = InitialSlashCommandResponse.None
+
+		check {
+			anyGuild()
+			// hasPermission(Permission.ManageGuild)
+		}
+
+		action {
 		}
 	}
 }
