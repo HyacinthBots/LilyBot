@@ -140,7 +140,6 @@ exceptions:
       - Error
       - Exception
       - IllegalMonitorStateException
-      - IndexOutOfBoundsException
       - RuntimeException
       - Throwable
     allowedExceptionNameRegex: '^(_|(ignore|expected).*)'
