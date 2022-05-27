@@ -384,7 +384,7 @@ class ModUtilities : Extension() {
 		/** The new color for the embed. */
 		val newColor by optionalColour {
 			name = "newColor"
-			description = "The new color of the embed"
+			description = "The new color of the embed. Embeds only"
 		}
 
 		/** The channel the embed was originally sent in. */
@@ -396,7 +396,7 @@ class ModUtilities : Extension() {
 		/** Whether to add the timestamp of when the message was originally sent or not. */
 		val timestamp by defaultingBoolean {
 			name = "timestamp"
-			description = "Whether to add the timestamp of when the embed was originally sent or not"
+			description = "Whether to timestamp the embed or not. Embed only"
 			defaultValue = true
 		}
 	}
