@@ -396,7 +396,7 @@ class ModUtilities : Extension() {
 		/** Whether to add the timestamp of when the message was originally sent or not. */
 		val timestamp by defaultingBoolean {
 			name = "timestamp"
-			description = "Whether to timestamp the embed or not. Embed only"
+			description = "Whether to timestamp the embed or not. Embeds only"
 			defaultValue = true
 		}
 	}
