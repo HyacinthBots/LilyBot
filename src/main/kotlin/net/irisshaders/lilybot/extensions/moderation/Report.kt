@@ -1,5 +1,4 @@
 @file:OptIn(UnsafeAPI::class)
-@file:Suppress("DuplicatedCode")
 
 package net.irisshaders.lilybot.extensions.moderation
 
@@ -48,12 +47,16 @@ import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * The message reporting feature in the bot.
+ *
+ * @since 2.0
+ */
 class Report : Extension() {
 	override val name = "report"
 
@@ -63,10 +66,15 @@ class Report : Extension() {
 	}
 }
 
+/**
+ * The message command for the report functions in the bot.
+ *
+ * @author NoComment1105
+ * @since 3.3.0
+ */
 suspend fun Report.reportMessageCommand() = unsafeMessageCommand {
-	name = "report"
+	name = "Report"
 	locking = true // To prevent the command from being run more than once concurrently
-	guild(TEST_GUILD_ID)
 
 	initialResponse = InitialMessageCommandResponse.None
 
@@ -75,6 +83,7 @@ suspend fun Report.reportMessageCommand() = unsafeMessageCommand {
 		configPresent()
 	}
 
+	@Suppress("DuplicatedCode")
 	action {
 		val config = DatabaseHelper.getConfig(guild!!.id)!!
 		val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
@@ -133,11 +142,17 @@ suspend fun Report.reportMessageCommand() = unsafeMessageCommand {
 	}
 }
 
+/**
+ * The slash command variant of [reportMessageCommand]. This is primarily here for mobile users, since context menu's
+ * don't properly exist in the mobile apps yet. Should be removed when they're introduced.
+ *
+ * @author NoComment1105
+ * @since 3.3.0
+ */
 suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs) {
 	name = "manual-report"
 	description = "Report a message, using a link instead of the message command"
 	locking = true // To prevent the command from being run more than once concurrently
-	guild(TEST_GUILD_ID)
 
 	initialResponse = InitialSlashCommandResponse.None
 
@@ -145,6 +160,8 @@ suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs)
 		anyGuild()
 		configPresent()
 	}
+
+	@Suppress("DuplicatedCode")
 	action {
 		val config = DatabaseHelper.getConfig(guild!!.id)!!
 		val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
@@ -176,20 +193,19 @@ suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs)
 		val reason = interaction.textInputs["reason"]!!.value!!
 		val modalResponse = interaction.deferEphemeralResponse()
 
+		if (arguments.message.contains("/").not()) {
+			modalResponse.respond {
+				content = "The URL provided was malformed and the message could not be found!"
+			}
+		}
+
 		try {
 			// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
-			try {
 				channel = guild?.getChannel(
 					Snowflake(arguments.message.split("/")[5])
 				) as MessageChannel
 				reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
 				messageAuthor = reportedMessage.getAuthorAsMember()
-			} catch (e: IndexOutOfBoundsException) {
-				 modalResponse.respond {
-					content = "The link to the message provided is not correctly formed! Please try again"
-				}
-				return@action
-			}
 		} catch (e: KtorRequestException) { // In the event of a report in a channel the bot can't see
 			modalResponse.respond {
 				content = "Sorry, I can't properly access this message. Please ping the moderators instead."
@@ -215,6 +231,20 @@ suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs)
 	}
 }
 
+/**
+ * Create an embed in the [messageLog] for moderators to respond to with appropriate action.
+ *
+ * @param user The user that reported the message
+ * @param messageLog The channel to send the report embed to
+ * @param messageAuthor The author of the reported message
+ * @param reportedMessage The message being reported
+ * @param moderatorRole The role to ping when a report is submitted
+ * @param modActionLog The channel so send punishment logs too
+ * @param reportReason The reason provided from the modal for the report
+ * @param modalResponse The modal interaction for the message
+ * @author MissCorruption
+ * @since 2.0
+ */
 private suspend fun createReport(
 	user: UserBehavior,
 	messageLog: GuildMessageChannelBehavior,
@@ -246,7 +276,7 @@ private suspend fun createReport(
 
 						reportEmbed = messageLog.createEmbed {
 							color = DISCORD_RED
-							title = "Messge reported"
+							title = "Message reported"
 							description = "A message was reported in ${reportedMessage.getChannel().mention}"
 
 							field {
@@ -277,13 +307,12 @@ private suspend fun createReport(
 									style = ButtonStyle.Danger
 
 									action {
-										// TODO once modals become a thing, avoid just consuming this error
 										try {
 											reportedMessage.delete("Deleted via report.")
 											// Remove components (buttons) to prevent errors if pressed after action was taken
 											reportResponse?.edit { components { removeAll() } }
 										} catch (e: RestRequestException) {
-											messageLog.createMessage {
+											respond {
 												content =
 													"The message you tried to delete may have already been deleted!"
 											}
