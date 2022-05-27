@@ -50,6 +50,9 @@ dependencies {
     implementation(libs.kord.phishing)
     implementation(libs.kord.mappings)
 
+    // UnsafeAPI KordEx
+    implementation(libs.kord.unsafe)
+
     implementation(libs.kotlin.stdlib)
 
     // Logging dependencies

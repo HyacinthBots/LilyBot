@@ -1,5 +1,4 @@
 @file:OptIn(PrivilegedIntent::class)
-@file:Suppress("DEPRECATION")
 
 package net.irisshaders.lilybot
 
