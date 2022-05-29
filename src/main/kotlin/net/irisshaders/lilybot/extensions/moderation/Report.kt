@@ -30,6 +30,7 @@ import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.interaction.ModalParentInteractionBehavior
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.response.DeferredEphemeralMessageInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
@@ -46,6 +47,7 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.userDMEmbed
@@ -83,7 +85,6 @@ suspend fun Report.reportMessageCommand() = unsafeMessageCommand {
 		configPresent()
 	}
 
-	@Suppress("DuplicatedCode")
 	action {
 		val config = DatabaseHelper.getConfig(guild!!.id)!!
 		val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
@@ -105,39 +106,13 @@ suspend fun Report.reportMessageCommand() = unsafeMessageCommand {
 			return@action
 		}
 
-		val response = event.interaction.modal("Report a message", "reportModal") {
-			actionRow {
-				textInput(TextInputStyle.Paragraph, "reason", "Why are you reporting this message?") {
-					placeholder = "It violates rule X!"
-				}
-			}
-		}
-
-		val interaction = response.kord.waitFor<ModalSubmitInteractionCreateEvent>(120.seconds.inWholeMilliseconds) {
-			interaction.modalId == "reportModal"
-		}?.interaction
-
-		if (interaction == null) {
-			response.createEphemeralFollowup {
-				embed {
-					description = "Report timed out"
-				}
-			}
-			return@action
-		}
-
-		val reason = interaction.textInputs["reason"]!!.value!!
-		val modalResponse = interaction.deferEphemeralResponse()
-
-		createReport(
+		createReportModal(
+			event.interaction as ModalParentInteractionBehavior,
 			user,
+			config,
 			messageLog,
-			messageAuthor,
 			reportedMessage,
-			config.moderatorsPing,
-			config.modActionLog,
-			reason,
-			modalResponse
+			messageAuthor
 		)
 	}
 }
@@ -161,7 +136,6 @@ suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs)
 		configPresent()
 	}
 
-	@Suppress("DuplicatedCode")
 	action {
 		val config = DatabaseHelper.getConfig(guild!!.id)!!
 		val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
@@ -169,34 +143,11 @@ suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs)
 		val reportedMessage: Message
 		val messageAuthor: Member?
 
-		val response = event.interaction.modal("Report a message", "reportModal") {
-			actionRow {
-				textInput(TextInputStyle.Paragraph, "reason", "Why are you reporting this message?") {
-					placeholder = "It violates rule X!"
-				}
-			}
-		}
-
-		val interaction = response.kord.waitFor<ModalSubmitInteractionCreateEvent>(120.seconds.inWholeMilliseconds) {
-			interaction.modalId == "reportModal"
-		}?.interaction
-
-		if (interaction == null) {
-			response.createEphemeralFollowup {
-				embed {
-					description = "Report timed out"
-				}
-			}
-			return@action
-		}
-
-		val reason = interaction.textInputs["reason"]!!.value!!
-		val modalResponse = interaction.deferEphemeralResponse()
-
 		if (arguments.message.contains("/").not()) {
-			modalResponse.respond {
+			respondEphemeral {
 				content = "The URL provided was malformed and the message could not be found!"
 			}
+			return@action
 		}
 
 		try {
@@ -207,28 +158,82 @@ suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs)
 				reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
 				messageAuthor = reportedMessage.getAuthorAsMember()
 		} catch (e: KtorRequestException) { // In the event of a report in a channel the bot can't see
-			modalResponse.respond {
+			respondEphemeral {
 				content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 			}
 			return@action
 		} catch (e: EntityNotFoundException) { // In the event of the message already being deleted.
-			modalResponse.respond {
+			respondEphemeral {
 				content = "Sorry, I can't find this message. Please ping the moderators instead."
 			}
 			return@action
 		}
 
-		createReport(
+		createReportModal(
+			event.interaction as ModalParentInteractionBehavior,
 			user,
+			config,
 			messageLog,
-			messageAuthor,
 			reportedMessage,
-			config.moderatorsPing,
-			config.modActionLog,
-			reason,
-			modalResponse
+			messageAuthor
 		)
 	}
+}
+
+/**
+ * A function to contain common code between [reportMessageCommand] and [reportSlashCommand].
+ *
+ * @param inputInteraction The interaction to create a modal in response to
+ * @param user The user who created the [inputInteraction]
+ * @param config The configuration from the database for the guild
+ * @param messageLog The channel for the guild that deleted messages are logged to
+ * @param reportedMessage The message that was reported
+ * @param messageAuthor The author of the reported message
+ * @author tempest15
+ * @since 3.3.0
+ */
+suspend fun createReportModal(
+	inputInteraction: ModalParentInteractionBehavior,
+	user: UserBehavior,
+	config: ConfigData,
+	messageLog: GuildMessageChannelBehavior,
+	reportedMessage: Message,
+	messageAuthor: Member?,
+) {
+	val response = inputInteraction.modal("Report a message", "reportModal") {
+		actionRow {
+			textInput(TextInputStyle.Paragraph, "reason", "Why are you reporting this message?") {
+				placeholder = "It violates rule X!"
+			}
+		}
+	}
+
+	val interaction = response.kord.waitFor<ModalSubmitInteractionCreateEvent>(120.seconds.inWholeMilliseconds) {
+		interaction.modalId == "reportModal"
+	}?.interaction
+
+	if (interaction == null) {
+		response.createEphemeralFollowup {
+			embed {
+				description = "Report timed out"
+			}
+		}
+		return
+	}
+
+	val reason = interaction.textInputs["reason"]!!.value!!
+	val modalResponse = interaction.deferEphemeralResponse()
+
+	createReport(
+		user,
+		messageLog,
+		messageAuthor,
+		reportedMessage,
+		config.moderatorsPing,
+		config.modActionLog,
+		reason,
+		modalResponse
+	)
 }
 
 /**
@@ -260,7 +265,7 @@ private suspend fun createReport(
 
 	reportResponse = modalResponse.respond {
 		content = "Would you like to report this message? This will ping moderators, and false reporting will be " +
-				" treated as spam and punished accordingly"
+				"treated as spam and punished accordingly"
 	}.edit {
 		components {
 			ephemeralButton(0) {
