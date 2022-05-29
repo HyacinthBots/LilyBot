@@ -364,6 +364,21 @@ object DatabaseHelper {
 
 		databaseLogger.info("Deleted old data for $deletedGuildData guilds from the database")
 	}
+
+	suspend fun setImageChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+		val collection = database.getCollection<ImageChannelData>()
+		collection.insertOne(ImageChannelData(inputGuildId, inputChannelId))
+	}
+
+	suspend fun deleteImageChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+		val collection = database.getCollection<ImageChannelData>()
+		collection.deleteOne(ImageChannelData::channelId eq inputChannelId, ImageChannelData::guildId eq inputGuildId)
+	}
+
+	suspend fun getImageChannels(inputGuildId: Snowflake): List<ImageChannelData> {
+		val collection = database.getCollection<ImageChannelData>()
+		return collection.find(ImageChannelData::guildId eq inputGuildId).toList()
+	}
 }
 
 /**
@@ -473,4 +488,10 @@ data class ThreadData(
 data class GuildLeaveTimeData(
 	val guildId: Snowflake,
 	val guildLeaveTime: Instant
+)
+
+@Serializable
+data class ImageChannelData(
+	val guildId: Snowflake,
+	val channelId: Snowflake
 )

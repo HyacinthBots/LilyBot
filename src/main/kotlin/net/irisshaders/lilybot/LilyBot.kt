@@ -22,6 +22,7 @@ import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
 import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
 import net.irisshaders.lilybot.extensions.util.Github
+import net.irisshaders.lilybot.extensions.util.ImageChannel
 import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.util.PublicUtilities
 import net.irisshaders.lilybot.extensions.util.RoleMenu
@@ -68,6 +69,7 @@ suspend fun main() {
 		extensions {
 			add(::Config)
 			add(::Github)
+			add(::ImageChannel)
 			add(::JoinLeaveDetection)
 			add(::LogUploading)
 			add(::MemberJoinLeave)
