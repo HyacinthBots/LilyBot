@@ -365,16 +365,41 @@ object DatabaseHelper {
 		databaseLogger.info("Deleted old data for $deletedGuildData guilds from the database")
 	}
 
+	/**
+	 * Stores a channel ID as input by the user, in the database, with it's corresponding guild, allowing us to find
+	 * the channel later.
+	 *
+	 * @param inputGuildId The guild the channel is in
+	 * @param inputChannelId The channel that is being set as image only
+	 * @author NoComment1105
+	 * @since 3.3.0
+	 */
 	suspend fun setImageChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
 		val collection = database.getCollection<ImageChannelData>()
 		collection.insertOne(ImageChannelData(inputGuildId, inputChannelId))
 	}
 
+	/**
+	 * Removes a channel ID from the image channel database.
+	 *
+	 * @param inputGuildId The guild the channel is in
+	 * @param inputChannelId The channel being removed
+	 * @author NoComment1105
+	 * @since 3.3.0
+	 */
 	suspend fun deleteImageChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
 		val collection = database.getCollection<ImageChannelData>()
 		collection.deleteOne(ImageChannelData::channelId eq inputChannelId, ImageChannelData::guildId eq inputGuildId)
 	}
 
+	/**
+	 * Collects every image channel for the [inputGuildId] into a [List].
+	 *
+	 * @param inputGuildId The guild that image channels are being gotten for
+	 * @return A [List] of all the image channels in the guild
+	 * @author NoComment1105
+	 * @since 3.3.0
+	 */
 	suspend fun getImageChannels(inputGuildId: Snowflake): List<ImageChannelData> {
 		val collection = database.getCollection<ImageChannelData>()
 		return collection.find(ImageChannelData::guildId eq inputGuildId).toList()
@@ -490,6 +515,13 @@ data class GuildLeaveTimeData(
 	val guildLeaveTime: Instant
 )
 
+/**
+ * The data for image channels in a guild.
+ *
+ * @param guildId The ID of the guild the image channel is for
+ * @param channelId The ID of the image channel being set
+ * @since 3.3.0
+ */
 @Serializable
 data class ImageChannelData(
 	val guildId: Snowflake,
