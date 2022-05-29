@@ -16,6 +16,7 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeMessage
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialMessageCommandResponse
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
@@ -95,11 +96,13 @@ suspend fun Report.reportMessageCommand() = unsafeMessageCommand {
 			reportedMessage = event.interaction.getTarget()
 			messageAuthor = reportedMessage.getAuthorAsMember()
 		} catch (e: KtorRequestException) {
+			ackEphemeral()
 			respondEphemeral {
 				content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 			}
 			return@action
 		} catch (e: EntityNotFoundException) {
+			ackEphemeral()
 			respondEphemeral {
 				content = "Sorry, I can't find this message. Please ping the moderators instead."
 			}
@@ -144,6 +147,7 @@ suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs)
 		val messageAuthor: Member?
 
 		if (arguments.message.contains("/").not()) {
+			ackEphemeral()
 			respondEphemeral {
 				content = "The URL provided was malformed and the message could not be found!"
 			}
@@ -158,11 +162,13 @@ suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs)
 				reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
 				messageAuthor = reportedMessage.getAuthorAsMember()
 		} catch (e: KtorRequestException) { // In the event of a report in a channel the bot can't see
+			ackEphemeral()
 			respondEphemeral {
 				content = "Sorry, I can't properly access this message. Please ping the moderators instead."
 			}
 			return@action
 		} catch (e: EntityNotFoundException) { // In the event of the message already being deleted.
+			ackEphemeral()
 			respondEphemeral {
 				content = "Sorry, I can't find this message. Please ping the moderators instead."
 			}
