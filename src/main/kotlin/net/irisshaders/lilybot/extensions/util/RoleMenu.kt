@@ -45,7 +45,7 @@ class RoleMenu : Extension() {
 	override suspend fun setup() {
 		ephemeralSlashCommand(::RoleMenuArgs) {
 			name = "role-menu"
-			description = "The parent command for role-menu commands"
+			description = "Creates a menu that allows users to select a role."
 
 			check {
 				anyGuild()
