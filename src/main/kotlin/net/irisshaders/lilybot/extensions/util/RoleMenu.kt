@@ -7,13 +7,18 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalEmoji
 import com.kotlindiscord.kord.extensions.commands.converters.impl.role
+import com.kotlindiscord.kord.extensions.commands.converters.impl.string
+import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.rest.builder.message.create.embed
 import net.irisshaders.lilybot.utils.configPresent
 
 class RoleMenu : Extension() {
@@ -26,7 +31,7 @@ class RoleMenu : Extension() {
 
 			ephemeralSubCommand(::RoleMenuCreateArgs) {
 				name = "create"
-				description = "Create a new role menu in this channel. To edit roles, use the edit sub command."
+				description = "Create a new role menu in this channel."
 
 				check {
 					anyGuild()
@@ -35,16 +40,42 @@ class RoleMenu : Extension() {
 				}
 
 				action {
+					// todo check if there's already a role menu in this channel
+
+					channel.createMessage {
+						if (arguments.embed) {
+							embed {
+								description = arguments.content
+								color = arguments.color
+							}
+						} else {
+							content = arguments.content
+						}
+
+						components {
+							ephemeralButton {
+								label = "Select roles"
+								style = ButtonStyle.Primary
+
+								action {
+									respond {
+										// check if there are actually roles associated
+										content = "There wil be a menu here."
+									}
+								}
+							}
+						}
+					}
+
 					respond {
-						content = "Create role menu"
+						content = "Role menu created. Be sure to add roles to it using the `/role-menu add` command."
 					}
 				}
 			}
 
-			ephemeralSubCommand(::RoleMenuEditArgs) {
-				name = "edit"
-				description = "Edit the existing role menu in this channel. " +
-						"To create a new role menu, use the create sub command."
+			ephemeralSubCommand(::RoleMenuAddArgs) {
+				name = "add"
+				description = "Add a role to the existing role menu in this channel."
 
 				check {
 					anyGuild()
@@ -54,7 +85,24 @@ class RoleMenu : Extension() {
 
 				action {
 					respond {
-						content = "Edit role menu"
+						content = "Edited role menu."
+					}
+				}
+			}
+
+			ephemeralSubCommand(::RoleMenuRemoveArgs) {
+				name = "remove"
+				description = "Remove a role from the existing role menu in this channel."
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageMessages)
+					configPresent()
+				}
+
+				action {
+					respond {
+						content = "Edited role menu."
 					}
 				}
 			}
@@ -62,12 +110,11 @@ class RoleMenu : Extension() {
 	}
 
 	inner class RoleMenuCreateArgs : Arguments() {
-		val content by defaultingString {
+		val content by string {
 			name = "content"
 			description = "The content of the embed or message."
-			defaultValue = " " // todo check that this doesn't error
 		}
-		val embed by optionalBoolean {
+		val embed by boolean {
 			name = "embed"
 			description = "If the message containing the role menu should be sent as an embed."
 		}
@@ -78,14 +125,21 @@ class RoleMenu : Extension() {
 		}
 	}
 
-	inner class RoleMenuEditArgs : Arguments() {
+	inner class RoleMenuAddArgs : Arguments() {
 		val role by role {
 			name = "role"
 			description = "The role you'd like to add or remove from this channel's role menu."
 		}
-		val addOrRemove by boolean {
-			name = "addOrRemove"
-			description = "If the selected role should be added or removed from this channel's role menu."
+		val emoji by optionalEmoji {
+			name = "emoji"
+			description = "The emoji, if any, that should be associated with the selected role."
+		}
+	}
+
+	inner class RoleMenuRemoveArgs : Arguments() {
+		val role by role {
+			name = "role"
+			description = "The role you'd like to add or remove from this channel's role menu."
 		}
 	}
 }
