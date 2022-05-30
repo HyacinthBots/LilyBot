@@ -17,35 +17,35 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
-import net.irisshaders.lilybot.utils.DatabaseHelper.deleteImageChannel
-import net.irisshaders.lilybot.utils.DatabaseHelper.getImageChannels
-import net.irisshaders.lilybot.utils.DatabaseHelper.setImageChannel
+import net.irisshaders.lilybot.utils.DatabaseHelper.deleteGalleryChannel
+import net.irisshaders.lilybot.utils.DatabaseHelper.getGalleryChannels
+import net.irisshaders.lilybot.utils.DatabaseHelper.setGalleryChannel
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
- * The class the holds the systems that allow a guild to set a channel as image only.
+ * The class the holds the systems that allow a guild to set a channel as a gallery channel.
  *
  * @since 3.3.0
  */
-class ImageChannel : Extension() {
-	override val name = "imagechannel"
+class GalleryChannel : Extension() {
+	override val name = "gallery-channel"
 
 	override suspend fun setup() {
 		/**
-		 * Image channel commands.
+		 * gallery channel commands.
 		 * @author NoComment1105
 		 * @since 3.3.0
 		 */
 		ephemeralSlashCommand {
-			name = "image-channel"
+			name = "gallery-channel"
 			description = "The parent command for image channel setting"
 
 			/**
-			 * The command that sets the image channel.
+			 * The command that sets the gallery channel.
 			 */
 			ephemeralSubCommand {
 				name = "set"
-				description = "Set a channel as an image channel"
+				description = "Set a channel as a gallery channel"
 
 				check {
 					anyGuild()
@@ -54,20 +54,20 @@ class ImageChannel : Extension() {
 				}
 
 				action {
-					setImageChannel(guild!!.id, channel.asChannel().id)
+					setGalleryChannel(guild!!.id, channel.asChannel().id)
 
 					respond {
-						content = "Set channel as image only"
+						content = "Set channel as gallery channel"
 					}
 				}
 			}
 
 			/**
-			 * The command that unsets the image channel.
+			 * The command that unsets the gallery channel.
 			 */
 			ephemeralSubCommand {
 				name = "unset"
-				description = "Unset a channel as an image channel"
+				description = "Unset a channel as a gallery channel"
 
 				check {
 					anyGuild()
@@ -76,10 +76,10 @@ class ImageChannel : Extension() {
 				}
 
 				action {
-					deleteImageChannel(guild!!.id, channel.asChannel().id)
+					deleteGalleryChannel(guild!!.id, channel.asChannel().id)
 
 					respond {
-						content = "Unset channel as image only"
+						content = "Unset channel as gallery channel"
 					}
 				}
 			}
@@ -89,14 +89,14 @@ class ImageChannel : Extension() {
 			 */
 			ephemeralSubCommand {
 				name = "list"
-				description = "List all image channels in the guild"
+				description = "List all gallery channels in the guild"
 
 				check {
 					anyGuild()
 				}
 
 				action {
-					val imageChannels = getImageChannels(guild!!.id)
+					val imageChannels = getGalleryChannels(guild!!.id)
 					var channels = ""
 
 					imageChannels.forEach {
@@ -105,8 +105,8 @@ class ImageChannel : Extension() {
 
 					respond {
 						embed {
-							title = "Image channels"
-							description = "Here are the image only channels in this guild."
+							title = "Gallery channels"
+							description = "Here are the gallery channels in this guild."
 							field {
 								name = "Channels:"
 								value = if (channels != "") channels.replace(" ", "\n") else "No channels found!"
@@ -128,7 +128,7 @@ class ImageChannel : Extension() {
 			}
 
 			action {
-				val imageChannels = getImageChannels(guildFor(event)!!.id)
+				val imageChannels = getGalleryChannels(guildFor(event)!!.id)
 
 				for (i in imageChannels) {
 					// If there are no attachments to the message and the channel we're in is an image channel

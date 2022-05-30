@@ -370,39 +370,39 @@ object DatabaseHelper {
 	 * the channel later.
 	 *
 	 * @param inputGuildId The guild the channel is in
-	 * @param inputChannelId The channel that is being set as image only
+	 * @param inputChannelId The channel that is being set as a gallery channel
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend fun setImageChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
-		val collection = database.getCollection<ImageChannelData>()
-		collection.insertOne(ImageChannelData(inputGuildId, inputChannelId))
+	suspend fun setGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+		val collection = database.getCollection<GalleryChannelData>()
+		collection.insertOne(GalleryChannelData(inputGuildId, inputChannelId))
 	}
 
 	/**
-	 * Removes a channel ID from the image channel database.
+	 * Removes a channel ID from the gallery channel database.
 	 *
 	 * @param inputGuildId The guild the channel is in
 	 * @param inputChannelId The channel being removed
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend fun deleteImageChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
-		val collection = database.getCollection<ImageChannelData>()
-		collection.deleteOne(ImageChannelData::channelId eq inputChannelId, ImageChannelData::guildId eq inputGuildId)
+	suspend fun deleteGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+		val collection = database.getCollection<GalleryChannelData>()
+		collection.deleteOne(GalleryChannelData::channelId eq inputChannelId, GalleryChannelData::guildId eq inputGuildId)
 	}
 
 	/**
-	 * Collects every image channel for the [inputGuildId] into a [List].
+	 * Collects every gallery channel for the [inputGuildId] into a [List].
 	 *
 	 * @param inputGuildId The guild that image channels are being gotten for
-	 * @return A [List] of all the image channels in the guild
+	 * @return A [List] of all the gallery channels in the guild
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend fun getImageChannels(inputGuildId: Snowflake): List<ImageChannelData> {
-		val collection = database.getCollection<ImageChannelData>()
-		return collection.find(ImageChannelData::guildId eq inputGuildId).toList()
+	suspend fun getGalleryChannels(inputGuildId: Snowflake): List<GalleryChannelData> {
+		val collection = database.getCollection<GalleryChannelData>()
+		return collection.find(GalleryChannelData::guildId eq inputGuildId).toList()
 	}
 }
 
@@ -523,7 +523,7 @@ data class GuildLeaveTimeData(
  * @since 3.3.0
  */
 @Serializable
-data class ImageChannelData(
+data class GalleryChannelData(
 	val guildId: Snowflake,
 	val channelId: Snowflake
 )
