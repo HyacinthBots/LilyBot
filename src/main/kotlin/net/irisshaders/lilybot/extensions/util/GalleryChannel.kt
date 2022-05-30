@@ -18,7 +18,9 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.GalleryChannelData
 import net.irisshaders.lilybot.utils.configPresent
+import org.litote.kmongo.eq
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -29,6 +31,12 @@ class GalleryChannel : Extension() {
 	override val name = "gallery-channel"
 
 	override suspend fun setup() {
+		/**
+		 * This variable is a cached variable for gallery channels, present to avoid polling the database every message
+		 * sent.
+		 */
+		var galleryChannels = DatabaseHelper.getGalleryChannels()
+
 		/**
 		 * gallery channel commands.
 		 * @author NoComment1105
@@ -52,7 +60,11 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					DatabaseHelper.getGalleryChannels(guild!!.id).forEach {
+					// Using the global var, find guild channels for the given guildId and iterate through them to
+					// check for the presence of the channel and return if it is present
+					val guildGalleryChannels =
+						galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
+					guildGalleryChannels.forEach {
 						if (channel.asChannel().id == it.channelId) {
 							respond {
 								content = "This channel is already a gallery channel!"
@@ -63,8 +75,11 @@ class GalleryChannel : Extension() {
 
 					DatabaseHelper.setGalleryChannel(guild!!.id, channel.asChannel().id)
 
+					// Update the global var
+					galleryChannels = DatabaseHelper.getGalleryChannels()
+
 					respond {
-						content = "Set channel as gallery channel"
+						content = "Set channel as gallery channel."
 					}
 				}
 			}
@@ -74,7 +89,7 @@ class GalleryChannel : Extension() {
 			 */
 			ephemeralSubCommand {
 				name = "unset"
-				description = "Unset a channel as a gallery channel"
+				description = "Unset a channel as a gallery channel."
 
 				check {
 					anyGuild()
@@ -83,10 +98,27 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					DatabaseHelper.deleteGalleryChannel(guild!!.id, channel.asChannel().id)
+					var channelFound = false
 
-					respond {
-						content = "Unset channel as gallery channel"
+					val guildGalleryChannels =
+						galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
+					guildGalleryChannels.forEach {
+						if (channel.asChannel().id == it.channelId) {
+							DatabaseHelper.deleteGalleryChannel(guild!!.id, channel.asChannel().id)
+							// Update the global var
+							galleryChannels = DatabaseHelper.getGalleryChannels()
+							channelFound = true
+						}
+					}
+
+					if (channelFound) {
+						respond {
+							content = "Unset channel as gallery channel."
+						}
+					} else {
+						respond {
+							content = "This channel is not a gallery channel!"
+						}
 					}
 				}
 			}
@@ -103,10 +135,11 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val imageChannels = DatabaseHelper.getGalleryChannels(guild!!.id)
 					var channels = ""
 
-					imageChannels.forEach {
+					val guildGalleryChannels =
+						galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
+					guildGalleryChannels.forEach {
 						channels += "<#${it.channelId}> "
 					}
 
@@ -135,9 +168,10 @@ class GalleryChannel : Extension() {
 			}
 
 			action {
-				val imageChannels = DatabaseHelper.getGalleryChannels(guildFor(event)!!.id)
+				val guildGalleryChannels =
+					galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
 
-				for (i in imageChannels) {
+				for (i in guildGalleryChannels) {
 					// If there are no attachments to the message and the channel we're in is an image channel
 					if (event.message.channelId == i.channelId && event.message.attachments.isEmpty()) {
 						// We delay to give the message a chance to populate with an embed, if it is a link to imgur etc.
