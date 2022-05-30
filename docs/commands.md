@@ -287,3 +287,21 @@ nickname change permissions on users
 Name: `nickname clear`
 
 Result: Clears the nickname of the user that ran the command
+
+## Gallery Channels
+Gallery channel commands are for setting a channel to be image/attachment/embed only.
+
+### Set
+Name: `gallery-channel set`
+
+Result: Sets the channel you are in as a Gallery channel
+
+### Unset
+Name: `gallery-channel unset`
+
+Result: Unsets the gallery channel you are in
+
+### List
+Name: `gallery-channel list`
+
+Result: Displays an embed of the image channels for the current guild
