@@ -17,9 +17,7 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
-import net.irisshaders.lilybot.utils.DatabaseHelper.deleteGalleryChannel
-import net.irisshaders.lilybot.utils.DatabaseHelper.getGalleryChannels
-import net.irisshaders.lilybot.utils.DatabaseHelper.setGalleryChannel
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -54,7 +52,16 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					setGalleryChannel(guild!!.id, channel.asChannel().id)
+					DatabaseHelper.getGalleryChannels(guild!!.id).forEach {
+						if (channel.asChannel().id == it.channelId) {
+							respond {
+								content = "This channel is already a gallery channel!"
+							}
+							return@action
+						}
+					}
+
+					DatabaseHelper.setGalleryChannel(guild!!.id, channel.asChannel().id)
 
 					respond {
 						content = "Set channel as gallery channel"
@@ -76,7 +83,7 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					deleteGalleryChannel(guild!!.id, channel.asChannel().id)
+					DatabaseHelper.deleteGalleryChannel(guild!!.id, channel.asChannel().id)
 
 					respond {
 						content = "Unset channel as gallery channel"
@@ -96,7 +103,7 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val imageChannels = getGalleryChannels(guild!!.id)
+					val imageChannels = DatabaseHelper.getGalleryChannels(guild!!.id)
 					var channels = ""
 
 					imageChannels.forEach {
@@ -128,13 +135,13 @@ class GalleryChannel : Extension() {
 			}
 
 			action {
-				val imageChannels = getGalleryChannels(guildFor(event)!!.id)
+				val imageChannels = DatabaseHelper.getGalleryChannels(guildFor(event)!!.id)
 
 				for (i in imageChannels) {
 					// If there are no attachments to the message and the channel we're in is an image channel
 					if (event.message.channelId == i.channelId && event.message.attachments.isEmpty()) {
 						// We delay to give the message a chance to populate with an embed, if it is a link to imgur etc.
-						delay(0.1.seconds.millisecondsLong)
+						delay(0.25.seconds.millisecondsLong)
 						if (event.message.embeds.isEmpty()) { // If there is still no embed, we delete the message
 							// and explain why
 							val response = event.message.respond {
