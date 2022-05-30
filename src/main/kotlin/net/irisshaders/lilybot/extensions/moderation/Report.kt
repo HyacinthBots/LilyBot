@@ -206,7 +206,7 @@ suspend fun createReportModal(
 	reportedMessage: Message,
 	messageAuthor: Member?,
 ) {
-	val response = inputInteraction.modal("Report a message", "reportModal") {
+	val modal = inputInteraction.modal("Report a message", "reportModal") {
 		actionRow {
 			textInput(TextInputStyle.Paragraph, "reason", "Why are you reporting this message?") {
 				placeholder = "It violates rule X!"
@@ -214,12 +214,12 @@ suspend fun createReportModal(
 		}
 	}
 
-	val interaction = response.kord.waitFor<ModalSubmitInteractionCreateEvent>(120.seconds.inWholeMilliseconds) {
+	val interaction = modal.kord.waitFor<ModalSubmitInteractionCreateEvent>(120.seconds.inWholeMilliseconds) {
 		interaction.modalId == "reportModal"
 	}?.interaction
 
 	if (interaction == null) {
-		response.createEphemeralFollowup {
+		modal.createEphemeralFollowup {
 			embed {
 				description = "Report timed out"
 			}
