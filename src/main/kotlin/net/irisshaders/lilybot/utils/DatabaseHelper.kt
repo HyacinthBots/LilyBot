@@ -109,14 +109,18 @@ object DatabaseHelper {
 	/**
 	 * Using the provided [inputComponentId] the [ComponentData] will be returned from the database.
 	 *
+	 * @param inputGuildId The ID of the guild the component event was triggered in
 	 * @param inputComponentId The ID of the component the event was triggered with
 	 * @return The component from the database
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun getComponent(inputComponentId: String): ComponentData? {
+	suspend fun getComponent(inputGuildId: Snowflake, inputComponentId: String): ComponentData? {
 		val collection = database.getCollection<ComponentData>()
-		return collection.findOne(ComponentData::componentId eq inputComponentId)
+		return collection.findOne(
+			ComponentData::guildId eq inputGuildId,
+			ComponentData::componentId eq inputComponentId
+		)
 	}
 
 	/**
@@ -128,7 +132,10 @@ object DatabaseHelper {
 	 */
 	suspend fun setComponent(newComponent: ComponentData) {
 		val collection = database.getCollection<ComponentData>()
-		collection.deleteOne(ComponentData::componentId eq newComponent.componentId)
+		collection.deleteOne(
+			ComponentData::guildId eq newComponent.guildId,
+			ComponentData::componentId eq newComponent.componentId
+		)
 		collection.insertOne(newComponent)
 	}
 
@@ -303,7 +310,7 @@ object DatabaseHelper {
 			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 			if (timeSinceLatestMessage.inWholeDays > 7) {
 				collection.deleteOne(ThreadData::threadId eq thread.id)
-				deletedThreads = + 1
+				deletedThreads = +1
 			}
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
@@ -407,6 +414,7 @@ data class WarnData(
 /**
  * The data for role menu components.
  *
+ * @param guildId The ID of the guild tied to the component
  * @param componentId The ID of the components
  * @param roleId The ID of the role the component will add
  * @param addOrRemove Whether to add or remove the role from the user, when the component is clicked
@@ -414,6 +422,7 @@ data class WarnData(
  */
 @Serializable
 data class ComponentData(
+	val guildId: Snowflake,
 	val componentId: String,
 	val roleId: Snowflake,
 	val addOrRemove: String

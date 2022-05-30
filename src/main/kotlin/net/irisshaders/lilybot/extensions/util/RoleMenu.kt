@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
@@ -14,6 +15,7 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.ackEphemeral
 import com.kotlindiscord.kord.extensions.utils.hasRole
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
@@ -21,23 +23,29 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
+import dev.kord.core.behavior.interaction.response.createPublicFollowup
+import dev.kord.core.entity.Role
 import dev.kord.core.entity.interaction.ButtonInteraction
 import dev.kord.core.event.interaction.InteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ComponentData
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
-// todo This really just needs a full rework. I'm about 90% sure it's not properly adapted for cross guild work.
 class RoleMenu : Extension() {
 	override val name = "role-menu"
+
+	private fun descriptionAppendix(role: Role) =
+		"\n\nUse the button below to add/remove the ${role.mention} role."
 
 	override suspend fun setup() {
 		ephemeralSlashCommand(::RoleMenuArgs) {
 			name = "role-menu"
-			description = "Creates a menu that allows users to select a role."
+			description = "The parent command for role-menu commands"
 
 			check {
 				anyGuild()
@@ -46,135 +54,142 @@ class RoleMenu : Extension() {
 			}
 
 			action {
-				val descriptionAppendix = "\n\nUse the button below to add/remove the ${arguments.role.mention} role."
-
-				val targetChannel: GuildMessageChannelBehavior =
+				val targetChannel =
 					if (arguments.channel != null) {
-						val targetChannelId = arguments.channel!!.id
-						guild?.getChannel(targetChannelId) as GuildMessageChannelBehavior
+						guild!!.getChannelOf(arguments.channel!!.id)
 					} else {
-						this.channel as GuildMessageChannelBehavior
+						this.channel
 					}
 
 				targetChannel.createMessage {
 					embed {
 						title = arguments.title
-						description = arguments.description + descriptionAppendix
+						description = arguments.description + descriptionAppendix(arguments.role)
 						color = arguments.color
 					}
 
 					val components = components {
-						ephemeralButton(row = 0) {
+						ephemeralButton(0) {
 							label = "Add role"
 							style = ButtonStyle.Success
 							id = arguments.role.name + "add"
-
-							val newComponent = ComponentData(
-								arguments.role.name + "add",
-								arguments.role.id,
-								"add"
-							)
-							DatabaseHelper.setComponent(newComponent)
+							DatabaseHelper.setComponent(ComponentData(guild!!.id, id, arguments.role.id, "add"))
 
 							action { }
 						}
 
-						ephemeralButton(row = 0) {
+						ephemeralButton(0) {
 							label = "Remove role"
 							style = ButtonStyle.Danger
 							id = arguments.role.name + "remove"
-
-							val newComponent = ComponentData(
-								arguments.role.name + "remove",
-								arguments.role.id,
-								"remove"
-							)
-							DatabaseHelper.setComponent(newComponent)
+							DatabaseHelper.setComponent(ComponentData(guild!!.id, id, arguments.role.id, "remove"))
 
 							action { }
 						}
 					}
 
+					// Unregister the built-in listener for the unused action callback
 					components.removeAll()
 
 					respond { content = "Role menu created." }
+				}
 
-					// Try to get the action log from the config.
-					// If a config is not set, inform the user and return@action
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
-					actionLog.createEmbed {
-						color = DISCORD_BLACK
-						title = "Role menu created."
-						description = "A role menu for the ${arguments.role.mention} role was " +
-								"created in ${targetChannel.mention}"
+				actionLog.createEmbed {
+					color = DISCORD_BLACK
+					title = "Role menu created."
+					description =
+						"A role menu for the ${arguments.role.mention} role was created in ${targetChannel.mention}"
 
-						field {
-							name = "Embed title:"
-							value = arguments.title
-							inline = false
-						}
-						field {
-							name = "Embed description:"
-							value = arguments.description + descriptionAppendix
-							inline = false
-						}
-						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-						timestamp = Clock.System.now()
+					field {
+						name = "Embed title"
+						value = arguments.title
+						inline = false
 					}
+					field {
+						name = "Embed description:"
+						value = arguments.description + descriptionAppendix(arguments.role)
+						inline = false
+					}
+					footer {
+						text = "Requested by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
+					}
+					timestamp = Clock.System.now()
 				}
 			}
 		}
 
 		event<InteractionCreateEvent> {
-			check { failIfNot(event.interaction is ButtonInteraction) }
+			check {
+				anyGuild()
+				failIfNot {
+					event.interaction is ButtonInteraction
+				}
+			}
 
 			action {
 				val interaction = event.interaction as ButtonInteraction
 				val guild = kord.getGuild(interaction.data.guildId.value!!)!!
-				val member = guild.getMember(interaction.user.id)
+				val member = guild.getMember(event.interaction.user.id)
 
 				// this is  a very dirty fix, so it doesn't conflict with log uploading
 				val roleId: Snowflake? = try {
-					DatabaseHelper.getComponent(interaction.componentId)?.roleId
+					DatabaseHelper.getComponent(guildFor(event)!!.id, interaction.componentId)?.roleId
 				} catch (e: NullPointerException) {
 					return@action
 				}
 				val addOrRemove: String? = try {
-					DatabaseHelper.getComponent(interaction.componentId)?.addOrRemove
+					DatabaseHelper.getComponent(guildFor(event)!!.id, interaction.componentId)?.addOrRemove
 				} catch (e: NullPointerException) {
 					return@action
 				}
 
-				if (roleId == null || addOrRemove == null) return@action
+				roleId ?: return@action
+				addOrRemove ?: return@action
 
 				val role = guild.getRole(roleId)
+				val response = interaction.ackEphemeral()
 
 				if (addOrRemove == "add") {
-					if (!member.hasRole(role)) {
-						member.addRole(role.id)
-						interaction.respondEphemeral { content = "Added the ${role.mention} role." }
-					} else if (member.hasRole(role)) {
-						interaction.respondEphemeral {
-							content =
-								"You already have the ${role.mention} role so it can't be added. " +
-										"If you don't, please contact a staff member."
+					if (member.hasRole(role)) {
+						response.createPublicFollowup {
+							content = "You already have the ${role.mention} role, so it cannot be added. " +
+									"If you **do not** have the role, please contact a staff member."
 						}
+					} else if (!member.hasRole(role)) {
+						try {
+							member.addRole(role.id)
+						} catch (e: KtorRequestException) {
+							response.createEphemeralFollowup {
+								content = "I was unable to add the ${role.mention} role to you, due to a permissions " +
+										"error. Please contact a staff member."
+							}
+							return@action
+						}
+
+						response.createEphemeralFollowup { content = "Added the ${role.mention} role." }
 					}
 				} else if (addOrRemove == "remove") {
-					if (!member.hasRole(role)) {
-						interaction.respondEphemeral {
-							content =
-								"You don't have the ${role.mention} role so it can't be removed. " +
-										"If you do, please contact a staff member."
+					if (member.hasRole(role)) {
+						try {
+							member.removeRole(role.id)
+						} catch (e: KtorRequestException) {
+							response.createEphemeralFollowup {
+								content = "I was unable to remove the ${role.mention} role from you, due to a " +
+										"permissions error. Please contact a staff member."
+							}
+							return@action
 						}
-					} else if (member.hasRole(role)) {
-						member.removeRole(role.id)
-						interaction.respondEphemeral { content = "Removed the ${role.mention} role." }
+
+						response.createEphemeralFollowup { content = "Remove the ${role.mention} role." }
+					} else if (!member.hasRole(role)) {
+						response.createEphemeralFollowup {
+							content = "You do not have the ${role.mention} role, so it cannot be removed. " +
+									"If you **do** have the role, please contact a staff member."
+						}
 					}
 				}
 			}
@@ -195,6 +210,11 @@ class RoleMenu : Extension() {
 			name = "description"
 			description = "Text for the embed. Will be appended with a description of how to use the buttons."
 			defaultValue = " "
+
+			mutate {
+				it.replace("\\n", "\n")
+					.replace("\n", "\n")
+			}
 		}
 		val channel by optionalChannel {
 			name = "channel"
