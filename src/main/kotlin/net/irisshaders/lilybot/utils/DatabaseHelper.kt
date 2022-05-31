@@ -303,7 +303,7 @@ object DatabaseHelper {
 			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 			if (timeSinceLatestMessage.inWholeDays > 7) {
 				collection.deleteOne(ThreadData::threadId eq thread.id)
-				deletedThreads = + 1
+				deletedThreads = +1
 			}
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
@@ -363,6 +363,41 @@ object DatabaseHelper {
 		}
 
 		databaseLogger.info("Deleted old data for $deletedGuildData guilds from the database")
+	}
+
+	suspend fun setReminder(
+		initialSetTime: Instant,
+		inputGuildId: Snowflake,
+		inputChannelId: Snowflake,
+		inputUserId: Snowflake,
+		remindTime: Instant,
+		customMessage: String? = null
+	) {
+		val collection = database.getCollection<RemindMeData>()
+		collection.insertOne(
+			RemindMeData(
+				initialSetTime,
+				inputGuildId,
+				inputChannelId,
+				inputUserId,
+				remindTime,
+				customMessage
+			)
+		)
+	}
+
+	suspend fun getReminderForUser(inputGuildId: Snowflake, inputUserId: Snowflake): List<RemindMeData> {
+		val collection = database.getCollection<RemindMeData>()
+		return collection.find(RemindMeData::guildId eq inputGuildId, RemindMeData::userId eq inputUserId).toList()
+	}
+
+	suspend fun removeReminder(initialSetTime: Instant, inputGuildId: Snowflake, inputUserId: Snowflake) {
+		val collection = database.getCollection<RemindMeData>()
+		collection.deleteOne(
+			RemindMeData::initialSetTime eq initialSetTime,
+			RemindMeData::guildId eq inputGuildId,
+			RemindMeData::userId eq inputUserId
+		)
 	}
 }
 
@@ -473,4 +508,14 @@ data class ThreadData(
 data class GuildLeaveTimeData(
 	val guildId: Snowflake,
 	val guildLeaveTime: Instant
+)
+
+@Serializable
+data class RemindMeData(
+	val initialSetTime: Instant,
+	val guildId: Snowflake,
+	val userId: Snowflake,
+	val channelId: Snowflake,
+	val remindTime: Instant,
+	val customMessage: String?
 )
