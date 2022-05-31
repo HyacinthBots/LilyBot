@@ -21,7 +21,7 @@ internal const val PK_API_URL = "https://api.pluralkit.me/v2"
 /** The URL of messages from the [PluralKit API](https://pluralkit.me/api). */
 internal const val MESSAGE_URL = "$PK_API_URL/messages/{id}"
 
-class PluralKit {
+object PluralKit {
 
 	/** The client used for querying values from the API. */
 	private val client = HttpClient {

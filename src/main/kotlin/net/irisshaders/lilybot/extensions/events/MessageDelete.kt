@@ -52,7 +52,7 @@ class MessageDelete : Extension() {
 				val messageLocation = event.channel.id.value
 
 				// Avoid logging messages proxied by PluralKit, since these messages aren't "actually deleted"
-				if (PluralKit().checkIfProxied(eventMessage!!.id)) {
+				if (PluralKit.checkIfProxied(eventMessage!!.id)) {
 					return@action
 				}
 
