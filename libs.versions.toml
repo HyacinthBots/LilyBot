@@ -1,9 +1,9 @@
 [versions]
 kotlin = "1.6.10"  # Note: Plugin versions must be updated in the settings.gradle.kts too
 
-groovy = "3.0.9"
-kord-extensions = "1.5.4-20220520.190845-1"
-logging = "2.1.21"
+groovy = "3.0.10"
+kord-extensions = "1.5.4-20220524.162841-4"
+logging = "2.1.23"
 logback = "1.2.8"
 github-api = "1.306"
 kmongo = "4.6.0"
