@@ -34,20 +34,20 @@ object DocsGenerator {
 			return
 		}
 
-		logger.info("Starting the clearing of existing documents!")
+		logger.debug("Starting the clearing of existing documents!")
 		if (!docFile.exists()) {
 			logger.error("File not found! Not clearing docs file!")
 			return
 		}
 
-		logger.info("Clearing file contents...")
+		logger.debug("Clearing file contents...")
 		val writer = docFile.bufferedWriter()
 		withContext(Dispatchers.IO) {
 			writer.write("")
 			writer.flush()
 			writer.close()
 		}
-		logger.info("Cleared documents!")
+		logger.info("Cleared old documents!")
 	}
 
 	/**
@@ -64,7 +64,7 @@ object DocsGenerator {
 			logger.info("Production environment detected. Skipping writing docs")
 			return
 		}
-		logger.info("Starting the writing of documents!")
+		logger.debug("Starting the writing of documents!")
 		if (!docFile.exists()) { // If the documents file doesn't exist, for what ever reason...
 			logger.warn("Docs file not found! Attempting to create file...")
 			try {
@@ -76,7 +76,7 @@ object DocsGenerator {
 			logger.info("File created successfully")
 		}
 
-		logger.info("Writing documents...")
+		logger.debug("Writing new documents...")
 		val writer = docFile.bufferedWriter() // Write the documents.
 		withContext(Dispatchers.IO) {
 			writer.write(
@@ -96,6 +96,6 @@ object DocsGenerator {
 			writer.flush()
 			writer.close()
 		}
-		logger.info("Documents written successfully")
+		logger.info("New Documents written successfully")
 	}
 }
