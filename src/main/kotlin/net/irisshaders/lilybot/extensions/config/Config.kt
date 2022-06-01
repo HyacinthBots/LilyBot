@@ -1,6 +1,10 @@
 package net.irisshaders.lilybot.extensions.config
 
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
+import com.kotlindiscord.kord.extensions.commands.converters.impl.role
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
@@ -9,6 +13,7 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashComman
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.interaction.modal
+import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
@@ -33,7 +38,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 	description = "Configuring Lily's Modules"
 	guild(TEST_GUILD_ID)
 
-	unsafeSubCommand {
+	unsafeSubCommand(::SupportModuleArgs) {
 		name = "support"
 		description = "Configure the support module"
 
@@ -44,55 +49,72 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
-			val response = event.interaction.modal("Support Module", "supportModuleModal") {
-				actionRow {
-					textInput(TextInputStyle.Paragraph, "msgInput", "Support Message") {
-						placeholder = "This is where your ad could be!"
-					}
-				}
-				actionRow {
-					textInput(TextInputStyle.Short, "teamInput", "Support Team/Role") {
-						placeholder = "Role ID or name"
-					}
-				}
-				actionRow {
-					textInput(TextInputStyle.Short, "supChannel", "Support Channel") {
-						placeholder = "Channel ID"
-					}
-				}
-			}
+			// TODO new database functions to store this stuff
 
-			val interaction = response.kord.waitFor<ModalSubmitInteractionCreateEvent>(60.seconds.inWholeMilliseconds) {
-				interaction.modalId == "supportModuleModal"
-			}?.interaction
-			if (interaction == null) {
-				response.createEphemeralFollowup {
+			if (arguments.customMessage) {
+				val response = event.interaction.modal("Support Module", "supportModuleModal") {
+					actionRow {
+						textInput(TextInputStyle.Paragraph, "msgInput", "Support Message") {
+							placeholder = "This is where your ad could be!"
+						}
+					}
+				}
+
+				val interaction =
+					response.kord.waitFor<ModalSubmitInteractionCreateEvent>(60.seconds.inWholeMilliseconds) {
+						interaction.modalId == "supportModuleModal"
+					}?.interaction
+				if (interaction == null) {
+					response.createEphemeralFollowup {
+						embed {
+							description = "Configuration timed out"
+						}
+					}
+					return@action
+				}
+
+				val supportMsg = interaction.textInputs["msgInput"]!!.value!!
+				val modalResponse = interaction.deferEphemeralResponse()
+
+				modalResponse.respond {
 					embed {
-						description = "Configuration timed out"
+						title = "Module configured: Support"
+						field {
+							name = "Support Team"
+							value = arguments.role.mention
+						}
+						field {
+							name = "Support Channel"
+							value = arguments.channel.mention
+						}
+						field {
+							name = "Message"
+							value = supportMsg
+						}
+						footer {
+							text = "Configured by: ${user.asUser().tag}"
+						}
 					}
 				}
-				return@action
-			}
-
-			val supportMsg = interaction.textInputs["msgInput"]!!.value!!
-			val supportTeam = interaction.textInputs["teamInput"]!!.value!!
-			val supportChannel = interaction.textInputs["supChannel"]!!.value!!
-			val modalResponse = interaction.deferEphemeralResponse()
-
-			modalResponse.respond {
-				embed {
-					title = "Module configured: Support"
-					description = supportMsg
-					field {
-						name = "Support Team"
-						value = supportTeam
-					}
-					field {
-						name = "Support Channel"
-						value = supportChannel
-					}
-					footer {
-						text = "Configured by: ${user.asUser().tag}"
+			} else {
+				event.interaction.respondEphemeral {
+					embed {
+						title = "Module configured: Support"
+						field {
+							name = "Support Team"
+							value = arguments.role.mention
+						}
+						field {
+							name = "Support Channel"
+							value = arguments.channel.mention
+						}
+						field {
+							name = "Message"
+							value = "default"
+						}
+						footer {
+							text = "Configured by: ${user.asUser().tag}"
+						}
 					}
 				}
 			}
@@ -186,5 +208,22 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		action {
 		}
+	}
+}
+
+class SupportModuleArgs : Arguments() {
+	val channel by channel {
+		name = "channel"
+		description = "The channel to be used for creating support threads in."
+	}
+
+	val role by role {
+		name = "role"
+		description = "The role to add to support threads, when one is created."
+	}
+
+	val customMessage by boolean {
+		name = "custommessage"
+		description = "True if you'd like to add a custom message, false if you'd like the default"
 	}
 }
