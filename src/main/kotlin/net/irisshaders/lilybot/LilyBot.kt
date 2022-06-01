@@ -1,5 +1,4 @@
 @file:OptIn(PrivilegedIntent::class)
-@file:Suppress("DEPRECATION")
 
 package net.irisshaders.lilybot
 
@@ -33,9 +32,11 @@ import net.irisshaders.lilybot.extensions.util.Tags
 import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.ENVIORNMENT
 import net.irisshaders.lilybot.utils.MONGO_URI
 import net.irisshaders.lilybot.utils.SENTRY_DSN
 import net.irisshaders.lilybot.utils.docs.CommandDocs
+import net.irisshaders.lilybot.utils.docs.DocsGenerator
 import org.bson.UuidRepresentation
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -58,6 +59,8 @@ private val client = KMongo.createClient(settings).coroutine
 val database = client.getDatabase("LilyBot")
 
 var commandDocs: CommandDocs? = null
+
+val docFile = Path("./docs/commands.md")
 
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
@@ -126,6 +129,9 @@ suspend fun main() {
 	val mapper = tomlMapper { }
 	val file = Path("docs/commanddocs.toml")
 	commandDocs = mapper.decode<CommandDocs>(file)
+
+	DocsGenerator.clearDocs(ENVIORNMENT)
+	DocsGenerator.writeNewDocs(ENVIORNMENT)
 
 	bot.start()
 }

@@ -10,7 +10,7 @@ If you have issues with this guide, please join [our discord](https://discord.gg
 Click on the official LilyBot instance, where you'll be able to use the `Add To Server` button
 
 Alternatively, use [this link](
-https://discord.com/api/oauth2/authorize?client_id=876278900836139008&permissions=1428479371286&scope=bot%20applications.commands) 
+https://discord.com/api/oauth2/authorize?client_id=876278900836139008&permissions=1428479371270&scope=bot%20applications.commands) 
 to invite LilyBot.
 
 # Step 2 - Using your invitation link

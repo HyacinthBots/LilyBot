@@ -85,6 +85,8 @@ class ThreadInviter : Extension() {
 						}
 					} catch (e: EntityNotFoundException) {
 						DatabaseHelper.deleteThread(it.threadId)
+					} catch (e: IllegalArgumentException) {
+						DatabaseHelper.deleteThread(it.threadId)
 					}
 				}
 

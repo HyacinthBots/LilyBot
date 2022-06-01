@@ -176,8 +176,10 @@ class Github : Extension() {
 								if (issue.body != null) {
 									value = if (issue.body.length > 400) {
 										issue.body.substring(0, 399) + "..."
-									} else {
+									} else if (issue.body.isNotEmpty() && issue.body.length <= 399) {
 										issue.body
+									} else {
+										"No description Provided"
 									}
 								}
 							}
