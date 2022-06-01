@@ -106,6 +106,13 @@ permissions = "Moderate Members"
 
 [[command]]
 category = "Utility commands"
+name = "edit-say"
+args = "(Moderators only)\n* `messageToEdit` - The ID of the message contain the embed you'd like to edit - Snowflake\n* `newContent` - The new content for the message - Optional String\n* `newColor` - The new color for the embed - Optional Color (default: Blurple)\n* `channelOfMessage` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)\n* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean (default: true)"
+result = "Edited message/embed"
+permissions = "Moderate Members"
+
+[[command]]
+category = "Utility commands"
 name = "manual-report"
 args = "* `message-link` - Link to the message to report - String"
 result = "Reports the message pointed to by `message-link` by pinging `moderatorRole` in `messageLogs`."
