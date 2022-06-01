@@ -55,11 +55,17 @@ class ThreadInviter : Extension() {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
 							event.message.type == MessageType.ThreadStarterMessage ||
-							event.message.getChannel() is TextChannelThread ||
 							event.message.author?.id == kord.selfId ||
 							event.message.author?.isBot == true ||
-							event.message.getChannel() is NewsChannel ||
-							event.message.getChannel() is NewsChannelThread
+							// This odd check here is to prevent thread inviter checks running on voice channels
+							// until proper support is implemented into Kord.
+							try {
+								event.message.getChannel() is TextChannelThread ||
+										event.message.getChannel() is NewsChannel ||
+										event.message.getChannel() is NewsChannelThread
+							} catch (e: ClassCastException) {
+								true
+							}
 				}
 			}
 			action {
