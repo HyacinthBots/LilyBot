@@ -8,10 +8,8 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.pagination.PublicResponsePaginator
 import com.kotlindiscord.kord.extensions.pagination.pages.Page
 import com.kotlindiscord.kord.extensions.pagination.pages.Pages
-import com.kotlindiscord.kord.extensions.types.edit
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.Locale
-import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.rest.builder.message.EmbedBuilder
 import kotlinx.datetime.Clock
@@ -120,9 +118,10 @@ class InfoCommands : Extension() {
 						"LilyBot is primarily developed by NoComment#6411 and tempest#4510, who work together " +
 								"nearly everyday on improving and upgrading the LilyBot you see today!\nThe " +
 								"source code for LilyBot, which will remain free and available for as long " +
-								"as LilyBot lives, can be found on the GitHub.\nIf you need support with " +
-								"LilyBot, or would like to provide suggestions, keep up with development and " +
-								"announcements, etc, you can join the Discord server at: " +
+								"as LilyBot lives, can be found on the GitHub.\nThanks to the wonderful gdude#2002, " +
+								"Lily is hosted with incredible uptimes and support, making use of Docker Compose!\n" +
+								"If you need support with LilyBot, or would like to provide suggestions, keep up " +
+								"with development and announcements, etc, you can join the Discord server at: " +
 								"https://discord.gg/hy2329fcTZ"
 				}
 				responseEmbed.footer {
