@@ -32,10 +32,10 @@ import net.irisshaders.lilybot.extensions.util.StartupHooks
 import net.irisshaders.lilybot.extensions.util.Tags
 import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
-import net.irisshaders.lilybot.utils.CommandDocs
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.MONGO_URI
 import net.irisshaders.lilybot.utils.SENTRY_DSN
+import net.irisshaders.lilybot.utils.docs.CommandDocs
 import org.bson.UuidRepresentation
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
