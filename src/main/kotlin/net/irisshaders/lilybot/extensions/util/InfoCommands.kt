@@ -27,7 +27,7 @@ class InfoCommands : Extension() {
 		val pagesObj = Pages()
 
 		/**
-		 * The command that generate the help paginator, after getting it from `./docs/commanddocs.toml`
+		 * The command that generates the help paginator, after getting it from `./docs/commanddocs.toml`
 		 *
 		 * @author NoComment1105
 		 * @since 3.3.0
@@ -80,6 +80,12 @@ class InfoCommands : Extension() {
 			}
 		}
 
+		/**
+		 * The command that generates an about embed for LilyBot
+		 *
+		 * @author NoComment1105
+		 * @since 3.3.0
+		 */
 		publicSlashCommand {
 			name = "about"
 			description = "Find out about LilyBot!"
