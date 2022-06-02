@@ -121,7 +121,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 	}
 
-	unsafeSubCommand {
+	unsafeSubCommand(::ModerationModuleArgs) {
 		name = "moderation"
 		description = "Configure the moderation module"
 
@@ -133,54 +133,27 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
-			val response = event.interaction.modal("Moderation Module", "moderationModal") {
-				actionRow {
-					textInput(TextInputStyle.Short, "moderatorRole", "Moderation Role") {
-						placeholder = "Role ID or name"
-					}
-				}
-				actionRow {
-					textInput(TextInputStyle.Short, "actionLog", "Action Log") {
-						placeholder = "Channel ID"
-					}
-				}
-			}
-
-			val interaction = response.kord.waitFor<ModalSubmitInteractionCreateEvent>(60.seconds.inWholeMilliseconds) {
-				interaction.modalId == "moderationModal"
-			}?.interaction
-			if (interaction == null) {
-				response.createEphemeralFollowup {
-					embed {
-						description = "Configuration timed out"
-					}
-				}
-				return@action
-			}
-
-			val moderationRole = interaction.textInputs["moderatorRole"]!!.value!!
-			val actionLog = interaction.textInputs["actionLog"]!!.value!!
-			val modalResponse = interaction.deferEphemeralResponse()
-			modalResponse.respond {
+			// TODO Database
+			event.interaction.respondEphemeral {
 				embed {
 					title = "Module configured: Moderation"
 					field {
 						name = "Moderators"
-						value = moderationRole
+						value = arguments.moderatorRole.mention
 					}
 					field {
-						name = "Action Log"
-						value = actionLog
+						name = "Action log"
+						value = arguments.modActionLog.mention
 					}
 					footer {
-						text = "Configured by: ${user.asUser().tag}"
+						text = "Configured by ${user.asUser().tag}"
 					}
 				}
 			}
 		}
 	}
 
-	unsafeSubCommand {
+	unsafeSubCommand(::LoggingModuleArgs) {
 		name = "logging"
 		description = "Configure Lily's logging modules"
 
@@ -192,23 +165,41 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
+			// TODO DATABASE
+			event.interaction.respondEphemeral {
+				embed {
+					title = "Module Configured: Logging"
+					field {
+						name = "Message Logs"
+						value = arguments.messageLogs.mention
+					}
+					field {
+						name = "Join/Leave Logs"
+						value = arguments.joinChannel.mention
+					}
+					footer {
+						text = "Configured by ${user.asUser().tag}"
+					}
+				}
+			}
 		}
 	}
 
-	unsafeSubCommand {
-		name = "bot"
-		description = "Configure general aspects of the bot"
-
-		initialResponse = InitialSlashCommandResponse.None
-
-		check {
-			anyGuild()
-			// hasPermission(Permission.ManageGuild)
-		}
-
-		action {
-		}
-	}
+	// Maybe some stuff iono
+// 	unsafeSubCommand {
+// 		name = "bot"
+// 		description = "Configure general aspects of the bot"
+//
+// 		initialResponse = InitialSlashCommandResponse.None
+//
+// 		check {
+// 			anyGuild()
+// 			// hasPermission(Permission.ManageGuild)
+// 		}
+//
+// 		action {
+// 		}
+// 	}
 }
 
 class SupportModuleArgs : Arguments() {
@@ -224,6 +215,30 @@ class SupportModuleArgs : Arguments() {
 
 	val customMessage by boolean {
 		name = "custommessage"
-		description = "True if you'd like to add a custom message, false if you'd like the default"
+		description = "True if you'd like to add a custom message, false if you'd like the default."
+	}
+}
+
+class ModerationModuleArgs : Arguments() {
+	val moderatorRole by role {
+		name = "moderatorrole"
+		description = "The role of your moderators, used for pinging in message logs."
+	}
+
+	val modActionLog by channel {
+		name = "actionlog"
+		description = "The channel used to store moderator actions."
+	}
+}
+
+class LoggingModuleArgs : Arguments() {
+	val messageLogs by channel {
+		name = "messagelogs"
+		description = "The channel for logging message deletions"
+	}
+
+	val joinChannel by channel {
+		name = "joinchannel"
+		description = "The channel for logging member joins/leaves"
 	}
 }
