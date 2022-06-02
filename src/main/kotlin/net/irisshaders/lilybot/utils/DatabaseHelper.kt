@@ -383,10 +383,13 @@ data class ConfigData(
 	val guildId: Snowflake,
 	val moderatorsPing: Snowflake,
 	val modActionLog: Snowflake,
+	val enableModeration: Boolean,
 	val messageLogs: Snowflake,
 	val joinChannel: Snowflake,
+	val enableLogging: Boolean,
 	val supportChannel: Snowflake?,
 	val supportTeam: Snowflake?,
+	val enableSupport: Boolean
 )
 
 /**
