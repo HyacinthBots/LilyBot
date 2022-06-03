@@ -219,6 +219,11 @@ name = "tag-help"
 result = "Displays a help command with all this information, in greater detail."
 # End tag commands
 
+# Gallery channel commands
+[[command]] # Header
+category = "Gallery channel commands"
+description = "Gallery channels are channels that only allow attachments or links to be sent within them, deleting messages that don't contain either of these things."
+
 [[command]]
 category = "Gallery channel commands"
 name = "gallery-channel set"
@@ -236,3 +241,4 @@ category = "Gallery channel commands"
 name = "gallery-channel list"
 args = "none"
 result = "Displays an embed of the image channels for the current guild"
+# End gallery channel commands

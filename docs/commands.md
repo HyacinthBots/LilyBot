@@ -414,13 +414,17 @@ None
 
 ---
 
+
+## Gallery channel commands
+Gallery channels are channels that only allow attachments or links to be sent within them, deleting messages that don't contain either of these things.
+
 ### Name: `gallery-channel set`
 **Arguments**:
 none
 
 **Result**: Sets the channel you are in a Gallery channel
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Gallery channel commands`
 
@@ -432,7 +436,7 @@ none
 
 **Result**: Unsets the channel you are in a Gallery channel
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Gallery channel commands`
 
@@ -444,7 +448,7 @@ none
 
 **Result**: Displays an embed of the image channels for the current guild
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Gallery channel commands`
 
