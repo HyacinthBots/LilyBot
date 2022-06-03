@@ -19,14 +19,16 @@ data class CommandDocs(
 	 * @property args The arguments of the command
 	 * @property result The result of the command
 	 * @property permissions The required permissions to run the command
+	 * @property description This is used for command group headers only.
 	 *
 	 * @since 3.3.0
 	 */
 	data class Command(
 		val category: String,
-		val name: String,
-		val args: String,
-		val result: String,
-		val permissions: String?
+		val name: String?,
+		val args: String?,
+		val result: String?,
+		val permissions: String?,
+		val description: String?
 	)
 }
