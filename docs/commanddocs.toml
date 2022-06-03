@@ -194,3 +194,21 @@ category = "Tag commands"
 name = "tag-help"
 args = "none"
 result = "Displays a help command with all this information, in greater detail."
+
+[[command]]
+category = "Gallery channel commands"
+name = "gallery-channel set"
+args = "none"
+result = "Sets the channel you are in a Gallery channel"
+
+[[command]]
+category = "Gallery channel commands"
+name = "gallery-channel unset"
+args = "none"
+result = "Unsets the channel you are in a Gallery channel"
+
+[[command]]
+category = "Gallery channel commands"
+name = "gallery-channel list"
+args = "none"
+result = "Displays an embed of the image channels for the current guild"
