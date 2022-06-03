@@ -1,4 +1,5 @@
 @file:OptIn(PrivilegedIntent::class)
+@file:Suppress("DEPRECATION")
 
 package net.irisshaders.lilybot
 
@@ -22,6 +23,7 @@ import net.irisshaders.lilybot.extensions.events.ThreadInviter
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
 import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
+import net.irisshaders.lilybot.extensions.util.GalleryChannel
 import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.InfoCommands
 import net.irisshaders.lilybot.extensions.util.ModUtilities
@@ -78,6 +80,7 @@ suspend fun main() {
 		extensions {
 			add(::Config)
 			add(::Github)
+			add(::GalleryChannel)
 			add(::InfoCommands)
 			add(::JoinLeaveDetection)
 			add(::LogUploading)

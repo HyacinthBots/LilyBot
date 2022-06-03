@@ -414,3 +414,39 @@ None
 
 ---
 
+### Name: `gallery-channel set`
+**Arguments**:
+none
+
+**Result**: Sets the channel you are in a Gallery channel
+
+**Required Permissions**: `none`
+
+**Command category**: `Gallery channel commands`
+
+---
+
+### Name: `gallery-channel unset`
+**Arguments**:
+none
+
+**Result**: Unsets the channel you are in a Gallery channel
+
+**Required Permissions**: `none`
+
+**Command category**: `Gallery channel commands`
+
+---
+
+### Name: `gallery-channel list`
+**Arguments**:
+none
+
+**Result**: Displays an embed of the image channels for the current guild
+
+**Required Permissions**: `none`
+
+**Command category**: `Gallery channel commands`
+
+---
+
