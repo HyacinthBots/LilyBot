@@ -55,11 +55,13 @@ class ThreadInviter : Extension() {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
 							event.message.type == MessageType.ThreadStarterMessage ||
-							event.message.getChannel() is TextChannelThread ||
 							event.message.author?.id == kord.selfId ||
 							event.message.author?.isBot == true ||
-							event.message.getChannel() is NewsChannel ||
-							event.message.getChannel() is NewsChannelThread
+							// Make use of getChannelOrNull here because the channel "may not exist". This is to help
+							// fix an issue with the new ViT channels in Discord.
+							event.message.getChannelOrNull() is TextChannelThread ||
+							event.message.getChannelOrNull() is NewsChannel ||
+							event.message.getChannelOrNull() is NewsChannelThread
 				}
 			}
 			action {
@@ -100,7 +102,7 @@ class ThreadInviter : Extension() {
 					response.delete(10000L, false)
 				} else {
 					val thread =
-						// Create a thread with the message sent, title it with the users tag and set the archive
+					// Create a thread with the message sent, title it with the users tag and set the archive
 						// duration to the channels settings. If they're null, set it to one day
 						textChannel.startPublicThreadWithMessage(
 							event.message.id,

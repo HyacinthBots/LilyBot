@@ -1,22 +1,25 @@
 [versions]
 kotlin = "1.6.10"  # Note: Plugin versions must be updated in the settings.gradle.kts too
 
-groovy = "3.0.9"
-kord-extensions = "1.5.4-20220520.190845-1"
-logging = "2.1.21"
+groovy = "3.0.10"
+kord-extensions = "1.5.4-20220524.162841-4"
+logging = "2.1.23"
 logback = "1.2.8"
 github-api = "1.306"
 kmongo = "4.6.0"
 detekt = "1.20.0"
+koma = "1.0.2"
 
 [libraries]
 groovy = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 kord-extensions = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
 kord-phishing = { module = "com.kotlindiscord.kord.extensions:extra-phishing", version.ref = "kord-extensions" }
 kord-mappings = { module = "com.kotlindiscord.kord.extensions:extra-mappings", version.ref = "kord-extensions"}
+kord-unsafe = { module = "com.kotlindiscord.kord.extensions:unsafe", version.ref = "kord-extensions"}
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logging = { module = "io.github.microutils:kotlin-logging", version.ref = "logging" }
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
 kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
 detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
+koma = { module = "cc.ekblad:4koma", version.ref = "koma" }
