@@ -394,21 +394,39 @@ none
 
 ---
 
+### Name: `gallery-channel set`
+**Arguments**:
+none
 
-## Gallery Channels
-Gallery channel commands are for setting a channel to be image/attachment/embed only.
+**Result**: Sets the channel you are in a Gallery channel
 
-### Set
-Name: `gallery-channel set`
+**Required Permissions**: `none`
 
-Result: Sets the channel you are in as a Gallery channel
+**Command category**: `Gallery channel commands`
 
-### Unset
-Name: `gallery-channel unset`
+---
 
-Result: Unsets the gallery channel you are in
+### Name: `gallery-channel unset`
+**Arguments**:
+none
 
-### List
-Name: `gallery-channel list`
+**Result**: Unsets the channel you are in a Gallery channel
 
-Result: Displays an embed of the image channels for the current guild
+**Required Permissions**: `none`
+
+**Command category**: `Gallery channel commands`
+
+---
+
+### Name: `gallery-channel list`
+**Arguments**:
+none
+
+**Result**: Displays an embed of the image channels for the current guild
+
+**Required Permissions**: `none`
+
+**Command category**: `Gallery channel commands`
+
+---
+
