@@ -34,7 +34,7 @@ import net.irisshaders.lilybot.extensions.util.Tags
 import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.ENVIORNMENT
+import net.irisshaders.lilybot.utils.ENVIRONMENT
 import net.irisshaders.lilybot.utils.MONGO_URI
 import net.irisshaders.lilybot.utils.SENTRY_DSN
 import net.irisshaders.lilybot.utils.docs.CommandDocs
@@ -130,14 +130,17 @@ suspend fun main() {
 		}
 	}
 
-	if (ENVIORNMENT != "production") {
+	if (ENVIRONMENT != "production") {
 		val mapper = tomlMapper { }
-		val file = Path("docs/commanddocs.toml")
-		commandDocs = mapper.decode<CommandDocs>(file)
+		val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
 
-		DocsGenerator.clearDocs(ENVIORNMENT)
-		DocsGenerator.writeNewDocs(ENVIORNMENT)
+		commandDocs = mapper.decode<CommandDocs>(stream)
+
+		DocsGenerator.clearDocs(ENVIRONMENT)
+		DocsGenerator.writeNewDocs(ENVIRONMENT)
 	}
 
 	bot.start()
 }
+
+object LilyBot
