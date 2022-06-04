@@ -132,8 +132,9 @@ suspend fun main() {
 
 	if (ENVIORNMENT != "production") {
 		val mapper = tomlMapper { }
-		val file = Path("docs/commanddocs.toml")
-		commandDocs = mapper.decode<CommandDocs>(file)
+		val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
+
+		commandDocs = mapper.decode<CommandDocs>(stream)
 
 		DocsGenerator.clearDocs(ENVIORNMENT)
 		DocsGenerator.writeNewDocs(ENVIORNMENT)
@@ -141,3 +142,5 @@ suspend fun main() {
 
 	bot.start()
 }
+
+object LilyBot

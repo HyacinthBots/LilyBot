@@ -95,6 +95,10 @@ tasks {
         }
     }
 
+    processResources {
+        from("docs/commanddocs.toml")
+    }
+
     jar {
         manifest {
             attributes(
