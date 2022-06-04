@@ -156,11 +156,11 @@ suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs)
 
 		try {
 			// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
-				channel = guild?.getChannel(
-					Snowflake(arguments.message.split("/")[5])
-				) as MessageChannel
-				reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
-				messageAuthor = reportedMessage.getAuthorAsMember()
+			channel = guild?.getChannel(
+				Snowflake(arguments.message.split("/")[5])
+			) as MessageChannel
+			reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
+			messageAuthor = reportedMessage.getAuthorAsMember()
 		} catch (e: KtorRequestException) { // In the event of a report in a channel the bot can't see
 			ackEphemeral()
 			respondEphemeral {

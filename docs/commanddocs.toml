@@ -1,7 +1,7 @@
 # Administration commands
 [[command]] # Header
 category = "Administration commands"
-description = "These are commands for the mainenance of LilyBot. The can only be run by Server Managers or Admins"
+description = "These are commands for the maintenance of LilyBot. The can only be run by Server Managers or Admins"
 
 [[command]]
 category = "Administration commands"

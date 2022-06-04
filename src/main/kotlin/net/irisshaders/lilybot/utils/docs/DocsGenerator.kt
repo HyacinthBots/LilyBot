@@ -64,6 +64,7 @@ object DocsGenerator {
 			logger.info("Production environment detected. Skipping writing docs")
 			return
 		}
+
 		logger.debug("Starting the writing of documents!")
 		if (!docFile.exists()) { // If the documents file doesn't exist, for what ever reason...
 			logger.warn("Docs file not found! Attempting to create file...")

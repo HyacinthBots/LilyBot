@@ -1,5 +1,7 @@
 package net.irisshaders.lilybot.extensions.util
 
+import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
@@ -13,6 +15,8 @@ import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import com.kotlindiscord.kord.extensions.utils.respond
 import com.soywiz.klock.seconds
 import dev.kord.common.entity.Permission
+import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
@@ -60,6 +64,8 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 					// Using the global var, find guild channels for the given guildId and iterate through them to
 					// check for the presence of the channel and return if it is present
 					val guildGalleryChannels =
@@ -81,6 +87,16 @@ class GalleryChannel : Extension() {
 					respond {
 						content = "Set channel as gallery channel."
 					}
+
+					actionLog.createEmbed {
+						title = "New Gallery channel"
+						description = "${channel.mention} was added as a Gallery channel"
+						color = DISCORD_GREEN
+						footer {
+							text = "Requested by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
+						}
+					}
 				}
 			}
 
@@ -98,6 +114,8 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 					var channelFound = false
 
 					val guildGalleryChannels =
@@ -114,6 +132,16 @@ class GalleryChannel : Extension() {
 					if (channelFound) {
 						respond {
 							content = "Unset channel as gallery channel."
+						}
+
+						actionLog.createEmbed {
+							title = "Removed Gallery channel"
+							description = "${channel.mention} was removed as a Gallery channel"
+							color = DISCORD_RED
+							footer {
+								text = "Requested by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
+							}
 						}
 					} else {
 						respond {

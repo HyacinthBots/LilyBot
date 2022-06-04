@@ -64,7 +64,6 @@ var commandDocs: CommandDocs? = null
 
 val docFile = Path("./docs/commands.md")
 
-@OptIn(PrivilegedIntent::class)
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		members {
@@ -130,13 +129,13 @@ suspend fun main() {
 		}
 	}
 
-		val mapper = tomlMapper { }
-		val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
+	val mapper = tomlMapper { }
+	val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
 
-		commandDocs = mapper.decode<CommandDocs>(stream)
+	commandDocs = mapper.decode<CommandDocs>(stream)
 
-		DocsGenerator.clearDocs(ENVIRONMENT)
-		DocsGenerator.writeNewDocs(ENVIRONMENT)
+	DocsGenerator.clearDocs(ENVIRONMENT)
+	DocsGenerator.writeNewDocs(ENVIRONMENT)
 
 	bot.start()
 }

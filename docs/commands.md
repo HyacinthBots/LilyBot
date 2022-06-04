@@ -6,7 +6,7 @@ The following is a list of commands, their arguments, and what they do.
 
 
 ## Administration commands
-These are commands for the mainenance of LilyBot. The can only be run by Server Managers or Admins
+These are commands for the maintenance of LilyBot. The can only be run by Server Managers or Admins
 
 ### Name: `config set`
 **Arguments**:

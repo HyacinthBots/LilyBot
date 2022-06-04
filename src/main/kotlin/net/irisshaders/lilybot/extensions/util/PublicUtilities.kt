@@ -201,8 +201,8 @@ class PublicUtilities : Extension() {
 														"inappropriate" -> reason = "is inappropriate for this server."
 														"impersonation" -> reason = "impersonates another user."
 														"hoisting" ->
-														    reason = "deliberately hoists you up the user " +
-																"ladder, which is not allowed."
+															reason = "deliberately hoists you up the user " +
+																	"ladder, which is not allowed."
 													}
 
 													userDMEmbed(
