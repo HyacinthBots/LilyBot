@@ -20,4 +20,4 @@ val MONGO_URI = envOrNull("MONGO_URI") ?: "mongodb://localhost:27017"
 val SENTRY_DSN = envOrNull("SENTRY_DSN")
 
 /** The environment the bot is being run in. production or development. */
-val ENVIORNMENT = env("ENVIRONMENT")
+val ENVIRONMENT = env("ENVIRONMENT")
