@@ -304,7 +304,7 @@ object DatabaseHelper {
 			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 			if (timeSinceLatestMessage.inWholeDays > 7) {
 				collection.deleteOne(ThreadData::threadId eq thread.id)
-				deletedThreads = + 1
+				deletedThreads += 1
 			}
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
@@ -390,7 +390,10 @@ object DatabaseHelper {
 	 */
 	suspend fun deleteGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
 		val collection = database.getCollection<GalleryChannelData>()
-		collection.deleteOne(GalleryChannelData::channelId eq inputChannelId, GalleryChannelData::guildId eq inputGuildId)
+		collection.deleteOne(
+			GalleryChannelData::channelId eq inputChannelId,
+			GalleryChannelData::guildId eq inputGuildId
+		)
 	}
 
 	/**

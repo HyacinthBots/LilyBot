@@ -64,7 +64,6 @@ var commandDocs: CommandDocs? = null
 
 val docFile = Path("./docs/commands.md")
 
-@OptIn(PrivilegedIntent::class)
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		members {

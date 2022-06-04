@@ -223,11 +223,11 @@ class LogUploading : Extension() {
 		val client = HttpClient()
 		val response = client.post("https://api.mclo.gs/1/log") {
 			setBody(
-			    FormDataContent(
-			        Parameters.build {
-				append("content", text)
-			}
-			    )
+				FormDataContent(
+					Parameters.build {
+						append("content", text)
+					}
+				)
 			)
 		}.readBytes().decodeToString()
 		client.close()
