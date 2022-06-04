@@ -2,9 +2,7 @@ package net.irisshaders.lilybot.utils
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
-import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.thread.TextChannelThread
-import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -301,14 +299,8 @@ object DatabaseHelper {
 		val threads = collection.find().toList()
 		var deletedThreads = 0
 		for (it in threads) {
-			val thread: TextChannelThread
-			val latestMessage: Message
-			try {
-				thread = kordInstance.getChannel(it.threadId) as TextChannelThread? ?: continue
-				latestMessage = thread.getLastMessage() ?: continue
-			} catch (e: KtorRequestException) {
-				continue
-			}
+			val thread = kordInstance.getChannel(it.threadId) as TextChannelThread? ?: continue
+			val latestMessage = thread.getLastMessage() ?: continue
 			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 			if (timeSinceLatestMessage.inWholeDays > 7) {
 				collection.deleteOne(ThreadData::threadId eq thread.id)
