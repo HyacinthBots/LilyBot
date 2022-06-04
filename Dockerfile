@@ -11,7 +11,7 @@ COPY build/libs/LilyBot-*-all.jar /usr/local/lib/LilyBot.jar
 
 ENV TEST_GUILD_ID=934324779811483718
 ENV ONLINE_STATUS_CHANNEL=941669186533474344
-ENV environment=production
+ENV ENVIRONMENT=production
 
 WORKDIR /bot
 
