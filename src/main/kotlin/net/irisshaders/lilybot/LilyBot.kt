@@ -130,7 +130,6 @@ suspend fun main() {
 		}
 	}
 
-	if (ENVIRONMENT != "production") {
 		val mapper = tomlMapper { }
 		val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
 
@@ -138,7 +137,6 @@ suspend fun main() {
 
 		DocsGenerator.clearDocs(ENVIRONMENT)
 		DocsGenerator.writeNewDocs(ENVIRONMENT)
-	}
 
 	bot.start()
 }
