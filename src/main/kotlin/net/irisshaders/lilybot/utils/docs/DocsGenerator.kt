@@ -84,14 +84,25 @@ object DocsGenerator {
 					"do.\n\n---\n\n"
 			)
 			commandDocs!!.command.forEach {
-				writer.write(
-					"### Name: `${it.name}`\n" +
-							"**Arguments**:\n${it.args}\n\n" +
-							"**Result**: ${it.result}\n\n" +
-							"**Required Permissions**: `${it.permissions ?: "none"}`\n\n" +
-							"**Command category**: `${it.category}`\n\n" +
-							"---\n\n"
-				)
+				if (it.name.isNullOrEmpty() && it.result.isNullOrEmpty() && it.permissions.isNullOrEmpty() &&
+					it.args.isNullOrEmpty() && it.category.isNotEmpty() && it.description!!.isNotEmpty()
+				) {
+					logger.debug("Writing command header")
+					writer.write(
+						"\n## ${it.category}\n" +
+								"${it.description}\n\n"
+					)
+				} else {
+					logger.debug("Writing command doc")
+					writer.write(
+						"### Name: `${it.name}`\n" +
+								"**Arguments**:\n${it.args ?: "None"}\n\n" +
+								"**Result**: ${it.result}\n\n" +
+								"**Required Permissions**: `${it.permissions ?: "None"}`\n\n" +
+								"**Command category**: `${it.category}`\n\n" +
+								"---\n\n"
+					)
+				}
 			}
 			writer.flush()
 			writer.close()

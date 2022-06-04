@@ -1,3 +1,8 @@
+# Administration commands
+[[command]] # Header
+category = "Administration commands"
+description = "These are commands for the mainenance of LilyBot. The can only be run by Server Managers or Admins"
+
 [[command]]
 category = "Administration commands"
 name = "config set"
@@ -8,7 +13,6 @@ permissions = "Manage Guild"
 [[command]]
 category = "Administration commands"
 name = "config clear"
-args = "none"
 result = "Clears the configuration for the guild executed in."
 permissions = "Manage Guild"
 
@@ -18,7 +22,12 @@ name = "set-status"
 args = "* `presence` - Value for Lily's status - String"
 result = "Lily's 'Now Playing:' status is set to `presence`.\nThis command can only be executed in the test guild specified in your `.env` file"
 permissions = "Administrator"
+# End administration commands
 
+# Moderation commands
+[[command]] # Header
+category = "Moderation commands"
+description = "These commands are for use by moderators. They utilize built-in permission checks. All moderation commands are logged to the modActionLog established in the config. A Direct Message is sent to the target user containing the sanction they received and the provided reason. If Lily fails to DM them, this failure will be noted in the logging embed."
 
 [[command]]
 category = "Moderation commands"
@@ -86,9 +95,14 @@ permissions = "Moderate Members"
 [[command]]
 category = "Moderation commands"
 name = "unlock-server"
-args = "none"
 result = "Unlocks the whole server so anyone can send messages, create threads, or add reations."
 permissions = "Moderate Members"
+# End moderation commands
+
+# Utility commands
+[[command]] # Header
+category = "Utility commands"
+description = "These commands are just handy to have around. Moderator only commands are at the top and clearly marked."
 
 [[command]]
 category = "Utility commands"
@@ -147,9 +161,13 @@ result = "Sends a request to the moderators for a new nickname. This feature is 
 [[command]]
 category = "Utility commands"
 name = "nickname clear"
-args = "none"
 result = "Clears the nickname of the user that ran the command"
+# End Utility commands
 
+# GitHub commands
+[[command]] # Header
+category = "GitHub commands"
+description = "The GitHub commands allow users to query GitHub for things such as issues, pull requests, repositories and more. They take in a string in the format 'USER-NAME/REPO-NAME' for example or a URL."
 
 [[command]]
 category = "GitHub commands"
@@ -168,6 +186,12 @@ category = "Github commands"
 name = "github user"
 args = "* `username` - GitHub user or repository to be searched for, can be a username or URL - String"
 result = "An embed containing the information about the queryed user."
+# End GitHub commands
+
+# Tag commands
+[[command]] # Header
+category = "Tag commands"
+description = "Tag commands are guild specific commands, that can be added at runtime. They are all embed commands. You will be assisted by auto-complete when typing these commands."
 
 [[command]]
 category = "Tag commands"
@@ -192,8 +216,13 @@ result = "Posts the tag embed you requested"
 [[command]]
 category = "Tag commands"
 name = "tag-help"
-args = "none"
 result = "Displays a help command with all this information, in greater detail."
+# End tag commands
+
+# Gallery channel commands
+[[command]] # Header
+category = "Gallery channel commands"
+description = "Gallery channels are channels that only allow attachments or links to be sent within them, deleting messages that don't contain either of these things."
 
 [[command]]
 category = "Gallery channel commands"
@@ -212,3 +241,4 @@ category = "Gallery channel commands"
 name = "gallery-channel list"
 args = "none"
 result = "Displays an embed of the image channels for the current guild"
+# End gallery channel commands

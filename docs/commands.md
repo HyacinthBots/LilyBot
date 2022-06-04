@@ -4,6 +4,10 @@ The following is a list of commands, their arguments, and what they do.
 
 ---
 
+
+## Administration commands
+These are commands for the mainenance of LilyBot. The can only be run by Server Managers or Admins
+
 ### Name: `config set`
 **Arguments**:
 * `moderatorRole` - Moderator role that will be pinged for reports - Role
@@ -23,7 +27,7 @@ The following is a list of commands, their arguments, and what they do.
 
 ### Name: `config clear`
 **Arguments**:
-none
+None
 
 **Result**: Clears the configuration for the guild executed in.
 
@@ -45,6 +49,10 @@ This command can only be executed in the test guild specified in your `.env` fil
 **Command category**: `Administration commands`
 
 ---
+
+
+## Moderation commands
+These commands are for use by moderators. They utilize built-in permission checks. All moderation commands are logged to the modActionLog established in the config. A Direct Message is sent to the target user containing the sanction they received and the provided reason. If Lily fails to DM them, this failure will be noted in the logging embed.
 
 ### Name: `clear`
 **Arguments**:
@@ -175,7 +183,7 @@ This command can only be executed in the test guild specified in your `.env` fil
 
 ### Name: `unlock-server`
 **Arguments**:
-none
+None
 
 **Result**: Unlocks the whole server so anyone can send messages, create threads, or add reations.
 
@@ -184,6 +192,10 @@ none
 **Command category**: `Moderation commands`
 
 ---
+
+
+## Utility commands
+These commands are just handy to have around. Moderator only commands are at the top and clearly marked.
 
 ### Name: `role-menu`
 **Arguments**:
@@ -240,7 +252,7 @@ none
 
 **Result**: Reports the message pointed to by `message-link` by pinging `moderatorRole` in `messageLogs`.
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Utility commands`
 
@@ -288,7 +300,7 @@ none
 
 **Result**: Sends a request to the moderators for a new nickname. This feature is designed for servers that disable nickname change permissions on users
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Utility commands`
 
@@ -296,15 +308,19 @@ none
 
 ### Name: `nickname clear`
 **Arguments**:
-none
+None
 
 **Result**: Clears the nickname of the user that ran the command
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Utility commands`
 
 ---
+
+
+## GitHub commands
+The GitHub commands allow users to query GitHub for things such as issues, pull requests, repositories and more. They take in a string in the format 'USER-NAME/REPO-NAME' for example or a URL.
 
 ### Name: `github issue`
 **Arguments**:
@@ -313,7 +329,7 @@ none
 
 **Result**: An embed containing the information about the queryed issue.
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `GitHub commands`
 
@@ -325,7 +341,7 @@ none
 
 **Result**: An embed containing the information about the queryed repository
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `GitHub commands`
 
@@ -337,11 +353,15 @@ none
 
 **Result**: An embed containing the information about the queryed user.
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Github commands`
 
 ---
+
+
+## Tag commands
+Tag commands are guild specific commands, that can be added at runtime. They are all embed commands. You will be assisted by auto-complete when typing these commands.
 
 ### Name: `tag-create`
 **Arguments**:
@@ -376,7 +396,7 @@ none
 
 **Result**: Posts the tag embed you requested
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Tag commands`
 
@@ -384,15 +404,19 @@ none
 
 ### Name: `tag-help`
 **Arguments**:
-none
+None
 
 **Result**: Displays a help command with all this information, in greater detail.
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Tag commands`
 
 ---
+
+
+## Gallery channel commands
+Gallery channels are channels that only allow attachments or links to be sent within them, deleting messages that don't contain either of these things.
 
 ### Name: `gallery-channel set`
 **Arguments**:
@@ -400,7 +424,7 @@ none
 
 **Result**: Sets the channel you are in a Gallery channel
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Gallery channel commands`
 
@@ -412,7 +436,7 @@ none
 
 **Result**: Unsets the channel you are in a Gallery channel
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Gallery channel commands`
 
@@ -424,7 +448,7 @@ none
 
 **Result**: Displays an embed of the image channels for the current guild
 
-**Required Permissions**: `none`
+**Required Permissions**: `None`
 
 **Command category**: `Gallery channel commands`
 
