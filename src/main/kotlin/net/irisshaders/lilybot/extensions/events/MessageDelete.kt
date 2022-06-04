@@ -8,6 +8,7 @@ import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageDeleteEvent
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -39,8 +40,21 @@ class MessageDelete : Extension() {
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
 				val eventMessage = event.message
-				val messageContent = eventMessage?.asMessageOrNull()?.content.toString()
+				val messageContent = if (eventMessage?.asMessageOrNull() != null) {
+					if (eventMessage.asMessageOrNull().content.length > 1024) {
+						eventMessage.asMessageOrNull().content.substring(0, 1020) + " ..."
+					} else {
+						eventMessage.asMessageOrNull().content
+					}
+				} else {
+					null
+				}
 				val messageLocation = event.channel.id.value
+
+				// Avoid logging messages proxied by PluralKit, since these messages aren't "actually deleted"
+				if (PluralKit.checkIfProxied(eventMessage!!.id)) {
+					return@action
+				}
 
 				messageLog.createEmbed {
 					color = DISCORD_PINK
@@ -50,18 +64,19 @@ class MessageDelete : Extension() {
 
 					field {
 						name = "Message Contents:"
-						value = messageContent.ifEmpty { "Failed to get content of message" }
+						value =
+							if (messageContent.isNullOrEmpty()) "Failed to get content of message" else messageContent
 						inline = false
 					}
 					// If the message has an attachment, add the link to it to the embed
-					if (eventMessage?.attachments != null && eventMessage.attachments.isNotEmpty()) {
+					if (eventMessage.attachments.isNotEmpty()) {
 						val attachmentUrls = StringBuilder()
 						for (attachment in eventMessage.attachments) {
 							attachmentUrls.append(
-							    "https://media.discordapp.net/attachments/" +
-									"${attachment.data.url.split("/")[4]}/" + // Get the channel
-									"${attachment.data.url.split("/")[5]}/" + // Get the message ID
-									attachment.data.filename + "\n"
+								"https://media.discordapp.net/attachments/" +
+										"${attachment.data.url.split("/")[4]}/" + // Get the channel
+										"${attachment.data.url.split("/")[5]}/" + // Get the message ID
+										attachment.data.filename + "\n"
 							)
 						}
 						field {
@@ -72,12 +87,12 @@ class MessageDelete : Extension() {
 					}
 					field {
 						name = "Message Author:"
-						value = eventMessage?.author?.tag.toString()
+						value = eventMessage.author?.tag.toString()
 						inline = true
 					}
 					field {
 						name = "Author ID:"
-						value = eventMessage?.author?.id.toString()
+						value = eventMessage.author?.id.toString()
 						inline = true
 					}
 				}

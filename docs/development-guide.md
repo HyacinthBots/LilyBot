@@ -32,6 +32,7 @@ TEST_GUILD_ID=
 ONLINE_STATUS_CHANNEL=
 MONGO_URI=
 SENTRY_DSN=
+ENVIRONMENT=
 ```
 
 To get a token, join [our discord](https://discord.gg/hy2329fcTZ) and ask.
