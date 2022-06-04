@@ -33,6 +33,18 @@ object DatabaseHelper {
 		return collection.findOne(ConfigData::guildId eq inputGuildId)
 	}
 
+	/** TODO decide if we should use relations or write each module to it's own table with Guild ID
+	 * Adds the given [supportConfig] to the database
+	 * @param supportConfig The new config values for the support module you want to set.
+	 * @author Miss Corruption
+	 * @since 4.0.0
+	 */
+// 	suspend fun setSupportConfig(supportConfig: SupportConfigData) {
+// 		val collection = database.getCollection<SupportConfigData>()
+// 		collection.deleteOne(SupportConfigData::guildId eq supportConfig.guildId)
+// 		collection.insertOne(supportConfig)
+// 	}
+
 	/**
 	 * Adds the given [newConfig] to the database.
 	 *
@@ -370,26 +382,66 @@ object DatabaseHelper {
  * The data for guild configuration.
  *
  * @param guildId The ID of the guild the config is for
- * @param moderatorsPing The ID of the moderator ping role
- * @param modActionLog The ID of the guild's action/audit log channel
- * @param messageLogs The ID of the guild's message logging channel
- * @param joinChannel The ID of the guild's member flow channel
- * @param supportChannel The ID of the support channel for the guild, nullable
- * @param supportTeam The ID of the support team for the guild, nullable
  * @since 3.0.0
  */
 @Serializable
 data class ConfigData(
 	val guildId: Snowflake,
-	val moderatorsPing: Snowflake,
-	val modActionLog: Snowflake,
-	val enableModeration: Boolean,
-	val messageLogs: Snowflake,
+)
+
+/**
+ * The data for support configuration.
+ *
+ * @param guildId The ID of the guild the config is for
+ * @param enabled If the support module is enabled or not
+ * @param channel The ID of the support channel for the guild
+ * @param team The ID of the support team for the guild
+ * @param message The support message as a string, nullable
+ * @since 4.0.0
+ */
+@Serializable
+data class SupportConfigData(
+	val guildId: Snowflake,
+	val enabled: Boolean,
+	val channel: Snowflake,
+	val team: Snowflake,
+	val message: String?
+)
+
+/**
+ * The data for moderation configuration.
+ *
+ * @param guildId The ID of the guild the config is for
+ * @param enabled If the support module is enabled or not
+ * @param channel The ID of the action log for the guild
+ * @param team The ID of the moderation role for the guild
+ * @since 4.0.0
+ */
+@Serializable
+data class ModerationConfigData(
+	val guildId: Snowflake,
+	val enabled: Boolean,
+	val channel: Snowflake,
+	val team: Snowflake,
+)
+
+/**
+ * The data for moderation configuration.
+ *
+ * @param guildId The ID of the guild the config is for
+ * @param messageLogs If edited and deleted messages should be logged
+ * @param messageChannel The channel to send message logs to
+ * @param joinLogs If joining and leaving users should be logged
+ * @param joinChannel The channel to send join logs to
+ * @since 4.0.0
+ */
+@Serializable
+data class LoggingConfigData(
+	val guildId: Snowflake,
+	val messageLogs: Boolean,
+	val messageChannel: Snowflake,
+	val joinLogs: Boolean,
 	val joinChannel: Snowflake,
-	val enableLogging: Boolean,
-	val supportChannel: Snowflake?,
-	val supportTeam: Snowflake?,
-	val enableSupport: Boolean
 )
 
 /**
