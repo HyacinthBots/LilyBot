@@ -64,6 +64,7 @@ var commandDocs: CommandDocs? = null
 
 val docFile = Path("./docs/commands.md")
 
+@OptIn(PrivilegedIntent::class)
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		members {
@@ -129,12 +130,14 @@ suspend fun main() {
 		}
 	}
 
-	val mapper = tomlMapper { }
-	val file = Path("docs/commanddocs.toml")
-	commandDocs = mapper.decode<CommandDocs>(file)
+	if (ENVIORNMENT != "production") {
+		val mapper = tomlMapper { }
+		val file = Path("docs/commanddocs.toml")
+		commandDocs = mapper.decode<CommandDocs>(file)
 
-	DocsGenerator.clearDocs(ENVIORNMENT)
-	DocsGenerator.writeNewDocs(ENVIORNMENT)
+		DocsGenerator.clearDocs(ENVIORNMENT)
+		DocsGenerator.writeNewDocs(ENVIORNMENT)
+	}
 
 	bot.start()
 }
