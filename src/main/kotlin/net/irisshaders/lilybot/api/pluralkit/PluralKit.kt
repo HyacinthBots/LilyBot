@@ -61,19 +61,19 @@ object PluralKit {
 	private suspend fun checkIfProxied(id: String): Boolean {
 		val url = MESSAGE_URL.replace("{id}", id)
 
-		var proxied: Boolean? = null
+		var proxied = false
 
 		try {
 			client.get(url).body<PluralKitMessage>()
 
 			proxied = true
 		} catch (e: ClientRequestException) {
-			if (e.response.status.value in 400 until 600) {
+			if (e.response.status.value !in 200 until 300) {
 				proxied = false
 			}
 		}
 
-		return proxied!!
+		return proxied
 	}
 }
 
