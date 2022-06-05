@@ -4,6 +4,8 @@ import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
+import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.time.TimestampType
@@ -14,6 +16,7 @@ import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.edit
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
@@ -27,7 +30,7 @@ class RemindMe : Extension() {
 	/** The timer for checking reminders. */
 	private val scheduler = Scheduler()
 
-	/** The task to attach the [scheduler] too. */
+	/** The task to attach the [scheduler] to. */
 	private lateinit var task: Task
 
 	override suspend fun setup() {
@@ -55,8 +58,8 @@ class RemindMe : Extension() {
 
 				val response = respond {
 					content = "Reminder set!\nI will remind you ${remindTime.toDiscord(TimestampType.RelativeTime)} " +
-							"at ${remindTime.toDiscord(TimestampType.ShortTime)}. That is `${
-								Duration.parse(duration.toString())}` away."
+							"at ${remindTime.toDiscord(TimestampType.ShortTime)}. That's `${
+								Duration.parse(duration.toString())}` after this message was sent."
 				}
 
 				DatabaseHelper.setReminder(
@@ -88,15 +91,27 @@ class RemindMe : Extension() {
 					channel.createMessage {
 						content =
 							"Reminder for <@${it.userId}> set ${it.initialSetTime.toDiscord(TimestampType.RelativeTime)}" +
-									" at ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)}\n" +
-									it.originalMessageUrl
+									" at ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)}"
+					}.edit {
+						components {
+							linkButton {
+								label = "Jump to message"
+								url = it.originalMessageUrl
+							}
+						}
 					}
 				} else {
 					channel.createMessage {
 						content =
 							"Reminder for <@${it.userId}> set ${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} " +
-									"at ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)}\n" +
-									"${it.originalMessageUrl}\n> ${it.customMessage}"
+									"at ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)}\n> ${it.customMessage}"
+					}.edit {
+						components {
+							linkButton {
+								label = "Jump to message"
+								url = it.originalMessageUrl
+							}
+						}
 					}
 				}
 
