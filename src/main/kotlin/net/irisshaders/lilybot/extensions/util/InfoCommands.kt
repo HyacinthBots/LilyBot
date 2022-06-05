@@ -10,7 +10,6 @@ import com.kotlindiscord.kord.extensions.pagination.pages.Page
 import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.Locale
-import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.rest.builder.message.EmbedBuilder
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.commandDocs
@@ -142,7 +141,6 @@ class InfoCommands : Extension() {
 
 				respond {
 					embeds.add(responseEmbed)
-				}.edit {
 					components {
 						linkButton(0) {
 							label = "GitHub"

@@ -17,6 +17,7 @@ import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.rest.builder.message.create.embed
@@ -94,29 +95,30 @@ class PublicUtilities : Extension() {
 
 					respond { content = "Nickname request sent!" }
 
-					actionLogEmbed = actionLog.createEmbed {
-						color = DISCORD_YELLOW
-						title = "Nickname Request"
-						timestamp = Clock.System.now()
+					actionLogEmbed = actionLog.createMessage {
+						embed {
+							color = DISCORD_YELLOW
+							title = "Nickname Request"
+							timestamp = Clock.System.now()
 
-						field {
-							name = "User:"
-							value = "${requester.mention}\n${requester.asUser().tag}\n${requester.id}"
-							inline = false
-						}
+							field {
+								name = "User:"
+								value = "${requester.mention}\n${requester.asUser().tag}\n${requester.id}"
+								inline = false
+							}
 
-						field {
-							name = "Current Nickname:"
-							value = "`${requesterAsMember.nickname}`"
-							inline = false
-						}
+							field {
+								name = "Current Nickname:"
+								value = "`${requesterAsMember.nickname}`"
+								inline = false
+							}
 
-						field {
-							name = "Requested Nickname:"
-							value = "`${arguments.newNick}`"
-							inline = false
+							field {
+								name = "Requested Nickname:"
+								value = "`${arguments.newNick}`"
+								inline = false
+							}
 						}
-					}.edit {
 						components {
 							ephemeralButton(row = 0) {
 								label = "Accept"

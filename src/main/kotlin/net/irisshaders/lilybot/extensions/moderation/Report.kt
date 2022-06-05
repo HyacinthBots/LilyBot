@@ -272,7 +272,6 @@ private suspend fun createReport(
 	reportResponse = modalResponse.respond {
 		content = "Would you like to report this message? This will ping moderators, and false reporting will be " +
 				"treated as spam and punished accordingly"
-	}.edit {
 		components {
 			ephemeralButton(0) {
 				label = "Yes"
@@ -285,29 +284,30 @@ private suspend fun createReport(
 
 						messageLog.createMessage { content = "<@&$moderatorRole>" }
 
-						reportEmbed = messageLog.createEmbed {
-							color = DISCORD_RED
-							title = "Message reported"
-							description = "A message was reported in ${reportedMessage.getChannel().mention}"
+						reportEmbed = messageLog.createMessage {
+							embed {
+								color = DISCORD_RED
+								title = "Message reported"
+								description = "A message was reported in ${reportedMessage.getChannel().mention}"
 
-							field {
-								name = "Message Content:"
-								value =
-									reportedMessage.content.ifEmpty {
-										"Failed to get content of message"
-									}
-								inline = true
+								field {
+									name = "Message Content:"
+									value =
+										reportedMessage.content.ifEmpty {
+											"Failed to get content of message"
+										}
+									inline = true
+								}
+								field {
+									name = "Report reason:"
+									value = reportReason ?: "No reason provided"
+								}
+								footer {
+									text = "Reported by: ${user.asUser().tag}"
+									icon = user.asUser().avatar?.url
+								}
+								timestamp = Clock.System.now()
 							}
-							field {
-								name = "Report reason:"
-								value = reportReason ?: "No reason provided"
-							}
-							footer {
-								text = "Reported by: ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
-							}
-							timestamp = Clock.System.now()
-						}.edit {
 							components {
 								linkButton {
 									label = "Jump to message"
