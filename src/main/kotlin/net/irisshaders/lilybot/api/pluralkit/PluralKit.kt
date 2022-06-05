@@ -46,6 +46,15 @@ object PluralKit {
 	 */
 	suspend fun checkIfProxied(id: Snowflake) = checkIfProxied(id.toString())
 
+	/**
+	 * Using a provided message ID, we call [getProxiedMessageAuthorId] to find out the author of the message.
+	 *
+	 * @param id The ID of the message being checked
+	 * @return The ID of the message author or null
+	 * @see getProxiedMessageAuthorId
+	 * @author NoComment1105
+	 * @since 3.3.2
+	 */
 	suspend fun getProxiedMessageAuthorId(id: Snowflake) = getProxiedMessageAuthorId(id.toString())
 
 	/**
@@ -78,22 +87,32 @@ object PluralKit {
 		return proxied
 	}
 
+	/**
+	 * Using a provided message ID, we check against the [PluralKit API](https://pluralkit.me/api/) to find out the
+	 * author of the proxied message. If there is no found author, we return null, or the [Snowflake] ID of the author.
+	 *
+	 * @param id The ID of the message being checked as a string
+	 * @return The ID of the message author or null
+	 * @see getProxiedMessageAuthorId
+	 * @author NoComment1105
+	 * @since 3.3.2
+	 */
 	private suspend fun getProxiedMessageAuthorId(id: String): Snowflake? {
 		val url = MESSAGE_URL.replace("{id}", id)
 
-		var author: Snowflake? = null
+		var authorId: Snowflake? = null
 
 		try {
 			val message: PluralKitMessage = client.get(url).body()
 
-			author = message.sender
+			authorId = message.sender
 		} catch (e: ClientRequestException) {
 			if (e.response.status.value !in 200 until 300) {
-				author = null
+				authorId = null
 			}
 		}
 
-		return author
+		return authorId
 	}
 }
 
