@@ -36,28 +36,6 @@ object PluralKit {
 	}
 
 	/**
-	 * Using a provided message [Snowflake], we call [checkIfProxied] to find out if the message was proxied or not.
-	 *
-	 * @param id The ID of the message being checked
-	 * @see checkIfProxied
-	 * @return True if proxied, false if not
-	 * @author NoComment1105
-	 * @since 3.3.0
-	 */
-	suspend fun checkIfProxied(id: Snowflake) = checkIfProxied(id.toString())
-
-	/**
-	 * Using a provided message ID, we call [getProxiedMessageAuthorId] to find out the author of the message.
-	 *
-	 * @param id The ID of the message being checked
-	 * @return The ID of the message author or null
-	 * @see getProxiedMessageAuthorId
-	 * @author NoComment1105
-	 * @since 3.3.2
-	 */
-	suspend fun getProxiedMessageAuthorId(id: Snowflake) = getProxiedMessageAuthorId(id.toString())
-
-	/**
 	 * Using a provided message ID, we check against the [PluralKit API](https://pluralkit.me/api/) to find out if
 	 * the message has been proxied. If it has been, we'll return true on the function, allowing this to be checked in
 	 * for in other places in the bot. If getting the message returns an error response in the range of 400 to 600, we
@@ -69,8 +47,8 @@ object PluralKit {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	private suspend fun checkIfProxied(id: String): Boolean {
-		val url = MESSAGE_URL.replace("{id}", id)
+	 suspend fun checkIfProxied(id: Snowflake): Boolean {
+		val url = MESSAGE_URL.replace("{id}", id.toString())
 
 		var proxied = false
 
@@ -97,8 +75,8 @@ object PluralKit {
 	 * @author NoComment1105
 	 * @since 3.3.2
 	 */
-	private suspend fun getProxiedMessageAuthorId(id: String): Snowflake? {
-		val url = MESSAGE_URL.replace("{id}", id)
+	 suspend fun getProxiedMessageAuthorId(id: Snowflake): Snowflake? {
+		val url = MESSAGE_URL.replace("{id}", id.toString())
 
 		var authorId: Snowflake? = null
 
