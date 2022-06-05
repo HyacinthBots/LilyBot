@@ -36,17 +36,6 @@ object PluralKit {
 	}
 
 	/**
-	 * Using a provided message [Snowflake], we call [checkIfProxied] to find out if the message was proxied or not.
-	 *
-	 * @param id The ID of the message being checked
-	 * @see checkIfProxied
-	 * @return True if proxied, false if not
-	 * @author NoComment1105
-	 * @since 3.3.0
-	 */
-	suspend fun checkIfProxied(id: Snowflake) = checkIfProxied(id.toString())
-
-	/**
 	 * Using a provided message ID, we check against the [PluralKit API](https://pluralkit.me/api/) to find out if
 	 * the message has been proxied. If it has been, we'll return true on the function, allowing this to be checked in
 	 * for in other places in the bot. If getting the message returns an error response in the range of 400 to 600, we
@@ -58,8 +47,8 @@ object PluralKit {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	private suspend fun checkIfProxied(id: String): Boolean {
-		val url = MESSAGE_URL.replace("{id}", id)
+	 suspend fun checkIfProxied(id: Snowflake): Boolean {
+		val url = MESSAGE_URL.replace("{id}", id.toString())
 
 		var proxied = false
 
@@ -75,6 +64,34 @@ object PluralKit {
 
 		return proxied
 	}
+
+	/**
+	 * Using a provided message ID, we check against the [PluralKit API](https://pluralkit.me/api/) to find out the
+	 * author of the proxied message. If there is no found author, we return null, or the [Snowflake] ID of the author.
+	 *
+	 * @param id The ID of the message being checked as a string
+	 * @return The ID of the message author or null
+	 * @see getProxiedMessageAuthorId
+	 * @author NoComment1105
+	 * @since 3.3.2
+	 */
+	 suspend fun getProxiedMessageAuthorId(id: Snowflake): Snowflake? {
+		val url = MESSAGE_URL.replace("{id}", id.toString())
+
+		var authorId: Snowflake? = null
+
+		try {
+			val message: PluralKitMessage = client.get(url).body()
+
+			authorId = message.sender
+		} catch (e: ClientRequestException) {
+			if (e.response.status.value !in 200 until 300) {
+				authorId = null
+			}
+		}
+
+		return authorId
+	}
 }
 
 /**
@@ -87,6 +104,7 @@ object PluralKit {
  * @param timestamp The time the message was sent
  * @param id The ID of the message sent by the webhook
  * @param original The ID of the (now-deleted) message that triggered the proxy
+ * @param sender The user ID of the account that triggered the proxy.
  * @param channel The ID of the channel the message was sent in
  * @param guild The ID of the server the message was sent in
  * @since 3.3.0
@@ -96,6 +114,7 @@ data class PluralKitMessage(
 	val timestamp: Instant,
 	val id: Snowflake,
 	val original: Snowflake,
+	val sender: Snowflake,
 	val channel: Snowflake,
 	val guild: Snowflake
 )
