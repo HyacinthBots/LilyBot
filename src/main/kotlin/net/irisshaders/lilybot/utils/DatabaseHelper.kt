@@ -9,6 +9,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database
+import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.eq
 
 /**
@@ -303,7 +304,7 @@ object DatabaseHelper {
 			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 			if (timeSinceLatestMessage.inWholeDays > 7) {
 				collection.deleteOne(ThreadData::threadId eq thread.id)
-				deletedThreads = +1
+				deletedThreads += 1
 			}
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
@@ -364,6 +365,45 @@ object DatabaseHelper {
 
 		databaseLogger.info("Deleted old data for $deletedGuildData guilds from the database")
 	}
+
+	/**
+	 * Stores a channel ID as input by the user, in the database, with it's corresponding guild, allowing us to find
+	 * the channel later.
+	 *
+	 * @param inputGuildId The guild the channel is in
+	 * @param inputChannelId The channel that is being set as a gallery channel
+	 * @author NoComment1105
+	 * @since 3.3.0
+	 */
+	suspend fun setGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+		val collection = database.getCollection<GalleryChannelData>()
+		collection.insertOne(GalleryChannelData(inputGuildId, inputChannelId))
+	}
+
+	/**
+	 * Removes a channel ID from the gallery channel database.
+	 *
+	 * @param inputGuildId The guild the channel is in
+	 * @param inputChannelId The channel being removed
+	 * @author NoComment1105
+	 * @since 3.3.0
+	 */
+	suspend fun deleteGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+		val collection = database.getCollection<GalleryChannelData>()
+		collection.deleteOne(
+			GalleryChannelData::channelId eq inputChannelId,
+			GalleryChannelData::guildId eq inputGuildId
+		)
+	}
+
+	/**
+	 * Collects every gallery channel in the database into a [List].
+	 *
+	 * @return The [CoroutineCollection] of [GalleryChannelData] for all the gallery channels in the database
+	 * @author NoComment1105
+	 * @since 3.3.0
+	 */
+	fun getGalleryChannels(): CoroutineCollection<GalleryChannelData> = database.getCollection()
 
 	suspend fun setReminder(
 		initialSetTime: Instant,
@@ -508,6 +548,19 @@ data class ThreadData(
 data class GuildLeaveTimeData(
 	val guildId: Snowflake,
 	val guildLeaveTime: Instant
+)
+
+/**
+ * The data for image channels in a guild.
+ *
+ * @param guildId The ID of the guild the image channel is for
+ * @param channelId The ID of the image channel being set
+ * @since 3.3.0
+ */
+@Serializable
+data class GalleryChannelData(
+	val guildId: Snowflake,
+	val channelId: Snowflake
 )
 
 @Serializable

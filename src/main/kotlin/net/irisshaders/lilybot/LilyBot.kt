@@ -3,6 +3,8 @@
 
 package net.irisshaders.lilybot
 
+import cc.ekblad.toml.decode
+import cc.ekblad.toml.tomlMapper
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
@@ -21,7 +23,9 @@ import net.irisshaders.lilybot.extensions.events.ThreadInviter
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
 import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
+import net.irisshaders.lilybot.extensions.util.GalleryChannel
 import net.irisshaders.lilybot.extensions.util.Github
+import net.irisshaders.lilybot.extensions.util.InfoCommands
 import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.util.PublicUtilities
 import net.irisshaders.lilybot.extensions.util.RemindMe
@@ -31,14 +35,18 @@ import net.irisshaders.lilybot.extensions.util.Tags
 import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.ENVIRONMENT
 import net.irisshaders.lilybot.utils.MONGO_URI
 import net.irisshaders.lilybot.utils.SENTRY_DSN
+import net.irisshaders.lilybot.utils.docs.CommandDocs
+import net.irisshaders.lilybot.utils.docs.DocsGenerator
 import org.bson.UuidRepresentation
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 import java.io.IOException
+import kotlin.io.path.Path
 
 var github: GitHub? = null
 private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
@@ -52,6 +60,10 @@ private val settings = MongoClientSettings
 
 private val client = KMongo.createClient(settings).coroutine
 val database = client.getDatabase("LilyBot")
+
+var commandDocs: CommandDocs? = null
+
+val docFile = Path("./docs/commands.md")
 
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
@@ -69,6 +81,8 @@ suspend fun main() {
 		extensions {
 			add(::Config)
 			add(::Github)
+			add(::GalleryChannel)
+			add(::InfoCommands)
 			add(::JoinLeaveDetection)
 			add(::LogUploading)
 			add(::MemberJoinLeave)
@@ -117,5 +131,15 @@ suspend fun main() {
 		}
 	}
 
+	val mapper = tomlMapper { }
+	val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
+
+	commandDocs = mapper.decode<CommandDocs>(stream)
+
+	DocsGenerator.clearDocs(ENVIRONMENT)
+	DocsGenerator.writeNewDocs(ENVIRONMENT)
+
 	bot.start()
 }
+
+object LilyBot
