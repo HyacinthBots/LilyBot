@@ -28,13 +28,13 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.exception.EntityNotFoundException
+import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.configPresent
-import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 /**
  * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
@@ -92,33 +92,34 @@ class ModUtilities : Extension() {
 
 				respond { content = "Message sent." }
 
-				actionLog.createEmbed {
-					title = "Say command used"
-					description = "```${arguments.message}```"
-					color = DISCORD_BLACK
-					timestamp = Clock.System.now()
-					field {
-						name = "Channel:"
-						value = targetChannel.mention
-						inline = true
-					}
-					field {
-						name = "Type:"
-						value = if (arguments.embed) "Embed" else "Message"
-						inline = true
-					}
-					if (arguments.embed) {
+				actionLog.createMessage {
+					embed {
+						title = "Say command used"
+						description = "```${arguments.message}```"
 						field {
-							name = "Color:"
-							value = arguments.color.toString()
+							name = "Channel:"
+							value = targetChannel.mention
 							inline = true
 						}
+						field {
+							name = "Type:"
+							value = if (arguments.embed) "Embed" else "Message"
+							inline = true
+						}
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_BLACK
+						if (arguments.embed) {
+							field {
+								name = "Color:"
+								value = arguments.color.toString()
+								inline = true
+							}
+						}
 					}
-					footer {
-						text = user.asUser().tag
-						icon = user.asUser().avatar?.url
-					}
-				}.edit {
 					components {
 						linkButton {
 							label = "Jump to message"
@@ -187,23 +188,24 @@ class ModUtilities : Extension() {
 
 					respond { content = "Message edited" }
 
-					actionLog.createEmbed {
-						title = "Say message edited"
-						color = DISCORD_WHITE
-						timestamp = Clock.System.now()
-						field {
-							name = "Original Content"
-							value = "```$originalContent```"
+					actionLog.createMessage {
+						embed {
+							title = "Say message edited"
+							field {
+								name = "Original Content"
+								value = "```$originalContent```"
+							}
+							field {
+								name = "New Content"
+								value = "```${arguments.newContent}```"
+							}
+							footer {
+								text = "Edited by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
+							}
+							color = DISCORD_WHITE
+							timestamp = Clock.System.now()
 						}
-						field {
-							name = "New Content"
-							value = "```${arguments.newContent}```"
-						}
-						footer {
-							text = "Edited by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-					}.edit {
 						components {
 							linkButton {
 								label = "Jump to message"
@@ -232,38 +234,39 @@ class ModUtilities : Extension() {
 
 					respond { content = "Embed updated" }
 
-					actionLog.createEmbed {
-						title = "Say message edited"
-						color = DISCORD_WHITE
-						timestamp = Clock.System.now()
-						field {
-							name = "Original content"
-							// The old content, if null none
-							value = "```${oldContent ?: "none"}```"
+					actionLog.createMessage {
+						embed {
+							title = "Say message edited"
+							field {
+								name = "Original content"
+								// The old content, if null none
+								value = "```${oldContent ?: "none"}```"
+							}
+							field {
+								name = "New content"
+								// The new content, if null the old content, if null none
+								value = "```${arguments.newContent ?: oldContent ?: "none"}```"
+							}
+							field {
+								name = "Old color"
+								value = oldColor.toString()
+							}
+							field {
+								name = "New color"
+								value =
+									if (arguments.newColor != null) arguments.newColor.toString() else oldColor.toString()
+							}
+							field {
+								name = "Has Timestamp"
+								value = arguments.timestamp.toString()
+							}
+							footer {
+								text = "Edited by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
+							}
+							timestamp = Clock.System.now()
+							color = DISCORD_WHITE
 						}
-						field {
-							name = "New content"
-							// The new content, if null the old content, if null none
-							value = "```${arguments.newContent ?: oldContent ?: "none"}```"
-						}
-						field {
-							name = "Old color"
-							value = oldColor.toString()
-						}
-						field {
-							name = "New color"
-							value =
-								if (arguments.newColor != null) arguments.newColor.toString() else oldColor.toString()
-						}
-						field {
-							name = "Has Timestamp"
-							value = arguments.timestamp.toString()
-						}
-						footer {
-							text = "Edited by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-					}.edit {
 						components {
 							linkButton {
 								label = "Jump to message"
@@ -310,13 +313,15 @@ class ModUtilities : Extension() {
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
-				responseEmbedInChannel(
-					actionLog,
-					"Presence Changed",
-					"Lily's presence has been set to `${arguments.presenceArgument}`",
-					DISCORD_BLACK,
-					user.asUser()
-				)
+				actionLog.createEmbed {
+					title = "Presence changed"
+					description = "Lily's presence has been set to `${arguments.presenceArgument}`"
+					footer {
+						text = user.asUser().tag
+						icon = user.asUser().avatar?.url
+					}
+					color = DISCORD_BLACK
+				}
 			}
 		}
 	}
