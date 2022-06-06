@@ -96,8 +96,6 @@ class ModUtilities : Extension() {
 					embed {
 						title = "Say command used"
 						description = "```${arguments.message}```"
-						color = DISCORD_BLACK
-						timestamp = Clock.System.now()
 						field {
 							name = "Channel:"
 							value = targetChannel.mention
@@ -108,16 +106,18 @@ class ModUtilities : Extension() {
 							value = if (arguments.embed) "Embed" else "Message"
 							inline = true
 						}
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_BLACK
 						if (arguments.embed) {
 							field {
 								name = "Color:"
 								value = arguments.color.toString()
 								inline = true
 							}
-						}
-						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
 						}
 					}
 					components {
@@ -191,8 +191,6 @@ class ModUtilities : Extension() {
 					actionLog.createMessage {
 						embed {
 							title = "Say message edited"
-							color = DISCORD_WHITE
-							timestamp = Clock.System.now()
 							field {
 								name = "Original Content"
 								value = "```$originalContent```"
@@ -205,6 +203,8 @@ class ModUtilities : Extension() {
 								text = "Edited by ${user.asUser().tag}"
 								icon = user.asUser().avatar?.url
 							}
+							color = DISCORD_WHITE
+							timestamp = Clock.System.now()
 						}
 						components {
 							linkButton {
@@ -237,8 +237,6 @@ class ModUtilities : Extension() {
 					actionLog.createMessage {
 						embed {
 							title = "Say message edited"
-							color = DISCORD_WHITE
-							timestamp = Clock.System.now()
 							field {
 								name = "Original content"
 								// The old content, if null none
@@ -266,6 +264,8 @@ class ModUtilities : Extension() {
 								text = "Edited by ${user.asUser().tag}"
 								icon = user.asUser().avatar?.url
 							}
+							timestamp = Clock.System.now()
+							color = DISCORD_WHITE
 						}
 						components {
 							linkButton {

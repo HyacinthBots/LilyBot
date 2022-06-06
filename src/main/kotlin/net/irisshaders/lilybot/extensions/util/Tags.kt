@@ -61,13 +61,13 @@ class Tags : Extension() {
 				channel.createMessage {
 					if (arguments.user != null) content = arguments.user!!.mention
 					embed {
-						color = DISCORD_BLURPLE
 						title = tagFromDatabase.tagTitle
 						description = tagFromDatabase.tagValue
 						footer {
 							text = "Tag requested by ${user.asUser().tag}"
 							icon = user.asUser().avatar!!.url
 						}
+						color = DISCORD_BLURPLE
 					}
 				}
 			}
@@ -138,7 +138,6 @@ class Tags : Extension() {
 				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
 
 				actionLog.createEmbed {
-					color = DISCORD_GREEN
 					title = "Tag created!"
 					description = "The tag `${arguments.tagName}` has been created"
 					field {
@@ -156,6 +155,7 @@ class Tags : Extension() {
 						text = "Requested by ${user.asUser().tag}"
 					}
 					timestamp = Clock.System.now()
+					color = DISCORD_GREEN
 				}
 
 				respond {

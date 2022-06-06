@@ -286,10 +286,8 @@ private suspend fun createReport(
 
 						reportEmbed = messageLog.createMessage {
 							embed {
-								color = DISCORD_RED
 								title = "Message reported"
 								description = "A message was reported in ${reportedMessage.getChannel().mention}"
-
 								field {
 									name = "Message Content:"
 									value =
@@ -307,6 +305,7 @@ private suspend fun createReport(
 									icon = user.asUser().avatar?.url
 								}
 								timestamp = Clock.System.now()
+								color = DISCORD_RED
 							}
 							components {
 								linkButton {

@@ -217,11 +217,11 @@ class TemporaryModeration : Extension() {
 							description = "${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
 									"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other " +
 									"action. Reason: ${arguments.reason}"
-							color = DISCORD_BLACK
 							footer {
 								text = user.asUser().tag
 								icon = user.asUser().avatar?.url
 							}
+							color = DISCORD_BLACK
 						}
 					}
 				}
@@ -415,10 +415,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				actionLog.createEmbed {
-					title = "Remove Timeout"
-					color = DISCORD_BLACK
-					timestamp = Clock.System.now()
-
+					title = "Timeout Removed"
 					field {
 						name = "User:"
 						value = "${userArg.tag} \n${userArg.id}"
@@ -428,6 +425,8 @@ class TemporaryModeration : Extension() {
 						text = "Requested by ${user.asUser().tag}"
 						icon = user.asUser().avatar?.url
 					}
+					timestamp = Clock.System.now()
+					color = DISCORD_BLACK
 				}
 			}
 		}

@@ -221,7 +221,6 @@ class PublicUtilities : Extension() {
 													actionLogEmbed!!.edit {
 														components { removeAll() }
 														embed {
-															color = DISCORD_RED
 															title = "Nickname Request Denied"
 
 															field {
@@ -255,6 +254,7 @@ class PublicUtilities : Extension() {
 															}
 
 															timestamp = Clock.System.now()
+															color = DISCORD_RED
 														}
 													}
 												}

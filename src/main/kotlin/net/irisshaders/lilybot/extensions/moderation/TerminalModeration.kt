@@ -160,8 +160,6 @@ class TerminalModeration : Extension() {
 				actionLog.createEmbed {
 					title = "Unbanned a user"
 					description = "${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})"
-					color = DISCORD_GREEN
-					timestamp = Clock.System.now()
 					field {
 						name = "Reason:"
 						value = arguments.reason
@@ -170,6 +168,8 @@ class TerminalModeration : Extension() {
 						text = user.asUser().tag
 						icon = user.asUser().avatar?.url
 					}
+					timestamp = Clock.System.now()
+					color = DISCORD_GREEN
 				}
 			}
 		}
