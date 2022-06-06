@@ -35,7 +35,6 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.configPresent
-import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 /**
  * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
@@ -314,13 +313,15 @@ class ModUtilities : Extension() {
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
-				responseEmbedInChannel(
-					actionLog,
-					"Presence Changed",
-					"Lily's presence has been set to `${arguments.presenceArgument}`",
-					DISCORD_BLACK,
-					user.asUser()
-				)
+				actionLog.createEmbed {
+					title = "Presence changed"
+					description = "Lily's presence has been set to `${arguments.presenceArgument}`"
+					footer {
+						text = user.asUser().tag
+						icon = user.asUser().avatar?.url
+					}
+					color = DISCORD_BLACK
+				}
 			}
 		}
 	}

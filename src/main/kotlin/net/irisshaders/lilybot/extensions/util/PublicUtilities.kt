@@ -14,6 +14,7 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.dm
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
@@ -25,7 +26,6 @@ import dev.kord.rest.builder.message.modify.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
-import net.irisshaders.lilybot.utils.userDMEmbed
 
 /**
  * This class contains a few utility commands that can be used by the public in guilds, or that are often seen by the
@@ -127,13 +127,14 @@ class PublicUtilities : Extension() {
 								action {
 									requesterAsMember.edit { nickname = arguments.newNick }
 
-									userDMEmbed(
-										requester.asUser(),
-										"Nickname Change Accepted in ${guild!!.asGuild().name}",
-										"Nickname updated from `${requesterAsMember.nickname}` to " +
-												"`${arguments.newNick}`",
-										DISCORD_GREEN
-									)
+									requester.dm {
+										embed {
+											title = "Nickname Change Accepted in ${guild!!.asGuild().name}"
+											description = "Nickname updated from `${requesterAsMember.nickname}` to " +
+													"`${arguments.newNick}`"
+											color = DISCORD_GREEN
+										}
+									}
 
 									actionLogEmbed!!.edit {
 										components { removeAll() }
@@ -207,14 +208,15 @@ class PublicUtilities : Extension() {
 																	"ladder, which is not allowed."
 													}
 
-													userDMEmbed(
-														requester.asUser(),
-														"Nickname Change Denied in ${guild!!.asGuild().name}",
-														"Staff have reviewed your nickname request (" +
-																"`${arguments.newNick}`) and rejected it," +
-																" because it $reason",
-														DISCORD_RED
-													)
+													requester.dm {
+														embed {
+															title = "Nickname Change Denied in ${guild!!.asGuild().name}"
+															description = "Staff have reviewed your nickname request (" +
+																	"`${arguments.newNick}`) and rejected it," +
+																	" because it $reason"
+															color = DISCORD_RED
+														}
+													}
 
 													actionLogEmbed!!.edit {
 														components { removeAll() }

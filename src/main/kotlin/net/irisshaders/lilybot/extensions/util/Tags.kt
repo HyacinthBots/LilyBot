@@ -21,7 +21,6 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
-import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 /**
  * The class that holds the commands to create tags commands.
@@ -195,14 +194,15 @@ class Tags : Extension() {
 
 				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
 
-				responseEmbedInChannel(
-					actionLog,
-					"Tag deleted!",
-					"The tag ${arguments.tagName} was deleted",
-					DISCORD_RED,
-					user.asUser()
-				)
-
+				actionLog.createEmbed {
+					title = "Tag deleted!"
+					description = "The tag ${arguments.tagName} was deleted"
+					footer {
+						text = user.asUser().tag
+						icon = user.asUser().avatar?.url
+					}
+					color = DISCORD_RED
+				}
 				respond {
 					content = "Tag: `${arguments.tagName}` deleted"
 				}
