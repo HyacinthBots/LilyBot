@@ -19,6 +19,7 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
 class RoleMenu : Extension() {
@@ -31,7 +32,7 @@ class RoleMenu : Extension() {
 
 			ephemeralSubCommand(::RoleMenuCreateArgs) {
 				name = "create"
-				description = "Create a new role menu in this channel."
+				description = "Create a new role menu in this channel. This will override any previous role menus."
 
 				check {
 					anyGuild()
@@ -40,8 +41,6 @@ class RoleMenu : Extension() {
 				}
 
 				action {
-					// todo check if there's already a role menu in this channel
-
 					channel.createMessage {
 						if (arguments.embed) {
 							embed {
@@ -58,9 +57,14 @@ class RoleMenu : Extension() {
 								style = ButtonStyle.Primary
 
 								action {
+									if (DatabaseHelper.getRoles(channel.id) == null) {
+											respond {
+												content = "This role menu has no roles associated with it. " +
+														"Please ask a guild manager to add some."
+											}
+										return@action
+									}
 									respond {
-										// check if there are actually roles associated
-										content = "There wil be a menu here."
 									}
 								}
 							}
