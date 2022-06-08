@@ -11,9 +11,11 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.HttpClient
@@ -26,7 +28,6 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import net.irisshaders.lilybot.utils.responseEmbedInChannel
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
@@ -81,29 +82,35 @@ class LogUploading : Extension() {
 						val necText = "at Not Enough Crashes"
 						val indexOfNECText = builder.indexOf(necText)
 						if (indexOfNECText != -1) {
-							responseEmbedInChannel(
-								eventMessage.channel,
-								"Not Enough Crashes detected in logs",
-								"Not Enough Crashes (NEC) is well known to cause issues and often " +
+							eventMessage.channel.createEmbed {
+								title = "Not Enough Crashes detected in logs"
+								description = "Not Enough Crashes (NEC) is well known to cause issues and often " +
 										"makes the debugging process more difficult. " +
 										"Please remove NEC, recreate the issue, and resend the relevant files " +
-										"(i.e. log or crash report) if the issue persists.",
-								DISCORD_PINK,
-								eventMessage.author
-							)
+										"(i.e. log or crash report) if the issue persists."
+								footer {
+									text = eventMessage.author?.tag ?: ""
+									icon = eventMessage.author?.avatar?.url
+								}
+								color = DISCORD_PINK
+							}
 						} else {
 							// Ask the user if they're ok with uploading their log to a paste site
 							var confirmationMessage: Message? = null
 
-							confirmationMessage = responseEmbedInChannel(
-								eventMessage.channel,
-								"Do you want to upload this file to mclo.gs?",
-								"mclo.gs is a website that allows users to share minecraft logs through " +
-										"public posts.\nIt's easier for the support team to view " +
-										"the file on mclo.gs, do you want it to be uploaded?",
-								DISCORD_PINK,
-								eventMessage.author
-							).edit {
+							confirmationMessage = eventMessage.channel.createMessage {
+								embed {
+									title = "Do you want to upload this file to mclo.gs?"
+									description = "mclo.gs is a website that allows users to share minecraft logs " +
+											"through public posts.\nIt's easier for the support team to view " +
+											"the file on mclo.gs, do you want it to be uploaded?"
+									footer {
+										text = eventMessage.author?.tag ?: ""
+										icon = eventMessage.author?.avatar?.url
+									}
+									color = DISCORD_PINK
+								}
+
 								components {
 									ephemeralButton(row = 0) {
 										label = "Yes"
@@ -116,14 +123,13 @@ class LogUploading : Extension() {
 												confirmationMessage!!.delete()
 
 												val uploadMessage = eventMessage.channel.createEmbed {
-													color = DISCORD_PINK
 													title = "Uploading `$attachmentFileName` to mclo.gs..."
-													timestamp = Clock.System.now()
-
 													footer {
 														text = "Uploaded by ${eventMessage.author?.tag}"
 														icon = eventMessage.author?.avatar?.url
 													}
+													timestamp = Clock.System.now()
+													color = DISCORD_PINK
 												}
 
 												try {
@@ -131,14 +137,13 @@ class LogUploading : Extension() {
 
 													uploadMessage.edit {
 														embed {
-															color = DISCORD_PINK
 															title = "`$attachmentFileName` uploaded to mclo.gs"
-															timestamp = Clock.System.now()
-
 															footer {
 																text = "Uploaded by ${eventMessage.author?.tag}"
 																icon = eventMessage.author?.avatar?.url
 															}
+															timestamp = Clock.System.now()
+															color = DISCORD_PINK
 														}
 
 														actionRow {
@@ -151,14 +156,14 @@ class LogUploading : Extension() {
 													// If the upload fails, we'll just show the error
 													uploadMessage.edit {
 														embed {
-															color = DISCORD_RED
 															title = "Failed to upload `$attachmentFileName` to mclo.gs"
-															timestamp = Clock.System.now()
 															description = "Error: $e"
 															footer {
 																text = "Uploaded by ${eventMessage.author?.tag}"
 																icon = eventMessage.author?.avatar?.url
 															}
+															timestamp = Clock.System.now()
+															color = DISCORD_RED
 														}
 													}
 													// Capture Exception to Sentry
