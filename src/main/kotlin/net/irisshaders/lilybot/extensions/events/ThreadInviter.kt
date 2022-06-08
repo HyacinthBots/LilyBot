@@ -67,6 +67,7 @@ class ThreadInviter : Extension() {
 				}
 			}
 			action {
+				delay(PluralKit.PK_API_DELAY) // Allow the PK API to catch up
 				val config = DatabaseHelper.getConfig(event.guildId!!)!!
 
 				config.supportTeam ?: return@action
@@ -82,11 +83,7 @@ class ThreadInviter : Extension() {
 
 				if (event.message.author?.isNullOrBot() == false &&
 					PluralKit.isProxied(event.message.id)
-				) {
-					return@action
-				} else {
-					delay(10)
-				}
+				) return@action
 
 				val userId = PluralKit.getProxiedMessageAuthorId(event.message.id) ?: event.member!!.id
 				val user = UserBehavior(userId, kord)

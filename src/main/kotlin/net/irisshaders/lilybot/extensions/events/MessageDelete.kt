@@ -7,6 +7,7 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageDeleteEvent
+import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -33,6 +34,7 @@ class MessageDelete : Extension() {
 			}
 
 			action {
+				delay(PluralKit.PK_API_DELAY) // Allow the PK API to catch up
 				if (event.message?.author?.isBot == true) return@action
 
 				val config = DatabaseHelper.getConfig(event.guild!!.id)!!

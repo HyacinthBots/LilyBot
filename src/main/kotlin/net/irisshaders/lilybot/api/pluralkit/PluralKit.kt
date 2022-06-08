@@ -23,6 +23,8 @@ internal const val MESSAGE_URL = "$PK_API_URL/messages/{id}"
 
 object PluralKit {
 
+	const val PK_API_DELAY: Long = 500
+
 	/** The client used for querying values from the API. */
 	private val client = HttpClient {
 		install(ContentNegotiation) {
