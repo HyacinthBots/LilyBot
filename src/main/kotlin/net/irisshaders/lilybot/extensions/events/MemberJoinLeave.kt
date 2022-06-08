@@ -34,7 +34,10 @@ class MemberJoinLeave : Extension() {
 				val joinChannel = event.getGuild().getChannel(config.joinChannel) as GuildMessageChannelBehavior
 
 				joinChannel.createEmbed {
+					color = DISCORD_GREEN
 					title = "User joined the server!"
+					timestamp = Clock.System.now()
+
 					field {
 						name = "Welcome:"
 						value = "${eventMember.mention} (${eventMember.tag})"
@@ -48,8 +51,6 @@ class MemberJoinLeave : Extension() {
 					footer {
 						text = "Member Count: $guildMemberCount"
 					}
-					timestamp = Clock.System.now()
-					color = DISCORD_GREEN
 				}
 			}
 		}
@@ -68,7 +69,10 @@ class MemberJoinLeave : Extension() {
 				val joinChannel = event.getGuild().getChannel(config.joinChannel) as GuildMessageChannelBehavior
 
 				joinChannel.createEmbed {
+					color = DISCORD_RED
 					title = "User left the server!"
+					timestamp = Clock.System.now()
+
 					field {
 						name = "Goodbye:"
 						value = eventUser.tag
@@ -82,8 +86,6 @@ class MemberJoinLeave : Extension() {
 					footer {
 						text = "Member count: $guildMemberCount"
 					}
-					timestamp = Clock.System.now()
-					color = DISCORD_RED
 				}
 			}
 		}

@@ -19,7 +19,6 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashComman
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import com.kotlindiscord.kord.extensions.utils.waitFor
@@ -52,6 +51,7 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.userDMEmbed
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -272,6 +272,7 @@ private suspend fun createReport(
 	reportResponse = modalResponse.respond {
 		content = "Would you like to report this message? This will ping moderators, and false reporting will be " +
 				"treated as spam and punished accordingly"
+	}.edit {
 		components {
 			ephemeralButton(0) {
 				label = "Yes"
@@ -284,29 +285,29 @@ private suspend fun createReport(
 
 						messageLog.createMessage { content = "<@&$moderatorRole>" }
 
-						reportEmbed = messageLog.createMessage {
-							embed {
-								title = "Message reported"
-								description = "A message was reported in ${reportedMessage.getChannel().mention}"
-								field {
-									name = "Message Content:"
-									value =
-										reportedMessage.content.ifEmpty {
-											"Failed to get content of message"
-										}
-									inline = true
-								}
-								field {
-									name = "Report reason:"
-									value = reportReason ?: "No reason provided"
-								}
-								footer {
-									text = "Reported by: ${user.asUser().tag}"
-									icon = user.asUser().avatar?.url
-								}
-								timestamp = Clock.System.now()
-								color = DISCORD_RED
+						reportEmbed = messageLog.createEmbed {
+							color = DISCORD_RED
+							title = "Message reported"
+							description = "A message was reported in ${reportedMessage.getChannel().mention}"
+
+							field {
+								name = "Message Content:"
+								value =
+									reportedMessage.content.ifEmpty {
+										"Failed to get content of message"
+									}
+								inline = true
 							}
+							field {
+								name = "Report reason:"
+								value = reportReason ?: "No reason provided"
+							}
+							footer {
+								text = "Reported by: ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
+							}
+							timestamp = Clock.System.now()
+						}.edit {
 							components {
 								linkButton {
 									label = "Jump to message"
@@ -379,12 +380,12 @@ private suspend fun createReport(
 												respond {
 													content = "Timed out user for 10 minutes"
 												}
-												messageAuthor!!.asUser().dm {
-													embed {
-														title = "You have been timed out in ${guild?.fetchGuild()?.name}"
-														description = "**Duration:**\n10 minutes\n**Reason:**\nTimed-out via report"
-													}
-												}
+												userDMEmbed(
+													messageAuthor!!.asUser(),
+													"You have been timed out in ${guild?.fetchGuild()?.name}",
+													"**Duration:**\n10 minutes\n**Reason:**\nTimed-out via report",
+													null
+												)
 												quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 10)
 											}
 											"20-timeout" -> {
@@ -395,12 +396,12 @@ private suspend fun createReport(
 												respond {
 													content = "Timed out user for 20 minutes"
 												}
-												messageAuthor!!.asUser().dm {
-													embed {
-														title = "You have been timed out in ${guild?.fetchGuild()?.name}"
-														description = "**Duration:**\n20 minutes\n**Reason:**\nTimed-out via report"
-													}
-												}
+												userDMEmbed(
+													messageAuthor!!.asUser(),
+													"You have been timed out in ${guild?.fetchGuild()?.name}",
+													"**Duration:**\n20 minutes\n**Reason:**\nTimed-out via report",
+													null
+												)
 												quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 20)
 											}
 											"30-timeout" -> {
@@ -411,34 +412,34 @@ private suspend fun createReport(
 												respond {
 													content = "Timed out user for 30 minutes"
 												}
-												messageAuthor!!.asUser().dm {
-													embed {
-														title = "You have been timed out in ${guild?.fetchGuild()?.name}"
-														description = "**Duration:**\n30 minutes\n**Reason:**\nTimed-out via report"
-													}
-												}
+												userDMEmbed(
+													messageAuthor!!.asUser(),
+													"You have been timed out in ${guild?.fetchGuild()?.name}",
+													"**Duration:**\n30 minutes\n**Reason:**\nTimed-out via report",
+													null
+												)
 												quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 30)
 											}
 											"kick-user" -> {
 												reportEmbed?.edit { components { removeAll() } }
-												messageAuthor!!.asUser().dm {
-													embed {
-														title = "You have been kicked from ${guild?.fetchGuild()?.name}"
-														description = "**Reason:**\nKicked via report"
-													}
-												}
+												userDMEmbed(
+													messageAuthor!!.asUser(),
+													"You have been kicked from ${guild?.fetchGuild()?.name}",
+													"**Reason:**\nKicked via report",
+													null
+												)
 												messageAuthor.kick(reason = "Kicked via report")
 												quickLogEmbed("Kicked a User", actionLog, messageAuthor.asUser())
 											}
 											"soft-ban-user" -> {
 												reportEmbed?.edit { components { removeAll() } }
-												messageAuthor!!.asUser().dm {
-													embed {
-														title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
-														description = "**Reason:**\nSoft-banned via report\n\n" +
-																"You are free to rejoin without the need to be unbanned"
-													}
-												}
+												userDMEmbed(
+													messageAuthor!!.asUser(),
+													"You have been soft-banned from ${guild?.fetchGuild()?.name}",
+													"**Reason:**\nSoft-banned via report\n\n" +
+															"You are free to rejoin without the need to be unbanned",
+													null
+												)
 												messageAuthor.ban {
 													this.reason = "Soft-Banned via report."
 													this.deleteMessagesDays = 1
@@ -448,12 +449,12 @@ private suspend fun createReport(
 											}
 											"ban-user" -> {
 												reportEmbed?.edit { components { removeAll() } }
-												messageAuthor!!.asUser().dm {
-													embed {
-														title = "You have been banned from ${guild?.fetchGuild()?.name}"
-														description = "**Reason:**\nBanned via report"
-													}
-												}
+												userDMEmbed(
+													messageAuthor!!.asUser(),
+													"You have been banned from ${guild?.fetchGuild()?.name}",
+													"**Reason:**\nBanned via report",
+													null
+												)
 												messageAuthor.ban {
 													this.reason = "Banned via report"
 													this.deleteMessagesDays = 1

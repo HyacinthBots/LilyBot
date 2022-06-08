@@ -404,74 +404,6 @@ object DatabaseHelper {
 	 * @since 3.3.0
 	 */
 	fun getGalleryChannels(): CoroutineCollection<GalleryChannelData> = database.getCollection()
-
-	/**
-	 * Stores a reminder in the database.
-	 *
-	 * @param initialSetTime The time the reminder was set
-	 * @param inputGuildId The ID of the guild the reminder was set in
-	 * @param inputUserId The ID of the user that would like to be reminded
-	 * @param inputChannelId The ID of the channel the reminder was set in
-	 * @param remindTime The time the user would like to be reminded at
-	 * @param originalMessageUrl The URL to the original message that set the reminder
-	 * @param customMessage A custom message to attach to the reminder
-	 *
-	 * @since 3.3.2
-	 * @author NoComment1105
-	*/
-	suspend fun setReminder(
-		initialSetTime: Instant,
-		inputGuildId: Snowflake,
-		inputUserId: Snowflake,
-		inputChannelId: Snowflake,
-		remindTime: Instant,
-		originalMessageUrl: String,
-		customMessage: String?
-	) {
-		val collection = database.getCollection<RemindMeData>()
-		collection.insertOne(
-			RemindMeData(
-				initialSetTime,
-				inputGuildId,
-				inputUserId,
-				inputChannelId,
-				remindTime,
-				originalMessageUrl,
-				customMessage
-			)
-		)
-	}
-
-	/**
-	 * Removes old reminders from the Database.
-	 *
-	 * @param initialSetTime The time the reminder was set
-	 * @param inputGuildId The ID of the guild the reminder was set in
-	 * @param inputUserId The ID of the user the reminder was set by
-	 *
-	 * @since 3.3.2
-	 * @author NoComment1105
-	 */
-	suspend fun removeReminder(initialSetTime: Instant, inputGuildId: Snowflake, inputUserId: Snowflake) {
-		val collection = database.getCollection<RemindMeData>()
-		collection.deleteOne(
-			RemindMeData::initialSetTime eq initialSetTime,
-			RemindMeData::guildId eq inputGuildId,
-			RemindMeData::userId eq inputUserId
-		)
-	}
-
-	/**
-	 * Gets every reminder in the database.
-	 *
-	 * @return A [List] of reminders from the database
-	 * @since 3.3.2
-	 * @author NoComment1105
-	 */
-	suspend fun getReminders(): List<RemindMeData> {
-		val collection = database.getCollection<RemindMeData>()
-		return collection.find().toList()
-	}
 }
 
 /**
@@ -594,28 +526,4 @@ data class GuildLeaveTimeData(
 data class GalleryChannelData(
 	val guildId: Snowflake,
 	val channelId: Snowflake
-)
-
-/**
- * The data for reminders set by users.
- *
- * @param initialSetTime The time the reminder was set
- * @param guildId The ID of the guild the reminder was set in
- * @param userId The ID of the user that would like to be reminded
- * @param channelId The ID of the channel the reminder was set in
- * @param remindTime The time the user would like to be reminded at
- * @param originalMessageUrl The URL to the original message that set the reminder
- * @param customMessage A custom message to attach to the reminder
- *
- * @since 3.3.2
- */
-@Serializable
-data class RemindMeData(
-	val initialSetTime: Instant,
-	val guildId: Snowflake,
-	val userId: Snowflake,
-	val channelId: Snowflake,
-	val remindTime: Instant,
-	val originalMessageUrl: String,
-	val customMessage: String?
 )

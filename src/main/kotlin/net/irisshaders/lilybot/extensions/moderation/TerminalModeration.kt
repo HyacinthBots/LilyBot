@@ -13,7 +13,6 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.ban
@@ -23,7 +22,6 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.EmbedBuilder
-import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
@@ -33,6 +31,7 @@ import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.isBotOrModerator
+import net.irisshaders.lilybot.utils.userDMEmbed
 
 /**
  * The class for permanent moderation actions, such as ban and kick.
@@ -69,12 +68,12 @@ class TerminalModeration : Extension() {
 				isBotOrModerator(userArg, "ban") ?: return@action
 
 				// DM the user before the ban task is run, to avoid error, null if fails
-				val dm = userArg.dm {
-					embed {
-						title = "You have been banned from ${guild?.fetchGuild()?.name}"
-						description = "**Reason:**\n${arguments.reason}"
-					}
-				}
+				val dm = userDMEmbed(
+					userArg,
+					"You have been banned from ${guild?.fetchGuild()?.name}",
+					"**Reason:**\n${arguments.reason}",
+					null
+				)
 
 				try {
 					guild?.getMember(userArg.id)
@@ -160,6 +159,8 @@ class TerminalModeration : Extension() {
 				actionLog.createEmbed {
 					title = "Unbanned a user"
 					description = "${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})"
+					color = DISCORD_GREEN
+					timestamp = Clock.System.now()
 					field {
 						name = "Reason:"
 						value = arguments.reason
@@ -168,8 +169,6 @@ class TerminalModeration : Extension() {
 						text = user.asUser().tag
 						icon = user.asUser().avatar?.url
 					}
-					timestamp = Clock.System.now()
-					color = DISCORD_GREEN
 				}
 			}
 		}
@@ -197,13 +196,13 @@ class TerminalModeration : Extension() {
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
 
 				// DM the user before the ban task is run
-				val dm = userArg.dm {
-					embed {
-						title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
-						description = "**Reason:**\n${arguments.reason}\n\n" +
-								"You are free to rejoin without the need to be unbanned"
-					}
-				}
+				val dm = userDMEmbed(
+					userArg,
+					"You have been soft-banned from ${guild?.fetchGuild()?.name}",
+					"**Reason:**\n${arguments.reason}\n\n" +
+							"You are free to rejoin without the need to be unbanned",
+					null
+				)
 
 				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
 				if (arguments.messages > 7 || arguments.messages < 0) {
@@ -278,12 +277,12 @@ class TerminalModeration : Extension() {
 				isBotOrModerator(userArg, "kick") ?: return@action
 
 				// DM the user about it before the kick
-				val dm = userArg.dm {
-					embed {
-						title = "You have been kicked from ${guild?.fetchGuild()?.name}"
-						description = "**Reason:**\n${arguments.reason}"
-					}
-				}
+				val dm = userDMEmbed(
+					userArg,
+					"You have been kicked from ${guild?.fetchGuild()?.name}",
+					"**Reason:**\n${arguments.reason}",
+					null
+				)
 
 				try {
 					guild?.getMember(userArg.id)

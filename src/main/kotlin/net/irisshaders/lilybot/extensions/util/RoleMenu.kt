@@ -105,6 +105,7 @@ class RoleMenu : Extension() {
 					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
 					actionLog.createEmbed {
+						color = DISCORD_BLACK
 						title = "Role menu created."
 						description = "A role menu for the ${arguments.role.mention} role was " +
 								"created in ${targetChannel.mention}"
@@ -124,7 +125,6 @@ class RoleMenu : Extension() {
 							icon = user.asUser().avatar?.url
 						}
 						timestamp = Clock.System.now()
-						color = DISCORD_BLACK
 					}
 				}
 			}

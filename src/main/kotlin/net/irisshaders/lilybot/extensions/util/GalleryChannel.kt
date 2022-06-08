@@ -91,11 +91,11 @@ class GalleryChannel : Extension() {
 					actionLog.createEmbed {
 						title = "New Gallery channel"
 						description = "${channel.mention} was added as a Gallery channel"
+						color = DISCORD_GREEN
 						footer {
 							text = "Requested by ${user.asUser().tag}"
 							icon = user.asUser().avatar?.url
 						}
-						color = DISCORD_GREEN
 					}
 				}
 			}
@@ -137,11 +137,11 @@ class GalleryChannel : Extension() {
 						actionLog.createEmbed {
 							title = "Removed Gallery channel"
 							description = "${channel.mention} was removed as a Gallery channel"
+							color = DISCORD_RED
 							footer {
 								text = "Requested by ${user.asUser().tag}"
 								icon = user.asUser().avatar?.url
 							}
-							color = DISCORD_RED
 						}
 					} else {
 						respond {
