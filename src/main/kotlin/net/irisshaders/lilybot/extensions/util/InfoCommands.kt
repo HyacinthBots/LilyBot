@@ -25,6 +25,41 @@ class InfoCommands : Extension() {
 	override suspend fun setup() {
 		val pagesObj = Pages()
 
+		for (it in commandDocs!!.command) {
+			if (it.name.isNullOrEmpty() && it.result.isNullOrEmpty() && it.permissions.isNullOrEmpty() &&
+				it.args.isNullOrEmpty() && it.category.isNotEmpty() && it.description!!.isNotEmpty()
+			) {
+				continue
+			}
+			pagesObj.addPage(
+				Page {
+					title = it.category
+					description = "**Name:** `${it.name}`"
+					field {
+						name = "Arguments:"
+						value = it.args?.replace("*", "•") ?: "None"
+					}
+					field {
+						name = "Permissions:"
+						value = it.permissions ?: "None"
+					}
+					field {
+						name = "Result"
+						value =
+							if (it.name != "warn") {
+								it.result!!
+							} else {
+								// Embeds don't support Markdown tables, so we have to get creative and make
+								// it looks nice ourselves
+								val result = it.result!!.split(".\n")
+								"${result[0]}\n```markdown\n${result[1].replace(":", "-")}\n```"
+							}
+					}
+					timestamp = Clock.System.now()
+				}
+			)
+		}
+
 		/**
 		 * The command that generates the help paginator, after getting it from `./docs/commanddocs.toml`
 		 *
@@ -36,41 +71,6 @@ class InfoCommands : Extension() {
 			description = "Help for Lily's commands!"
 
 			action {
-				for (it in commandDocs!!.command) {
-					if (it.name.isNullOrEmpty() && it.result.isNullOrEmpty() && it.permissions.isNullOrEmpty() &&
-						it.args.isNullOrEmpty() && it.category.isNotEmpty() && it.description!!.isNotEmpty()
-					) {
-						continue
-					}
-					pagesObj.addPage(
-						Page {
-							title = it.category
-							description = "**Name:** `${it.name}`"
-							field {
-								name = "Arguments:"
-								value = it.args?.replace("*", "•") ?: "None"
-							}
-							field {
-								name = "Permissions:"
-								value = it.permissions ?: "None"
-							}
-							field {
-								name = "Result"
-								value =
-									if (it.name != "warn") {
-										it.result!!
-									} else {
-										// Embeds don't support Markdown tables, so we have to get creative and make
-										// it looks nice ourselves
-										val result = it.result!!.split(".\n")
-										"${result[0]}\n```markdown\n${result[1].replace(":", "-")}\n```"
-									}
-							}
-							timestamp = Clock.System.now()
-						}
-					)
-				}
-
 				val paginator = PublicResponsePaginator(
 					pages = pagesObj,
 					keepEmbed = true,
