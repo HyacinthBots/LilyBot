@@ -81,8 +81,13 @@ class ThreadInviter : Extension() {
 				if (textChannel != supportChannel) return@action
 
 				if (event.message.author?.isNullOrBot() == false &&
-					PluralKit.checkIfProxied(event.message.id)
-				) return@action
+					PluralKit.isProxied(event.message.id)
+				) {
+					delay(5)
+					return@action
+				} else {
+					delay(5)
+				}
 
 				val userId = PluralKit.getProxiedMessageAuthorId(event.message.id) ?: event.member!!.id
 				val user = UserBehavior(userId, kord)

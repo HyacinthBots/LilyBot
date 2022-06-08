@@ -36,15 +36,15 @@ object PluralKit {
 	}
 
 	/**
-	 * Using a provided message [Snowflake], we call [checkIfProxied] to find out if the message was proxied or not.
+	 * Using a provided message [Snowflake], we call [isProxied] to find out if the message was proxied or not.
 	 *
 	 * @param id The ID of the message being checked
-	 * @see checkIfProxied
+	 * @see isProxied
 	 * @return True if proxied, false if not
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend fun checkIfProxied(id: Snowflake) = checkIfProxied(id.toString())
+	suspend fun isProxied(id: Snowflake) = isProxied(id.toString())
 
 	/**
 	 * Using a provided message ID, we call [getProxiedMessageAuthorId] to find out the author of the message.
@@ -65,26 +65,26 @@ object PluralKit {
 	 *
 	 * @param id The ID of the message being checked as a string
 	 * @return True if proxied, false if not
-	 * @see checkIfProxied
+	 * @see isProxied
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	 private suspend fun checkIfProxied(id: String): Boolean {
+	 private suspend fun isProxied(id: String): Boolean {
 		val url = MESSAGE_URL.replace("{id}", id)
 
-		var proxied = false
+		var isProxied = false
 
 		try {
 			client.get(url).body<PluralKitMessage>()
 
-			proxied = true
+			isProxied = true
 		} catch (e: ClientRequestException) {
 			if (e.response.status.value !in 200 until 300) {
-				proxied = false
+				isProxied = false
 			}
 		}
 
-		return proxied
+		return isProxied
 	}
 
 	/**

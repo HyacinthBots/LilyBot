@@ -93,6 +93,7 @@ object DocsGenerator {
 						"\n## ${it.category}\n" +
 								"${it.description}\n\n"
 					)
+					writer.flush()
 				} else {
 					logger.debug("Writing command doc")
 					writer.write(
@@ -103,6 +104,7 @@ object DocsGenerator {
 								"**Command category**: `${it.category}`\n\n" +
 								"---\n\n"
 					)
+					writer.flush()
 				}
 			}
 			writer.flush()
