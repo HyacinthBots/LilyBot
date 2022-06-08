@@ -18,6 +18,7 @@ import dev.kord.core.behavior.channel.createEmbed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 /**
  * The class for configuring LilyBot in your guilds.
@@ -115,15 +116,13 @@ class Config : Extension() {
 						// Log the config being cleared to the action log
 						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
 						val actionLogChannel = guild?.getChannel(actionLogId!!) as GuildMessageChannelBehavior
-						actionLogChannel.createEmbed {
-							title = "Configuration cleared!"
-							description = "A Guild Manager has cleared the configuration for this guild!"
-							footer {
-								text = user.asUser().tag
-								icon = user.asUser().avatar?.url
-							}
-							color = DISCORD_BLACK
-						}
+						responseEmbedInChannel(
+							actionLogChannel,
+							"Configuration cleared!",
+							"A Guild Manager has cleared the configuration for this guild!",
+							null,
+							user.asUser()
+						)
 
 						// Clear the config (do this last)
 						DatabaseHelper.clearConfig(guild!!.id)
