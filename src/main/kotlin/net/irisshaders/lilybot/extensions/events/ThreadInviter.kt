@@ -86,7 +86,7 @@ class ThreadInviter : Extension() {
 					delay(5)
 					return@action
 				} else {
-					delay(5)
+					delay(10)
 				}
 
 				val userId = PluralKit.getProxiedMessageAuthorId(event.message.id) ?: event.member!!.id
