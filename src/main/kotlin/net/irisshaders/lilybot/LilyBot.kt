@@ -28,6 +28,7 @@ import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.InfoCommands
 import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.util.PublicUtilities
+import net.irisshaders.lilybot.extensions.util.RemindMe
 import net.irisshaders.lilybot.extensions.util.RoleMenu
 import net.irisshaders.lilybot.extensions.util.StartupHooks
 import net.irisshaders.lilybot.extensions.util.Tags
@@ -65,6 +66,11 @@ var commandDocs: CommandDocs? = null
 val docFile = Path("./docs/commands.md")
 
 suspend fun main() {
+	val mapper = tomlMapper { }
+	val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
+
+	commandDocs = mapper.decode<CommandDocs>(stream)
+
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		members {
 			lockMemberRequests = true // Collect members one at a time to avoid hitting rate limits
@@ -88,6 +94,7 @@ suspend fun main() {
 			add(::MessageDelete)
 			add(::ModUtilities)
 			add(::PublicUtilities)
+			add(::RemindMe)
 			add(::Report)
 			add(::RoleMenu)
 			add(::StartupHooks)
@@ -128,11 +135,6 @@ suspend fun main() {
 			gitHubLogger.error("Failed to connect to GitHub!")
 		}
 	}
-
-	val mapper = tomlMapper { }
-	val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
-
-	commandDocs = mapper.decode<CommandDocs>(stream)
 
 	DocsGenerator.clearDocs(ENVIRONMENT)
 	DocsGenerator.writeNewDocs(ENVIRONMENT)

@@ -318,6 +318,19 @@ None
 
 ---
 
+### Name: `remind`
+**Arguments**:
+* `time` - The time until the bot should send the reminder - Coalescing Duration
+* `customMessage` - A custom message to attach to the reminder - Optional String
+
+**Result**: Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
 
 ## GitHub commands
 The GitHub commands allow users to query GitHub for things such as issues, pull requests, repositories and more. They take in a string in the format 'USER-NAME/REPO-NAME' for example or a URL.

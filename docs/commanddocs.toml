@@ -162,6 +162,12 @@ result = "Sends a request to the moderators for a new nickname. This feature is 
 category = "Utility commands"
 name = "nickname clear"
 result = "Clears the nickname of the user that ran the command"
+
+[[command]]
+category = "Utility commands"
+name = "remind"
+args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `customMessage` - A custom message to attach to the reminder - Optional String"
+result = "Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed"
 # End Utility commands
 
 # GitHub commands
