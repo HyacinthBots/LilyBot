@@ -83,7 +83,6 @@ class ThreadInviter : Extension() {
 				if (event.message.author?.isNullOrBot() == false &&
 					PluralKit.isProxied(event.message.id)
 				) {
-					delay(5)
 					return@action
 				} else {
 					delay(10)
