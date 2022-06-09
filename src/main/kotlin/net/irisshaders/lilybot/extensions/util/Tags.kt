@@ -222,6 +222,9 @@ class Tags : Extension() {
 
 				var response = ""
 				tags.forEach { response += "• `${it.name}` - ${it.tagTitle}\n" }
+				if (response == "") {
+					response = "This guild has no tags."
+				}
 
 				respond {
 					embed {
