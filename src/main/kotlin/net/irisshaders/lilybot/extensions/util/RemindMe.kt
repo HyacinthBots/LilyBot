@@ -7,6 +7,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
@@ -17,6 +18,7 @@ import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
@@ -34,8 +36,8 @@ class RemindMe : Extension() {
 	private lateinit var task: Task
 
 	override suspend fun setup() {
-		/** Set the task to run every 60 seconds. */
-		task = scheduler.schedule(60, pollingSeconds = 60, repeat = true, callback = ::postReminders)
+		/** Set the task to run every 30 seconds. */
+		task = scheduler.schedule(30, pollingSeconds = 30, repeat = true, callback = ::postReminders)
 
 		/**
 		 * The command for reminders
@@ -59,7 +61,8 @@ class RemindMe : Extension() {
 				val response = respond {
 					content = "Reminder set!\nI will remind you ${remindTime.toDiscord(TimestampType.RelativeTime)} " +
 							"at ${remindTime.toDiscord(TimestampType.ShortTime)}. That's `${
-								Duration.parse(duration.toString())}` after this message was sent."
+								Duration.parse(duration.toString())
+							}` after this message was sent."
 				}
 
 				DatabaseHelper.setReminder(
@@ -71,6 +74,44 @@ class RemindMe : Extension() {
 					response.message.getJumpUrl(),
 					arguments.customMessage
 				)
+			}
+		}
+
+		ephemeralSlashCommand {
+			name = "reminders"
+			description = "See the reminders you have set for yourself in this guild."
+
+			check {
+				anyGuild()
+			}
+
+			action {
+				val reminders = DatabaseHelper.getReminders()
+				var response = ""
+				var reminderNo = 1
+				reminders.forEach {
+					if (it.userId == user.id) {
+						response +=
+							"Reminder ${reminderNo++}\nTime set: ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)},\nTime until " +
+									"reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+										it.remindTime.toDiscord(TimestampType.ShortDateTime)}),\nCustom Message: ${
+											it.customMessage ?: "none"}\n---\n"
+					}
+				}
+
+				if (response.isEmpty()) {
+					response = "You have no reminders set."
+				}
+
+				respond {
+					embed {
+						title = "Your reminders"
+						description = "These are the reminders you have set in this guild"
+						field {
+							value = response
+						}
+					}
+				}
 			}
 		}
 	}
