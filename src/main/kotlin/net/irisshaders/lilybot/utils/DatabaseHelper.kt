@@ -107,28 +107,30 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [inputMessageId] a list of roles will be returned from the database.
+	 * Using the provided [inputMessageId] the associated [RoleMenuData] will be returned from the database.
 	 *
-	 * @param inputMessageId The ID of the component the event was triggered with
-	 * @return The component from the database
+	 * @param inputMessageId The ID of the message the event was triggered via.
+	 * @return The role menu data from the database
 	 * @author tempest15
-	 * @since 3.0.0
+	 * @since 3.4.0
 	 */
-	suspend fun getRoles(inputMessageId: Snowflake): MutableList<Snowflake>? {
+	suspend fun getRoleData(inputMessageId: Snowflake): RoleMenuData? {
 		val collection = database.getCollection<RoleMenuData>()
-		val rolesFromCollection = collection.findOne(RoleMenuData::channelId eq inputMessageId) ?: return null
-		return rolesFromCollection.roles
+		return collection.findOne(RoleMenuData::messageId eq inputMessageId)
 	}
 
 	/**
-	 * Add the given [inputRoles] to the database entry for the role menu for the given [inputChannelId].
+	 * Add the given [inputRoles] to the database entry for the role menu for the provided [inputMessageId],
+	 * [inputChannelId], and [inputGuildId].
 	 *
-	 * @param inputChannelId The channel for the new role menu.
-	 * @param inputRoles The list of roles for the new role menu.
+	 * @param inputMessageId The ID of the message the role menu is in.
+	 * @param inputChannelId The ID of the channel the role menu is in.
+	 * @param inputGuildId The ID of the guild the role menu is in.
+	 * @param inputRoles The [MutableList] of [Snowflake]s representing the role IDs for the role menu.
 	 * @author tempest15
-	 * @since 3.0.0
+	 * @since 3.4.0
 	 */
-	suspend fun setRoles(
+	suspend fun setRoleMenu(
 		 inputMessageId: Snowflake,
 		 inputChannelId: Snowflake,
 		 inputGuildId: Snowflake,
@@ -419,7 +421,7 @@ data class WarnData(
  * @param channelId The ID of the channel the role menu is in
  * @param guildId The ID of the guild the role menu is in
  * @param roles A [MutableList] of the role IDs associated with this role menu.
- * @since 3.3.0
+ * @since 3.4.0
  */
 @Serializable
 data class RoleMenuData(
