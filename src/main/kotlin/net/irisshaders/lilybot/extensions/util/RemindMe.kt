@@ -36,10 +36,13 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
-// TODO Migrate the current DB reminders over to the new system
-/** The class that contains the reminding functions in the bot. */
+/**
+ * The class that contains the reminding functions in the bot.
+ * @since 3.3.2
+ */
 class RemindMe : Extension() {
 	override val name = "remind-me"
 
@@ -112,6 +115,12 @@ class RemindMe : Extension() {
 			}
 		}
 
+		/**
+		 * The command that allows users to see the reminders they have set in this server.
+		 *
+		 * @since 3.3.4
+		 * @author NoComment1105
+		 */
 		ephemeralSlashCommand {
 			name = "reminders"
 			description = "See the reminders you have set for yourself in this guild."
@@ -133,6 +142,11 @@ class RemindMe : Extension() {
 			}
 		}
 
+		/**
+		 * Remove reminder command. Brings up a modal to allow the user to specify the reminder to delete.
+		 * @author NoComment1105
+		 * @since 3.3.4
+		 */
 		unsafeSlashCommand {
 			name = "remove-reminder"
 			description = "Remove a reminder you have set yourself"
@@ -213,6 +227,13 @@ class RemindMe : Extension() {
 		}
 	}
 
+	/**
+	 * Collect a String of reminders that a user has for this guild and return it.
+	 *
+	 * @param event The event of from the slash command
+	 * @since 3.3.4
+	 * @author NoComment1105
+	 */
 	private suspend fun userReminders(event: ChatInputCommandInteractionCreateEvent): String {
 		val reminders = DatabaseHelper.getReminders()
 		var response = ""
@@ -250,11 +271,7 @@ class RemindMe : Extension() {
 				if (it.customMessage.isNullOrEmpty()) {
 					channel.createMessage {
 						content = if (it.repeating) {
-							"Repeating reminder for <@${it.userId}> set ${
-								it.initialSetTime.toDiscord(
-									TimestampType.RelativeTime
-								)
-							} at ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)}"
+							"Repeating reminder for <@${it.userId}>"
 						} else {
 							"Reminder for <@${it.userId}> set ${
 								it.initialSetTime.toDiscord(
@@ -276,15 +293,7 @@ class RemindMe : Extension() {
 				} else {
 					channel.createMessage {
 						content = if (it.repeating) {
-							"Repeating reminder for <@${it.userId}> set ${
-								it.initialSetTime.toDiscord(
-									TimestampType.RelativeTime
-								)
-							} at ${
-								it.initialSetTime.toDiscord(
-									TimestampType.ShortDateTime
-								)
-							}\n> ${it.customMessage}"
+							"Repeating reminder for <@${it.userId}>\n> ${it.customMessage}"
 						} else {
 							"Reminder for <@${it.userId}> set ${
 								it.initialSetTime.toDiscord(
@@ -312,7 +321,7 @@ class RemindMe : Extension() {
 						it.guildId,
 						it.userId,
 						it.channelId,
-						it.remindTime.plus(30.seconds),
+						it.remindTime.plus(1.days),
 						it.originalMessageUrl,
 						it.customMessage,
 						true,
@@ -339,9 +348,10 @@ class RemindMe : Extension() {
 			description = "Add a custom message to your reminder"
 		}
 
+		/** Whether the reminder should repeat daily or not. */
 		val repeating by defaultingBoolean {
 			name = "repeating"
-			description = "Would you like this reminder to repeat?"
+			description = "Would you like this reminder to repeat daily?"
 			defaultValue = false
 		}
 	}

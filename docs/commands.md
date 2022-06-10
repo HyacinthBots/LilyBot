@@ -118,10 +118,10 @@ These commands are for use by moderators. They utilize built-in permission check
 
 | Points |     Sanction     |
 |:------:|:----------------:|
-|   1    | None.            |
+|   1    |      None.       |
 |   2    | 3 hour timeout.  |
 |   3    | 12 hour timeout. |
-|   3+   | 3 day timeout.   |
+|   3+   |  3 day timeout.  |
 
 **Required Permissions**: `Moderate Members`
 
@@ -324,6 +324,30 @@ None
 * `customMessage` - A custom message to attach to the reminder - Optional String
 
 **Result**: Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `reminders`
+**Arguments**:
+None
+
+**Result**: Sends an embed containing all the reminders you have set in that guild. If there are none, it returns a messages saying so.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `remove-reminder`
+**Arguments**:
+None
+
+**Result**: Brings up a modal allowing you to specify the number of the reminder to delete. It is advised to use `/reminders` to find out what reminder number is.
 
 **Required Permissions**: `None`
 
