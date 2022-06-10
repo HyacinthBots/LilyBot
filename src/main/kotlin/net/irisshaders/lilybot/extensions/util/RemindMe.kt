@@ -1,33 +1,44 @@
 package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.components.components
-import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
+import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
-import dev.kord.common.entity.ButtonStyle
+import com.kotlindiscord.kord.extensions.utils.waitFor
+import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.interaction.modal
+import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
+import dev.kord.core.behavior.interaction.response.respond
+import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.modify.embed
 import kotlinx.datetime.Clock
-import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
+// TODO Migrate the current DB reminders over to the new system
 /** The class that contains the reminding functions in the bot. */
 class RemindMe : Extension() {
 	override val name = "remind-me"
@@ -38,6 +49,7 @@ class RemindMe : Extension() {
 	/** The task to attach the [scheduler] to. */
 	private lateinit var task: Task
 
+	@OptIn(UnsafeAPI::class)
 	override suspend fun setup() {
 		/** Set the task to run every 30 seconds. */
 		task = scheduler.schedule(30, pollingSeconds = 30, repeat = true, callback = ::postReminders)
@@ -62,11 +74,29 @@ class RemindMe : Extension() {
 				val duration = arguments.time
 
 				val response = respond {
-					content = "Reminder set!\nI will remind you ${remindTime.toDiscord(TimestampType.RelativeTime)} " +
-							"at ${remindTime.toDiscord(TimestampType.ShortTime)}. That's `${
-								Duration.parse(duration.toString())
-							}` after this message was sent."
+					content = if (arguments.customMessage.isNullOrEmpty()) {
+						"${if (arguments.repeating) "Repeating" else ""} Reminder set!\nI will remind you ${
+							remindTime.toDiscord(TimestampType.RelativeTime)
+						} at ${remindTime.toDiscord(TimestampType.ShortTime)} everyday unless cancelled. Use" +
+								"`/remove-reminder` to cancel"
+					} else {
+						"${if (arguments.repeating) "Repeating" else ""} Reminder set with message ${
+							arguments.customMessage
+						}!\nI will remind you ${
+							remindTime.toDiscord(TimestampType.RelativeTime)
+						} at ${remindTime.toDiscord(TimestampType.ShortTime)}. That's `${
+							Duration.parse(duration.toString())
+						}` after this message was sent."
+					}
 				}
+
+				var counter = 0
+				DatabaseHelper.getReminders().forEach {
+					if (it.userId == user.id) {
+						counter += 1
+					}
+				}
+				counter++ // Add one to the final counter, since we're adding a new one to the list of reminders
 
 				DatabaseHelper.setReminder(
 					setTime,
@@ -76,7 +106,8 @@ class RemindMe : Extension() {
 					remindTime,
 					response.message.getJumpUrl(),
 					arguments.customMessage,
-					arguments.repeating
+					arguments.repeating,
+					counter
 				)
 			}
 		}
@@ -90,49 +121,118 @@ class RemindMe : Extension() {
 			}
 
 			action {
-				val reminders = DatabaseHelper.getReminders()
-				var response = ""
-				var reminderNo = 1
-				reminders.forEach {
-					if (it.userId == user.id && it.guildId == guild!!.id) {
-						response +=
-							"Reminder ${reminderNo++}\nTime set: ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)},\nTime until " +
-									"reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
-										it.remindTime.toDiscord(TimestampType.ShortDateTime)
-									}),\nCustom Message: ${
-										it.customMessage ?: "none"
-									}\n---\n"
-					}
-				}
-
-				if (response.isEmpty()) {
-					response = "You have no reminders set."
-				}
-
 				respond {
 					embed {
 						title = "Your reminders"
 						description = "These are the reminders you have set in this guild"
 						field {
-							value = response
+							value = userReminders(event)
 						}
 					}
 				}
 			}
 		}
 
-// 		ephemeralSlashCommand {
-// 			name = "remove-reminder"
-// 			description = "Remove a reminder you have set yourself"
-//
-// 			check {
-// 				anyGuild()
-// 			}
-//
-// 			action {
-//
-// 			}
-// 		}
+		unsafeSlashCommand {
+			name = "remove-reminder"
+			description = "Remove a reminder you have set yourself"
+
+			initialResponse = InitialSlashCommandResponse.None
+
+			check {
+				anyGuild()
+			}
+
+			action {
+				val reminders = DatabaseHelper.getReminders()
+
+				val modal = event.interaction.modal("Delete a Reminder", "deleteModal") {
+					actionRow {
+						textInput(TextInputStyle.Short, "reminder", "Reminder Number") {
+							placeholder = "Use `/reminders` to find out the reminder number for deletion"
+						}
+					}
+				}
+				val interaction =
+					modal.kord.waitFor<ModalSubmitInteractionCreateEvent>(120.seconds.inWholeMilliseconds) {
+						interaction.modalId == "deleteModal"
+					}?.interaction
+
+				if (interaction == null) {
+					modal.createEphemeralFollowup {
+						embed {
+							description = "Reminder timed out"
+						}
+					}
+					return@action
+				}
+
+				val id = interaction.textInputs["reminder"]!!.value!!
+				val modalResponse = interaction.deferEphemeralResponse()
+
+				reminders.forEach {
+					if (it.id == id.toInt()) {
+						return@forEach
+					} else {
+						modalResponse.respond {
+							embed {
+								title = "Invalid reminder number."
+								description = "Use `/reminders` to see your reminders!"
+							}
+						}
+						return@action
+					}
+				}
+
+				modalResponse.respond {
+					var response = ""
+					reminders.forEach {
+						if (it.userId == interaction.user.id && it.id == id.toInt()) {
+							response = "Reminder ${it.id}\nTime set: ${
+								it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
+							},\nTime until " +
+									"reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+										it.remindTime.toDiscord(TimestampType.ShortDateTime)
+									}),\nCustom Message: ${
+										it.customMessage ?: "none"
+									}\n---\n"
+
+							DatabaseHelper.removeReminder(it.guildId, it.userId, it.id)
+						}
+					}
+
+					embed {
+						title = "Reminder deleted"
+						field {
+							name = "Reminder"
+							value = response
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private suspend fun userReminders(event: ChatInputCommandInteractionCreateEvent): String {
+		val reminders = DatabaseHelper.getReminders()
+		var response = ""
+		reminders.forEach {
+			if (it.userId == event.interaction.user.id && it.guildId == guildFor(event)!!.id) {
+				response +=
+					"Reminder ID: ${it.id}\nTime set: ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)},\nTime until " +
+							"reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+								it.remindTime.toDiscord(TimestampType.ShortDateTime)
+							}),\nCustom Message: ${
+								it.customMessage ?: "none"
+							}\n---\n"
+			}
+		}
+
+		if (response.isEmpty()) {
+			response = "You have no reminders set."
+		}
+
+		return response
 	}
 
 	/**
@@ -149,61 +249,57 @@ class RemindMe : Extension() {
 				val channel = kord.getGuild(it.guildId)!!.getChannel(it.channelId) as GuildMessageChannelBehavior
 				if (it.customMessage.isNullOrEmpty()) {
 					channel.createMessage {
-						content =
-							"${if (it.repeating) "Repeating" else ""} Reminder for <@${it.userId}> set " +
-									"${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} at " +
-									it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
+						content = if (it.repeating) {
+							"Repeating reminder for <@${it.userId}> set ${
+								it.initialSetTime.toDiscord(
+									TimestampType.RelativeTime
+								)
+							} at ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)}"
+						} else {
+							"Reminder for <@${it.userId}> set ${
+								it.initialSetTime.toDiscord(
+									TimestampType.RelativeTime
+								)
+							} at ${
+								it.initialSetTime.toDiscord(
+									TimestampType.ShortDateTime
+								)
+							}"
+						}
 						components {
 							linkButton {
 								label = "Jump to message"
 								url = it.originalMessageUrl
-							}
-							if (it.repeating) {
-								ephemeralButton {
-									label = "Cancel repeating reminder"
-									style = ButtonStyle.Danger
-
-									check { failIf { it.userId != event.interaction.user.id } }
-
-									action {
-										DatabaseHelper.removeReminder(
-											it.initialSetTime,
-											it.guildId,
-											it.userId,
-											it.remindTime
-										)
-									}
-								}
 							}
 						}
 					}
 				} else {
 					channel.createMessage {
-						content =
-							"${if (it.repeating) "Repeating" else ""} Reminder for <@${it.userId}> set " +
-									"${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} at " +
-									"${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)}\n> ${it.customMessage}"
+						content = if (it.repeating) {
+							"Repeating reminder for <@${it.userId}> set ${
+								it.initialSetTime.toDiscord(
+									TimestampType.RelativeTime
+								)
+							} at ${
+								it.initialSetTime.toDiscord(
+									TimestampType.ShortDateTime
+								)
+							}\n> ${it.customMessage}"
+						} else {
+							"Reminder for <@${it.userId}> set ${
+								it.initialSetTime.toDiscord(
+									TimestampType.RelativeTime
+								)
+							} at ${
+								it.initialSetTime.toDiscord(
+									TimestampType.ShortDateTime
+								)
+							}\n> ${it.customMessage}"
+						}
 						components {
 							linkButton {
 								label = "Jump to message"
 								url = it.originalMessageUrl
-							}
-							if (it.repeating) {
-								ephemeralButton {
-									label = "Cancel repeating reminder"
-									style = ButtonStyle.Danger
-
-									check { failIf { it.userId != event.interaction.user.id } }
-
-									action {
-										DatabaseHelper.removeReminder(
-											it.initialSetTime,
-											it.guildId,
-											it.userId,
-											it.remindTime
-										)
-									}
-								}
 							}
 						}
 					}
@@ -216,14 +312,15 @@ class RemindMe : Extension() {
 						it.guildId,
 						it.userId,
 						it.channelId,
-						it.remindTime.plus(DateTimePeriod(0, 0, 0, 0, 0, 30, 0), TimeZone.UTC),
+						it.remindTime.plus(30.seconds),
 						it.originalMessageUrl,
 						it.customMessage,
-						true
+						true,
+						it.id
 					)
-					DatabaseHelper.removeReminder(it.initialSetTime, it.guildId, it.userId, it.remindTime)
+					DatabaseHelper.removeReminder(it.guildId, it.userId, it.id)
 				} else {
-					DatabaseHelper.removeReminder(it.initialSetTime, it.guildId, it.userId, it.remindTime)
+					DatabaseHelper.removeReminder(it.guildId, it.userId, it.id)
 				}
 			}
 		}

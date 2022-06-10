@@ -427,7 +427,8 @@ object DatabaseHelper {
 		remindTime: Instant,
 		originalMessageUrl: String,
 		customMessage: String?,
-		repeating: Boolean
+		repeating: Boolean,
+		id: Int
 	) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.insertOne(
@@ -439,7 +440,8 @@ object DatabaseHelper {
 				remindTime,
 				originalMessageUrl,
 				customMessage,
-				repeating
+				repeating,
+				id
 			)
 		)
 	}
@@ -447,25 +449,23 @@ object DatabaseHelper {
 	/**
 	 * Removes old reminders from the Database.
 	 *
-	 * @param initialSetTime The time the reminder was set
 	 * @param inputGuildId The ID of the guild the reminder was set in
 	 * @param inputUserId The ID of the user the reminder was set by
+	 * @param id The numerical ID of the reminder
 	 *
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
 	suspend fun removeReminder(
-        initialSetTime: Instant,
         inputGuildId: Snowflake,
         inputUserId: Snowflake,
-        remindTime: Instant
+        id: Int
     ) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.deleteOne(
-			RemindMeData::initialSetTime eq initialSetTime,
 			RemindMeData::guildId eq inputGuildId,
 			RemindMeData::userId eq inputUserId,
-			RemindMeData::remindTime eq remindTime
+			RemindMeData::id eq id
 		)
 	}
 
@@ -627,5 +627,6 @@ data class RemindMeData(
 	val remindTime: Instant,
 	val originalMessageUrl: String,
 	val customMessage: String?,
-	val repeating: Boolean
+	val repeating: Boolean,
+	val id: Int
 )
