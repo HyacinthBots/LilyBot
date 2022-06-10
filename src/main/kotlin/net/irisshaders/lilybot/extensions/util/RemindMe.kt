@@ -249,7 +249,7 @@ class RemindMe : Extension() {
 				val channel = kord.getGuild(it.guildId)!!.getChannel(it.channelId) as GuildMessageChannelBehavior
 				if (it.customMessage.isNullOrEmpty()) {
 					channel.createMessage {
-						content = if (it.repeating) {
+						content = if (it.repeating!!) {
 							"Repeating reminder for <@${it.userId}> set ${
 								it.initialSetTime.toDiscord(
 									TimestampType.RelativeTime
@@ -275,7 +275,7 @@ class RemindMe : Extension() {
 					}
 				} else {
 					channel.createMessage {
-						content = if (it.repeating) {
+						content = if (it.repeating!!) {
 							"Repeating reminder for <@${it.userId}> set ${
 								it.initialSetTime.toDiscord(
 									TimestampType.RelativeTime
@@ -306,7 +306,7 @@ class RemindMe : Extension() {
 				}
 
 				// Remove the old reminder from the database
-				if (it.repeating) {
+				if (it.repeating!!) {
 					DatabaseHelper.setReminder(
 						Clock.System.now(),
 						it.guildId,
@@ -316,11 +316,11 @@ class RemindMe : Extension() {
 						it.originalMessageUrl,
 						it.customMessage,
 						true,
-						it.id
+						it.id!!
 					)
 					DatabaseHelper.removeReminder(it.guildId, it.userId, it.id)
 				} else {
-					DatabaseHelper.removeReminder(it.guildId, it.userId, it.id)
+					DatabaseHelper.removeReminder(it.guildId, it.userId, it.id!!)
 				}
 			}
 		}
