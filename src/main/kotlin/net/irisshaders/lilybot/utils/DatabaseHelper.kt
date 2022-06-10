@@ -418,7 +418,7 @@ object DatabaseHelper {
 	 *
 	 * @since 3.3.2
 	 * @author NoComment1105
-	*/
+	 */
 	suspend fun setReminder(
 		initialSetTime: Instant,
 		inputGuildId: Snowflake,
@@ -426,7 +426,8 @@ object DatabaseHelper {
 		inputChannelId: Snowflake,
 		remindTime: Instant,
 		originalMessageUrl: String,
-		customMessage: String?
+		customMessage: String?,
+		repeating: Boolean
 	) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.insertOne(
@@ -437,7 +438,8 @@ object DatabaseHelper {
 				inputChannelId,
 				remindTime,
 				originalMessageUrl,
-				customMessage
+				customMessage,
+				repeating
 			)
 		)
 	}
@@ -452,12 +454,18 @@ object DatabaseHelper {
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	suspend fun removeReminder(initialSetTime: Instant, inputGuildId: Snowflake, inputUserId: Snowflake) {
+	suspend fun removeReminder(
+        initialSetTime: Instant,
+        inputGuildId: Snowflake,
+        inputUserId: Snowflake,
+        remindTime: Instant
+    ) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.deleteOne(
 			RemindMeData::initialSetTime eq initialSetTime,
 			RemindMeData::guildId eq inputGuildId,
-			RemindMeData::userId eq inputUserId
+			RemindMeData::userId eq inputUserId,
+			RemindMeData::remindTime eq remindTime
 		)
 	}
 
@@ -606,6 +614,7 @@ data class GalleryChannelData(
  * @param remindTime The time the user would like to be reminded at
  * @param originalMessageUrl The URL to the original message that set the reminder
  * @param customMessage A custom message to attach to the reminder
+ * @param repeating Whether the reminder should repeat
  *
  * @since 3.3.2
  */
@@ -617,5 +626,6 @@ data class RemindMeData(
 	val channelId: Snowflake,
 	val remindTime: Instant,
 	val originalMessageUrl: String,
-	val customMessage: String?
+	val customMessage: String?,
+	val repeating: Boolean
 )

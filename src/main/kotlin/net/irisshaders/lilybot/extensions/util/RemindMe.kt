@@ -3,8 +3,10 @@ package net.irisshaders.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDuration
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -15,11 +17,12 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.edit
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -72,7 +75,8 @@ class RemindMe : Extension() {
 					channel.id,
 					remindTime,
 					response.message.getJumpUrl(),
-					arguments.customMessage
+					arguments.customMessage,
+					arguments.repeating
 				)
 			}
 		}
@@ -90,12 +94,14 @@ class RemindMe : Extension() {
 				var response = ""
 				var reminderNo = 1
 				reminders.forEach {
-					if (it.userId == user.id) {
+					if (it.userId == user.id && it.guildId == guild!!.id) {
 						response +=
 							"Reminder ${reminderNo++}\nTime set: ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)},\nTime until " +
 									"reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
-										it.remindTime.toDiscord(TimestampType.ShortDateTime)}),\nCustom Message: ${
-											it.customMessage ?: "none"}\n---\n"
+										it.remindTime.toDiscord(TimestampType.ShortDateTime)
+									}),\nCustom Message: ${
+										it.customMessage ?: "none"
+									}\n---\n"
 					}
 				}
 
@@ -114,6 +120,19 @@ class RemindMe : Extension() {
 				}
 			}
 		}
+
+// 		ephemeralSlashCommand {
+// 			name = "remove-reminder"
+// 			description = "Remove a reminder you have set yourself"
+//
+// 			check {
+// 				anyGuild()
+// 			}
+//
+// 			action {
+//
+// 			}
+// 		}
 	}
 
 	/**
@@ -131,33 +150,81 @@ class RemindMe : Extension() {
 				if (it.customMessage.isNullOrEmpty()) {
 					channel.createMessage {
 						content =
-							"Reminder for <@${it.userId}> set ${it.initialSetTime.toDiscord(TimestampType.RelativeTime)}" +
-									" at ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)}"
-					}.edit {
+							"${if (it.repeating) "Repeating" else ""} Reminder for <@${it.userId}> set " +
+									"${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} at " +
+									it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
 						components {
 							linkButton {
 								label = "Jump to message"
 								url = it.originalMessageUrl
+							}
+							if (it.repeating) {
+								ephemeralButton {
+									label = "Cancel repeating reminder"
+									style = ButtonStyle.Danger
+
+									check { failIf { it.userId != event.interaction.user.id } }
+
+									action {
+										DatabaseHelper.removeReminder(
+											it.initialSetTime,
+											it.guildId,
+											it.userId,
+											it.remindTime
+										)
+									}
+								}
 							}
 						}
 					}
 				} else {
 					channel.createMessage {
 						content =
-							"Reminder for <@${it.userId}> set ${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} " +
-									"at ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)}\n> ${it.customMessage}"
-					}.edit {
+							"${if (it.repeating) "Repeating" else ""} Reminder for <@${it.userId}> set " +
+									"${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} at " +
+									"${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)}\n> ${it.customMessage}"
 						components {
 							linkButton {
 								label = "Jump to message"
 								url = it.originalMessageUrl
+							}
+							if (it.repeating) {
+								ephemeralButton {
+									label = "Cancel repeating reminder"
+									style = ButtonStyle.Danger
+
+									check { failIf { it.userId != event.interaction.user.id } }
+
+									action {
+										DatabaseHelper.removeReminder(
+											it.initialSetTime,
+											it.guildId,
+											it.userId,
+											it.remindTime
+										)
+									}
+								}
 							}
 						}
 					}
 				}
 
 				// Remove the old reminder from the database
-				DatabaseHelper.removeReminder(it.initialSetTime, it.guildId, it.userId)
+				if (it.repeating) {
+					DatabaseHelper.setReminder(
+						Clock.System.now(),
+						it.guildId,
+						it.userId,
+						it.channelId,
+						it.remindTime.plus(DateTimePeriod(0, 0, 0, 0, 0, 30, 0), TimeZone.UTC),
+						it.originalMessageUrl,
+						it.customMessage,
+						true
+					)
+					DatabaseHelper.removeReminder(it.initialSetTime, it.guildId, it.userId, it.remindTime)
+				} else {
+					DatabaseHelper.removeReminder(it.initialSetTime, it.guildId, it.userId, it.remindTime)
+				}
 			}
 		}
 	}
@@ -166,13 +233,19 @@ class RemindMe : Extension() {
 		/** The time until the user should be reminded. */
 		val time by coalescingDuration {
 			name = "time"
-			description = "How long until reminding? Format: years(y) days(d) hours(h) minutes(m) seconds(s) XyXdXhXmXs"
+			description = "How long until reminding?"
 		}
 
 		/** A custom message the user may want to provide. */
 		val customMessage by optionalString {
 			name = "customMessage"
 			description = "Add a custom message to your reminder"
+		}
+
+		val repeating by defaultingBoolean {
+			name = "repeating"
+			description = "Would you like this reminder to repeat?"
+			defaultValue = false
 		}
 	}
 }
