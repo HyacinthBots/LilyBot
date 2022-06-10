@@ -15,6 +15,9 @@ import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.TextChannel
+import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -45,6 +48,7 @@ class Config : Extension() {
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageGuild)
+					requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				}
 
 				action {
@@ -102,6 +106,7 @@ class Config : Extension() {
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageGuild)
+					requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				}
 
 				action {
@@ -111,10 +116,27 @@ class Config : Extension() {
 						respond { content = "**Error:** There is no configuration set for this guild!" }
 						return@action // Return to avoid the database trying to delete things that don't exist
 					} else {
-						respond { content = "Cleared config for Guild ID: ${guild!!.id}" }
 						// Log the config being cleared to the action log
 						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
-						val actionLogChannel = guild?.getChannel(actionLogId!!) as GuildMessageChannelBehavior
+						val actionLogChannel = guild!!.getChannelOf<TextChannel>(actionLogId!!)
+
+						val actionLogPermissions = actionLogChannel.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
+						if (!actionLogPermissions.contains(Permission.SendMessages) || !actionLogPermissions.contains(
+								Permission.EmbedLinks
+							)
+						) {
+							respond {
+								embed {
+									title = "I do not have sufficient permission"
+									description = "I am unable to `SendMessages`/`EmbedLinks` in <#$actionLogId>.\n" +
+											"Please allow the permission and try again!"
+								}
+							}
+							return@action
+						} else {
+							respond { content = "Cleared config for Guild ID: ${guild!!.id}" }
+						}
+
 						actionLogChannel.createEmbed {
 							title = "Configuration cleared!"
 							description = "A Guild Manager has cleared the configuration for this guild!"

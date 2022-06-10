@@ -4,8 +4,15 @@ import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
+import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
 
@@ -79,4 +86,25 @@ suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, command
 	}
 
 	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
+}
+
+suspend fun checkBotPermissionsForChannel(
+    event: ChatInputCommandInteractionCreateEvent,
+    botId: Snowflake,
+    targetChannelId: Snowflake,
+    vararg permissions: Permission
+) {
+	val channel = guildFor(event)!!.getChannelOf<TextChannel>(targetChannelId)
+	permissions.forEach {
+		if (!channel.getEffectivePermissions(botId).contains(it)) {
+			event.interaction.respondEphemeral {
+				embed {
+					title = "I do not have sufficient permission"
+					description = "I am unable to `SendMessages`/`EmbedLinks` in <#$targetChannelId>.\n" +
+							"Please allow the permission and try again!"
+				}
+			}
+			return@forEach
+		}
+	}
 }
