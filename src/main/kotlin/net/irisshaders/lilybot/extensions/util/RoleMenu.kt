@@ -18,10 +18,12 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.getTopRole
 import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.createRole
 import dev.kord.core.behavior.edit
@@ -57,13 +59,9 @@ class RoleMenu : Extension() {
 
 				var menuMessage: Message?
 				action {
-					// todo Check if lily can assign the role and send a message
+					val kord = this@ephemeralSlashCommand.kord
 
-					val self = guild?.getMember(this@ephemeralSlashCommand.kord.selfId)!!
-					if (!self.hasPermission(Permission.ManageRoles)) {
-						respond {
-							content = "I don't have the `Manage Roles` permission. Please add it and try again."
-						}
+					if (!botHasRolePermissions(kord) || !botCanAssignRole(kord, arguments.initialRole)) {
 						return@action
 					}
 
@@ -118,11 +116,9 @@ class RoleMenu : Extension() {
 				}
 
 				action {
-					val self = guild?.getMember(this@ephemeralSlashCommand.kord.selfId)!!
-					if (!self.hasPermission(Permission.ManageRoles)) {
-						respond {
-							content = "I don't have the `Manage Roles` permission. Please add it and try again."
-						}
+					val kord = this@ephemeralSlashCommand.kord
+
+					if (!botHasRolePermissions(kord) || !botCanAssignRole(kord, arguments.role)) {
 						return@action
 					}
 
@@ -209,7 +205,7 @@ class RoleMenu : Extension() {
 
 			ephemeralSubCommand {
 				name = "pronouns"
-				description = "Create a pronoun selection role menu. Warning: creates new pronoun roles on each run."
+				description = "Create a pronoun selection role menu and the roles to go with it."
 
 				check {
 					anyGuild()
@@ -218,11 +214,7 @@ class RoleMenu : Extension() {
 				}
 
 				action {
-					val self = guild?.getMember(this@ephemeralSlashCommand.kord.selfId)!!
-					if (!self.hasPermission(Permission.ManageRoles)) {
-						respond {
-							content = "I don't have the `Manage Roles` permission. Please add it and try again."
-						}
+					if (!botHasRolePermissions(this@ephemeralSlashCommand.kord)) {
 						return@action
 					}
 
@@ -380,6 +372,29 @@ class RoleMenu : Extension() {
 			return false
 		}
 
+		return true
+	}
+
+	private suspend fun EphemeralSlashCommandContext<*>.botHasRolePermissions(kord: Kord): Boolean {
+		val self = guild?.getMember(kord.selfId)!!
+		if (!self.hasPermission(Permission.ManageRoles)) {
+			respond {
+				content = "I don't have the `Manage Roles` permission. Please add it and try again."
+			}
+			return false
+		}
+		return true
+	}
+
+	private suspend fun EphemeralSlashCommandContext<*>.botCanAssignRole(kord: Kord, role: Role): Boolean {
+		val self = guild?.getMember(kord.selfId)!!
+		if (self.getTopRole()!! < role) {
+			respond {
+				content = "The selected role is higher than me in the role hierarchy. " +
+						"Please move it and try again."
+			}
+			return false
+		}
 		return true
 	}
 
