@@ -30,6 +30,7 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.Role
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
+import kotlinx.coroutines.flow.firstOrNull
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -84,7 +85,7 @@ class RoleMenu : Extension() {
 								label = "Select roles"
 								style = ButtonStyle.Primary
 
-								this.id = "rolemenu${menuMessage!!.id}"
+								this.id = "role-menu${menuMessage!!.id}"
 
 								action { }
 							}
@@ -236,7 +237,7 @@ class RoleMenu : Extension() {
 								label = "Select roles"
 								style = ButtonStyle.Primary
 
-								this.id = "rolemenu${menuMessage.id}"
+								this.id = "role-menu${menuMessage.id}"
 
 								action { }
 							}
@@ -257,13 +258,18 @@ class RoleMenu : Extension() {
 
 					val roles = mutableListOf<Snowflake>()
 
-					// todo If it's possible, check if the roles already exist
-					pronouns.forEach {
-						val role = guild!!.createRole {
-							name = it
-						}
+					for (pronoun in pronouns) {
+						val existingRole = guild!!.roles.firstOrNull { it.name == pronoun }
+						if (existingRole == null) {
+							val newRole = guild!!.createRole {
+								name = pronoun
+							}
 
-						roles += role.id
+							roles += newRole.id
+						} else {
+							println("skipped creating new roles")
+							roles += existingRole.id
+						}
 					}
 
 					DatabaseHelper.setRoleMenu(
@@ -283,7 +289,7 @@ class RoleMenu : Extension() {
 		event<ButtonInteractionCreateEvent> {
 			check {
 				anyGuild()
-				event.interaction.componentId.contains("rolemenu")
+				event.interaction.componentId.contains("role-menu")
 			}
 			action {
 				val data = DatabaseHelper.getRoleData(event.interaction.message.id)
@@ -308,6 +314,7 @@ class RoleMenu : Extension() {
 
 				val guild = kord.getGuild(data.guildId)!!
 
+				// todo Handle a role being deleted
 				val roles = mutableListOf<Role>()
 				data.roles.forEach {
 					roles.add(guild.getRole(it))
