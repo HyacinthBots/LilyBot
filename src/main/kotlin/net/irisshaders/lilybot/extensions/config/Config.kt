@@ -13,7 +13,6 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.TextChannel
@@ -52,6 +51,27 @@ class Config : Extension() {
 				}
 
 				action {
+					val actionLogChannel = guild!!.getChannelOf<TextChannel>(arguments.modActionLog.id)
+
+					val actionLogPermissions =
+						actionLogChannel.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
+
+					if (!actionLogPermissions.contains(Permission.SendMessages) || !actionLogPermissions.contains(
+							Permission.EmbedLinks
+						)
+					) {
+						respond {
+							embed {
+								title = "I do not have sufficient permission"
+								description =
+									"I am unable to `SendMessages`/`EmbedLinks` in <#${actionLogChannel.id}>.\n" +
+											"Please allow the permission to this and other logging channels, then " +
+											"try again!"
+							}
+						}
+						return@action
+					}
+
 					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
 					if (DatabaseHelper.getConfig(guild!!.id)?.modActionLog == null) {
@@ -73,8 +93,6 @@ class Config : Extension() {
 						return@action
 					}
 
-					// Log the config being set in the action log
-					val actionLogChannel = guild?.getChannel(arguments.modActionLog.id) as GuildMessageChannelBehavior
 					actionLogChannel.createEmbed {
 						title = "Configuration set!"
 						description = "A guild manager has set a config for this guild!"
@@ -120,7 +138,8 @@ class Config : Extension() {
 						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
 						val actionLogChannel = guild!!.getChannelOf<TextChannel>(actionLogId!!)
 
-						val actionLogPermissions = actionLogChannel.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
+						val actionLogPermissions =
+							actionLogChannel.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
 						if (!actionLogPermissions.contains(Permission.SendMessages) || !actionLogPermissions.contains(
 								Permission.EmbedLinks
 							)
@@ -134,7 +153,9 @@ class Config : Extension() {
 							}
 							return@action
 						} else {
-							respond { content = "Cleared config for Guild ID: ${guild!!.id}" }
+							respond {
+								content = "Config cleared for Guild ID: ${guild!!.id}!"
+							}
 						}
 
 						actionLogChannel.createEmbed {
