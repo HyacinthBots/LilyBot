@@ -18,10 +18,12 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.createRole
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.Message
@@ -32,6 +34,8 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
 // todo Add some docs
+// todo Logging
+
 class RoleMenu : Extension() {
 	override val name = "role-menu"
 
@@ -53,6 +57,14 @@ class RoleMenu : Extension() {
 				var menuMessage: Message?
 				action {
 					// todo Check if lily can assign the role and send a message
+
+					val self = guild?.getMember(this@ephemeralSlashCommand.kord.selfId)!!
+					if (!self.hasPermission(Permission.ManageRoles)) {
+						respond {
+							content = "I don't have the `Manage Roles` permission. Please add it and try again."
+						}
+						return@action
+					}
 
 					menuMessage = channel.createMessage {
 						if (arguments.embed) {
@@ -105,14 +117,27 @@ class RoleMenu : Extension() {
 				}
 
 				action {
+					val self = guild?.getMember(this@ephemeralSlashCommand.kord.selfId)!!
+					if (!self.hasPermission(Permission.ManageRoles)) {
+						respond {
+							content = "I don't have the `Manage Roles` permission. Please add it and try again."
+						}
+						return@action
+					}
+
 					val message = channel.getMessageOrNull(arguments.messageId)
 					if (!roleMenuExists(message, arguments.messageId)) {
 						return@action
 					}
 
-					// todo Check that the role isn't already in the menu
-
 					val data = DatabaseHelper.getRoleData(arguments.messageId)!!
+
+					if (arguments.role.id in data.roles) {
+						respond {
+							content = "This menu already contains that role."
+						}
+						return@action
+					}
 
 					if (data.roles.size == 24) {
 						respond {
@@ -151,9 +176,14 @@ class RoleMenu : Extension() {
 						return@action
 					}
 
-					// todo Check that the role is already in the menu
-
 					val data = DatabaseHelper.getRoleData(arguments.messageId)!!
+
+					if (arguments.role.id !in data.roles) {
+						respond {
+							content = "You can't remove a role from a menu it's not in."
+						}
+						return@action
+					}
 
 					if (data.roles.size == 1) {
 						respond {
@@ -172,6 +202,79 @@ class RoleMenu : Extension() {
 
 					respond {
 						content = "Removed the ${arguments.role.mention} role from the specified role menu."
+					}
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "pronouns"
+				description = "Create a pronoun selection role menu. Warning: creates new pronoun roles on each run."
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageRoles)
+					configPresent()
+				}
+
+				action {
+					val self = guild?.getMember(this@ephemeralSlashCommand.kord.selfId)!!
+					if (!self.hasPermission(Permission.ManageRoles)) {
+						respond {
+							content = "I don't have the `Manage Roles` permission. Please add it and try again."
+						}
+						return@action
+					}
+
+					val menuMessage = channel.createMessage {
+						content = "Select pronoun roles from the menu below!"
+					}
+
+					// While we don't normally edit in components, in this case we need the message ID.
+					menuMessage.edit {
+						val components = components {
+							ephemeralButton {
+								label = "Select roles"
+								style = ButtonStyle.Primary
+
+								this.id = "rolemenu${menuMessage.id}"
+
+								action { }
+							}
+						}
+
+						components.removeAll()
+					}
+
+					val pronouns = listOf(
+						"he/him",
+						"she/her",
+						"they/them",
+						"it/its",
+						"no pronouns (use name)",
+						"any pronouns",
+						"ask for pronouns"
+					)
+
+					val roles = mutableListOf<Snowflake>()
+
+					// todo If it's possible, check if the roles already exist
+					pronouns.forEach {
+						val role = guild!!.createRole {
+							name = it
+						}
+
+						roles += role.id
+					}
+
+					DatabaseHelper.setRoleMenu(
+						menuMessage.id,
+						channel.id,
+						guild!!.id,
+						roles
+					)
+
+					respond {
+						content = "Pronoun role menu created."
 					}
 				}
 			}
@@ -251,7 +354,6 @@ class RoleMenu : Extension() {
 		}
 	}
 
-	// todo Something's broken in this function, it's late and I can't be bothered to figure out what.
 	private suspend fun EphemeralSlashCommandContext<*>.roleMenuExists(
 		inputMessage: Message?,
 		argumentMessageId: Snowflake
@@ -267,8 +369,8 @@ class RoleMenu : Extension() {
 		if (data == null) {
 			respond {
 				content = "That message doesn't seem to be a role menu."
-				return false
 			}
+			return false
 		}
 
 		return true
