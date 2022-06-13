@@ -306,11 +306,12 @@ object DatabaseHelper {
 				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 				if (timeSinceLatestMessage.inWholeDays > 7) {
 					collection.deleteOne(ThreadData::threadId eq thread.id)
-					deletedThreads += 1
+					deletedThreads++
 				}
 			} catch (e: KtorRequestException) {
-				databaseLogger.warn("Failed in cleanup thread data ${it.threadId} ${it.ownerId}")
+				databaseLogger.warn("Failed in cleanup thread data ID: ${it.threadId} Owner: ${it.ownerId}")
 				collection.deleteOne(ThreadData::threadId eq it.threadId)
+				deletedThreads++
 				continue
 			}
 		}
@@ -355,23 +356,18 @@ object DatabaseHelper {
 		val leaveTimeData = collection.find().toList()
 		var deletedGuildData = 0
 
-		for (it in leaveTimeData) {
-			try {
-				// Calculate the time since Lily left the guild.
-				val leaveDuration = Clock.System.now() - it.guildLeaveTime
+		leaveTimeData.forEach {
+			// Calculate the time since Lily left the guild.
+			val leaveDuration = Clock.System.now() - it.guildLeaveTime
 
-				if (leaveDuration.inWholeDays > 30) {
-					// If the bot has been out of the guild for more than 30 days, delete any related data.
-					clearConfig(it.guildId)
-					clearTags(it.guildId)
-					clearWarn(it.guildId)
-					// Once role menu is rewritten, component data should also be cleared here.
-					collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
-					deletedGuildData += 1 // Increment the counter for logging
-				}
-			} catch (e: KtorRequestException) {
-				databaseLogger.warn("Failed to cleanup guild data ${it.guildId}")
-				continue
+			if (leaveDuration.inWholeDays > 30) {
+				// If the bot has been out of the guild for more than 30 days, delete any related data.
+				clearConfig(it.guildId)
+				clearTags(it.guildId)
+				clearWarn(it.guildId)
+				// Once role menu is rewritten, component data should also be cleared here.
+				collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
+				deletedGuildData += 1 // Increment the counter for logging
 			}
 		}
 
@@ -430,7 +426,7 @@ object DatabaseHelper {
 	 *
 	 * @since 3.3.2
 	 * @author NoComment1105
-	*/
+	 */
 	suspend fun setReminder(
 		initialSetTime: Instant,
 		inputGuildId: Snowflake,
