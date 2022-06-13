@@ -48,7 +48,7 @@ import java.io.IOException
 import kotlin.io.path.Path
 
 var github: GitHub? = null
-private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
+val gitHubLogger = KotlinLogging.logger("GitHub Logger")
 
 // Connect to the database using the provided connection URL
 private val settings = MongoClientSettings
