@@ -310,6 +310,7 @@ object DatabaseHelper {
 				}
 			} catch (e: KtorRequestException) {
 				databaseLogger.warn("Failed in cleanup thread data ${it.threadId} ${it.ownerId}")
+				collection.deleteOne(ThreadData::threadId eq it.threadId)
 				continue
 			}
 		}
