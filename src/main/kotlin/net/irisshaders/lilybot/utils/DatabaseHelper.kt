@@ -3,6 +3,7 @@ package net.irisshaders.lilybot.utils
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.TextChannelThread
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -298,13 +299,18 @@ object DatabaseHelper {
 		val collection = database.getCollection<ThreadData>()
 		val threads = collection.find().toList()
 		var deletedThreads = 0
-		threads.forEach {
-			val thread = kordInstance.getChannel(it.threadId) as TextChannelThread? ?: return@forEach
-			val latestMessage = thread.getLastMessage() ?: return@forEach
-			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
-			if (timeSinceLatestMessage.inWholeDays > 7) {
-				collection.deleteOne(ThreadData::threadId eq thread.id)
-				deletedThreads += 1
+		for (it in threads) {
+			try {
+				val thread = kordInstance.getChannel(it.threadId) as TextChannelThread? ?: continue
+				val latestMessage = thread.getLastMessage() ?: continue
+				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
+				if (timeSinceLatestMessage.inWholeDays > 7) {
+					collection.deleteOne(ThreadData::threadId eq thread.id)
+					deletedThreads += 1
+				}
+			} catch (e: KtorRequestException) {
+				databaseLogger.warn("Failed in cleanup thread data ${it.threadId} ${it.ownerId}")
+				continue
 			}
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
@@ -348,18 +354,23 @@ object DatabaseHelper {
 		val leaveTimeData = collection.find().toList()
 		var deletedGuildData = 0
 
-		leaveTimeData.forEach {
-			// Calculate the time since Lily left the guild.
-			val leaveDuration = Clock.System.now() - it.guildLeaveTime
+		for (it in leaveTimeData) {
+			try {
+				// Calculate the time since Lily left the guild.
+				val leaveDuration = Clock.System.now() - it.guildLeaveTime
 
-			if (leaveDuration.inWholeDays > 30) {
-				// If the bot has been out of the guild for more than 30 days, delete any related data.
-				clearConfig(it.guildId)
-				clearTags(it.guildId)
-				clearWarn(it.guildId)
-				// Once role menu is rewritten, component data should also be cleared here.
-				collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
-				deletedGuildData += 1 // Increment the counter for logging
+				if (leaveDuration.inWholeDays > 30) {
+					// If the bot has been out of the guild for more than 30 days, delete any related data.
+					clearConfig(it.guildId)
+					clearTags(it.guildId)
+					clearWarn(it.guildId)
+					// Once role menu is rewritten, component data should also be cleared here.
+					collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
+					deletedGuildData += 1 // Increment the counter for logging
+				}
+			} catch (e: KtorRequestException) {
+				databaseLogger.warn("Failed to cleanup guild data ${it.guildId}")
+				continue
 			}
 		}
 

@@ -4,6 +4,8 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.kordLogger
+import dev.kord.rest.request.KtorRequestException
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
@@ -26,10 +28,16 @@ class StartupHooks : Extension() {
 		 * @since v2.0
 		 */
 		// The channel specifically for sending online notifications to
-		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
-		onlineLog.createEmbed {
-			title = "Lily is now online!"
-			color = DISCORD_GREEN
+		try {
+			val onlineLog =
+				kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
+			onlineLog.createEmbed {
+				title = "Lily is now online!"
+				color = DISCORD_GREEN
+			}
+		} catch (e: KtorRequestException) {
+			kordLogger.warn("Failed to send startup notification!")
+			return
 		}
 
 		/**
@@ -38,7 +46,12 @@ class StartupHooks : Extension() {
 		 * @author tempest15
 		 * @since 3.2.0
 		 */
-		DatabaseHelper.cleanupThreadData(kord)
+		try {
+			DatabaseHelper.cleanupThreadData(kord)
+		} catch (e: KtorRequestException) {
+			kordLogger.warn("Failed to cleanup thread data in function call!")
+			return
+		}
 
 		/**
 		 * This function is called to remove any guilds in the database that haven't had Lily in them for more than
@@ -47,6 +60,11 @@ class StartupHooks : Extension() {
 		 * @author NoComment1105
 		 * @since 3.2.0
 		 */
-		DatabaseHelper.cleanupGuildData()
+		try {
+			DatabaseHelper.cleanupGuildData()
+		} catch (e: KtorRequestException) {
+			kordLogger.warn("Failed to cleanup guild data in function call")
+			return
+		}
 	}
 }
