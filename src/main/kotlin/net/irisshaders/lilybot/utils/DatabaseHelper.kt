@@ -3,7 +3,6 @@ package net.irisshaders.lilybot.utils
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.ThreadChannel
-import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -300,19 +299,12 @@ object DatabaseHelper {
 		val threads = collection.find().toList()
 		var deletedThreads = 0
 		for (it in threads) {
-			try {
-				val thread = kordInstance.getChannelOf<ThreadChannel>(it.threadId) ?: continue
-				val latestMessage = thread.getLastMessage() ?: continue
-				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
-				if (timeSinceLatestMessage.inWholeDays > 7) {
-					collection.deleteOne(ThreadData::threadId eq thread.id)
-					deletedThreads++
-				}
-			} catch (e: KtorRequestException) {
-				databaseLogger.warn("Failed in cleanup thread data ID: ${it.threadId} Owner: ${it.ownerId}")
-				collection.deleteOne(ThreadData::threadId eq it.threadId)
+			val thread = kordInstance.getChannelOf<ThreadChannel>(it.threadId) ?: continue
+			val latestMessage = thread.getLastMessage() ?: continue
+			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
+			if (timeSinceLatestMessage.inWholeDays > 7) {
+				collection.deleteOne(ThreadData::threadId eq thread.id)
 				deletedThreads++
-				continue
 			}
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
