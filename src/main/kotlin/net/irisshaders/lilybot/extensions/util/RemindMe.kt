@@ -14,6 +14,7 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
+import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
@@ -49,6 +50,7 @@ class RemindMe : Extension() {
 
 			check {
 				anyGuild()
+				requireBotPermissions(Permission.SendMessages)
 			}
 
 			action {

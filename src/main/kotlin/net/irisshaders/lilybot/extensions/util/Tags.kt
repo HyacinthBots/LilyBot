@@ -41,7 +41,10 @@ class Tags : Extension() {
 			name = "tag"
 			description = "Call a tag from this guild! Use /tag-help for more info."
 
-			check { anyGuild() }
+			check {
+				anyGuild()
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+			}
 
 			action {
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
@@ -83,6 +86,10 @@ class Tags : Extension() {
 			name = "tag-help"
 			description = "Explains how the tag command works!"
 
+			check {
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+			}
+
 			action {
 				respond {
 					embed {
@@ -122,8 +129,9 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
 
 			action {
@@ -176,8 +184,9 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
 
 			action {
@@ -215,6 +224,7 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
 
 			action {

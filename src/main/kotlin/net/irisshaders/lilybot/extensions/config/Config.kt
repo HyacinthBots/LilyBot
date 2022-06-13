@@ -13,6 +13,7 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.TextChannel
@@ -56,10 +57,7 @@ class Config : Extension() {
 					val actionLogPermissions =
 						actionLogChannel.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
 
-					if (!actionLogPermissions.contains(Permission.SendMessages) || !actionLogPermissions.contains(
-							Permission.EmbedLinks
-						)
-					) {
+					if (!actionLogPermissions.contains(Permissions(Permission.SendMessages, Permission.EmbedLinks))) {
 						respond {
 							embed {
 								title = "I do not have sufficient permission"

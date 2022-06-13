@@ -21,6 +21,7 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
@@ -69,12 +70,27 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ManageMessages)
 				configPresent()
+				hasPermission(Permission.ManageMessages)
+				requireBotPermissions(Permission.ManageMessages)
 			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
+
+				if (!channel.asChannelOf<TextChannel>().getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
+						.contains(Permissions(Permission.ManageMessages, Permission.ReadMessageHistory))
+				) {
+					respond {
+						embed {
+							title = "Permissions error!"
+							description =
+								"I do not have the ManageMessages/ReadMessageHistory permissions in <#${
+									config.supportChannel}>. Please adjust this to allow messages to be cleared."
+						}
+					}
+					return@action
+				}
 
 				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val messageAmount = arguments.messages
@@ -114,8 +130,9 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
@@ -175,9 +192,10 @@ class TemporaryModeration : Extension() {
 					userArg.dm {
 						embed {
 							title = "Third warning and timeout in ${guild!!.fetchGuild().name}"
-							description = "You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
-									"For more information about the warn system, please see [this document]" +
-									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+							description =
+								"You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
+										"For more information about the warn system, please see [this document]" +
+										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
 							color = DISCORD_RED
 						}
 					}
@@ -201,9 +219,10 @@ class TemporaryModeration : Extension() {
 						dm = userArg.dm {
 							embed {
 								title = "Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}"
-								description = "You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
-										"For more information about the warn system, please see [this document]" +
-										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+								description =
+									"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
+											"For more information about the warn system, please see [this document]" +
+											"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
 								color = DISCORD_RED
 							}
 						}
@@ -260,8 +279,9 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
@@ -321,8 +341,9 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
@@ -396,8 +417,9 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
@@ -447,8 +469,9 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ModerateMembers)
 					configPresent()
+					hasPermission(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ModerateMembers)
 				}
 
 				@Suppress("DuplicatedCode")
@@ -503,8 +526,9 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ModerateMembers)
 					configPresent()
+					hasPermission(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ModerateMembers)
 				}
 
 				action {
@@ -557,8 +581,9 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ModerateMembers)
 					configPresent()
+					hasPermission(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ModerateMembers)
 				}
 
 				@Suppress("DuplicatedCode")
@@ -618,8 +643,9 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ModerateMembers)
 					configPresent()
+					hasPermission(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ModerateMembers)
 				}
 
 				action {

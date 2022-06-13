@@ -56,8 +56,9 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.BanMembers)
 				configPresent()
+				hasPermission(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
 
 			action {
@@ -133,8 +134,9 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.BanMembers)
 				configPresent()
+				hasPermission(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers)
 			}
 
 			action {
@@ -185,8 +187,9 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.BanMembers)
 				configPresent()
+				hasPermission(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
 
 			action {
@@ -265,8 +268,9 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.KickMembers)
 				configPresent()
+				hasPermission(Permission.KickMembers)
+				requireBotPermissions(Permission.KickMembers)
 			}
 
 			action {

@@ -7,6 +7,7 @@
 package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.utils.delete
@@ -14,10 +15,14 @@ import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.ArchiveDuration
 import dev.kord.common.entity.MessageType
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
@@ -26,6 +31,7 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
+import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
@@ -72,6 +78,23 @@ class ThreadInviter : Extension() {
 
 				config.supportTeam ?: return@action
 				config.supportChannel ?: return@action
+
+				if (!guildFor(event)!!.getChannelOf<TextChannel>(config.supportChannel)
+						.getEffectivePermissions(this@event.kord.selfId).contains(
+							Permissions(Permission.SendMessages, Permission.CreatePublicThreads)
+						)
+				) {
+					// We don't check the configured action log permissions here, since it won't have been set properly
+					// without the permissions being checked
+					guildFor(event)!!.getChannelOf<TextChannel>(config.modActionLog).createMessage {
+						embed {
+							title = "Permissions error!"
+							description =
+								"I do not have the SendMessages/CreatePublicThreads permissions in <#${
+									config.supportChannel}>. Please adjust this to allow support threads to be created."
+						}
+					}
+				}
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null

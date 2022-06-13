@@ -20,13 +20,16 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
@@ -58,8 +61,42 @@ class ModUtilities : Extension() {
 				anyGuild()
 				configPresent()
 				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
 			action {
+				if (arguments.channel == null) {
+					if (!channel.asChannelOf<TextChannel>()
+							.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId).contains(
+								Permissions(Permission.EmbedLinks, Permission.SendMessages)
+							)
+					) {
+						respond {
+							embed {
+								title = "Permissions error!"
+								description =
+									"I do not have the SendMessages/EmbedLinks permissions in <#${
+										channel.id
+									}>. Please adjust this to allow me to send messages."
+							}
+						}
+					}
+				} else {
+					if (!arguments.channel!!.asChannelOf<TextChannel>()
+							.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId).contains(
+								Permissions(Permission.EmbedLinks, Permission.SendMessages)
+							)
+					) {
+						respond {
+							embed {
+								title = "Permissions error!"
+								description =
+									"I do not have the SendMessages/EmbedLinks permissions in <#${
+										channel.id
+									}>. Please adjust this to allow me to send messages."
+							}
+						}
+					}
+				}
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val targetChannel =
@@ -143,6 +180,7 @@ class ModUtilities : Extension() {
 				anyGuild()
 				configPresent()
 				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
 
 			action {

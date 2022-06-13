@@ -41,8 +41,9 @@ class RoleMenu : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ManageMessages)
 				configPresent()
+				hasPermission(Permission.ManageMessages)
+				requireBotPermissions(Permission.ManageRoles, Permission.SendMessages, Permission.EmbedLinks)
 			}
 
 			action {
