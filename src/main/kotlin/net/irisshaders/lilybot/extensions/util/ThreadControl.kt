@@ -19,6 +19,7 @@ import com.kotlindiscord.kord.extensions.types.edit
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.Permission
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.channel.thread.ThreadChannel
@@ -44,7 +45,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannel() as ThreadChannel
+					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
 
@@ -69,7 +70,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannel() as ThreadChannel
+					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
 
@@ -105,7 +106,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannel() as ThreadChannel
+					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 
 					val oldOwnerId = DatabaseHelper.getThreadOwner(threadChannel.id) ?: threadChannel.ownerId

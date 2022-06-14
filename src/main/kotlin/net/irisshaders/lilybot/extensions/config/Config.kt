@@ -13,8 +13,9 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.TextChannel
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -70,8 +71,8 @@ class Config : Extension() {
 					}
 
 					// Log the config being set in the action log
-					val actionLogChannel = guild?.getChannel(arguments.modActionLog.id) as GuildMessageChannelBehavior
-					actionLogChannel.createEmbed {
+					val actionLogChannel = guild?.getChannelOf<TextChannel>(arguments.modActionLog.id)
+					actionLogChannel?.createEmbed {
 						title = "Configuration set!"
 						description = "A guild manager has set a config for this guild!"
 						color = DISCORD_BLACK
@@ -114,8 +115,8 @@ class Config : Extension() {
 						respond { content = "Cleared config for Guild ID: ${guild!!.id}" }
 						// Log the config being cleared to the action log
 						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
-						val actionLogChannel = guild?.getChannel(actionLogId!!) as GuildMessageChannelBehavior
-						actionLogChannel.createEmbed {
+						val actionLogChannel = guild?.getChannelOf<TextChannel>(actionLogId!!)
+						actionLogChannel?.createEmbed {
 							title = "Configuration cleared!"
 							description = "A Guild Manager has cleared the configuration for this guild!"
 							footer {
