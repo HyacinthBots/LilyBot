@@ -2,7 +2,7 @@ package net.irisshaders.lilybot.utils
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
-import dev.kord.core.entity.channel.thread.TextChannelThread
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -298,13 +298,13 @@ object DatabaseHelper {
 		val collection = database.getCollection<ThreadData>()
 		val threads = collection.find().toList()
 		var deletedThreads = 0
-		threads.forEach {
-			val thread = kordInstance.getChannel(it.threadId) as TextChannelThread? ?: return@forEach
-			val latestMessage = thread.getLastMessage() ?: return@forEach
+		for (it in threads) {
+			val thread = kordInstance.getChannelOf<ThreadChannel>(it.threadId) ?: continue
+			val latestMessage = thread.getLastMessage() ?: continue
 			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 			if (timeSinceLatestMessage.inWholeDays > 7) {
 				collection.deleteOne(ThreadData::threadId eq thread.id)
-				deletedThreads += 1
+				deletedThreads++
 			}
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
@@ -418,8 +418,8 @@ object DatabaseHelper {
 	 *
 	 * @since 3.3.2
 	 * @author NoComment1105
-	*/
-	suspend inline fun setReminder(
+	 */
+	suspend fun setReminder(
 		initialSetTime: Instant,
 		inputGuildId: Snowflake,
 		inputUserId: Snowflake,
