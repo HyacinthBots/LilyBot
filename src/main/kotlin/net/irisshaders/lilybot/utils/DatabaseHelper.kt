@@ -143,6 +143,24 @@ object DatabaseHelper {
 	}
 
 	/**
+	 * Remove the given [inputRoleId] from the database entry associated with the given [inputMessageId].
+	 *
+	 * @param inputMessageId The ID of the message the role menu is in.
+	 * @param inputRoleId The ID of the role to remove from the menu.
+	 * @author tempest15
+	 * @since 3.4.0
+	 */
+	suspend fun deleteRoleFromMenu(inputMessageId: Snowflake, inputRoleId: Snowflake) {
+		val collection = database.getCollection<RoleMenuData>()
+		val roleMenu = collection.findOne(RoleMenuData::messageId eq inputMessageId) ?: return
+
+		roleMenu.roles.remove(inputRoleId)
+
+		collection.deleteOne(RoleMenuData::messageId eq inputMessageId)
+		collection.insertOne(roleMenu)
+	}
+
+	/**
 	 * Gets Lily's status from the database.
 	 *
 	 * @return null or the set status in the database.

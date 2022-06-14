@@ -14,16 +14,19 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
+import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.getTopRole
 import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.createRole
 import dev.kord.core.behavior.edit
@@ -37,7 +40,6 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
 // todo Add some docs
-// todo Logging
 
 class RoleMenu : Extension() {
 	override val name = "role-menu"
@@ -99,6 +101,39 @@ class RoleMenu : Extension() {
 						mutableListOf(arguments.initialRole.id)
 					)
 
+					val config = DatabaseHelper.getConfig(guild!!.id)
+					val actionLog = guild!!.getChannel(config!!.modActionLog) as GuildMessageChannelBehavior
+
+					actionLog.createMessage {
+						embed {
+							title = "Role Menu Created"
+							description = "A role menu for the ${arguments.initialRole.mention} role was created in " +
+									"${channel.mention}."
+
+							field {
+								name = "Content:"
+								value = "```${arguments.content}```"
+								inline = false
+							}
+							field {
+								name = "Color:"
+								value = arguments.color.toString()
+								inline = true
+							}
+							field {
+								name = "Embed:"
+								value = arguments.embed.toString()
+								inline = true
+							}
+						}
+						components {
+							linkButton {
+								label = "Jump to role menu"
+								url = menuMessage!!.getJumpUrl()
+							}
+						}
+					}
+
 					respond {
 						content = "Role menu created. You can add more roles using the `/role-menu add` command."
 					}
@@ -151,6 +186,23 @@ class RoleMenu : Extension() {
 						data.roles
 					)
 
+					val config = DatabaseHelper.getConfig(guild!!.id)
+					val actionLog = guild!!.getChannel(config!!.modActionLog) as GuildMessageChannelBehavior
+
+					actionLog.createMessage {
+						embed {
+							title = "Role Added to Role Menu"
+							description = "The ${arguments.role.mention} role was added to a role menu in " +
+									"${channel.mention}."
+						}
+						components {
+							linkButton {
+								label = "Jump to role menu"
+								url = message!!.getJumpUrl()
+							}
+						}
+					}
+
 					respond {
 						content = "Added the ${arguments.role.mention} role to the specified role menu."
 					}
@@ -168,8 +220,8 @@ class RoleMenu : Extension() {
 				}
 
 				action {
-					val message = channel.getMessageOrNull(arguments.messageId)
-					if (!roleMenuExists(message, arguments.messageId)) {
+					val menuMessage = channel.getMessageOrNull(arguments.messageId)
+					if (!roleMenuExists(menuMessage, arguments.messageId)) {
 						return@action
 					}
 
@@ -189,13 +241,24 @@ class RoleMenu : Extension() {
 						return@action
 					}
 
-					data.roles.remove(arguments.role.id)
-					DatabaseHelper.setRoleMenu(
-						data.messageId,
-						data.channelId,
-						data.guildId,
-						data.roles
-					)
+					DatabaseHelper.deleteRoleFromMenu(menuMessage!!.id, arguments.role.id)
+
+					val config = DatabaseHelper.getConfig(guild!!.id)
+					val actionLog = guild!!.getChannel(config!!.modActionLog) as GuildMessageChannelBehavior
+
+					actionLog.createMessage {
+						embed {
+							title = "Role Removed from Role Menu"
+							description = "The ${arguments.role.mention} role was removed from a role menu in " +
+									"${channel.mention}."
+						}
+						components {
+							linkButton {
+								label = "Jump to role menu"
+								url = menuMessage.getJumpUrl()
+							}
+						}
+					}
 
 					respond {
 						content = "Removed the ${arguments.role.mention} role from the specified role menu."
@@ -257,10 +320,10 @@ class RoleMenu : Extension() {
 								name = pronoun
 							}
 
-							roles += newRole.id
+							roles.add(newRole.id)
 						} else {
 							println("skipped creating new roles")
-							roles += existingRole.id
+							roles.add(existingRole.id)
 						}
 					}
 
@@ -270,6 +333,22 @@ class RoleMenu : Extension() {
 						guild!!.id,
 						roles
 					)
+
+					val config = DatabaseHelper.getConfig(guild!!.id)
+					val actionLog = guild!!.getChannel(config!!.modActionLog) as GuildMessageChannelBehavior
+
+					actionLog.createMessage {
+						embed {
+							title = "Pronoun Role Menu Created"
+							description = "A pronoun role menu was created in ${channel.mention}."
+						}
+						components {
+							linkButton {
+								label = "Jump to role menu"
+								url = menuMessage.getJumpUrl()
+							}
+						}
+					}
 
 					respond {
 						content = "Pronoun role menu created."
@@ -306,10 +385,14 @@ class RoleMenu : Extension() {
 
 				val guild = kord.getGuild(data.guildId)!!
 
-				// todo Handle a role being deleted
 				val roles = mutableListOf<Role>()
 				data.roles.forEach {
-					roles.add(guild.getRole(it))
+					val role = guild.getRoleOrNull(it)
+					if (role == null) {
+						DatabaseHelper.deleteRoleFromMenu(event.interaction.message.id, it)
+					} else {
+						roles.add(role)
+					}
 				}
 
 				event.interaction.respondEphemeral {
