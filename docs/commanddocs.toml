@@ -107,7 +107,7 @@ description = "These commands are just handy to have around. Moderator only comm
 [[command]]
 category = "Utility commands"
 name = "role-menu create"
-args = "(Moderator only)\n* `role` - A role to start the menu with - Role\n* `content` - Content of the embed to be created along with the menu - String\n* `color` - Color for the embed - Optional Color (default: black)"
+args = "(Moderator only)\n* `role` - A role to start the menu with - Role\n* `content` - Content of the embed to be created along with the menu - String\n* `embed` - If the message should be an embed` - Optional Boolean (default: true)\n* `color` - Color for the embed - Optional Color (default: black)"
 result = "Creates a menu with a button attached to a `color` colored embed with content `content`. Pressing the button allows the user to select roles."
 permissions = "Manage Roles"
 

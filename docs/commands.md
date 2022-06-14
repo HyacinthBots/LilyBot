@@ -202,6 +202,7 @@ These commands are just handy to have around. Moderator only commands are at the
 (Moderator only)
 * `role` - A role to start the menu with - Role
 * `content` - Content of the embed to be created along with the menu - String
+* `embed` - If the message should be an embed` - Optional Boolean (default: true)
 * `color` - Color for the embed - Optional Color (default: black)
 
 **Result**: Creates a menu with a button attached to a `color` colored embed with content `content`. Pressing the button allows the user to select roles.
