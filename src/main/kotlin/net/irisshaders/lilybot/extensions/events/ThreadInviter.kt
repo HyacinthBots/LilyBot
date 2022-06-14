@@ -15,9 +15,10 @@ import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.ArchiveDuration
 import dev.kord.common.entity.MessageType
 import dev.kord.core.behavior.UserBehavior
-import dev.kord.core.behavior.channel.MessageChannelBehavior
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
@@ -75,9 +76,9 @@ class ThreadInviter : Extension() {
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
-				val textChannel = event.message.getChannel() as TextChannel
+				val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
 				val guild = event.getGuild()
-				val supportChannel = guild?.getChannel(config.supportChannel) as MessageChannelBehavior
+				val supportChannel = guild?.getChannelOf<TextChannel>(config.supportChannel)
 
 				if (textChannel != supportChannel) return@action
 

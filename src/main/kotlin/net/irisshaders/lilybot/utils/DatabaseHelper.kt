@@ -419,7 +419,7 @@ object DatabaseHelper {
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	suspend fun setReminder(
+	suspend inline fun setReminder(
 		initialSetTime: Instant,
 		inputGuildId: Snowflake,
 		inputUserId: Snowflake,
