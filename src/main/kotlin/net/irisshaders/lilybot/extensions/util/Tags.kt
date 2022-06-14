@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalUser
@@ -14,12 +15,15 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.suggestStringMap
 import dev.kord.common.entity.Permission
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -41,7 +45,11 @@ class Tags : Extension() {
 			name = "tag"
 			description = "Call a tag from this guild! Use /tag-help for more info."
 
-			check { anyGuild() }
+			check {
+				anyGuild()
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+			}
 
 			action {
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
@@ -83,6 +91,11 @@ class Tags : Extension() {
 			name = "tag-help"
 			description = "Explains how the tag command works!"
 
+			check {
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+			}
+
 			action {
 				respond {
 					embed {
@@ -122,13 +135,15 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
 
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) != null) {
 					respond { content = "A tag with that name already exists in this guild." }
@@ -176,8 +191,10 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
@@ -190,7 +207,7 @@ class Tags : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
 
 				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
 
@@ -215,6 +232,8 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {

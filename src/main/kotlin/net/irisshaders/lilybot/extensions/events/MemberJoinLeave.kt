@@ -4,8 +4,9 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.flow.count
@@ -31,7 +32,7 @@ class MemberJoinLeave : Extension() {
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannel(config.joinChannel) as GuildMessageChannelBehavior
+				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.joinChannel)
 
 				joinChannel.createEmbed {
 					title = "User joined the server!"
@@ -65,7 +66,7 @@ class MemberJoinLeave : Extension() {
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannel(config.joinChannel) as GuildMessageChannelBehavior
+				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.joinChannel)
 
 				joinChannel.createEmbed {
 					title = "User left the server!"
