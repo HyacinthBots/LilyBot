@@ -26,20 +26,19 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.createRole
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.Role
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.firstOrNull
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
-
-// todo Add some docs
 
 class RoleMenu : Extension() {
 	override val name = "role-menu"
@@ -63,9 +62,7 @@ class RoleMenu : Extension() {
 				action {
 					val kord = this@ephemeralSlashCommand.kord
 
-					if (!botHasRolePermissions(kord) || !botCanAssignRole(kord, arguments.initialRole)) {
-						return@action
-					}
+					if (!botHasRolePermissions(kord) || !botCanAssignRole(kord, arguments.initialRole)) return@action
 
 					menuMessage = channel.createMessage {
 						if (arguments.embed) {
@@ -102,7 +99,7 @@ class RoleMenu : Extension() {
 					)
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannel(config!!.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
 
 					actionLog.createMessage {
 						embed {
@@ -153,14 +150,10 @@ class RoleMenu : Extension() {
 				action {
 					val kord = this@ephemeralSlashCommand.kord
 
-					if (!botHasRolePermissions(kord) || !botCanAssignRole(kord, arguments.role)) {
-						return@action
-					}
+					if (!botHasRolePermissions(kord) || !botCanAssignRole(kord, arguments.role)) return@action
 
 					val message = channel.getMessageOrNull(arguments.messageId)
-					if (!roleMenuExists(message, arguments.messageId)) {
-						return@action
-					}
+					if (!roleMenuExists(message, arguments.messageId)) return@action
 
 					val data = DatabaseHelper.getRoleData(arguments.messageId)!!
 
@@ -187,7 +180,7 @@ class RoleMenu : Extension() {
 					)
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannel(config!!.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
 
 					actionLog.createMessage {
 						embed {
@@ -221,9 +214,7 @@ class RoleMenu : Extension() {
 
 				action {
 					val menuMessage = channel.getMessageOrNull(arguments.messageId)
-					if (!roleMenuExists(menuMessage, arguments.messageId)) {
-						return@action
-					}
+					if (!roleMenuExists(menuMessage, arguments.messageId)) return@action
 
 					val data = DatabaseHelper.getRoleData(arguments.messageId)!!
 
@@ -244,7 +235,7 @@ class RoleMenu : Extension() {
 					DatabaseHelper.deleteRoleFromMenu(menuMessage!!.id, arguments.role.id)
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannel(config!!.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
 
 					actionLog.createMessage {
 						embed {
@@ -277,9 +268,7 @@ class RoleMenu : Extension() {
 				}
 
 				action {
-					if (!botHasRolePermissions(this@ephemeralSlashCommand.kord)) {
-						return@action
-					}
+					if (!botHasRolePermissions(this@ephemeralSlashCommand.kord)) return@action
 
 					val menuMessage = channel.createMessage {
 						content = "Select pronoun roles from the menu below!"
@@ -335,7 +324,7 @@ class RoleMenu : Extension() {
 					)
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannel(config!!.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
 
 					actionLog.createMessage {
 						embed {
@@ -369,7 +358,7 @@ class RoleMenu : Extension() {
 					event.interaction.respondEphemeral {
 						content = "This role menu seems to be broken, please ask staff to recreate it. " +
 								"If this isn't a role menu, or if the issue persists, open a report at " +
-								"<https://github.com/IrisShaders/LilyBot>"
+								"<https://github.com/IrisShaders/LilyBot/issues>"
 					}
 					return@action
 				}
@@ -378,7 +367,7 @@ class RoleMenu : Extension() {
 					event.interaction.respondEphemeral {
 						content = "Could not find any roles associated with this menu. Please ask staff to add some " +
 								"If this isn't a role menu, or if the issue persists, open a report at " +
-								"<https://github.com/IrisShaders/LilyBot>"
+								"<https://github.com/IrisShaders/LilyBot/issues>"
 					}
 					return@action
 				}
