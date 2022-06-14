@@ -19,8 +19,12 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
@@ -178,7 +182,17 @@ class RemindMe : Extension() {
 										it.customMessage ?: "none"
 									}\n---\n"
 
+							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 							DatabaseHelper.removeReminder(guild!!.id, user.id, arguments.reminder)
+							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId)
+								.getMessage(messageId).edit {
+									content =
+										"${if (it.repeating) "Repeating" else ""} Reminder set at ${
+											it.initialSetTime.toDiscord(
+												TimestampType.ShortDateTime
+											)
+										} cancelled."
+								}
 						}
 					}
 
@@ -213,6 +227,13 @@ class RemindMe : Extension() {
 					reminders.forEach {
 						if (it.guildId == guild?.id && it.userId == user.id && it.repeating) {
 							DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId)
+								.getMessage(messageId).edit {
+									content =
+										"Repeating Reminder set at ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)} " +
+												"cancelled."
+								}
 						}
 					}
 
@@ -236,6 +257,16 @@ class RemindMe : Extension() {
 					reminders.forEach {
 						if (it.guildId == guild?.id && it.userId == user.id) {
 							DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId)
+								.getMessage(messageId).edit {
+									content =
+										"${if (it.repeating) "Repeating" else ""} Reminder set at ${
+											it.initialSetTime.toDiscord(
+												TimestampType.ShortDateTime
+											)
+										} cancelled."
+								}
 						}
 					}
 
@@ -282,7 +313,7 @@ class RemindMe : Extension() {
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	private suspend inline fun postReminders() {
+	private suspend fun postReminders() {
 		val reminders = DatabaseHelper.getReminders()
 
 		reminders.forEach {
@@ -310,6 +341,16 @@ class RemindMe : Extension() {
 							}
 						}
 					}
+
+					if (!it.repeating) {
+						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+						kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId).getMessage(messageId)
+							.edit {
+								content = "Reminder set with message ${it.customMessage} at ${
+									it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
+								} completed!"
+							}
+					}
 				} else {
 					channel.createMessage {
 						content = if (it.repeating) {
@@ -331,6 +372,16 @@ class RemindMe : Extension() {
 								url = it.originalMessageUrl
 							}
 						}
+					}
+
+					if (!it.repeating) {
+						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+						kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId).getMessage(messageId)
+							.edit {
+								content = "Reminder set with message ${it.customMessage} at ${
+									it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
+								} completed!"
+							}
 					}
 				}
 
