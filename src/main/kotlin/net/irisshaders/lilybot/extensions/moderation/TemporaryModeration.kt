@@ -24,12 +24,12 @@ import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
@@ -84,9 +84,9 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 
-				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 				val messageAmount = arguments.messages
-				val textChannel = channel as GuildMessageChannelBehavior
+				val textChannel = channel.asChannelOf<TextChannel>()
 
 				// Get the specified amount of messages into an array list of Snowflakes and delete them
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
@@ -99,7 +99,7 @@ class TemporaryModeration : Extension() {
 					content = "Messages cleared."
 				}
 
-				actionLog.createEmbed {
+				actionLog?.createEmbed {
 					title = "$messageAmount messages have been cleared."
 					description = "Action occurred in ${textChannel.mention}"
 					footer {
@@ -129,7 +129,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "warn") ?: return@action
@@ -174,7 +174,7 @@ class TemporaryModeration : Extension() {
 						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
 					}
 
-					actionLog.createEmbed {
+					actionLog?.createEmbed {
 						title = "Timeout"
 						description = "${userArg.mention} has been timed-out for 3 hours due to $newStrikes warn " +
 								"strikes\n${userArg.id} (${userArg.tag}) Reason: ${arguments.reason}"
@@ -200,7 +200,7 @@ class TemporaryModeration : Extension() {
 						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
 					}
 
-					actionLog.createEmbed {
+					actionLog?.createEmbed {
 						title = "Timeout"
 						description = "${userArg.mention} has been timed-out for 12 hours due to $newStrikes warn " +
 								"strikes\n${userArg.id} (${userArg.tag}) Reason: ${arguments.reason}"
@@ -227,7 +227,7 @@ class TemporaryModeration : Extension() {
 							timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
 						}
 
-						actionLog.createEmbed {
+						actionLog?.createEmbed {
 							title = "Timeout"
 							description = "${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
 									"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other " +
@@ -255,10 +255,10 @@ class TemporaryModeration : Extension() {
 				}
 
 				try {
-					actionLog.createMessage { embeds.add(embed) }
+					actionLog?.createMessage { embeds.add(embed) }
 				} catch (e: KtorRequestException) {
 					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+					actionLog?.createMessage { embeds.add(embed) }
 				}
 			}
 		}
@@ -282,7 +282,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				val targetUser = guild?.getMember(userArg.id)
@@ -309,7 +309,7 @@ class TemporaryModeration : Extension() {
 					}
 				}
 
-				actionLog.createEmbed {
+				actionLog?.createEmbed {
 					title = "Warning Removal"
 					color = DISCORD_BLACK
 					timestamp = Clock.System.now()
@@ -344,7 +344,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
 
@@ -397,10 +397,10 @@ class TemporaryModeration : Extension() {
 				}
 
 				try {
-					actionLog.createMessage { embeds.add(embed) }
+					actionLog?.createMessage { embeds.add(embed) }
 				} catch (e: KtorRequestException) {
 					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+					actionLog?.createMessage { embeds.add(embed) }
 				}
 			}
 		}
@@ -424,7 +424,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				// Set timeout to null, or no timeout
@@ -436,7 +436,7 @@ class TemporaryModeration : Extension() {
 					content = "Removed timeout on ${userArg.id}"
 				}
 
-				actionLog.createEmbed {
+				actionLog?.createEmbed {
 					title = "Timeout Removed"
 					field {
 						name = "User:"
@@ -477,7 +477,7 @@ class TemporaryModeration : Extension() {
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 
 					this@ephemeralSlashCommand.check {
 						botHasChannelPerms(
@@ -512,7 +512,7 @@ class TemporaryModeration : Extension() {
 						denied += Permission.UseApplicationCommands
 					}
 
-					actionLog.createEmbed {
+					actionLog?.createEmbed {
 						title = "Channel Locked"
 						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
 						footer {
@@ -540,7 +540,7 @@ class TemporaryModeration : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLogChannel = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -556,7 +556,7 @@ class TemporaryModeration : Extension() {
 							.minus(Permission.UseApplicationCommands)
 					}
 
-					actionLogChannel.createEmbed {
+					actionLog?.createEmbed {
 						title = "Server locked"
 						description = "**Reason:** ${arguments.reason}"
 						footer {
@@ -596,7 +596,7 @@ class TemporaryModeration : Extension() {
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLogChannel = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 
 					this@ephemeralSlashCommand.check {
 						botHasChannelPerms(
@@ -636,7 +636,7 @@ class TemporaryModeration : Extension() {
 						color = DISCORD_GREEN
 					}
 
-					actionLogChannel.createEmbed {
+					actionLog?.createEmbed {
 						title = "Channel Unlocked"
 						description = "${targetChannel.mention} has been unlocked."
 						footer {
@@ -664,7 +664,7 @@ class TemporaryModeration : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLogChannel = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -680,7 +680,7 @@ class TemporaryModeration : Extension() {
 							.plus(Permission.UseApplicationCommands)
 					}
 
-					actionLogChannel.createEmbed {
+					actionLog?.createEmbed {
 						title = "Server unlocked"
 						footer {
 							text = user.asUser().tag

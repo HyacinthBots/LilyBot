@@ -22,12 +22,14 @@ import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
@@ -71,13 +73,12 @@ class ModUtilities : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
-				val targetChannel =
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+				val targetChannel: TextChannel =
 					if (arguments.channel != null) {
-						// This odd syntax is necessary for casting to MessageChannelBehavior
-						guild!!.getChannel(arguments.channel!!.id) as MessageChannelBehavior
+						guild!!.getChannelOf(arguments.channel!!.id)
 					} else {
-						channel
+						channel.asChannelOf()
 					}
 				val createdMessage: Message
 
@@ -166,7 +167,7 @@ class ModUtilities : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
 				val message: Message
 
 				try {
@@ -311,7 +312,7 @@ class ModUtilities : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
 
 				this@ephemeralSlashCommand.check {
 					botHasChannelPerms(actionLog.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))

@@ -16,9 +16,10 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.suggestStringMap
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -142,7 +143,7 @@ class Tags : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
 
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) != null) {
 					respond { content = "A tag with that name already exists in this guild." }
@@ -206,7 +207,7 @@ class Tags : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
 
 				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
 
@@ -240,6 +241,9 @@ class Tags : Extension() {
 
 				var response = ""
 				tags.forEach { response += "• `${it.name}` - ${it.tagTitle}\n" }
+				if (response == "") {
+					response = "This guild has no tags."
+				}
 
 				respond {
 					embed {
