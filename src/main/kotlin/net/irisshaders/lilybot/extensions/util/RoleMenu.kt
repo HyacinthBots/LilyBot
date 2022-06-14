@@ -1,6 +1,6 @@
 package net.irisshaders.lilybot.extensions.util
 
-import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
+import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
@@ -498,7 +498,7 @@ class RoleMenu : Extension() {
 		val color by defaultingColor {
 			name = "color"
 			description = "The color for the message to be. Embed only."
-			defaultValue = DISCORD_BLURPLE
+			defaultValue = DISCORD_BLACK
 		}
 	}
 
