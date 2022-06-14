@@ -2,7 +2,7 @@ package net.irisshaders.lilybot.utils
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
-import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -19,7 +19,7 @@ import org.litote.kmongo.eq
  */
 object DatabaseHelper {
 
-	private val databaseLogger = KotlinLogging.logger("Database Logger")
+	val databaseLogger = KotlinLogging.logger("Database Logger")
 
 	/**
 	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database.
@@ -29,7 +29,7 @@ object DatabaseHelper {
 	 * @author NoComment1105, tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun getConfig(inputGuildId: Snowflake): ConfigData? {
+	suspend inline fun getConfig(inputGuildId: Snowflake): ConfigData? {
 		val collection = database.getCollection<ConfigData>()
 		return collection.findOne(ConfigData::guildId eq inputGuildId)
 	}
@@ -41,7 +41,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun setConfig(newConfig: ConfigData) {
+	suspend inline fun setConfig(newConfig: ConfigData) {
 		val collection = database.getCollection<ConfigData>()
 		collection.deleteOne(ConfigData::guildId eq newConfig.guildId)
 		collection.insertOne(newConfig)
@@ -54,7 +54,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun clearConfig(inputGuildId: Snowflake) {
+	suspend inline fun clearConfig(inputGuildId: Snowflake) {
 		val collection = database.getCollection<ConfigData>()
 		collection.deleteOne(ConfigData::guildId eq inputGuildId)
 	}
@@ -68,7 +68,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? {
+	suspend inline fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? {
 		val collection = database.getCollection<WarnData>()
 		return collection.findOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 	}
@@ -82,7 +82,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
+	suspend inline fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
 		val currentStrikes = getWarn(inputUserId, inputGuildId)?.strikes ?: 0
 		val collection = database.getCollection<WarnData>()
 		collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
@@ -102,7 +102,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	private suspend fun clearWarn(inputGuildId: Snowflake) {
+	private suspend inline fun clearWarn(inputGuildId: Snowflake) {
 		val collection = database.getCollection<WarnData>()
 		collection.deleteMany(WarnData::guildId eq inputGuildId)
 	}
@@ -184,7 +184,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.0.0
 	 */
-	suspend fun setStatus(newStatus: String) {
+	suspend inline fun setStatus(newStatus: String) {
 		val collection = database.getCollection<StatusData>()
 		collection.deleteOne(StatusData::key eq "LilyStatus")
 		collection.insertOne(StatusData("LilyStatus", newStatus))
@@ -200,7 +200,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
+	suspend inline fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
 		val collection = database.getCollection<TagsData>()
 		return collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 	}
@@ -213,7 +213,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend fun getAllTags(inputGuildId: Snowflake): List<TagsData> {
+	suspend inline fun getAllTags(inputGuildId: Snowflake): List<TagsData> {
 		val collection = database.getCollection<TagsData>()
 		return collection.find(TagsData::guildId eq inputGuildId).toList()
 	}
@@ -228,7 +228,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
+	suspend inline fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
 		val collection = database.getCollection<TagsData>()
 		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue))
 	}
@@ -241,7 +241,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
+	suspend inline fun deleteTag(inputGuildId: Snowflake, name: String) {
 		val collection = database.getCollection<TagsData>()
 		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 	}
@@ -253,7 +253,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.1.0
 	 */
-	private suspend fun clearTags(inputGuildId: Snowflake) {
+	private suspend inline fun clearTags(inputGuildId: Snowflake) {
 		val collection = database.getCollection<TagsData>()
 		collection.deleteMany(TagsData::guildId eq inputGuildId)
 	}
@@ -267,7 +267,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun getThreadOwner(inputThreadId: Snowflake): Snowflake? {
+	suspend inline fun getThreadOwner(inputThreadId: Snowflake): Snowflake? {
 		val collection = database.getCollection<ThreadData>()
 		val selectedThread = collection.findOne(ThreadData::threadId eq inputThreadId) ?: return null
 		return selectedThread.ownerId
@@ -282,7 +282,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> {
+	suspend inline fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> {
 		val collection = database.getCollection<ThreadData>()
 		return collection.find(ThreadData::ownerId eq inputOwnerId).toList()
 	}
@@ -297,7 +297,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake) {
+	suspend inline fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake) {
 		val collection = database.getCollection<ThreadData>()
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
 		collection.insertOne(ThreadData(inputThreadId, newOwnerId))
@@ -311,7 +311,7 @@ object DatabaseHelper {
 	 * @author henkelmax
 	 * @since 3.2.2
 	 */
-	suspend fun deleteThread(inputThreadId: Snowflake) {
+	suspend inline fun deleteThread(inputThreadId: Snowflake) {
 		val collection = database.getCollection<ThreadData>()
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
 	}
@@ -322,17 +322,17 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun cleanupThreadData(kordInstance: Kord) {
+	suspend inline fun cleanupThreadData(kordInstance: Kord) {
 		val collection = database.getCollection<ThreadData>()
 		val threads = collection.find().toList()
 		var deletedThreads = 0
-		for (it in threads) {
-			val thread = kordInstance.getChannelOf<ThreadChannel>(it.threadId) ?: continue
-			val latestMessage = thread.getLastMessage() ?: continue
+		threads.forEach {
+			val thread = kordInstance.getChannel(it.threadId) as TextChannelThread? ?: return@forEach
+			val latestMessage = thread.getLastMessage() ?: return@forEach
 			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 			if (timeSinceLatestMessage.inWholeDays > 7) {
 				collection.deleteOne(ThreadData::threadId eq thread.id)
-				deletedThreads++
+				deletedThreads += 1
 			}
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
@@ -347,7 +347,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.2.0
 	 */
-	suspend fun setLeaveTime(inputGuildId: Snowflake, time: Instant) {
+	suspend inline fun setLeaveTime(inputGuildId: Snowflake, time: Instant) {
 		val collection = database.getCollection<GuildLeaveTimeData>()
 		collection.insertOne(GuildLeaveTimeData(inputGuildId, time))
 	}
@@ -360,7 +360,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun deleteLeaveTime(inputGuildId: Snowflake) {
+	suspend inline fun deleteLeaveTime(inputGuildId: Snowflake) {
 		val collection = database.getCollection<GuildLeaveTimeData>()
 		collection.deleteOne(GuildLeaveTimeData::guildId eq inputGuildId)
 	}
@@ -403,7 +403,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend fun setGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+	suspend inline fun setGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
 		val collection = database.getCollection<GalleryChannelData>()
 		collection.insertOne(GalleryChannelData(inputGuildId, inputChannelId))
 	}
@@ -416,7 +416,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend fun deleteGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+	suspend inline fun deleteGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
 		val collection = database.getCollection<GalleryChannelData>()
 		collection.deleteOne(
 			GalleryChannelData::channelId eq inputChannelId,
@@ -446,8 +446,8 @@ object DatabaseHelper {
 	 *
 	 * @since 3.3.2
 	 * @author NoComment1105
-	 */
-	suspend fun setReminder(
+	*/
+	suspend inline fun setReminder(
 		initialSetTime: Instant,
 		inputGuildId: Snowflake,
 		inputUserId: Snowflake,
@@ -480,7 +480,7 @@ object DatabaseHelper {
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	suspend fun removeReminder(initialSetTime: Instant, inputGuildId: Snowflake, inputUserId: Snowflake) {
+	suspend inline fun removeReminder(initialSetTime: Instant, inputGuildId: Snowflake, inputUserId: Snowflake) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.deleteOne(
 			RemindMeData::initialSetTime eq initialSetTime,
@@ -496,7 +496,7 @@ object DatabaseHelper {
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	suspend fun getReminders(): List<RemindMeData> {
+	suspend inline fun getReminders(): List<RemindMeData> {
 		val collection = database.getCollection<RemindMeData>()
 		return collection.find().toList()
 	}
