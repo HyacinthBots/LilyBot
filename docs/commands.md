@@ -318,7 +318,7 @@ None
 
 ---
 
-### Name: `remind`
+### Name: `reminder set`
 **Arguments**:
 * `time` - The time until the bot should send the reminder - Coalescing Duration
 * `customMessage` - A custom message to attach to the reminder - Optional String
@@ -331,7 +331,7 @@ None
 
 ---
 
-### Name: `reminders`
+### Name: `remind list`
 **Arguments**:
 None
 
@@ -343,11 +343,35 @@ None
 
 ---
 
-### Name: `remove-reminder`
+### Name: `reminder remove`
 **Arguments**:
 None
 
-**Result**: Brings up a modal allowing you to specify the number of the reminder to delete. It is advised to use `/reminders` to find out what reminder number is.
+**Result**: Allows the user to input the number ID of the reminder they would like to delete. It is advised to use `/reminder list` to find out what reminder id is.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `reminder remove-repeating`
+**Arguments**:
+None
+
+**Result**: Removes all repeating reminders for the user from the guild the command was executed in
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `reminder remove-all`
+**Arguments**:
+None
+
+**Result**: Removes all reminders for the user from the guild the command was executed in.
 
 **Required Permissions**: `None`
 
