@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
@@ -21,6 +22,7 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
@@ -43,6 +45,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.baseModerationEmbed
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.isBotOrModerator
@@ -69,8 +72,13 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ManageMessages)
 				configPresent()
+				hasPermission(Permission.ManageMessages)
+				requireBotPermissions(Permission.ManageMessages)
+				botHasChannelPerms(
+					channelFor(event)!!.id,
+					Permissions(Permission.ManageMessages, Permission.ReadMessageHistory)
+				)
 			}
 
 			action {
@@ -114,8 +122,9 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
@@ -124,6 +133,10 @@ class TemporaryModeration : Extension() {
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "warn") ?: return@action
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.EmbedLinks))
+				}
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
 				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)?.strikes
@@ -175,9 +188,10 @@ class TemporaryModeration : Extension() {
 					userArg.dm {
 						embed {
 							title = "Third warning and timeout in ${guild!!.fetchGuild().name}"
-							description = "You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
-									"For more information about the warn system, please see [this document]" +
-									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+							description =
+								"You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
+										"For more information about the warn system, please see [this document]" +
+										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
 							color = DISCORD_RED
 						}
 					}
@@ -201,9 +215,10 @@ class TemporaryModeration : Extension() {
 						dm = userArg.dm {
 							embed {
 								title = "Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}"
-								description = "You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
-										"For more information about the warn system, please see [this document]" +
-										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+								description =
+									"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
+											"For more information about the warn system, please see [this document]" +
+											"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
 								color = DISCORD_RED
 							}
 						}
@@ -260,8 +275,9 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
@@ -321,8 +337,9 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
@@ -333,6 +350,10 @@ class TemporaryModeration : Extension() {
 
 				// Clarify the user is not bot or a moderator
 				isBotOrModerator(userArg, "timeout") ?: return@action
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.EmbedLinks))
+				}
 
 				try {
 					// Run the timeout task
@@ -396,8 +417,9 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
@@ -447,14 +469,22 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ModerateMembers)
 					configPresent()
+					hasPermission(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ModerateMembers)
 				}
 
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+
+					this@ephemeralSlashCommand.check {
+						botHasChannelPerms(
+							arguments.channel?.id ?: event.interaction.getChannel().id,
+							Permissions(Permission.ManageChannels)
+						)
+					}
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -503,8 +533,9 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ModerateMembers)
 					configPresent()
+					hasPermission(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ModerateMembers)
 				}
 
 				action {
@@ -557,14 +588,22 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ModerateMembers)
 					configPresent()
+					hasPermission(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ModerateMembers)
 				}
 
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+
+					this@ephemeralSlashCommand.check {
+						botHasChannelPerms(
+							arguments.channel?.id ?: event.interaction.getChannel().id,
+							Permissions(Permission.ManageChannels)
+						)
+					}
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -618,8 +657,9 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ModerateMembers)
 					configPresent()
+					hasPermission(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ModerateMembers)
 				}
 
 				action {

@@ -3,6 +3,7 @@ package net.irisshaders.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
@@ -15,6 +16,7 @@ import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import com.kotlindiscord.kord.extensions.utils.respond
 import com.soywiz.klock.seconds
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.TextChannel
@@ -24,6 +26,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.GalleryChannelData
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import org.litote.kmongo.eq
 
@@ -62,6 +65,8 @@ class GalleryChannel : Extension() {
 					anyGuild()
 					configPresent()
 					hasPermission(Permission.ManageGuild)
+					requireBotPermissions(Permission.ManageChannels)
+					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageChannels))
 				}
 
 				action {
@@ -112,6 +117,8 @@ class GalleryChannel : Extension() {
 					anyGuild()
 					configPresent()
 					hasPermission(Permission.ManageGuild)
+					requireBotPermissions(Permission.ManageChannels)
+					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageChannels))
 				}
 
 				action {
@@ -161,6 +168,11 @@ class GalleryChannel : Extension() {
 
 				check {
 					anyGuild()
+					requireBotPermissions(Permission.SendMessages)
+					botHasChannelPerms(
+						channelFor(event)!!.id,
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				action {
