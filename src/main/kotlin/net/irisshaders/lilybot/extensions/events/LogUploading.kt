@@ -3,7 +3,6 @@ package net.irisshaders.lilybot.extensions.events
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -17,9 +16,7 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.actionRow
@@ -34,6 +31,7 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
@@ -58,17 +56,12 @@ class LogUploading : Extension() {
 		 * @since 2.0
 		 */
 		event<MessageCreateEvent> {
-			check { anyGuild() }
+			check {
+				anyGuild()
+				botHasChannelPerms(event.message.channel.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+			}
 			action {
 				val eventMessage = event.message.asMessageOrNull() // Get the message
-
-				if (!guildFor(event)!!.getChannelOf<TextChannel>(eventMessage.id)
-						.getEffectivePermissions(this@event.kord.selfId).contains(
-							Permissions(Permission.SendMessages, Permission.EmbedLinks)
-						)
-				) {
-					return@action
-				}
 				eventMessage.attachments.forEach { attachment ->
 					val attachmentFileName = attachment.filename
 					val attachmentFileExtension = attachmentFileName.substring(

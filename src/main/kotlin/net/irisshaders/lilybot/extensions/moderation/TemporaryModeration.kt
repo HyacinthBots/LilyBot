@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
@@ -44,6 +45,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.baseModerationEmbed
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.isBotOrModerator
@@ -73,24 +75,14 @@ class TemporaryModeration : Extension() {
 				configPresent()
 				hasPermission(Permission.ManageMessages)
 				requireBotPermissions(Permission.ManageMessages)
+				botHasChannelPerms(
+					channelFor(event)!!.id,
+					Permissions(Permission.ManageMessages, Permission.ReadMessageHistory)
+				)
 			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-
-				if (!channel.asChannelOf<TextChannel>().getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
-						.contains(Permissions(Permission.ManageMessages, Permission.ReadMessageHistory))
-				) {
-					respond {
-						embed {
-							title = "Permissions error!"
-							description =
-								"I do not have the ManageMessages/ReadMessageHistory permissions in <#${
-									config.supportChannel}>. Please adjust this to allow messages to be cleared."
-						}
-					}
-					return@action
-				}
 
 				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 				val messageAmount = arguments.messages
@@ -141,6 +133,10 @@ class TemporaryModeration : Extension() {
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "warn") ?: return@action
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.EmbedLinks))
+				}
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
 				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)?.strikes
@@ -355,6 +351,10 @@ class TemporaryModeration : Extension() {
 				// Clarify the user is not bot or a moderator
 				isBotOrModerator(userArg, "timeout") ?: return@action
 
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.EmbedLinks))
+				}
+
 				try {
 					// Run the timeout task
 					guild?.getMember(userArg.id)?.edit {
@@ -479,6 +479,13 @@ class TemporaryModeration : Extension() {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 
+					this@ephemeralSlashCommand.check {
+						botHasChannelPerms(
+							arguments.channel?.id ?: event.interaction.getChannel().id,
+							Permissions(Permission.ManageChannels)
+						)
+					}
+
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
 					if (channelArg is TextChannelThread) {
@@ -590,6 +597,13 @@ class TemporaryModeration : Extension() {
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLogChannel = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+
+					this@ephemeralSlashCommand.check {
+						botHasChannelPerms(
+							arguments.channel?.id ?: event.interaction.getChannel().id,
+							Permissions(Permission.ManageChannels)
+						)
+					}
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null

@@ -17,6 +17,7 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.hasRole
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
@@ -28,6 +29,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ComponentData
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
 // todo This really just needs a full rework. I'm about 90% sure it's not properly adapted for cross guild work.
@@ -56,6 +58,13 @@ class RoleMenu : Extension() {
 					} else {
 						this.channel as GuildMessageChannelBehavior
 					}
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(
+						arguments.channel?.id ?: channel.id,
+						Permissions(Permission.ManageRoles, Permission.SendMessages, Permission.EmbedLinks)
+					)
+				}
 
 				targetChannel.createMessage {
 					embed {

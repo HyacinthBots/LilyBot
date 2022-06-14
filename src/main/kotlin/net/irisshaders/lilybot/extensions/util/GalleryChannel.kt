@@ -3,6 +3,7 @@ package net.irisshaders.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
@@ -15,16 +16,16 @@ import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import com.kotlindiscord.kord.extensions.utils.respond
 import com.soywiz.klock.seconds
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
-import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.GalleryChannelData
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import org.litote.kmongo.eq
 
@@ -64,24 +65,10 @@ class GalleryChannel : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.ManageChannels)
+					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageChannels))
 				}
 
 				action {
-					if (!channel.asChannelOf<TextChannel>()
-							.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
-							.contains(Permission.ManageChannels)
-					) {
-						respond {
-							embed {
-								title = "Permissions error!"
-								description =
-									"I do not have the ManageChannels permissions in <#${
-										channel.id}>. Please adjust this to allow gallery channels to be set."
-							}
-						}
-						return@action
-					}
-
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 					// Using the global var, find guild channels for the given guildId and iterate through them to
@@ -130,24 +117,10 @@ class GalleryChannel : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.ManageChannels)
+					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageChannels))
 				}
 
 				action {
-					if (!channel.asChannelOf<TextChannel>()
-							.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
-							.contains(Permission.ManageChannels)
-					) {
-						respond {
-							embed {
-								title = "Permissions error!"
-								description =
-									"I do not have the ManageChannels permissions in <#${
-										channel.id}>. Please adjust this to allow gallery channels to be unset."
-							}
-						}
-						return@action
-					}
-
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
 					var channelFound = false
@@ -194,6 +167,11 @@ class GalleryChannel : Extension() {
 
 				check {
 					anyGuild()
+					requireBotPermissions(Permission.SendMessages)
+					botHasChannelPerms(
+						channelFor(event)!!.id,
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				action {

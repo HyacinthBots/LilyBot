@@ -17,10 +17,10 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.TextChannel
-import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 
 /**
  * The class for configuring LilyBot in your guilds.
@@ -54,22 +54,12 @@ class Config : Extension() {
 				action {
 					val actionLogChannel = guild!!.getChannelOf<TextChannel>(arguments.modActionLog.id)
 
-					val actionLogPermissions =
-						actionLogChannel.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
-
-					if (!actionLogPermissions.contains(Permissions(Permission.SendMessages, Permission.EmbedLinks))) {
-						respond {
-							embed {
-								title = "I do not have sufficient permission"
-								description =
-									"I am unable to `SendMessages`/`EmbedLinks` in <#${actionLogChannel.id}>.\n" +
-											"Please allow the permission to this and other logging channels, then " +
-											"try again!"
-							}
-						}
-						return@action
+					this@ephemeralSubCommand.check {
+						botHasChannelPerms(
+							actionLogChannel.id,
+							Permissions(Permission.SendMessages, Permission.EmbedLinks)
+						)
 					}
-
 					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
 					if (DatabaseHelper.getConfig(guild!!.id)?.modActionLog == null) {
@@ -136,24 +126,15 @@ class Config : Extension() {
 						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
 						val actionLogChannel = guild!!.getChannelOf<TextChannel>(actionLogId!!)
 
-						val actionLogPermissions =
-							actionLogChannel.getEffectivePermissions(this@ephemeralSlashCommand.kord.selfId)
-						if (!actionLogPermissions.contains(Permission.SendMessages) || !actionLogPermissions.contains(
-								Permission.EmbedLinks
+						this@ephemeralSubCommand.check {
+							botHasChannelPerms(
+								actionLogId,
+								Permissions(Permission.SendMessages, Permission.EmbedLinks)
 							)
-						) {
-							respond {
-								embed {
-									title = "I do not have sufficient permission"
-									description = "I am unable to `SendMessages`/`EmbedLinks` in <#$actionLogId>.\n" +
-											"Please allow the permission and try again!"
-								}
-							}
-							return@action
-						} else {
-							respond {
-								content = "Config cleared for Guild ID: ${guild!!.id}!"
-							}
+						}
+
+						respond {
+							content = "Config cleared for Guild ID: ${guild!!.id}!"
 						}
 
 						actionLogChannel.createEmbed {

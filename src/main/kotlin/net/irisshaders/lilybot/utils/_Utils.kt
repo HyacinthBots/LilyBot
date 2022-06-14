@@ -4,7 +4,12 @@ import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
@@ -34,6 +39,52 @@ suspend inline fun CheckContext<*>.configPresent() {
 	) {
 		fail("Unable to access config for this guild! Please inform a member of staff")
 	} else pass()
+}
+
+/**
+ * Gets the channel of the event from the provided [channelId] and that the bot has the required [permissions].
+ *
+ * @param channelId The ID of the channel to check
+ * @param permissions The permissions to check the bot for
+ *
+ * @author NoComment1105
+ * @since 3.4.0
+ */
+suspend inline fun CheckContext<*>.botHasChannelPerms(channelId: Snowflake, permissions: Permissions) {
+	if (!passed) {
+		return
+	}
+	val channel = guildFor(event)!!.getChannelOf<TextChannel>(channelId)
+
+	if (guildFor(event)!!.getChannelOf<TextChannel>(channelId).getEffectivePermissions(event.kord.selfId)
+			.contains(Permissions(permissions))
+	) {
+		pass()
+	} else {
+		fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channel.mention}")
+	}
+}
+
+/**
+ * The thread counterpart of [botHasChannelPerms].
+ *
+ * @see botHasChannelPerms
+ * @author NoComment1105
+ * @since 3.4.0
+ */
+suspend inline fun CheckContext<*>.botHasThreadPerms(channelId: Snowflake, permissions: Permissions) {
+	if (!passed) {
+		return
+	}
+	val channel = guildFor(event)!!.getChannelOf<ThreadChannel>(channelId)
+
+	if (guildFor(event)!!.getChannelOf<ThreadChannel>(channelId).getParent().getEffectivePermissions(event.kord.selfId)
+			.contains(Permissions(permissions))
+	) {
+		pass()
+	} else {
+		fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channel.mention}")
+	}
 }
 
 /**
