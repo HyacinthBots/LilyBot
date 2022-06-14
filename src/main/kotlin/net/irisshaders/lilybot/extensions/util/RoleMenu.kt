@@ -40,14 +40,27 @@ import kotlinx.coroutines.flow.firstOrNull
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
+/**
+ * The class the holds the systems allowing for role menus to function.
+ *
+ * @since 3.4.0
+ */
 class RoleMenu : Extension() {
 	override val name = "role-menu"
 
 	override suspend fun setup() {
+		/**
+		 * Role menu commands.
+		 * @author tempest15
+		 * @since 3.4.0
+		 */
 		ephemeralSlashCommand {
 			name = "role-menu"
 			description = "The parent command for managing role menus."
 
+			/**
+			 * The command to create a new role menu.
+			 */
 			ephemeralSubCommand(::RoleMenuCreateArgs) {
 				name = "create"
 				description = "Create a new role menu in this channel. A channel can have any number of role menus."
@@ -137,6 +150,9 @@ class RoleMenu : Extension() {
 				}
 			}
 
+			/**
+			 * The command to add a role to an existing role menu.
+			 */
 			ephemeralSubCommand(::RoleMenuAddArgs) {
 				name = "add"
 				description = "Add a role to the existing role menu in this channel."
@@ -202,6 +218,9 @@ class RoleMenu : Extension() {
 				}
 			}
 
+			/**
+			 * The command to remove a role from an existing role menu.
+			 */
 			ephemeralSubCommand(::RoleMenuRemoveArgs) {
 				name = "remove"
 				description = "Remove a role from the existing role menu in this channel."
@@ -257,6 +276,9 @@ class RoleMenu : Extension() {
 				}
 			}
 
+			/**
+			 * A command that creates a new role menu specifically for selecting pronouns.
+			 */
 			ephemeralSubCommand {
 				name = "pronouns"
 				description = "Create a pronoun selection role menu and the roles to go with it."
@@ -346,6 +368,9 @@ class RoleMenu : Extension() {
 			}
 		}
 
+		/**
+		 * The button event that allows the user to select roles.
+		 */
 		event<ButtonInteractionCreateEvent> {
 			check {
 				anyGuild()
@@ -425,6 +450,16 @@ class RoleMenu : Extension() {
 		}
 	}
 
+	/**
+	 * This function checks if a given [inputMessage] with an associated [argumentMessageId] exists and is a role menu.
+	 *
+	 * @param inputMessage The message to check.
+	 * @param argumentMessageId The ID given as an argument for the command this function is called within.
+	 *
+	 * @return `true` if the message exists and is a role menu, `false` if not.
+	 * @author tempest15
+	 * @since 3.4.0
+	 */
 	private suspend inline fun EphemeralSlashCommandContext<*>.roleMenuExists(
 		inputMessage: Message?,
 		argumentMessageId: Snowflake
@@ -447,6 +482,7 @@ class RoleMenu : Extension() {
 		return true
 	}
 
+	// todo replace this with a proper permission check from the #95 fix
 	private suspend inline fun EphemeralSlashCommandContext<*>.botHasRolePermissions(kord: Kord): Boolean {
 		val self = guild?.getMember(kord.selfId)!!
 		if (!self.hasPermission(Permission.ManageRoles)) {
@@ -458,6 +494,16 @@ class RoleMenu : Extension() {
 		return true
 	}
 
+	/**
+	 * This function checks if the bot can assign a given [role].
+	 *
+	 * @param role The role to check.
+	 * @param kord The kord instance to check.
+	 *
+	 * @return `true` if the proper permissions exist, `false` if not.
+	 * @author tempest15
+	 * @since 3.4.0
+	 */
 	private suspend inline fun EphemeralSlashCommandContext<*>.botCanAssignRole(kord: Kord, role: Role): Boolean {
 		val self = guild?.getMember(kord.selfId)!!
 		if (self.getTopRole()!! < role) {
@@ -471,19 +517,26 @@ class RoleMenu : Extension() {
 	}
 
 	inner class RoleMenuCreateArgs : Arguments() {
+		/** The initial role for a new role menu. */
 		val initialRole by role {
 			name = "role"
 			description = "The first role to start the menu with. Add more via `/role-menu add`"
 		}
+
+		/** The content of the embed or message to attach the role menu to. */
 		val content by string {
 			name = "content"
 			description = "The content of the embed or message."
 		}
+
+		/** If the message the role menu is attached to should be an embed. */
 		val embed by defaultingBoolean {
 			name = "embed"
 			description = "If the message containing the role menu should be sent as an embed."
 			defaultValue = true
 		}
+
+		/** If the message the role menu is attached to is an embed, the color that embed should be. */
 		val color by defaultingColor {
 			name = "color"
 			description = "The color for the message to be. Embed only."
@@ -492,10 +545,13 @@ class RoleMenu : Extension() {
 	}
 
 	inner class RoleMenuAddArgs : Arguments() {
+		/** The message ID of the role menu being edited. */
 		val messageId by snowflake {
 			name = "menuId"
 			description = "The message ID of the role menu you'd like to edit."
 		}
+
+		/** The role to add to the role menu. */
 		val role by role {
 			name = "role"
 			description = "The role you'd like to add to the selected role menu."
@@ -503,10 +559,13 @@ class RoleMenu : Extension() {
 	}
 
 	inner class RoleMenuRemoveArgs : Arguments() {
+		/** The message ID of the role menu being edited. */
 		val messageId by snowflake {
 			name = "menuId"
 			description = "The message ID of the menu you'd like to edit."
 		}
+
+		/** The role to remove from the role menu. */
 		val role by role {
 			name = "role"
 			description = "The role you'd like to remove from the selected role menu."
