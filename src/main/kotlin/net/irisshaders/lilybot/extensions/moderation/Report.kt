@@ -75,7 +75,7 @@ class Report : Extension() {
  * @author NoComment1105
  * @since 3.3.0
  */
-suspend fun Report.reportMessageCommand() = unsafeMessageCommand {
+suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 	name = "Report"
 	locking = true // To prevent the command from being run more than once concurrently
 
@@ -127,7 +127,7 @@ suspend fun Report.reportMessageCommand() = unsafeMessageCommand {
  * @author NoComment1105
  * @since 3.3.0
  */
-suspend fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs) {
+suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs) {
 	name = "manual-report"
 	description = "Report a message, using a link instead of the message command"
 	locking = true // To prevent the command from being run more than once concurrently
@@ -256,7 +256,7 @@ suspend fun createReportModal(
  * @author MissCorruption
  * @since 2.0
  */
-private suspend fun createReport(
+private suspend inline fun createReport(
 	user: UserBehavior,
 	messageLog: GuildMessageChannelBehavior,
 	messageAuthor: Member?,
@@ -493,7 +493,7 @@ private suspend fun createReport(
  * @author MissCorruption
  * @since 2.0
  */
-private suspend fun quickTimeoutEmbed(
+private suspend inline fun quickTimeoutEmbed(
 	actionLog: GuildMessageChannelBehavior,
 	user: User,
 	duration: Int
@@ -527,7 +527,7 @@ private suspend fun quickTimeoutEmbed(
  * @author MissCorruption
  * @since 2.0
  */
-private suspend fun quickLogEmbed(
+private suspend inline fun quickLogEmbed(
 	moderationAction: String,
 	actionLog: GuildMessageChannelBehavior,
 	user: User
