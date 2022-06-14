@@ -115,7 +115,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.4.0
 	 */
-	suspend fun getRoleData(inputMessageId: Snowflake): RoleMenuData? {
+	suspend inline fun getRoleData(inputMessageId: Snowflake): RoleMenuData? {
 		val collection = database.getCollection<RoleMenuData>()
 		return collection.findOne(RoleMenuData::messageId eq inputMessageId)
 	}
@@ -131,7 +131,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.4.0
 	 */
-	suspend fun setRoleMenu(
+	suspend inline fun setRoleMenu(
 		 inputMessageId: Snowflake,
 		 inputChannelId: Snowflake,
 		 inputGuildId: Snowflake,
@@ -151,7 +151,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.4.0
 	 */
-	suspend fun deleteRoleFromMenu(inputMessageId: Snowflake, inputRoleId: Snowflake) {
+	suspend inline fun deleteRoleFromMenu(inputMessageId: Snowflake, inputRoleId: Snowflake) {
 		val collection = database.getCollection<RoleMenuData>()
 		val roleMenu = collection.findOne(RoleMenuData::messageId eq inputMessageId) ?: return
 

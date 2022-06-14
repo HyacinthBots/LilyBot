@@ -436,7 +436,7 @@ class RoleMenu : Extension() {
 		}
 	}
 
-	private suspend fun EphemeralSlashCommandContext<*>.roleMenuExists(
+	private suspend inline fun EphemeralSlashCommandContext<*>.roleMenuExists(
 		inputMessage: Message?,
 		argumentMessageId: Snowflake
 	): Boolean {
@@ -458,7 +458,7 @@ class RoleMenu : Extension() {
 		return true
 	}
 
-	private suspend fun EphemeralSlashCommandContext<*>.botHasRolePermissions(kord: Kord): Boolean {
+	private suspend inline fun EphemeralSlashCommandContext<*>.botHasRolePermissions(kord: Kord): Boolean {
 		val self = guild?.getMember(kord.selfId)!!
 		if (!self.hasPermission(Permission.ManageRoles)) {
 			respond {
@@ -469,7 +469,7 @@ class RoleMenu : Extension() {
 		return true
 	}
 
-	private suspend fun EphemeralSlashCommandContext<*>.botCanAssignRole(kord: Kord, role: Role): Boolean {
+	private suspend inline fun EphemeralSlashCommandContext<*>.botCanAssignRole(kord: Kord, role: Role): Boolean {
 		val self = guild?.getMember(kord.selfId)!!
 		if (self.getTopRole()!! < role) {
 			respond {
