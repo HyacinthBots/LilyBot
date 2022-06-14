@@ -21,9 +21,9 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.getTopRole
-import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
@@ -38,6 +38,7 @@ import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.firstOrNull
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -67,15 +68,16 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ManageRoles)
 					configPresent()
+					hasPermission(Permission.ManageRoles)
+					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 				}
 
 				var menuMessage: Message?
 				action {
 					val kord = this@ephemeralSlashCommand.kord
 
-					if (!botHasRolePermissions(kord) || !botCanAssignRole(kord, arguments.initialRole)) return@action
+					if (!botCanAssignRole(kord, arguments.initialRole)) return@action
 
 					menuMessage = channel.createMessage {
 						if (arguments.embed) {
@@ -159,14 +161,15 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ManageMessages)
 					configPresent()
+					hasPermission(Permission.ManageRoles)
+					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 				}
 
 				action {
 					val kord = this@ephemeralSlashCommand.kord
 
-					if (!botHasRolePermissions(kord) || !botCanAssignRole(kord, arguments.role)) return@action
+					if (!botCanAssignRole(kord, arguments.role)) return@action
 
 					val message = channel.getMessageOrNull(arguments.messageId)
 					if (!roleMenuExists(message, arguments.messageId)) return@action
@@ -198,6 +201,13 @@ class RoleMenu : Extension() {
 					val config = DatabaseHelper.getConfig(guild!!.id)
 					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
 
+					this@ephemeralSubCommand.check {
+						botHasChannelPerms(
+							actionLog.id,
+							Permissions(Permission.SendMessages, Permission.EmbedLinks)
+						)
+					}
+
 					actionLog.createMessage {
 						embed {
 							title = "Role Added to Role Menu"
@@ -227,8 +237,9 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ManageMessages)
 					configPresent()
+					hasPermission(Permission.ManageMessages)
+					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 				}
 
 				action {
@@ -255,6 +266,13 @@ class RoleMenu : Extension() {
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
 					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+
+					this@ephemeralSubCommand.check {
+						botHasChannelPerms(
+							actionLog.id,
+							Permissions(Permission.SendMessages, Permission.EmbedLinks)
+						)
+					}
 
 					actionLog.createMessage {
 						embed {
@@ -285,12 +303,18 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					hasPermission(Permission.ManageRoles)
 					configPresent()
+					hasPermission(Permission.ManageMessages)
+					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 				}
 
 				action {
-					if (!botHasRolePermissions(this@ephemeralSlashCommand.kord)) return@action
+					this@ephemeralSubCommand.check {
+						botHasChannelPerms(
+							channel.id,
+							Permissions(Permission.SendMessages, Permission.EmbedLinks)
+						)
+					}
 
 					val menuMessage = channel.createMessage {
 						content = "Select pronoun roles from the menu below!"
@@ -347,6 +371,13 @@ class RoleMenu : Extension() {
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
 					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+
+					this@ephemeralSubCommand.check {
+						botHasChannelPerms(
+							actionLog.id,
+							Permissions(Permission.SendMessages, Permission.EmbedLinks)
+						)
+					}
 
 					actionLog.createMessage {
 						embed {
@@ -479,18 +510,6 @@ class RoleMenu : Extension() {
 			return false
 		}
 
-		return true
-	}
-
-	// todo replace this with a proper permission check from the #95 fix
-	private suspend inline fun EphemeralSlashCommandContext<*>.botHasRolePermissions(kord: Kord): Boolean {
-		val self = guild?.getMember(kord.selfId)!!
-		if (!self.hasPermission(Permission.ManageRoles)) {
-			respond {
-				content = "I don't have the `Manage Roles` permission. Please add it and try again."
-			}
-			return false
-		}
 		return true
 	}
 
