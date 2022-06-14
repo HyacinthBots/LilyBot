@@ -197,19 +197,57 @@ None
 ## Utility commands
 These commands are just handy to have around. Moderator only commands are at the top and clearly marked.
 
-### Name: `role-menu`
+### Name: `role-menu create`
 **Arguments**:
 (Moderator only)
-* `role` - Role users will be able to select through the menu - Role
-* `title` - Title of the embed to be created along with the menu - Optional String (default: Role Selection Menu)
-* `description` - Text of the embed to be created along with the menu - Optional String
-(default: `Use the button below to add/remove the <role> role.`)
-* `channel` - Channel for the embed and menu to be created in - Optional Channel (default: channel executed in)
+* `role` - A role to start the menu with - Role
+* `content` - Content of the embed to be created along with the menu - String
+* `embed` - If the message should be an embed` - Optional Boolean (default: true)
 * `color` - Color for the embed - Optional Color (default: black)
 
-**Result**: Creates a menu with buttons to add and remove `role` in `channel` along with an `color` colored embed with description `description` and title `title`.
+**Result**: Creates a menu with a button attached to a `color` colored embed with content `content`. Pressing the button allows the user to select roles.
 
-**Required Permissions**: `Manage Messages`
+**Required Permissions**: `Manage Roles`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `role-menu add`
+**Arguments**:
+(Moderator only)
+* `menuId` - The message ID of the role menu to edit - Snowflake
+* `role` - The role to add to the menu - String
+
+**Result**: Adds the `role` to the menu associated with `menuId`.
+
+**Required Permissions**: `Manage Roles`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `role-menu remove`
+**Arguments**:
+(Moderator only)
+* `menuId` - The message ID of the role menu to edit - Snowflake
+* `role` - The role to remove from the menu - String
+
+**Result**: Removes the `role` from the menu associated with `menuId`.
+
+**Required Permissions**: `Manage Roles`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `role-menu pronouns`
+**Arguments**:
+None
+
+**Result**: Creates a role menu and associated roles (if needed) to select pronouns.
+
+**Required Permissions**: `Manage Roles`
 
 **Command category**: `Utility commands`
 
