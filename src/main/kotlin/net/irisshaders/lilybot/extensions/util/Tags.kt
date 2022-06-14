@@ -150,6 +150,14 @@ class Tags : Extension() {
 					return@action
 				}
 
+				if (arguments.tagValue.length > 1024) {
+					respond {
+						content = "That tag is body is too long! Due to Discord limitations tag bodies can only be " +
+								"1024 characters or less!"
+					}
+					return@action
+				}
+
 				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
 
 				actionLog.createEmbed {
