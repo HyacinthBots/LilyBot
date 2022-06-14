@@ -9,7 +9,7 @@ import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
 
-private val utilsLogger = KotlinLogging.logger("Checks Logger")
+val utilsLogger = KotlinLogging.logger("Checks Logger")
 
 /**
  * This is a check to verify that no element of the guild config is null, since these are all non-nullable values, if
@@ -18,7 +18,7 @@ private val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 3.2.0
  */
-suspend fun CheckContext<*>.configPresent() {
+suspend inline fun CheckContext<*>.configPresent() {
 	if (!passed) {
 		return
 	}
@@ -49,7 +49,7 @@ suspend fun CheckContext<*>.configPresent() {
  * @author NoComment1105
  * @since 2.1.0
  */
-suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
+suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
 	val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderatorsPing
 	if (moderatorRoleId == null) {
 		respond {

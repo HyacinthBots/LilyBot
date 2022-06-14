@@ -165,19 +165,29 @@ result = "Clears the nickname of the user that ran the command"
 
 [[command]]
 category = "Utility commands"
-name = "remind"
+name = "reminder set"
 args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `customMessage` - A custom message to attach to the reminder - Optional String"
 result = "Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed"
 
 [[command]]
 category = "Utility commands"
-name = "reminders"
+name = "remind list"
 result = "Sends an embed containing all the reminders you have set in that guild. If there are none, it returns a messages saying so."
 
 [[command]]
 category = "Utility commands"
-name = "remove-reminder"
-result = "Brings up a modal allowing you to specify the number of the reminder to delete. It is advised to use `/reminders` to find out what reminder number is."
+name = "reminder remove"
+result = "Allows the user to input the number ID of the reminder they would like to delete. It is advised to use `/reminder list` to find out what reminder id is."
+
+[[command]]
+category = "Utility commands"
+name = "reminder remove-repeating"
+result = "Removes all repeating reminders for the user from the guild the command was executed in"
+
+[[command]]
+category = "Utility commands"
+name = "reminder remove-all"
+result = "Removes all reminders for the user from the guild the command was executed in."
 # End Utility commands
 
 # GitHub commands

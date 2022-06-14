@@ -17,7 +17,7 @@ import kotlin.io.path.exists
  * @since 3.3.0
  */
 object DocsGenerator {
-	private val logger = KotlinLogging.logger("Docs Generator")
+	val docsLogger = KotlinLogging.logger("Docs Generator")
 
 	/**
 	 * The function clears the documents file, allowing it to have the new documentation written in by [writeNewDocs].
@@ -28,26 +28,26 @@ object DocsGenerator {
 	 * @since 3.3.0
 	 * @see writeNewDocs
 	 */
-	suspend fun clearDocs(environment: String) {
+	suspend inline fun clearDocs(environment: String) {
 		if (environment == "production") {
-			logger.info("Production environment detected. Skipping clearing docs")
+			docsLogger.info("Production environment detected. Skipping clearing docs")
 			return
 		}
 
-		logger.debug("Starting the clearing of existing documents!")
+		docsLogger.debug("Starting the clearing of existing documents!")
 		if (!docFile.exists()) {
-			logger.error("File not found! Not clearing docs file!")
+			docsLogger.error("File not found! Not clearing docs file!")
 			return
 		}
 
-		logger.debug("Clearing file contents...")
+		docsLogger.debug("Clearing file contents...")
 		val writer = docFile.bufferedWriter()
 		withContext(Dispatchers.IO) {
 			writer.write("")
 			writer.flush()
 			writer.close()
 		}
-		logger.info("Cleared old documents!")
+		docsLogger.info("Cleared old documents!")
 	}
 
 	/**
@@ -59,25 +59,25 @@ object DocsGenerator {
 	 * @since 3.3.0
 	 * @see clearDocs
 	 */
-	suspend fun writeNewDocs(environment: String) {
+	suspend inline fun writeNewDocs(environment: String) {
 		if (environment == "production") {
-			logger.info("Production environment detected. Skipping writing docs")
+			docsLogger.info("Production environment detected. Skipping writing docs")
 			return
 		}
 
-		logger.debug("Starting the writing of documents!")
+		docsLogger.debug("Starting the writing of documents!")
 		if (!docFile.exists()) { // If the documents file doesn't exist, for what ever reason...
-			logger.warn("Docs file not found! Attempting to create file...")
+			docsLogger.warn("Docs file not found! Attempting to create file...")
 			try {
 				docFile.createFile() // Create it!
 			} catch (e: IOException) {
-				logger.error("Failed to create file! Not writing documents") // Print an error when it can't be made
+				docsLogger.error("Failed to create file! Not writing documents") // Print an error when it can't be made
 				return
 			}
-			logger.info("File created successfully")
+			docsLogger.info("File created successfully")
 		}
 
-		logger.debug("Writing new documents...")
+		docsLogger.debug("Writing new documents...")
 		val writer = docFile.bufferedWriter() // Write the documents.
 		withContext(Dispatchers.IO) {
 			writer.write(
@@ -88,14 +88,14 @@ object DocsGenerator {
 				if (it.name.isNullOrEmpty() && it.result.isNullOrEmpty() && it.permissions.isNullOrEmpty() &&
 					it.args.isNullOrEmpty() && it.category.isNotEmpty() && it.description!!.isNotEmpty()
 				) {
-					logger.debug("Writing command header")
+					docsLogger.debug("Writing command header")
 					writer.write(
 						"\n## ${it.category}\n" +
 								"${it.description}\n\n"
 					)
 					writer.flush()
 				} else {
-					logger.debug("Writing command doc")
+					docsLogger.debug("Writing command doc")
 					writer.write(
 						"### Name: `${it.name}`\n" +
 								"**Arguments**:\n${it.args ?: "None"}\n\n" +
@@ -110,6 +110,6 @@ object DocsGenerator {
 			writer.flush()
 			writer.close()
 		}
-		logger.info("New Documents written successfully")
+		docsLogger.info("New Documents written successfully")
 	}
 }
