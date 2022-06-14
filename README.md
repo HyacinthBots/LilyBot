@@ -8,7 +8,7 @@
 ![GitHub](https://img.shields.io/github/license/IrisShaders/LilyBot?label=License)
 ![GitHub repo size](https://img.shields.io/github/repo-size/IrisShaders/LilyBot?label=Repository%20Size)
 
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/IrisShaders/LilyBot/latest/main?include_prereleases)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/IrisShaders/LilyBot/latest/develop?include_prereleases)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/IrisShaders/LilyBot?label=Commit%20Activity)
 
 <img src="docs/lily-logo-transparent.png" alt="The LilyBot Logo" style="width: 128px"/>
