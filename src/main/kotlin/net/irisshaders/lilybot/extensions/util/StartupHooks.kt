@@ -26,7 +26,8 @@ class StartupHooks : Extension() {
 		 * @since v2.0
 		 */
 		// The channel specifically for sending online notifications to
-		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
+		val onlineLog =
+			kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
 		onlineLog.createEmbed {
 			title = "Lily is now online!"
 			color = DISCORD_GREEN
