@@ -254,14 +254,14 @@ class RemindMe : Extension() {
 	 * @since 3.3.4
 	 * @author NoComment1105
 	 */
-	private suspend fun userReminders(event: ChatInputCommandInteractionCreateEvent): String {
+	private suspend inline fun userReminders(event: ChatInputCommandInteractionCreateEvent): String {
 		val reminders = DatabaseHelper.getReminders()
 		var response = ""
 		reminders.forEach {
 			if (it.userId == event.interaction.user.id && it.guildId == guildFor(event)!!.id) {
 				response +=
-					"Reminder ID: ${it.id}\nTime set: ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)},\nTime until " +
-							"reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+					"Reminder ID: ${it.id}\nTime set: ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)},\n" +
+							"Time until reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
 								it.remindTime.toDiscord(TimestampType.ShortDateTime)
 							}),\nCustom Message: ${
 								it.customMessage ?: "none"
@@ -282,7 +282,7 @@ class RemindMe : Extension() {
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	private suspend fun postReminders() {
+	private suspend inline fun postReminders() {
 		val reminders = DatabaseHelper.getReminders()
 
 		reminders.forEach {
