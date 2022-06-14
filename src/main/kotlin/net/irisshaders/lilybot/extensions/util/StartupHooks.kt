@@ -3,10 +3,10 @@ package net.irisshaders.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.createEmbed
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
-import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 /**
  * This class serves as a place for all functions that get run on bot start and bot start alone. This *hypothetically*
@@ -26,10 +26,12 @@ class StartupHooks : Extension() {
 		 * @since v2.0
 		 */
 		// The channel specifically for sending online notifications to
-		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
-		responseEmbedInChannel(
-			onlineLog, "Lily is now online!", null, DISCORD_GREEN, null
-		)
+		val onlineLog =
+			kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
+		onlineLog.createEmbed {
+			title = "Lily is now online!"
+			color = DISCORD_GREEN
+		}
 
 		/**
 		 * This function is called to remove any threads in the database that haven't had a message sent in the last

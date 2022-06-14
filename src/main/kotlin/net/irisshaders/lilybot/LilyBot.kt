@@ -1,5 +1,4 @@
 @file:OptIn(PrivilegedIntent::class)
-@file:Suppress("DEPRECATION")
 
 package net.irisshaders.lilybot
 
@@ -66,6 +65,11 @@ var commandDocs: CommandDocs? = null
 val docFile = Path("./docs/commands.md")
 
 suspend fun main() {
+	val mapper = tomlMapper { }
+	val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
+
+	commandDocs = mapper.decode<CommandDocs>(stream)
+
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		members {
 			lockMemberRequests = true // Collect members one at a time to avoid hitting rate limits
@@ -130,11 +134,6 @@ suspend fun main() {
 			gitHubLogger.error("Failed to connect to GitHub!")
 		}
 	}
-
-	val mapper = tomlMapper { }
-	val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
-
-	commandDocs = mapper.decode<CommandDocs>(stream)
 
 	DocsGenerator.clearDocs(ENVIRONMENT)
 	DocsGenerator.writeNewDocs(ENVIRONMENT)

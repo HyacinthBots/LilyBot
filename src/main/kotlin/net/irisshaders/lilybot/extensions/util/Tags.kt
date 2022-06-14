@@ -21,7 +21,6 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
-import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 /**
  * The class that holds the commands to create tags commands.
@@ -62,13 +61,13 @@ class Tags : Extension() {
 				channel.createMessage {
 					if (arguments.user != null) content = arguments.user!!.mention
 					embed {
-						color = DISCORD_BLURPLE
 						title = tagFromDatabase.tagTitle
 						description = tagFromDatabase.tagValue
 						footer {
 							text = "Tag requested by ${user.asUser().tag}"
 							icon = user.asUser().avatar!!.url
 						}
+						color = DISCORD_BLURPLE
 					}
 				}
 			}
@@ -139,7 +138,6 @@ class Tags : Extension() {
 				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
 
 				actionLog.createEmbed {
-					color = DISCORD_GREEN
 					title = "Tag created!"
 					description = "The tag `${arguments.tagName}` has been created"
 					field {
@@ -157,6 +155,7 @@ class Tags : Extension() {
 						text = "Requested by ${user.asUser().tag}"
 					}
 					timestamp = Clock.System.now()
+					color = DISCORD_GREEN
 				}
 
 				respond {
@@ -195,14 +194,15 @@ class Tags : Extension() {
 
 				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
 
-				responseEmbedInChannel(
-					actionLog,
-					"Tag deleted!",
-					"The tag ${arguments.tagName} was deleted",
-					DISCORD_RED,
-					user.asUser()
-				)
-
+				actionLog.createEmbed {
+					title = "Tag deleted!"
+					description = "The tag ${arguments.tagName} was deleted"
+					footer {
+						text = user.asUser().tag
+						icon = user.asUser().avatar?.url
+					}
+					color = DISCORD_RED
+				}
 				respond {
 					content = "Tag: `${arguments.tagName}` deleted"
 				}
@@ -222,6 +222,9 @@ class Tags : Extension() {
 
 				var response = ""
 				tags.forEach { response += "• `${it.name}` - ${it.tagTitle}\n" }
+				if (response == "") {
+					response = "This guild has no tags."
+				}
 
 				respond {
 					embed {
