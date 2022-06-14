@@ -3,6 +3,7 @@ package net.irisshaders.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.application.slash.publicSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDuration
@@ -68,19 +69,19 @@ class RemindMe : Extension() {
 				name = "set"
 				description = "Remind me after a certain amount of time"
 
-			check {
-				anyGuild()
-				requireBotPermissions(Permission.SendMessages)
-			}
-
-			action {
-				this@publicSlashCommand.check {
-					botHasChannelPerms(channel.id, Permissions(Permission.SendMessages))
+				check {
+					anyGuild()
+					requireBotPermissions(Permission.SendMessages)
 				}
 
-				val setTime = Clock.System.now()
-				val remindTime = Clock.System.now().plus(arguments.time, TimeZone.UTC)
-				val duration = arguments.time
+				action {
+					this@publicSlashCommand.check {
+						botHasChannelPerms(channel.id, Permissions(Permission.SendMessages))
+					}
+
+					val setTime = Clock.System.now()
+					val remindTime = Clock.System.now().plus(arguments.time, TimeZone.UTC)
+					val duration = arguments.time
 
 					val response = respond {
 						content = if (arguments.customMessage.isNullOrEmpty()) {
@@ -152,7 +153,6 @@ class RemindMe : Extension() {
 					respond {
 						embed {
 							title = "Your reminders"
-							description = "These are the reminders you have set in this guild"
 							field {
 								value = userReminders(event)
 							}
@@ -221,8 +221,8 @@ class RemindMe : Extension() {
 				}
 			}
 
-			ephemeralSubCommand {
-				name = "remove-repeating"
+			ephemeralSubCommand(::RemoveAllArgs) {
+				name = "remove-all"
 				description = "Remove all repeating reminders you have set for this guild"
 
 				check {
@@ -233,53 +233,35 @@ class RemindMe : Extension() {
 					val reminders = DatabaseHelper.getReminders()
 
 					reminders.forEach {
-						if (it.guildId == guild?.id && it.userId == user.id && it.repeating) {
-							DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
-							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId)
-								.getMessage(messageId).edit {
-									content =
-										"Repeating Reminder set at ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)} " +
-												"cancelled."
-								}
+						if (arguments.reminderType == "all") {
+							if (it.guildId == guild?.id && it.userId == user.id) {
+								DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+								val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+								this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+									.getChannelOf<TextChannel>(it.channelId)
+									.getMessage(messageId).edit {
+										content = "${if (it.repeating) "Repeating" else ""} Reminder cancelled."
+									}
+							}
+
+							respond {
+								content = "Removed all your reminders for this guild."
+							}
+						} else if (arguments.reminderType == "repeating") {
+							if (it.guildId == guild?.id && it.userId == user.id && it.repeating) {
+								DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+								val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+								this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+									.getChannelOf<TextChannel>(it.channelId)
+									.getMessage(messageId).edit {
+										content = "Repeating Reminder cancelled."
+									}
+							}
+
+							respond {
+								content = "Removed all your repeating reminders for this guild."
+							}
 						}
-					}
-
-					respond {
-						content = "Removed all your repeating reminders for this guild."
-					}
-				}
-			}
-
-			ephemeralSubCommand {
-				name = "remove-all"
-				description = "Remove all reminders you have set for this guild"
-
-				check {
-					anyGuild()
-				}
-
-				action {
-					val reminders = DatabaseHelper.getReminders()
-
-					reminders.forEach {
-						if (it.guildId == guild?.id && it.userId == user.id) {
-							DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
-							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId)
-								.getMessage(messageId).edit {
-									content =
-										"${if (it.repeating) "Repeating" else ""} Reminder set at ${
-											it.initialSetTime.toDiscord(
-												TimestampType.ShortDateTime
-											)
-										} cancelled."
-								}
-						}
-					}
-
-					respond {
-						content = "Removed all your reminders for this guild."
 					}
 				}
 			}
@@ -354,9 +336,7 @@ class RemindMe : Extension() {
 						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 						kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId).getMessage(messageId)
 							.edit {
-								content = "Reminder set with message ${it.customMessage} at ${
-									it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
-								} completed!"
+								content = "Reminder completed!"
 							}
 					}
 				} else {
@@ -386,9 +366,7 @@ class RemindMe : Extension() {
 						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 						kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId).getMessage(messageId)
 							.edit {
-								content = "Reminder set with message ${it.customMessage} at ${
-									it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
-								} completed!"
+								content = "Reminder completed!"
 							}
 					}
 				}
@@ -439,6 +417,20 @@ class RemindMe : Extension() {
 		val reminder by int {
 			name = "reminderNumber"
 			description = "The number of the reminder to remove. Use `/reminders list` to find out the reminder."
+		}
+	}
+
+	inner class RemoveAllArgs : Arguments() {
+		val reminderType by stringChoice {
+			name = "type"
+			description = "Choose which reminder type to remove all of"
+			val list = ArrayList<String>()
+			list.add("repeating")
+			list.add("all")
+
+			list.forEach {
+				choices[it] = it
+			}
 		}
 	}
 }
