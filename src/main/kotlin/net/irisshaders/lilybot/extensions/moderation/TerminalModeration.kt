@@ -16,6 +16,7 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
@@ -31,6 +32,7 @@ import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.baseModerationEmbed
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.isBotOrModerator
@@ -57,8 +59,9 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.BanMembers)
 				configPresent()
+				hasPermission(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
 
 			action {
@@ -68,6 +71,10 @@ class TerminalModeration : Extension() {
 
 				// Clarify the user is not a bot or moderator
 				isBotOrModerator(userArg, "ban") ?: return@action
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				}
 
 				// DM the user before the ban task is run, to avoid error, null if fails
 				val dm = userArg.dm {
@@ -134,8 +141,9 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.BanMembers)
 				configPresent()
+				hasPermission(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers)
 			}
 
 			action {
@@ -144,6 +152,10 @@ class TerminalModeration : Extension() {
 				val userArg = arguments.userArgument
 				// Get all the bans into a list
 				val bans = guild!!.bans.toList().map { it.userId }
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				}
 
 				// Search the list for the banned user
 				if (userArg.id in bans) {
@@ -186,8 +198,9 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.BanMembers)
 				configPresent()
+				hasPermission(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
 
 			action {
@@ -196,6 +209,10 @@ class TerminalModeration : Extension() {
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				}
 
 				// DM the user before the ban task is run
 				val dm = userArg.dm {
@@ -266,8 +283,9 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.KickMembers)
 				configPresent()
+				hasPermission(Permission.KickMembers)
+				requireBotPermissions(Permission.KickMembers)
 			}
 
 			action {
@@ -277,6 +295,10 @@ class TerminalModeration : Extension() {
 
 				// Clarify the user isn't a bot or a moderator
 				isBotOrModerator(userArg, "kick") ?: return@action
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				}
 
 				// DM the user about it before the kick
 				val dm = userArg.dm {

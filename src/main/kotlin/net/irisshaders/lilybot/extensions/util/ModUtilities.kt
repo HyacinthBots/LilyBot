@@ -20,6 +20,7 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
@@ -36,6 +37,7 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -60,8 +62,16 @@ class ModUtilities : Extension() {
 				anyGuild()
 				configPresent()
 				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
 			action {
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(
+						arguments.channel?.id ?: channel.id,
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
+				}
+
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
 				val targetChannel: TextChannel =
@@ -144,6 +154,7 @@ class ModUtilities : Extension() {
 				anyGuild()
 				configPresent()
 				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
 
 			action {
@@ -301,7 +312,11 @@ class ModUtilities : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(actionLog.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				}
 
 				// Update the presence in the action
 				this@ephemeralSlashCommand.kord.editPresence {
@@ -314,7 +329,7 @@ class ModUtilities : Extension() {
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
-				actionLog?.createEmbed {
+				actionLog.createEmbed {
 					title = "Presence changed"
 					description = "Lily's presence has been set to `${arguments.presenceArgument}`"
 					footer {

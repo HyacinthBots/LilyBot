@@ -19,6 +19,8 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
@@ -31,6 +33,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 
@@ -65,14 +68,19 @@ class RemindMe : Extension() {
 				name = "set"
 				description = "Remind me after a certain amount of time"
 
-				check {
-					anyGuild()
+			check {
+				anyGuild()
+				requireBotPermissions(Permission.SendMessages)
+			}
+
+			action {
+				this@publicSlashCommand.check {
+					botHasChannelPerms(channel.id, Permissions(Permission.SendMessages))
 				}
 
-				action {
-					val setTime = Clock.System.now()
-					val remindTime = Clock.System.now().plus(arguments.time, TimeZone.UTC)
-					val duration = arguments.time
+				val setTime = Clock.System.now()
+				val remindTime = Clock.System.now().plus(arguments.time, TimeZone.UTC)
+				val duration = arguments.time
 
 					val response = respond {
 						content = if (arguments.customMessage.isNullOrEmpty()) {

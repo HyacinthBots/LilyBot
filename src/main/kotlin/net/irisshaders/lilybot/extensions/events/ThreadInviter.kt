@@ -14,6 +14,8 @@ import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.ArchiveDuration
 import dev.kord.common.entity.MessageType
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.withTyping
@@ -31,6 +33,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration.Companion.seconds
 
@@ -73,6 +76,17 @@ class ThreadInviter : Extension() {
 
 				config.supportTeam ?: return@action
 				config.supportChannel ?: return@action
+
+				this@event.check {
+					botHasChannelPerms(
+						config.supportChannel,
+						Permissions(Permission.SendMessages, Permission.CreatePublicThreads)
+					)
+					botHasChannelPerms(
+						config.modActionLog,
+						Permissions(Permission.SendMessages, Permission.CreatePublicThreads)
+					)
+				}
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null

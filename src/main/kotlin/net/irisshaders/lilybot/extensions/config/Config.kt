@@ -13,12 +13,14 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.TextChannel
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 
 /**
  * The class for configuring LilyBot in your guilds.
@@ -46,9 +48,18 @@ class Config : Extension() {
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageGuild)
+					requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				}
 
 				action {
+					val actionLogChannel = guild!!.getChannelOf<TextChannel>(arguments.modActionLog.id)
+
+					this@ephemeralSubCommand.check {
+						botHasChannelPerms(
+							actionLogChannel.id,
+							Permissions(Permission.SendMessages, Permission.EmbedLinks)
+						)
+					}
 					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
 					if (DatabaseHelper.getConfig(guild!!.id)?.modActionLog == null) {
@@ -70,9 +81,7 @@ class Config : Extension() {
 						return@action
 					}
 
-					// Log the config being set in the action log
-					val actionLogChannel = guild?.getChannelOf<TextChannel>(arguments.modActionLog.id)
-					actionLogChannel?.createEmbed {
+					actionLogChannel.createEmbed {
 						title = "Configuration set!"
 						description = "A guild manager has set a config for this guild!"
 						color = DISCORD_BLACK
@@ -103,6 +112,7 @@ class Config : Extension() {
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageGuild)
+					requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				}
 
 				action {
@@ -112,11 +122,22 @@ class Config : Extension() {
 						respond { content = "**Error:** There is no configuration set for this guild!" }
 						return@action // Return to avoid the database trying to delete things that don't exist
 					} else {
-						respond { content = "Cleared config for Guild ID: ${guild!!.id}" }
 						// Log the config being cleared to the action log
 						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
-						val actionLogChannel = guild?.getChannelOf<TextChannel>(actionLogId!!)
-						actionLogChannel?.createEmbed {
+						val actionLogChannel = guild!!.getChannelOf<TextChannel>(actionLogId!!)
+
+						this@ephemeralSubCommand.check {
+							botHasChannelPerms(
+								actionLogId,
+								Permissions(Permission.SendMessages, Permission.EmbedLinks)
+							)
+						}
+
+						respond {
+							content = "Config cleared for Guild ID: ${guild!!.id}!"
+						}
+
+						actionLogChannel.createEmbed {
 							title = "Configuration cleared!"
 							description = "A Guild Manager has cleared the configuration for this guild!"
 							footer {
