@@ -9,6 +9,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database
+import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.eq
 
 /**
@@ -331,7 +332,7 @@ object DatabaseHelper {
 			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 			if (timeSinceLatestMessage.inWholeDays > 7) {
 				collection.deleteOne(ThreadData::threadId eq thread.id)
-				deletedThreads = + 1
+				deletedThreads += 1
 			}
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
@@ -391,6 +392,113 @@ object DatabaseHelper {
 		}
 
 		databaseLogger.info("Deleted old data for $deletedGuildData guilds from the database")
+	}
+
+	/**
+	 * Stores a channel ID as input by the user, in the database, with it's corresponding guild, allowing us to find
+	 * the channel later.
+	 *
+	 * @param inputGuildId The guild the channel is in
+	 * @param inputChannelId The channel that is being set as a gallery channel
+	 * @author NoComment1105
+	 * @since 3.3.0
+	 */
+	suspend fun setGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+		val collection = database.getCollection<GalleryChannelData>()
+		collection.insertOne(GalleryChannelData(inputGuildId, inputChannelId))
+	}
+
+	/**
+	 * Removes a channel ID from the gallery channel database.
+	 *
+	 * @param inputGuildId The guild the channel is in
+	 * @param inputChannelId The channel being removed
+	 * @author NoComment1105
+	 * @since 3.3.0
+	 */
+	suspend fun deleteGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+		val collection = database.getCollection<GalleryChannelData>()
+		collection.deleteOne(
+			GalleryChannelData::channelId eq inputChannelId,
+			GalleryChannelData::guildId eq inputGuildId
+		)
+	}
+
+	/**
+	 * Collects every gallery channel in the database into a [List].
+	 *
+	 * @return The [CoroutineCollection] of [GalleryChannelData] for all the gallery channels in the database
+	 * @author NoComment1105
+	 * @since 3.3.0
+	 */
+	fun getGalleryChannels(): CoroutineCollection<GalleryChannelData> = database.getCollection()
+
+	/**
+	 * Stores a reminder in the database.
+	 *
+	 * @param initialSetTime The time the reminder was set
+	 * @param inputGuildId The ID of the guild the reminder was set in
+	 * @param inputUserId The ID of the user that would like to be reminded
+	 * @param inputChannelId The ID of the channel the reminder was set in
+	 * @param remindTime The time the user would like to be reminded at
+	 * @param originalMessageUrl The URL to the original message that set the reminder
+	 * @param customMessage A custom message to attach to the reminder
+	 *
+	 * @since 3.3.2
+	 * @author NoComment1105
+	*/
+	suspend fun setReminder(
+		initialSetTime: Instant,
+		inputGuildId: Snowflake,
+		inputUserId: Snowflake,
+		inputChannelId: Snowflake,
+		remindTime: Instant,
+		originalMessageUrl: String,
+		customMessage: String?
+	) {
+		val collection = database.getCollection<RemindMeData>()
+		collection.insertOne(
+			RemindMeData(
+				initialSetTime,
+				inputGuildId,
+				inputUserId,
+				inputChannelId,
+				remindTime,
+				originalMessageUrl,
+				customMessage
+			)
+		)
+	}
+
+	/**
+	 * Removes old reminders from the Database.
+	 *
+	 * @param initialSetTime The time the reminder was set
+	 * @param inputGuildId The ID of the guild the reminder was set in
+	 * @param inputUserId The ID of the user the reminder was set by
+	 *
+	 * @since 3.3.2
+	 * @author NoComment1105
+	 */
+	suspend fun removeReminder(initialSetTime: Instant, inputGuildId: Snowflake, inputUserId: Snowflake) {
+		val collection = database.getCollection<RemindMeData>()
+		collection.deleteOne(
+			RemindMeData::initialSetTime eq initialSetTime,
+			RemindMeData::guildId eq inputGuildId,
+			RemindMeData::userId eq inputUserId
+		)
+	}
+
+	/**
+	 * Gets every reminder in the database.
+	 *
+	 * @return A [List] of reminders from the database
+	 * @since 3.3.2
+	 * @author NoComment1105
+	 */
+	suspend fun getReminders(): List<RemindMeData> {
+		val collection = database.getCollection<RemindMeData>()
+		return collection.find().toList()
 	}
 }
 
@@ -503,4 +611,41 @@ data class ThreadData(
 data class GuildLeaveTimeData(
 	val guildId: Snowflake,
 	val guildLeaveTime: Instant
+)
+
+/**
+ * The data for image channels in a guild.
+ *
+ * @param guildId The ID of the guild the image channel is for
+ * @param channelId The ID of the image channel being set
+ * @since 3.3.0
+ */
+@Serializable
+data class GalleryChannelData(
+	val guildId: Snowflake,
+	val channelId: Snowflake
+)
+
+/**
+ * The data for reminders set by users.
+ *
+ * @param initialSetTime The time the reminder was set
+ * @param guildId The ID of the guild the reminder was set in
+ * @param userId The ID of the user that would like to be reminded
+ * @param channelId The ID of the channel the reminder was set in
+ * @param remindTime The time the user would like to be reminded at
+ * @param originalMessageUrl The URL to the original message that set the reminder
+ * @param customMessage A custom message to attach to the reminder
+ *
+ * @since 3.3.2
+ */
+@Serializable
+data class RemindMeData(
+	val initialSetTime: Instant,
+	val guildId: Snowflake,
+	val userId: Snowflake,
+	val channelId: Snowflake,
+	val remindTime: Instant,
+	val originalMessageUrl: String,
+	val customMessage: String?
 )

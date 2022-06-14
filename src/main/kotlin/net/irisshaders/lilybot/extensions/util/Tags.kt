@@ -208,6 +208,32 @@ class Tags : Extension() {
 				}
 			}
 		}
+
+		ephemeralSlashCommand {
+			name = "tag-list"
+			description = "List all tags for this guild"
+
+			check {
+				anyGuild()
+			}
+
+			action {
+				val tags = DatabaseHelper.getAllTags(guild!!.id)
+
+				var response = ""
+				tags.forEach { response += "• `${it.name}` - ${it.tagTitle}\n" }
+
+				respond {
+					embed {
+						title = "Tags for this guild"
+						description = "Here is a list of tags for this guild, with the title as extra information."
+						field {
+							value = response
+						}
+					}
+				}
+			}
+		}
 	}
 
 	inner class CallTagArgs : Arguments() {

@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "net.irisshaders.lilybot"
-version = "3.2.2"
+version = "3.3.1"
 
 repositories {
     mavenCentral()
@@ -50,6 +50,9 @@ dependencies {
     implementation(libs.kord.phishing)
     implementation(libs.kord.mappings)
 
+    // UnsafeAPI KordEx
+    implementation(libs.kord.unsafe)
+
     implementation(libs.kotlin.stdlib)
 
     // Logging dependencies
@@ -62,6 +65,9 @@ dependencies {
 
     // KMongo
     implementation(libs.kmongo)
+
+    // TOML Reader
+    implementation(libs.koma)
 }
 
 application {
@@ -76,21 +82,29 @@ gitHooks {
     )
 }
 
-tasks.withType<KotlinCompile>().forEach {
-    it.kotlinOptions.jvmTarget = "17"
+tasks {
+    withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "17"
+            sourceCompatibility = "17"
+            targetCompatibility = "17"
+            incremental = true
+            freeCompilerArgs = listOf(
+                "-Xopt-in=kotlin.RequiresOptIn"
+            )
+        }
+    }
 
-    it.kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+    processResources {
+        from("docs/commanddocs.toml")
+    }
 
-    it.incremental = true
-    it.sourceCompatibility = "17"
-    it.targetCompatibility = "17"
-}
-
-tasks.jar {
-    manifest {
-        attributes(
-            "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
-        )
+    jar {
+        manifest {
+            attributes(
+                "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
+            )
+        }
     }
 }
 

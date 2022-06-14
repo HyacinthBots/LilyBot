@@ -1,0 +1,250 @@
+# Administration commands
+[[command]] # Header
+category = "Administration commands"
+description = "These are commands for the maintenance of LilyBot. The can only be run by Server Managers or Admins"
+
+[[command]]
+category = "Administration commands"
+name = "config set"
+args = "* `moderatorRole` - Moderator role that will be pinged for reports - Role\n* `modActionLog` - Channel for embeds created by mod actions to be sent - Channel\n* `messageLogs` - Channel for deleted messages to be logged - Channel\n* `joinChannel` - Channel for members joining or leaving to be logged - Channel\n* `supportChannel` - Channel for the support auto-threading system to be used in - Optional Channel\n* `supportTeamRole` - The role to be added to any threads created in the `supportchannel` - Optional Role"
+result = "Sets a configuration for the guild executed in."
+permissions = "Manage Guild"
+
+[[command]]
+category = "Administration commands"
+name = "config clear"
+result = "Clears the configuration for the guild executed in."
+permissions = "Manage Guild"
+
+[[command]]
+category = "Administration commands"
+name = "set-status"
+args = "* `presence` - Value for Lily's status - String"
+result = "Lily's 'Now Playing:' status is set to `presence`.\nThis command can only be executed in the test guild specified in your `.env` file"
+permissions = "Administrator"
+# End administration commands
+
+# Moderation commands
+[[command]] # Header
+category = "Moderation commands"
+description = "These commands are for use by moderators. They utilize built-in permission checks. All moderation commands are logged to the modActionLog established in the config. A Direct Message is sent to the target user containing the sanction they received and the provided reason. If Lily fails to DM them, this failure will be noted in the logging embed."
+
+[[command]]
+category = "Moderation commands"
+name = "clear"
+args = "* `messages` - Number of messages to delete - Integer"
+result = "Deletes the `messages` latest messages from the channel executed in."
+permissions = "Manage Messages"
+
+[[command]]
+category = "Moderation commands"
+name = "ban"
+args = "* `banUser` – Person to ban - User\n* `messages` - Number of days of messages to delete - Integer\n* `reason` - Reason for the ban - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String"
+result = "Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last `messages` day(s)."
+permissions = "Ban Members"
+
+[[command]]
+category = "Moderation commands"
+name = "unban"
+args = "* `unbanUserId ` - The Discord ID of the person to unban - User ID"
+result = "The user with the ID `unbanUserId` is unbanned."
+permissions = "Ban Members"
+
+[[command]]
+category = "Moderation commands"
+name = "soft-ban"
+args = "* `softBanUser` - Person to soft ban - User\n* `messages` - Number of days of messages to delete - Integer (default 3)\n* `reason` - Reason for the ban - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String"
+result = "Bans `softBanUser`, deletes the last `messages` days of messages from them, and unbans them."
+permissions = "Ban Members"
+
+[[command]]
+category = "Moderation commands"
+name = "warn"
+args = "* `warnUser` - Person to warn - User\n* `reason` - Reason for warn - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String"
+result = "Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.\n\n| Points |     Sanction     |\n|:------:|:----------------:|\n|   1    | None.            |\n|   2    | 3 hour timeout.  |\n|   3    | 12 hour timeout. |\n|   3+   | 3 day timeout.   |"
+permissions = "Moderate Members"
+
+[[command]]
+category = "Moderation commands"
+name = "timeout"
+args = "* `timeoutUser` - Person to timeout - User\n* `duration` - Duration of timeout - Duration [e.g. 6h or 30s] (default 6h)\n* `reason` - Reason for timeout - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String"
+result = "Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function."
+permissions = "Moderate Members"
+
+[[command]]
+category = "Moderation commands"
+name = "lock-channel"
+args = "* `channel` - Channel to lock - Channel (default executed channel)\n* `reason` - Reason for locking the channel - Optional String"
+result = "Locks `channel` so only the moderator role can send messages, create threads, or add reactions."
+permissions = "Moderate Members"
+
+[[command]]
+category = "Moderation commands"
+name = "lock-server"
+args = "* `reason` - Reason for locking the server - Optional String"
+result = "Locks the whole server so only members with the moderator role can send messages, create threads, or add reactions."
+permissions = "Moderate Members"
+
+[[command]]
+category = "Moderation commands"
+name = "unlock-channel"
+args = "* `channel` - Channel to unlock - Channel (default executed channel)"
+result = "Unlocks `channel` so anyone can send messages, create threads, or add reactions."
+permissions = "Moderate Members"
+
+[[command]]
+category = "Moderation commands"
+name = "unlock-server"
+result = "Unlocks the whole server so anyone can send messages, create threads, or add reations."
+permissions = "Moderate Members"
+# End moderation commands
+
+# Utility commands
+[[command]] # Header
+category = "Utility commands"
+description = "These commands are just handy to have around. Moderator only commands are at the top and clearly marked."
+
+[[command]]
+category = "Utility commands"
+name = "role-menu"
+args = "(Moderator only)\n* `role` - Role users will be able to select through the menu - Role\n* `title` - Title of the embed to be created along with the menu - Optional String (default: Role Selection Menu)\n* `description` - Text of the embed to be created along with the menu - Optional String\n(default: `Use the button below to add/remove the <role> role.`)\n* `channel` - Channel for the embed and menu to be created in - Optional Channel (default: channel executed in)\n* `color` - Color for the embed - Optional Color (default: black)"
+result = "Creates a menu with buttons to add and remove `role` in `channel` along with an `color` colored embed with description `description` and title `title`."
+permissions = "Manage Messages"
+
+[[command]]
+category = "Utility commands"
+name = "say"
+args = "(Moderator only)\n* `message` - Message to be sent - String\n* `embed` - If the message should be sent as an embed - Boolean"
+result = "Sends a message in the executed channel with content `message`. This message will be an embed if `embed` is true."
+permissions = "Moderate Members"
+
+[[command]]
+category = "Utility commands"
+name = "edit-say"
+args = "(Moderators only)\n* `messageToEdit` - The ID of the message contain the embed you'd like to edit - Snowflake\n* `newContent` - The new content for the message - Optional String\n* `newColor` - The new color for the embed - Optional Color (default: Blurple)\n* `channelOfMessage` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)\n* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean (default: true)"
+result = "Edited message/embed"
+permissions = "Moderate Members"
+
+[[command]]
+category = "Utility commands"
+name = "manual-report"
+args = "* `message-link` - Link to the message to report - String"
+result = "Reports the message pointed to by `message-link` by pinging `moderatorRole` in `messageLogs`."
+
+[[command]]
+category = "Utility commands"
+name = "thread archive"
+args = "* `lock` - If the thread executed in should be locked - Boolean (default: false)"
+result = "Archives the thread executed in **if executed by a moderator or the thread owner**. Locks the thread if executed by a moderator and `lock` is true."
+permissions = "none (Moderate Members for locking)"
+
+[[command]]
+category = "Utility commands"
+name = "thread rename"
+args = "* `newName` - New name for the thread executed in - String"
+result = "Renames the thread executed in **if executed by a moderator or the thread owner**."
+permissions = "none (Moderate Members if not owner)"
+
+[[command]]
+category = "Utility commands"
+name = "thread transfer"
+args = "* `newOwner` - The person you want to transfer ownership of the thread to - User"
+result = "Transfers ownership of the thread executed in to `newOwner` **if executed by a moderator or the thread owner**. Creates a message in the executed thread noting this transfer."
+permissions = "none (Moderate Members if not owner)"
+
+[[command]]
+category = "Utility commands"
+name = "nickname request"
+args = "* `nickname` - The new nickname you are requesting - String"
+result = "Sends a request to the moderators for a new nickname. This feature is designed for servers that disable nickname change permissions on users"
+
+[[command]]
+category = "Utility commands"
+name = "nickname clear"
+result = "Clears the nickname of the user that ran the command"
+
+[[command]]
+category = "Utility commands"
+name = "remind"
+args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `customMessage` - A custom message to attach to the reminder - Optional String"
+result = "Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed"
+# End Utility commands
+
+# GitHub commands
+[[command]] # Header
+category = "GitHub commands"
+description = "The GitHub commands allow users to query GitHub for things such as issues, pull requests, repositories and more. They take in a string in the format 'USER-NAME/REPO-NAME' for example or a URL."
+
+[[command]]
+category = "GitHub commands"
+name = "github issue"
+args = "* `repository` - GitHub repository the issue is in, by the format 'USER-NAME/REPO-NAME' or URL - String\n* `issue-number` - Number of the issue to be searched for - Integer"
+result = "An embed containing the information about the queryed issue."
+
+[[command]]
+category = "GitHub commands"
+name = "github repo"
+args = "* `repository` - GitHub repository to be searched for, by the format 'USER-NAME/REPO-NAME' or URL - String"
+result = "An embed containing the information about the queryed repository"
+
+[[command]]
+category = "Github commands"
+name = "github user"
+args = "* `username` - GitHub user or repository to be searched for, can be a username or URL - String"
+result = "An embed containing the information about the queryed user."
+# End GitHub commands
+
+# Tag commands
+[[command]] # Header
+category = "Tag commands"
+description = "Tag commands are guild specific commands, that can be added at runtime. They are all embed commands. You will be assisted by auto-complete when typing these commands."
+
+[[command]]
+category = "Tag commands"
+name = "tag-create"
+args = "(Moderators only)\n* `tagName` - The named identifier of the tag you wish to create. - String\n* `tagTitle` - The tag embed title - String\n* `tagValue` - The tag embed description - String"
+result = "Creates a tag for the guild you ran this command in"
+permissions = "Moderate Members"
+
+[[command]]
+category = "Tag commands"
+name = "tag-delete"
+args = "* `tagName` - The named identifier of the tag you wish to delete - String"
+result = "Deletes the tag for the guild you ran this command in"
+permissions = "Moderate members"
+
+[[command]]
+category = "Tag commands"
+name = "tag"
+args = "* `tagName` - The named identifier of the tag you wish to run - String"
+result = "Posts the tag embed you requested"
+
+[[command]]
+category = "Tag commands"
+name = "tag-help"
+result = "Displays a help command with all this information, in greater detail."
+# End tag commands
+
+# Gallery channel commands
+[[command]] # Header
+category = "Gallery channel commands"
+description = "Gallery channels are channels that only allow attachments or links to be sent within them, deleting messages that don't contain either of these things."
+
+[[command]]
+category = "Gallery channel commands"
+name = "gallery-channel set"
+args = "none"
+result = "Sets the channel you are in a Gallery channel"
+
+[[command]]
+category = "Gallery channel commands"
+name = "gallery-channel unset"
+args = "none"
+result = "Unsets the channel you are in a Gallery channel"
+
+[[command]]
+category = "Gallery channel commands"
+name = "gallery-channel list"
+args = "none"
+result = "Displays an embed of the image channels for the current guild"
+# End gallery channel commands
