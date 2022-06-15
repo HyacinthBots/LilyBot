@@ -195,7 +195,7 @@ class RemindMe : Extension() {
 							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId)
 								.getMessage(messageId).edit {
 									content =
-										"${if (it.repeating) "Repeating" else ""} Reminder set at ${
+										"${if (it.repeating == true) "Repeating" else ""} Reminder set at ${
 											it.initialSetTime.toDiscord(
 												TimestampType.ShortDateTime
 											)
@@ -236,12 +236,12 @@ class RemindMe : Extension() {
 						when (arguments.reminderType) {
 							"all" -> {
 								if (it.guildId == guild?.id && it.userId == user.id) {
-									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id!!)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 										.getChannelOf<TextChannel>(it.channelId)
 										.getMessage(messageId).edit {
-											content = "${if (it.repeating) "Repeating" else ""} Reminder cancelled."
+											content = "${if (it.repeating == true) "Repeating" else ""} Reminder cancelled."
 										}
 								}
 
@@ -251,8 +251,8 @@ class RemindMe : Extension() {
 							}
 
 							"repeating" -> {
-								if (it.guildId == guild?.id && it.userId == user.id && it.repeating) {
-									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+								if (it.guildId == guild?.id && it.userId == user.id && it.repeating == true) {
+									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id!!)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 										.getChannelOf<TextChannel>(it.channelId)
@@ -267,8 +267,8 @@ class RemindMe : Extension() {
 							}
 
 							"non-repeating" -> {
-								if (it.guildId == guild?.id && it.userId == user.id && !it.repeating) {
-									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+								if (it.guildId == guild?.id && it.userId == user.id && it.repeating == false) {
+									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id!!)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 										.getChannelOf<TextChannel>(it.channelId)
@@ -352,7 +352,7 @@ class RemindMe : Extension() {
 						}
 					}
 
-					if (!it.repeating) {
+					if (it.repeating == false) {
 						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 						kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId).getMessage(messageId)
 							.edit {
