@@ -6,6 +6,7 @@
 
 package net.irisshaders.lilybot.extensions.util
 
+import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.isInThread
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
@@ -19,10 +20,13 @@ import com.kotlindiscord.kord.extensions.types.edit
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.botHasThreadPerms
 import net.irisshaders.lilybot.utils.configPresent
 
 class ThreadControl : Extension() {
@@ -41,10 +45,12 @@ class ThreadControl : Extension() {
 				check {
 					isInThread()
 					configPresent()
+					requireBotPermissions(Permission.ManageThreads)
+					botHasThreadPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
 				}
 
 				action {
-					val threadChannel = channel.asChannel() as ThreadChannel
+					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
 
@@ -66,10 +72,12 @@ class ThreadControl : Extension() {
 				check {
 					isInThread()
 					configPresent()
+					requireBotPermissions(Permission.ManageThreads)
+					botHasThreadPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
 				}
 
 				action {
-					val threadChannel = channel.asChannel() as ThreadChannel
+					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
 
@@ -102,10 +110,12 @@ class ThreadControl : Extension() {
 				check {
 					isInThread()
 					configPresent()
+					requireBotPermissions(Permission.ManageThreads)
+					botHasThreadPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
 				}
 
 				action {
-					val threadChannel = channel.asChannel() as ThreadChannel
+					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 
 					val oldOwnerId = DatabaseHelper.getThreadOwner(threadChannel.id) ?: threadChannel.ownerId

@@ -118,10 +118,10 @@ These commands are for use by moderators. They utilize built-in permission check
 
 | Points |     Sanction     |
 |:------:|:----------------:|
-|   1    | None.            |
+|   1    |      None.       |
 |   2    | 3 hour timeout.  |
 |   3    | 12 hour timeout. |
-|   3+   | 3 day timeout.   |
+|   3+   |  3 day timeout.  |
 
 **Required Permissions**: `Moderate Members`
 
@@ -318,12 +318,48 @@ None
 
 ---
 
-### Name: `remind`
+### Name: `reminder set`
 **Arguments**:
 * `time` - The time until the bot should send the reminder - Coalescing Duration
 * `customMessage` - A custom message to attach to the reminder - Optional String
 
 **Result**: Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `remind list`
+**Arguments**:
+None
+
+**Result**: Sends an embed containing all the reminders you have set in that guild. If there are none, it returns a messages saying so.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `reminder remove`
+**Arguments**:
+None
+
+**Result**: Allows the user to input the number ID of the reminder they would like to delete. It is advised to use `/reminder list` to find out what reminder id is.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `reminder remove-all`
+**Arguments**:
+* `type` - The type of reminder to remove all of, can be `repeating`, `non-repeating` or `all` - String Choice
+
+**Result**: Removes all the specific `type` of reminders for the user from the guild the command was executed in.
 
 **Required Permissions**: `None`
 

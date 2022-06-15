@@ -16,11 +16,12 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.dm
 import dev.kord.common.entity.ButtonStyle
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.datetime.Clock
@@ -86,7 +87,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
@@ -95,7 +96,7 @@ class PublicUtilities : Extension() {
 
 					respond { content = "Nickname request sent!" }
 
-					actionLogEmbed = actionLog.createMessage {
+					actionLogEmbed = actionLog?.createMessage {
 						embed {
 							color = DISCORD_YELLOW
 							title = "Nickname Request"
@@ -279,7 +280,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {
@@ -289,7 +290,7 @@ class PublicUtilities : Extension() {
 
 					respond { content = "Nickname cleared" }
 
-					actionLog.createEmbed {
+					actionLog?.createEmbed {
 						title = "Nickname Cleared"
 						color = DISCORD_YELLOW
 						timestamp = Clock.System.now()

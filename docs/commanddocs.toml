@@ -61,7 +61,7 @@ permissions = "Ban Members"
 category = "Moderation commands"
 name = "warn"
 args = "* `warnUser` - Person to warn - User\n* `reason` - Reason for warn - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String"
-result = "Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.\n\n| Points |     Sanction     |\n|:------:|:----------------:|\n|   1    | None.            |\n|   2    | 3 hour timeout.  |\n|   3    | 12 hour timeout. |\n|   3+   | 3 day timeout.   |"
+result = "Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.\n\n| Points |     Sanction     |\n|:------:|:----------------:|\n|   1    |      None.       |\n|   2    | 3 hour timeout.  |\n|   3    | 12 hour timeout. |\n|   3+   |  3 day timeout.  |"
 permissions = "Moderate Members"
 
 [[command]]
@@ -165,9 +165,25 @@ result = "Clears the nickname of the user that ran the command"
 
 [[command]]
 category = "Utility commands"
-name = "remind"
+name = "reminder set"
 args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `customMessage` - A custom message to attach to the reminder - Optional String"
 result = "Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed"
+
+[[command]]
+category = "Utility commands"
+name = "remind list"
+result = "Sends an embed containing all the reminders you have set in that guild. If there are none, it returns a messages saying so."
+
+[[command]]
+category = "Utility commands"
+name = "reminder remove"
+result = "Allows the user to input the number ID of the reminder they would like to delete. It is advised to use `/reminder list` to find out what reminder id is."
+
+[[command]]
+category = "Utility commands"
+name = "reminder remove-all"
+args = "* `type` - The type of reminder to remove all of, can be `repeating`, `non-repeating` or `all` - String Choice"
+result = "Removes all the specific `type` of reminders for the user from the guild the command was executed in."
 # End Utility commands
 
 # GitHub commands

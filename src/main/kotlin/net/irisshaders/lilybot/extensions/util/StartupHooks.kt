@@ -2,8 +2,9 @@ package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.extensions.Extension
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.TextChannel
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
@@ -26,8 +27,8 @@ class StartupHooks : Extension() {
 		 * @since v2.0
 		 */
 		// The channel specifically for sending online notifications to
-		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannel(ONLINE_STATUS_CHANNEL) as GuildMessageChannelBehavior
-		onlineLog.createEmbed {
+		val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannelOf<TextChannel>(ONLINE_STATUS_CHANNEL)
+		onlineLog?.createEmbed {
 			title = "Lily is now online!"
 			color = DISCORD_GREEN
 		}

@@ -4,12 +4,17 @@ import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
 
-private val utilsLogger = KotlinLogging.logger("Checks Logger")
+val utilsLogger = KotlinLogging.logger("Checks Logger")
 
 /**
  * This is a check to verify that no element of the guild config is null, since these are all non-nullable values, if
@@ -18,7 +23,7 @@ private val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 3.2.0
  */
-suspend fun CheckContext<*>.configPresent() {
+suspend inline fun CheckContext<*>.configPresent() {
 	if (!passed) {
 		return
 	}
@@ -37,6 +42,52 @@ suspend fun CheckContext<*>.configPresent() {
 }
 
 /**
+ * Gets the channel of the event from the provided [channelId] and that the bot has the required [permissions].
+ *
+ * @param channelId The ID of the channel to check
+ * @param permissions The permissions to check the bot for
+ *
+ * @author NoComment1105
+ * @since 3.4.0
+ */
+suspend inline fun CheckContext<*>.botHasChannelPerms(channelId: Snowflake, permissions: Permissions) {
+	if (!passed) {
+		return
+	}
+	val channel = guildFor(event)!!.getChannelOf<TextChannel>(channelId)
+
+	if (guildFor(event)!!.getChannelOf<TextChannel>(channelId).getEffectivePermissions(event.kord.selfId)
+			.contains(Permissions(permissions))
+	) {
+		pass()
+	} else {
+		fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channel.mention}")
+	}
+}
+
+/**
+ * The thread counterpart of [botHasChannelPerms].
+ *
+ * @see botHasChannelPerms
+ * @author NoComment1105
+ * @since 3.4.0
+ */
+suspend inline fun CheckContext<*>.botHasThreadPerms(channelId: Snowflake, permissions: Permissions) {
+	if (!passed) {
+		return
+	}
+	val channel = guildFor(event)!!.getChannelOf<ThreadChannel>(channelId)
+
+	if (guildFor(event)!!.getChannelOf<ThreadChannel>(channelId).getParent().getEffectivePermissions(event.kord.selfId)
+			.contains(Permissions(permissions))
+	) {
+		pass()
+	} else {
+		fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channel.mention}")
+	}
+}
+
+/**
  * This function runs a check to see if the target user is a bot or moderator in an [EphemeralSlashCommandContext],
  * before responding accordingly. It takes the target user as an input, allowing said user to pass through the checks.
  * It also takes in the command name to make the response more detailed to the command it is called from. If at any
@@ -49,7 +100,7 @@ suspend fun CheckContext<*>.configPresent() {
  * @author NoComment1105
  * @since 2.1.0
  */
-suspend fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
+suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
 	val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderatorsPing
 	if (moderatorRoleId == null) {
 		respond {
