@@ -223,7 +223,7 @@ class RemindMe : Extension() {
 
 			ephemeralSubCommand(::RemoveAllArgs) {
 				name = "remove-all"
-				description = "Remove all repeating reminders you have set for this guild"
+				description = "Remove all of a specific type of reminder that you have set for this guild"
 
 				check {
 					anyGuild()
@@ -233,33 +233,53 @@ class RemindMe : Extension() {
 					val reminders = DatabaseHelper.getReminders()
 
 					reminders.forEach {
-						if (arguments.reminderType == "all") {
-							if (it.guildId == guild?.id && it.userId == user.id) {
-								DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
-								val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-								this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
-									.getChannelOf<TextChannel>(it.channelId)
-									.getMessage(messageId).edit {
-										content = "${if (it.repeating) "Repeating" else ""} Reminder cancelled."
-									}
+						when (arguments.reminderType) {
+							"all" -> {
+								if (it.guildId == guild?.id && it.userId == user.id) {
+									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+										.getChannelOf<TextChannel>(it.channelId)
+										.getMessage(messageId).edit {
+											content = "${if (it.repeating) "Repeating" else ""} Reminder cancelled."
+										}
+								}
+
+								respond {
+									content = "Removed all your reminders for this guild."
+								}
 							}
 
-							respond {
-								content = "Removed all your reminders for this guild."
-							}
-						} else if (arguments.reminderType == "repeating") {
-							if (it.guildId == guild?.id && it.userId == user.id && it.repeating) {
-								DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
-								val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-								this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
-									.getChannelOf<TextChannel>(it.channelId)
-									.getMessage(messageId).edit {
-										content = "Repeating Reminder cancelled."
-									}
+							"repeating" -> {
+								if (it.guildId == guild?.id && it.userId == user.id && it.repeating) {
+									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+										.getChannelOf<TextChannel>(it.channelId)
+										.getMessage(messageId).edit {
+											content = "Repeating Reminder cancelled."
+										}
+								}
+
+								respond {
+									content = "Removed all your repeating reminders for this guild."
+								}
 							}
 
-							respond {
-								content = "Removed all your repeating reminders for this guild."
+							"non-repeating" -> {
+								if (it.guildId == guild?.id && it.userId == user.id && !it.repeating) {
+									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+										.getChannelOf<TextChannel>(it.channelId)
+										.getMessage(messageId).edit {
+											content = "Reminder cancelled."
+										}
+								}
+
+								respond {
+									content = "Removed all your non-repeating reminders for this guild."
+								}
 							}
 						}
 					}
@@ -427,6 +447,7 @@ class RemindMe : Extension() {
 			val list = ArrayList<String>()
 			list.add("repeating")
 			list.add("all")
+			list.add("non-repeating")
 
 			list.forEach {
 				choices[it] = it

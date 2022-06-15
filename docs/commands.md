@@ -355,23 +355,11 @@ None
 
 ---
 
-### Name: `reminder remove-repeating`
-**Arguments**:
-None
-
-**Result**: Removes all repeating reminders for the user from the guild the command was executed in
-
-**Required Permissions**: `None`
-
-**Command category**: `Utility commands`
-
----
-
 ### Name: `reminder remove-all`
 **Arguments**:
-None
+* `type` - The type of reminder to remove all of, can be `repeating`, `non-repeating` or `all` - String Choice
 
-**Result**: Removes all reminders for the user from the guild the command was executed in.
+**Result**: Removes all the specific `type` of reminders for the user from the guild the command was executed in.
 
 **Required Permissions**: `None`
 

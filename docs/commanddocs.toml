@@ -181,13 +181,9 @@ result = "Allows the user to input the number ID of the reminder they would like
 
 [[command]]
 category = "Utility commands"
-name = "reminder remove-repeating"
-result = "Removes all repeating reminders for the user from the guild the command was executed in"
-
-[[command]]
-category = "Utility commands"
 name = "reminder remove-all"
-result = "Removes all reminders for the user from the guild the command was executed in."
+args = "* `type` - The type of reminder to remove all of, can be `repeating`, `non-repeating` or `all` - String Choice"
+result = "Removes all the specific `type` of reminders for the user from the guild the command was executed in."
 # End Utility commands
 
 # GitHub commands
