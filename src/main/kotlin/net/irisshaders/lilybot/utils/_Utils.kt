@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.getChannelOf
@@ -54,36 +55,30 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(channelId: Snowflake, perm
 	if (!passed) {
 		return
 	}
-	val channel = guildFor(event)!!.getChannelOf<TextChannel>(channelId)
+	val channel = guildFor(event)!!.getChannel(channelId)
 
-	if (guildFor(event)!!.getChannelOf<TextChannel>(channelId).getEffectivePermissions(event.kord.selfId)
-			.contains(Permissions(permissions))
+	/* Use `TextChannel` when the channel is a Text channel */
+	if (channel.type == ChannelType.GuildText) {
+		if (guildFor(event)!!.getChannelOf<TextChannel>(channelId).getEffectivePermissions(event.kord.selfId)
+				.contains(Permissions(permissions))
+		) {
+			pass()
+		} else {
+			fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channel.mention}")
+		}
+	} else if (channel.type == ChannelType.PublicGuildThread ||
+		channel.type == ChannelType.PublicNewsThread ||
+		channel.type == ChannelType.PrivateThread
 	) {
-		pass()
+		if (guildFor(event)!!.getChannelOf<ThreadChannel>(channelId).getParent().getEffectivePermissions(event.kord.selfId)
+				.contains(Permissions(permissions))
+		) {
+			pass()
+		} else {
+			fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channel.mention}")
+		}
 	} else {
-		fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channel.mention}")
-	}
-}
-
-/**
- * The thread counterpart of [botHasChannelPerms].
- *
- * @see botHasChannelPerms
- * @author NoComment1105
- * @since 3.4.0
- */
-suspend inline fun CheckContext<*>.botHasThreadPerms(channelId: Snowflake, permissions: Permissions) {
-	if (!passed) {
-		return
-	}
-	val channel = guildFor(event)!!.getChannelOf<ThreadChannel>(channelId)
-
-	if (guildFor(event)!!.getChannelOf<ThreadChannel>(channelId).getParent().getEffectivePermissions(event.kord.selfId)
-			.contains(Permissions(permissions))
-	) {
-		pass()
-	} else {
-		fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channel.mention}")
+		fail("Unable to get permissions for channel! Please report this to the developers!")
 	}
 }
 

@@ -58,7 +58,10 @@ class LogUploading : Extension() {
 		event<MessageCreateEvent> {
 			check {
 				anyGuild()
-				botHasChannelPerms(event.message.channel.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				botHasChannelPerms(
+					event.message.channel.id,
+					Permissions(Permission.SendMessages, Permission.EmbedLinks)
+				)
 			}
 			action {
 				val eventMessage = event.message.asMessageOrNull() // Get the message

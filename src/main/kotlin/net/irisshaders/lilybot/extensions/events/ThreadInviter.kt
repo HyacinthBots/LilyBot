@@ -80,11 +80,15 @@ class ThreadInviter : Extension() {
 				this@event.check {
 					botHasChannelPerms(
 						config.supportChannel,
-						Permissions(Permission.SendMessages, Permission.CreatePublicThreads)
+						Permissions(
+							Permission.SendMessages,
+							Permission.CreatePublicThreads,
+							Permission.SendMessagesInThreads
+						)
 					)
 					botHasChannelPerms(
 						config.modActionLog,
-						Permissions(Permission.SendMessages, Permission.CreatePublicThreads)
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
 					)
 				}
 

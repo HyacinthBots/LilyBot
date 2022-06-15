@@ -4,216 +4,590 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.role
+import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
+import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
+import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
+import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.hasRole
+import com.kotlindiscord.kord.extensions.utils.getJumpUrl
+import com.kotlindiscord.kord.extensions.utils.getTopRole
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
-import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.createRole
+import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.respondEphemeral
-import dev.kord.core.entity.interaction.ButtonInteraction
-import dev.kord.core.event.interaction.InteractionCreateEvent
+import dev.kord.core.entity.Message
+import dev.kord.core.entity.Role
+import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
-import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.ComponentData
+import kotlinx.coroutines.flow.firstOrNull
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
-// todo This really just needs a full rework. I'm about 90% sure it's not properly adapted for cross guild work.
+/**
+ * The class the holds the systems allowing for role menus to function.
+ *
+ * @since 3.4.0
+ */
 class RoleMenu : Extension() {
 	override val name = "role-menu"
 
 	override suspend fun setup() {
-		ephemeralSlashCommand(::RoleMenuArgs) {
+		/**
+		 * Role menu commands.
+		 * @author tempest15
+		 * @since 3.4.0
+		 */
+		ephemeralSlashCommand {
 			name = "role-menu"
-			description = "Creates a menu that allows users to select a role."
+			description = "The parent command for managing role menus."
 
-			check {
-				anyGuild()
-				configPresent()
-				hasPermission(Permission.ManageMessages)
-				requireBotPermissions(Permission.ManageRoles, Permission.SendMessages, Permission.EmbedLinks)
-			}
+			/**
+			 * The command to create a new role menu.
+			 */
+			ephemeralSubCommand(::RoleMenuCreateArgs) {
+				name = "create"
+				description = "Create a new role menu in this channel. A channel can have any number of role menus."
 
-			action {
-				val descriptionAppendix = "\n\nUse the button below to add/remove the ${arguments.role.mention} role."
-
-				val targetChannel: GuildMessageChannelBehavior =
-					if (arguments.channel != null) {
-						val targetChannelId = arguments.channel!!.id
-						guild?.getChannel(targetChannelId) as GuildMessageChannelBehavior
-					} else {
-						this.channel as GuildMessageChannelBehavior
-					}
-
-				this@ephemeralSlashCommand.check {
-					botHasChannelPerms(
-						arguments.channel?.id ?: channel.id,
-						Permissions(Permission.ManageRoles, Permission.SendMessages, Permission.EmbedLinks)
-					)
+				check {
+					anyGuild()
+					configPresent()
+					hasPermission(Permission.ManageRoles)
+					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 				}
 
-				targetChannel.createMessage {
-					embed {
-						title = arguments.title
-						description = arguments.description + descriptionAppendix
-						color = arguments.color
-					}
+				var menuMessage: Message?
+				action {
+					val kord = this@ephemeralSlashCommand.kord
 
-					val components = components {
-						ephemeralButton(row = 0) {
-							label = "Add role"
-							style = ButtonStyle.Success
-							id = arguments.role.name + "add"
+					if (!botCanAssignRole(kord, arguments.initialRole)) return@action
 
-							val newComponent = ComponentData(
-								arguments.role.name + "add",
-								arguments.role.id,
-								"add"
-							)
-							DatabaseHelper.setComponent(newComponent)
-
-							action { }
-						}
-
-						ephemeralButton(row = 0) {
-							label = "Remove role"
-							style = ButtonStyle.Danger
-							id = arguments.role.name + "remove"
-
-							val newComponent = ComponentData(
-								arguments.role.name + "remove",
-								arguments.role.id,
-								"remove"
-							)
-							DatabaseHelper.setComponent(newComponent)
-
-							action { }
+					menuMessage = channel.createMessage {
+						if (arguments.embed) {
+							embed {
+								description = arguments.content
+								color = arguments.color
+							}
+						} else {
+							content = arguments.content
 						}
 					}
 
-					components.removeAll()
+					// While we don't normally edit in components, in this case we need the message ID.
+					menuMessage!!.edit {
+						val components = components {
+							ephemeralButton {
+								label = "Select roles"
+								style = ButtonStyle.Primary
 
-					respond { content = "Role menu created." }
+								this.id = "role-menu${menuMessage!!.id}"
 
-					// Try to get the action log from the config.
-					// If a config is not set, inform the user and return@action
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
-
-					actionLog.createEmbed {
-						title = "Role menu created."
-						description = "A role menu for the ${arguments.role.mention} role was " +
-								"created in ${targetChannel.mention}"
-
-						field {
-							name = "Embed title:"
-							value = arguments.title
-							inline = false
+								action { }
+							}
 						}
-						field {
-							name = "Embed description:"
-							value = arguments.description + descriptionAppendix
-							inline = false
+
+						components.removeAll()
+					}
+
+					DatabaseHelper.setRoleMenu(
+						menuMessage!!.id,
+						channel.id,
+						guild!!.id,
+						mutableListOf(arguments.initialRole.id)
+					)
+
+					val config = DatabaseHelper.getConfig(guild!!.id)
+					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+
+					actionLog.createMessage {
+						embed {
+							title = "Role Menu Created"
+							description = "A role menu for the ${arguments.initialRole.mention} role was created in " +
+									"${channel.mention}."
+
+							field {
+								name = "Content:"
+								value = "```${arguments.content}```"
+								inline = false
+							}
+							field {
+								name = "Color:"
+								value = arguments.color.toString()
+								inline = true
+							}
+							field {
+								name = "Embed:"
+								value = arguments.embed.toString()
+								inline = true
+							}
 						}
-						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+						components {
+							linkButton {
+								label = "Jump to role menu"
+								url = menuMessage!!.getJumpUrl()
+							}
 						}
-						timestamp = Clock.System.now()
-						color = DISCORD_BLACK
+					}
+
+					respond {
+						content = "Role menu created. You can add more roles using the `/role-menu add` command."
+					}
+				}
+			}
+
+			/**
+			 * The command to add a role to an existing role menu.
+			 */
+			ephemeralSubCommand(::RoleMenuAddArgs) {
+				name = "add"
+				description = "Add a role to the existing role menu in this channel."
+
+				check {
+					anyGuild()
+					configPresent()
+					hasPermission(Permission.ManageRoles)
+					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+				}
+
+				action {
+					val kord = this@ephemeralSlashCommand.kord
+
+					if (!botCanAssignRole(kord, arguments.role)) return@action
+
+					val message = channel.getMessageOrNull(arguments.messageId)
+					if (!roleMenuExists(message, arguments.messageId)) return@action
+
+					val data = DatabaseHelper.getRoleData(arguments.messageId)!!
+
+					if (arguments.role.id in data.roles) {
+						respond {
+							content = "This menu already contains that role."
+						}
+						return@action
+					}
+
+					if (data.roles.size == 24) {
+						respond {
+							content = "You can't have more than 24 roles in a role menu. This is a Discord limitation."
+						}
+						return@action
+					}
+
+					data.roles.add(arguments.role.id)
+					DatabaseHelper.setRoleMenu(
+						data.messageId,
+						data.channelId,
+						data.guildId,
+						data.roles
+					)
+
+					val config = DatabaseHelper.getConfig(guild!!.id)
+					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+
+					this@ephemeralSubCommand.check {
+						botHasChannelPerms(
+							actionLog.id,
+							Permissions(Permission.SendMessages, Permission.EmbedLinks)
+						)
+					}
+
+					actionLog.createMessage {
+						embed {
+							title = "Role Added to Role Menu"
+							description = "The ${arguments.role.mention} role was added to a role menu in " +
+									"${channel.mention}."
+						}
+						components {
+							linkButton {
+								label = "Jump to role menu"
+								url = message!!.getJumpUrl()
+							}
+						}
+					}
+
+					respond {
+						content = "Added the ${arguments.role.mention} role to the specified role menu."
+					}
+				}
+			}
+
+			/**
+			 * The command to remove a role from an existing role menu.
+			 */
+			ephemeralSubCommand(::RoleMenuRemoveArgs) {
+				name = "remove"
+				description = "Remove a role from the existing role menu in this channel."
+
+				check {
+					anyGuild()
+					configPresent()
+					hasPermission(Permission.ManageMessages)
+					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+				}
+
+				action {
+					val menuMessage = channel.getMessageOrNull(arguments.messageId)
+					if (!roleMenuExists(menuMessage, arguments.messageId)) return@action
+
+					val data = DatabaseHelper.getRoleData(arguments.messageId)!!
+
+					if (arguments.role.id !in data.roles) {
+						respond {
+							content = "You can't remove a role from a menu it's not in."
+						}
+						return@action
+					}
+
+					if (data.roles.size == 1) {
+						respond {
+							content = "You can't remove the last role from a role menu."
+						}
+						return@action
+					}
+
+					DatabaseHelper.deleteRoleFromMenu(menuMessage!!.id, arguments.role.id)
+
+					val config = DatabaseHelper.getConfig(guild!!.id)
+					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+
+					this@ephemeralSubCommand.check {
+						botHasChannelPerms(
+							actionLog.id,
+							Permissions(Permission.SendMessages, Permission.EmbedLinks)
+						)
+					}
+
+					actionLog.createMessage {
+						embed {
+							title = "Role Removed from Role Menu"
+							description = "The ${arguments.role.mention} role was removed from a role menu in " +
+									"${channel.mention}."
+						}
+						components {
+							linkButton {
+								label = "Jump to role menu"
+								url = menuMessage.getJumpUrl()
+							}
+						}
+					}
+
+					respond {
+						content = "Removed the ${arguments.role.mention} role from the specified role menu."
+					}
+				}
+			}
+
+			/**
+			 * A command that creates a new role menu specifically for selecting pronouns.
+			 */
+			ephemeralSubCommand {
+				name = "pronouns"
+				description = "Create a pronoun selection role menu and the roles to go with it."
+
+				check {
+					anyGuild()
+					configPresent()
+					hasPermission(Permission.ManageMessages)
+					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+				}
+
+				action {
+					this@ephemeralSubCommand.check {
+						botHasChannelPerms(
+							channel.id,
+							Permissions(Permission.SendMessages, Permission.EmbedLinks)
+						)
+					}
+
+					val menuMessage = channel.createMessage {
+						content = "Select pronoun roles from the menu below!"
+					}
+
+					// While we don't normally edit in components, in this case we need the message ID.
+					menuMessage.edit {
+						val components = components {
+							ephemeralButton {
+								label = "Select roles"
+								style = ButtonStyle.Primary
+
+								this.id = "role-menu${menuMessage.id}"
+
+								action { }
+							}
+						}
+
+						components.removeAll()
+					}
+
+					val pronouns = listOf(
+						"he/him",
+						"she/her",
+						"they/them",
+						"it/its",
+						"no pronouns (use name)",
+						"any pronouns",
+						"ask for pronouns"
+					)
+
+					val roles = mutableListOf<Snowflake>()
+
+					for (pronoun in pronouns) {
+						val existingRole = guild!!.roles.firstOrNull { it.name == pronoun }
+						if (existingRole == null) {
+							val newRole = guild!!.createRole {
+								name = pronoun
+							}
+
+							roles.add(newRole.id)
+						} else {
+							println("skipped creating new roles")
+							roles.add(existingRole.id)
+						}
+					}
+
+					DatabaseHelper.setRoleMenu(
+						menuMessage.id,
+						channel.id,
+						guild!!.id,
+						roles
+					)
+
+					val config = DatabaseHelper.getConfig(guild!!.id)
+					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+
+					this@ephemeralSubCommand.check {
+						botHasChannelPerms(
+							actionLog.id,
+							Permissions(Permission.SendMessages, Permission.EmbedLinks)
+						)
+					}
+
+					actionLog.createMessage {
+						embed {
+							title = "Pronoun Role Menu Created"
+							description = "A pronoun role menu was created in ${channel.mention}."
+						}
+						components {
+							linkButton {
+								label = "Jump to role menu"
+								url = menuMessage.getJumpUrl()
+							}
+						}
+					}
+
+					respond {
+						content = "Pronoun role menu created."
 					}
 				}
 			}
 		}
 
-		event<InteractionCreateEvent> {
-			check { failIfNot(event.interaction is ButtonInteraction) }
-
+		/**
+		 * The button event that allows the user to select roles.
+		 */
+		event<ButtonInteractionCreateEvent> {
+			check {
+				anyGuild()
+				event.interaction.componentId.contains("role-menu")
+			}
 			action {
-				val interaction = event.interaction as ButtonInteraction
-				val guild = kord.getGuild(interaction.data.guildId.value!!)!!
-				val member = guild.getMember(interaction.user.id)
+				val data = DatabaseHelper.getRoleData(event.interaction.message.id)
 
-				// this is  a very dirty fix, so it doesn't conflict with log uploading
-				val roleId: Snowflake? = try {
-					DatabaseHelper.getComponent(interaction.componentId)?.roleId
-				} catch (e: NullPointerException) {
-					return@action
-				}
-				val addOrRemove: String? = try {
-					DatabaseHelper.getComponent(interaction.componentId)?.addOrRemove
-				} catch (e: NullPointerException) {
-					return@action
-				}
-
-				if (roleId == null || addOrRemove == null) return@action
-
-				val role = guild.getRole(roleId)
-
-				if (addOrRemove == "add") {
-					if (!member.hasRole(role)) {
-						member.addRole(role.id)
-						interaction.respondEphemeral { content = "Added the ${role.mention} role." }
-					} else if (member.hasRole(role)) {
-						interaction.respondEphemeral {
-							content =
-								"You already have the ${role.mention} role so it can't be added. " +
-										"If you don't, please contact a staff member."
-						}
+				if (data == null) {
+					event.interaction.respondEphemeral {
+						content = "This role menu seems to be broken, please ask staff to recreate it. " +
+								"If this isn't a role menu, or if the issue persists, open a report at " +
+								"<https://github.com/IrisShaders/LilyBot/issues>"
 					}
-				} else if (addOrRemove == "remove") {
-					if (!member.hasRole(role)) {
-						interaction.respondEphemeral {
-							content =
-								"You don't have the ${role.mention} role so it can't be removed. " +
-										"If you do, please contact a staff member."
+					return@action
+				}
+
+				if (data.roles.isEmpty()) {
+					event.interaction.respondEphemeral {
+						content = "Could not find any roles associated with this menu. Please ask staff to add some " +
+								"If this isn't a role menu, or if the issue persists, open a report at " +
+								"<https://github.com/IrisShaders/LilyBot/issues>"
+					}
+					return@action
+				}
+
+				val guild = kord.getGuild(data.guildId)!!
+
+				val roles = mutableListOf<Role>()
+				data.roles.forEach {
+					val role = guild.getRoleOrNull(it)
+					if (role == null) {
+						DatabaseHelper.deleteRoleFromMenu(event.interaction.message.id, it)
+					} else {
+						roles.add(role)
+					}
+				}
+
+				event.interaction.respondEphemeral {
+					content = "Use the menu below to select roles."
+					components {
+						ephemeralSelectMenu {
+							placeholder = "Select roles..."
+							maximumChoices = roles.size
+							roles.forEach {
+								option(
+									label = "@${it.name}",
+									value = it.id.toString()
+								)
+							}
+							action {
+								val member = user.asMember(guild.id)
+								var changes = 0
+
+								selected.forEach {
+									if (member.roleIds.contains(Snowflake(it))) {
+										member.removeRole(Snowflake(it))
+										changes += 1
+									} else if (!member.roleIds.contains(Snowflake(it))) {
+										member.addRole(Snowflake(it))
+										changes += 1
+									}
+								}
+
+								if (changes == 0) {
+									respond {
+										content = "You didn't select any different roles, so no changes were made."
+									}
+								} else if (changes > 0) {
+									respond { content = "Your roles have been adjusted." }
+								}
+							}
 						}
-					} else if (member.hasRole(role)) {
-						member.removeRole(role.id)
-						interaction.respondEphemeral { content = "Removed the ${role.mention} role." }
 					}
 				}
 			}
 		}
 	}
 
-	inner class RoleMenuArgs : Arguments() {
-		val role by role {
-			name = "roles"
-			description = "The roles to be selected."
+	/**
+	 * This function checks if a given [inputMessage] with an associated [argumentMessageId] exists and is a role menu.
+	 *
+	 * @param inputMessage The message to check.
+	 * @param argumentMessageId The ID given as an argument for the command this function is called within.
+	 *
+	 * @return `true` if the message exists and is a role menu, `false` if not.
+	 * @author tempest15
+	 * @since 3.4.0
+	 */
+	private suspend inline fun EphemeralSlashCommandContext<*>.roleMenuExists(
+		inputMessage: Message?,
+		argumentMessageId: Snowflake
+	): Boolean {
+		if (inputMessage == null) {
+			respond {
+				content = "I couldn't find that message in this channel. Make sure it exists."
+			}
+			return false
 		}
-		val title by defaultingString {
-			name = "title"
-			description = "The title of the embed. Defaults to \"Role Selection Menu\""
-			defaultValue = "Role selection menu"
+
+		val data = DatabaseHelper.getRoleData(argumentMessageId)
+		if (data == null) {
+			respond {
+				content = "That message doesn't seem to be a role menu."
+			}
+			return false
 		}
-		val description by defaultingString {
-			name = "description"
-			description = "Text for the embed. Will be appended with a description of how to use the buttons."
-			defaultValue = " "
+
+		return true
+	}
+
+	/**
+	 * This function checks if the bot can assign a given [role].
+	 *
+	 * @param role The role to check.
+	 * @param kord The kord instance to check.
+	 *
+	 * @return `true` if the proper permissions exist, `false` if not.
+	 * @author tempest15
+	 * @since 3.4.0
+	 */
+	private suspend inline fun EphemeralSlashCommandContext<*>.botCanAssignRole(kord: Kord, role: Role): Boolean {
+		val self = guild?.getMember(kord.selfId)!!
+		if (self.getTopRole()!! < role) {
+			respond {
+				content = "The selected role is higher than me in the role hierarchy. " +
+						"Please move it and try again."
+			}
+			return false
 		}
-		val channel by optionalChannel {
-			name = "channel"
-			description = "The channel for the message to be sent in. Defaults to the channel executed in."
+		return true
+	}
+
+	inner class RoleMenuCreateArgs : Arguments() {
+		/** The initial role for a new role menu. */
+		val initialRole by role {
+			name = "role"
+			description = "The first role to start the menu with. Add more via `/role-menu add`"
 		}
+
+		/** The content of the embed or message to attach the role menu to. */
+		val content by string {
+			name = "content"
+			description = "The content of the embed or message."
+		}
+
+		/** If the message the role menu is attached to should be an embed. */
+		val embed by defaultingBoolean {
+			name = "embed"
+			description = "If the message containing the role menu should be sent as an embed."
+			defaultValue = true
+		}
+
+		/** If the message the role menu is attached to is an embed, the color that embed should be. */
 		val color by defaultingColor {
 			name = "color"
-			description = "The color for the embed menu to be."
+			description = "The color for the message to be. Embed only."
 			defaultValue = DISCORD_BLACK
+		}
+	}
+
+	inner class RoleMenuAddArgs : Arguments() {
+		/** The message ID of the role menu being edited. */
+		val messageId by snowflake {
+			name = "menuId"
+			description = "The message ID of the role menu you'd like to edit."
+		}
+
+		/** The role to add to the role menu. */
+		val role by role {
+			name = "role"
+			description = "The role you'd like to add to the selected role menu."
+		}
+	}
+
+	inner class RoleMenuRemoveArgs : Arguments() {
+		/** The message ID of the role menu being edited. */
+		val messageId by snowflake {
+			name = "menuId"
+			description = "The message ID of the menu you'd like to edit."
+		}
+
+		/** The role to remove from the role menu. */
+		val role by role {
+			name = "role"
+			description = "The role you'd like to remove from the selected role menu."
 		}
 	}
 }

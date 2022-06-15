@@ -26,7 +26,7 @@ import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.botHasThreadPerms
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
 class ThreadControl : Extension() {
@@ -46,7 +46,7 @@ class ThreadControl : Extension() {
 					isInThread()
 					configPresent()
 					requireBotPermissions(Permission.ManageThreads)
-					botHasThreadPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
+					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
 				}
 
 				action {
@@ -73,7 +73,7 @@ class ThreadControl : Extension() {
 					isInThread()
 					configPresent()
 					requireBotPermissions(Permission.ManageThreads)
-					botHasThreadPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
+					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
 				}
 
 				action {
@@ -111,7 +111,7 @@ class ThreadControl : Extension() {
 					isInThread()
 					configPresent()
 					requireBotPermissions(Permission.ManageThreads)
-					botHasThreadPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
+					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
 				}
 
 				action {

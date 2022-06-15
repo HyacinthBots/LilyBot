@@ -108,29 +108,57 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [inputComponentId] the [ComponentData] will be returned from the database.
+	 * Using the provided [inputMessageId] the associated [RoleMenuData] will be returned from the database.
 	 *
-	 * @param inputComponentId The ID of the component the event was triggered with
-	 * @return The component from the database
+	 * @param inputMessageId The ID of the message the event was triggered via.
+	 * @return The role menu data from the database
 	 * @author tempest15
-	 * @since 3.0.0
+	 * @since 3.4.0
 	 */
-	suspend fun getComponent(inputComponentId: String): ComponentData? {
-		val collection = database.getCollection<ComponentData>()
-		return collection.findOne(ComponentData::componentId eq inputComponentId)
+	suspend inline fun getRoleData(inputMessageId: Snowflake): RoleMenuData? {
+		val collection = database.getCollection<RoleMenuData>()
+		return collection.findOne(RoleMenuData::messageId eq inputMessageId)
 	}
 
 	/**
-	 * Add the given [newComponent] to the database.
+	 * Add the given [inputRoles] to the database entry for the role menu for the provided [inputMessageId],
+	 * [inputChannelId], and [inputGuildId].
 	 *
-	 * @param newComponent The data for the component to be added.
+	 * @param inputMessageId The ID of the message the role menu is in.
+	 * @param inputChannelId The ID of the channel the role menu is in.
+	 * @param inputGuildId The ID of the guild the role menu is in.
+	 * @param inputRoles The [MutableList] of [Snowflake]s representing the role IDs for the role menu.
 	 * @author tempest15
-	 * @since 3.0.0
+	 * @since 3.4.0
 	 */
-	suspend inline fun setComponent(newComponent: ComponentData) {
-		val collection = database.getCollection<ComponentData>()
-		collection.deleteOne(ComponentData::componentId eq newComponent.componentId)
-		collection.insertOne(newComponent)
+	suspend inline fun setRoleMenu(
+		 inputMessageId: Snowflake,
+		 inputChannelId: Snowflake,
+		 inputGuildId: Snowflake,
+		 inputRoles: MutableList<Snowflake>
+	) {
+		val newRoleMenu = RoleMenuData(inputMessageId, inputChannelId, inputGuildId, inputRoles)
+		val collection = database.getCollection<RoleMenuData>()
+		collection.deleteOne(RoleMenuData::messageId eq inputMessageId)
+		collection.insertOne(newRoleMenu)
+	}
+
+	/**
+	 * Remove the given [inputRoleId] from the database entry associated with the given [inputMessageId].
+	 *
+	 * @param inputMessageId The ID of the message the role menu is in.
+	 * @param inputRoleId The ID of the role to remove from the menu.
+	 * @author tempest15
+	 * @since 3.4.0
+	 */
+	suspend inline fun deleteRoleFromMenu(inputMessageId: Snowflake, inputRoleId: Snowflake) {
+		val collection = database.getCollection<RoleMenuData>()
+		val roleMenu = collection.findOne(RoleMenuData::messageId eq inputMessageId) ?: return
+
+		roleMenu.roles.remove(inputRoleId)
+
+		collection.deleteOne(RoleMenuData::messageId eq inputMessageId)
+		collection.insertOne(roleMenu)
 	}
 
 	/**
@@ -457,10 +485,10 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 */
 	suspend inline fun removeReminder(
-        inputGuildId: Snowflake,
-        inputUserId: Snowflake,
-        id: Int
-    ) {
+		inputGuildId: Snowflake,
+		inputUserId: Snowflake,
+		id: Int
+	) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.deleteOne(
 			RemindMeData::guildId eq inputGuildId,
@@ -556,18 +584,20 @@ data class WarnData(
 )
 
 /**
- * The data for role menu components.
+ * The data for role menus.
  *
- * @param componentId The ID of the components
- * @param roleId The ID of the role the component will add
- * @param addOrRemove Whether to add or remove the role from the user, when the component is clicked
- * @since 3.0.0
+ * @param messageId The ID of the message of the role menu
+ * @param channelId The ID of the channel the role menu is in
+ * @param guildId The ID of the guild the role menu is in
+ * @param roles A [MutableList] of the role IDs associated with this role menu.
+ * @since 3.4.0
  */
 @Serializable
-data class ComponentData(
-	val componentId: String,
-	val roleId: Snowflake,
-	val addOrRemove: String
+data class RoleMenuData(
+	val messageId: Snowflake,
+	val channelId: Snowflake,
+	val guildId: Snowflake,
+	val roles: MutableList<Snowflake>
 )
 
 /**
