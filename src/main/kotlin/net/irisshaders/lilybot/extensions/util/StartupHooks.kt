@@ -33,8 +33,6 @@ class StartupHooks : Extension() {
 			color = DISCORD_GREEN
 		}
 
-		DatabaseHelper.migrateReminders()
-
 		/**
 		 * This function is called to remove any threads in the database that haven't had a message sent in the last
 		 * week. It only runs on startup.

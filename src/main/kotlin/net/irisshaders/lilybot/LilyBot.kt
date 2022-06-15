@@ -27,6 +27,7 @@ import net.irisshaders.lilybot.extensions.util.Github
 import net.irisshaders.lilybot.extensions.util.InfoCommands
 import net.irisshaders.lilybot.extensions.util.ModUtilities
 import net.irisshaders.lilybot.extensions.util.PublicUtilities
+import net.irisshaders.lilybot.extensions.util.RemindMe
 import net.irisshaders.lilybot.extensions.util.RoleMenu
 import net.irisshaders.lilybot.extensions.util.StartupHooks
 import net.irisshaders.lilybot.extensions.util.Tags
@@ -92,7 +93,7 @@ suspend fun main() {
 			add(::MessageDelete)
 			add(::ModUtilities)
 			add(::PublicUtilities)
-			// add(::RemindMe)
+			add(::RemindMe)
 			add(::Report)
 			add(::RoleMenu)
 			add(::StartupHooks)
