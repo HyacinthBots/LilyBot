@@ -485,10 +485,10 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 */
 	suspend inline fun removeReminder(
-        inputGuildId: Snowflake,
-        inputUserId: Snowflake,
-        id: Int
-    ) {
+		inputGuildId: Snowflake,
+		inputUserId: Snowflake,
+		id: Int
+	) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.deleteOne(
 			RemindMeData::guildId eq inputGuildId,
@@ -507,6 +507,41 @@ object DatabaseHelper {
 	suspend inline fun getReminders(): List<RemindMeData> {
 		val collection = database.getCollection<RemindMeData>()
 		return collection.find().toList()
+	}
+
+	suspend fun migrateReminders() {
+		val collection = database.getCollection<RemindMeData>()
+		collection.find().toList().forEach {
+			collection.findOneAndReplace(
+				RemindMeData::repeating eq null,
+				RemindMeData(
+					it.initialSetTime,
+					it.guildId,
+					it.userId,
+					it.channelId,
+					it.remindTime,
+					it.originalMessageUrl,
+					it.customMessage,
+					it.repeating ?: false,
+					it.id ?: 1
+				)
+			)
+
+			collection.findOneAndReplace(
+				RemindMeData::id eq null,
+				RemindMeData(
+					it.initialSetTime,
+					it.guildId,
+					it.userId,
+					it.channelId,
+					it.remindTime,
+					it.originalMessageUrl,
+					it.customMessage,
+					it.repeating,
+					it.id ?: 1
+				)
+			)
+		}
 	}
 }
 
@@ -658,6 +693,6 @@ data class RemindMeData(
 	val remindTime: Instant,
 	val originalMessageUrl: String,
 	val customMessage: String?,
-	val repeating: Boolean,
-	val id: Int
+	val repeating: Boolean?,
+	val id: Int?
 )
