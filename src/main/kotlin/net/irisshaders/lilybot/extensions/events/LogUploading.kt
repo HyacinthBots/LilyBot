@@ -11,7 +11,6 @@ import com.kotlindiscord.kord.extensions.sentry.tag
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
-import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
@@ -33,7 +32,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import net.irisshaders.lilybot.utils.botHasChannelPerms
-import net.irisshaders.lilybot.utils.botHasThreadPerms
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
@@ -60,17 +58,10 @@ class LogUploading : Extension() {
 		event<MessageCreateEvent> {
 			check {
 				anyGuild()
-				if (event.message.channel.asChannel().type == ChannelType.GuildText ||
-					event.message.channel.asChannel().type == ChannelType.GuildVoice
-				) {
-					botHasChannelPerms(
-						event.message.channel.id, Permissions(Permission.SendMessages, Permission.EmbedLinks)
-					)
-				} else {
-					botHasThreadPerms(
-						event.message.channel.id, Permissions(Permission.SendMessages, Permission.EmbedLinks)
-					)
-				}
+				botHasChannelPerms(
+					event.message.channel.id,
+					Permissions(Permission.SendMessages, Permission.EmbedLinks)
+				)
 			}
 			action {
 				val eventMessage = event.message.asMessageOrNull() // Get the message
