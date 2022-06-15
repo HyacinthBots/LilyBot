@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -10,6 +11,8 @@ import com.kotlindiscord.kord.extensions.sentry.tag
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
@@ -28,6 +31,7 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
@@ -52,9 +56,15 @@ class LogUploading : Extension() {
 		 * @since 2.0
 		 */
 		event<MessageCreateEvent> {
+			check {
+				anyGuild()
+				botHasChannelPerms(
+					event.message.channel.id,
+					Permissions(Permission.SendMessages, Permission.EmbedLinks)
+				)
+			}
 			action {
 				val eventMessage = event.message.asMessageOrNull() // Get the message
-
 				eventMessage.attachments.forEach { attachment ->
 					val attachmentFileName = attachment.filename
 					val attachmentFileExtension = attachmentFileName.substring(
@@ -101,9 +111,10 @@ class LogUploading : Extension() {
 							confirmationMessage = eventMessage.channel.createMessage {
 								embed {
 									title = "Do you want to upload this file to mclo.gs?"
-									description = "mclo.gs is a website that allows users to share minecraft logs " +
-											"through public posts.\nIt's easier for the support team to view " +
-											"the file on mclo.gs, do you want it to be uploaded?"
+									description =
+										"mclo.gs is a website that allows users to share minecraft logs " +
+												"through public posts.\nIt's easier for the support team to view " +
+												"the file on mclo.gs, do you want it to be uploaded?"
 									footer {
 										text = eventMessage.author?.tag ?: ""
 										icon = eventMessage.author?.avatar?.url
@@ -156,7 +167,8 @@ class LogUploading : Extension() {
 													// If the upload fails, we'll just show the error
 													uploadMessage.edit {
 														embed {
-															title = "Failed to upload `$attachmentFileName` to mclo.gs"
+															title =
+																"Failed to upload `$attachmentFileName` to mclo.gs"
 															description = "Error: $e"
 															footer {
 																text = "Uploaded by ${eventMessage.author?.tag}"

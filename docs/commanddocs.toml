@@ -61,7 +61,7 @@ permissions = "Ban Members"
 category = "Moderation commands"
 name = "warn"
 args = "* `warnUser` - Person to warn - User\n* `reason` - Reason for warn - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String"
-result = "Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.\n\n| Points |     Sanction     |\n|:------:|:----------------:|\n|   1    | None.            |\n|   2    | 3 hour timeout.  |\n|   3    | 12 hour timeout. |\n|   3+   | 3 day timeout.   |"
+result = "Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.\n\n| Points |     Sanction     |\n|:------:|:----------------:|\n|   1    |      None.       |\n|   2    | 3 hour timeout.  |\n|   3    | 12 hour timeout. |\n|   3+   |  3 day timeout.  |"
 permissions = "Moderate Members"
 
 [[command]]
@@ -106,10 +106,30 @@ description = "These commands are just handy to have around. Moderator only comm
 
 [[command]]
 category = "Utility commands"
-name = "role-menu"
-args = "(Moderator only)\n* `role` - Role users will be able to select through the menu - Role\n* `title` - Title of the embed to be created along with the menu - Optional String (default: Role Selection Menu)\n* `description` - Text of the embed to be created along with the menu - Optional String\n(default: `Use the button below to add/remove the <role> role.`)\n* `channel` - Channel for the embed and menu to be created in - Optional Channel (default: channel executed in)\n* `color` - Color for the embed - Optional Color (default: black)"
-result = "Creates a menu with buttons to add and remove `role` in `channel` along with an `color` colored embed with description `description` and title `title`."
-permissions = "Manage Messages"
+name = "role-menu create"
+args = "(Moderator only)\n* `role` - A role to start the menu with - Role\n* `content` - Content of the embed to be created along with the menu - String\n* `embed` - If the message should be an embed` - Optional Boolean (default: true)\n* `color` - Color for the embed - Optional Color (default: black)"
+result = "Creates a menu with a button attached to a `color` colored embed with content `content`. Pressing the button allows the user to select roles."
+permissions = "Manage Roles"
+
+[[command]]
+category = "Utility commands"
+name = "role-menu add"
+args = "(Moderator only)\n* `menuId` - The message ID of the role menu to edit - Snowflake\n* `role` - The role to add to the menu - String"
+result = "Adds the `role` to the menu associated with `menuId`."
+permissions = "Manage Roles"
+
+[[command]]
+category = "Utility commands"
+name = "role-menu remove"
+args = "(Moderator only)\n* `menuId` - The message ID of the role menu to edit - Snowflake\n* `role` - The role to remove from the menu - String"
+result = "Removes the `role` from the menu associated with `menuId`."
+permissions = "Manage Roles"
+
+[[command]]
+category = "Utility commands"
+name = "role-menu pronouns"
+result = "Creates a role menu and associated roles (if needed) to select pronouns."
+permissions = "Manage Roles"
 
 [[command]]
 category = "Utility commands"
@@ -165,9 +185,25 @@ result = "Clears the nickname of the user that ran the command"
 
 [[command]]
 category = "Utility commands"
-name = "remind"
+name = "reminder set"
 args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `customMessage` - A custom message to attach to the reminder - Optional String"
 result = "Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed"
+
+[[command]]
+category = "Utility commands"
+name = "remind list"
+result = "Sends an embed containing all the reminders you have set in that guild. If there are none, it returns a messages saying so."
+
+[[command]]
+category = "Utility commands"
+name = "reminder remove"
+result = "Allows the user to input the number ID of the reminder they would like to delete. It is advised to use `/reminder list` to find out what reminder id is."
+
+[[command]]
+category = "Utility commands"
+name = "reminder remove-all"
+args = "* `type` - The type of reminder to remove all of, can be `repeating`, `non-repeating` or `all` - String Choice"
+result = "Removes all the specific `type` of reminders for the user from the guild the command was executed in."
 # End Utility commands
 
 # GitHub commands

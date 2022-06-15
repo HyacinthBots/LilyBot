@@ -15,7 +15,7 @@ import dev.kord.rest.builder.message.EmbedBuilder
  * @author NoComment1105
  * @since 3.0.0
  */
-suspend fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User, commandUser: UserBehavior) {
+suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User, commandUser: UserBehavior) {
 	field {
 		name = "User:"
 		value = "${targetUser.tag}\n${targetUser.id}"

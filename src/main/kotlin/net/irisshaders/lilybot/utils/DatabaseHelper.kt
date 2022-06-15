@@ -19,7 +19,7 @@ import org.litote.kmongo.eq
  */
 object DatabaseHelper {
 
-	private val databaseLogger = KotlinLogging.logger("Database Logger")
+	val databaseLogger = KotlinLogging.logger("Database Logger")
 
 	/**
 	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database.
@@ -29,7 +29,7 @@ object DatabaseHelper {
 	 * @author NoComment1105, tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun getConfig(inputGuildId: Snowflake): ConfigData? {
+	suspend inline fun getConfig(inputGuildId: Snowflake): ConfigData? {
 		val collection = database.getCollection<ConfigData>()
 		return collection.findOne(ConfigData::guildId eq inputGuildId)
 	}
@@ -41,7 +41,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun setConfig(newConfig: ConfigData) {
+	suspend inline fun setConfig(newConfig: ConfigData) {
 		val collection = database.getCollection<ConfigData>()
 		collection.deleteOne(ConfigData::guildId eq newConfig.guildId)
 		collection.insertOne(newConfig)
@@ -54,7 +54,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun clearConfig(inputGuildId: Snowflake) {
+	suspend inline fun clearConfig(inputGuildId: Snowflake) {
 		val collection = database.getCollection<ConfigData>()
 		collection.deleteOne(ConfigData::guildId eq inputGuildId)
 	}
@@ -68,7 +68,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? {
+	suspend inline fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? {
 		val collection = database.getCollection<WarnData>()
 		return collection.findOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 	}
@@ -82,7 +82,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
+	suspend inline fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
 		val currentStrikes = getWarn(inputUserId, inputGuildId)?.strikes ?: 0
 		val collection = database.getCollection<WarnData>()
 		collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
@@ -102,35 +102,63 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	private suspend fun clearWarn(inputGuildId: Snowflake) {
+	private suspend inline fun clearWarn(inputGuildId: Snowflake) {
 		val collection = database.getCollection<WarnData>()
 		collection.deleteMany(WarnData::guildId eq inputGuildId)
 	}
 
 	/**
-	 * Using the provided [inputComponentId] the [ComponentData] will be returned from the database.
+	 * Using the provided [inputMessageId] the associated [RoleMenuData] will be returned from the database.
 	 *
-	 * @param inputComponentId The ID of the component the event was triggered with
-	 * @return The component from the database
+	 * @param inputMessageId The ID of the message the event was triggered via.
+	 * @return The role menu data from the database
 	 * @author tempest15
-	 * @since 3.0.0
+	 * @since 3.4.0
 	 */
-	suspend fun getComponent(inputComponentId: String): ComponentData? {
-		val collection = database.getCollection<ComponentData>()
-		return collection.findOne(ComponentData::componentId eq inputComponentId)
+	suspend inline fun getRoleData(inputMessageId: Snowflake): RoleMenuData? {
+		val collection = database.getCollection<RoleMenuData>()
+		return collection.findOne(RoleMenuData::messageId eq inputMessageId)
 	}
 
 	/**
-	 * Add the given [newComponent] to the database.
+	 * Add the given [inputRoles] to the database entry for the role menu for the provided [inputMessageId],
+	 * [inputChannelId], and [inputGuildId].
 	 *
-	 * @param newComponent The data for the component to be added.
+	 * @param inputMessageId The ID of the message the role menu is in.
+	 * @param inputChannelId The ID of the channel the role menu is in.
+	 * @param inputGuildId The ID of the guild the role menu is in.
+	 * @param inputRoles The [MutableList] of [Snowflake]s representing the role IDs for the role menu.
 	 * @author tempest15
-	 * @since 3.0.0
+	 * @since 3.4.0
 	 */
-	suspend fun setComponent(newComponent: ComponentData) {
-		val collection = database.getCollection<ComponentData>()
-		collection.deleteOne(ComponentData::componentId eq newComponent.componentId)
-		collection.insertOne(newComponent)
+	suspend inline fun setRoleMenu(
+		 inputMessageId: Snowflake,
+		 inputChannelId: Snowflake,
+		 inputGuildId: Snowflake,
+		 inputRoles: MutableList<Snowflake>
+	) {
+		val newRoleMenu = RoleMenuData(inputMessageId, inputChannelId, inputGuildId, inputRoles)
+		val collection = database.getCollection<RoleMenuData>()
+		collection.deleteOne(RoleMenuData::messageId eq inputMessageId)
+		collection.insertOne(newRoleMenu)
+	}
+
+	/**
+	 * Remove the given [inputRoleId] from the database entry associated with the given [inputMessageId].
+	 *
+	 * @param inputMessageId The ID of the message the role menu is in.
+	 * @param inputRoleId The ID of the role to remove from the menu.
+	 * @author tempest15
+	 * @since 3.4.0
+	 */
+	suspend inline fun deleteRoleFromMenu(inputMessageId: Snowflake, inputRoleId: Snowflake) {
+		val collection = database.getCollection<RoleMenuData>()
+		val roleMenu = collection.findOne(RoleMenuData::messageId eq inputMessageId) ?: return
+
+		roleMenu.roles.remove(inputRoleId)
+
+		collection.deleteOne(RoleMenuData::messageId eq inputMessageId)
+		collection.insertOne(roleMenu)
 	}
 
 	/**
@@ -156,7 +184,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.0.0
 	 */
-	suspend fun setStatus(newStatus: String) {
+	suspend inline fun setStatus(newStatus: String) {
 		val collection = database.getCollection<StatusData>()
 		collection.deleteOne(StatusData::key eq "LilyStatus")
 		collection.insertOne(StatusData("LilyStatus", newStatus))
@@ -172,7 +200,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
+	suspend inline fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
 		val collection = database.getCollection<TagsData>()
 		return collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 	}
@@ -185,7 +213,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend fun getAllTags(inputGuildId: Snowflake): List<TagsData> {
+	suspend inline fun getAllTags(inputGuildId: Snowflake): List<TagsData> {
 		val collection = database.getCollection<TagsData>()
 		return collection.find(TagsData::guildId eq inputGuildId).toList()
 	}
@@ -200,7 +228,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
+	suspend inline fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
 		val collection = database.getCollection<TagsData>()
 		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue))
 	}
@@ -213,7 +241,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend fun deleteTag(inputGuildId: Snowflake, name: String) {
+	suspend inline fun deleteTag(inputGuildId: Snowflake, name: String) {
 		val collection = database.getCollection<TagsData>()
 		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 	}
@@ -225,7 +253,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.1.0
 	 */
-	private suspend fun clearTags(inputGuildId: Snowflake) {
+	private suspend inline fun clearTags(inputGuildId: Snowflake) {
 		val collection = database.getCollection<TagsData>()
 		collection.deleteMany(TagsData::guildId eq inputGuildId)
 	}
@@ -239,7 +267,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun getThreadOwner(inputThreadId: Snowflake): Snowflake? {
+	suspend inline fun getThreadOwner(inputThreadId: Snowflake): Snowflake? {
 		val collection = database.getCollection<ThreadData>()
 		val selectedThread = collection.findOne(ThreadData::threadId eq inputThreadId) ?: return null
 		return selectedThread.ownerId
@@ -254,7 +282,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> {
+	suspend inline fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> {
 		val collection = database.getCollection<ThreadData>()
 		return collection.find(ThreadData::ownerId eq inputOwnerId).toList()
 	}
@@ -269,7 +297,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake) {
+	suspend inline fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake) {
 		val collection = database.getCollection<ThreadData>()
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
 		collection.insertOne(ThreadData(inputThreadId, newOwnerId))
@@ -283,7 +311,7 @@ object DatabaseHelper {
 	 * @author henkelmax
 	 * @since 3.2.2
 	 */
-	suspend fun deleteThread(inputThreadId: Snowflake) {
+	suspend inline fun deleteThread(inputThreadId: Snowflake) {
 		val collection = database.getCollection<ThreadData>()
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
 	}
@@ -294,7 +322,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun cleanupThreadData(kordInstance: Kord) {
+	suspend inline fun cleanupThreadData(kordInstance: Kord) {
 		val collection = database.getCollection<ThreadData>()
 		val threads = collection.find().toList()
 		var deletedThreads = 0
@@ -319,7 +347,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.2.0
 	 */
-	suspend fun setLeaveTime(inputGuildId: Snowflake, time: Instant) {
+	suspend inline fun setLeaveTime(inputGuildId: Snowflake, time: Instant) {
 		val collection = database.getCollection<GuildLeaveTimeData>()
 		collection.insertOne(GuildLeaveTimeData(inputGuildId, time))
 	}
@@ -332,7 +360,7 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend fun deleteLeaveTime(inputGuildId: Snowflake) {
+	suspend inline fun deleteLeaveTime(inputGuildId: Snowflake) {
 		val collection = database.getCollection<GuildLeaveTimeData>()
 		collection.deleteOne(GuildLeaveTimeData::guildId eq inputGuildId)
 	}
@@ -375,7 +403,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend fun setGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+	suspend inline fun setGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
 		val collection = database.getCollection<GalleryChannelData>()
 		collection.insertOne(GalleryChannelData(inputGuildId, inputChannelId))
 	}
@@ -388,7 +416,7 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend fun deleteGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+	suspend inline fun deleteGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
 		val collection = database.getCollection<GalleryChannelData>()
 		collection.deleteOne(
 			GalleryChannelData::channelId eq inputChannelId,
@@ -419,14 +447,16 @@ object DatabaseHelper {
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	suspend fun setReminder(
+	suspend inline fun setReminder(
 		initialSetTime: Instant,
 		inputGuildId: Snowflake,
 		inputUserId: Snowflake,
 		inputChannelId: Snowflake,
 		remindTime: Instant,
 		originalMessageUrl: String,
-		customMessage: String?
+		customMessage: String?,
+		repeating: Boolean,
+		id: Int
 	) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.insertOne(
@@ -437,7 +467,9 @@ object DatabaseHelper {
 				inputChannelId,
 				remindTime,
 				originalMessageUrl,
-				customMessage
+				customMessage,
+				repeating,
+				id
 			)
 		)
 	}
@@ -445,19 +477,23 @@ object DatabaseHelper {
 	/**
 	 * Removes old reminders from the Database.
 	 *
-	 * @param initialSetTime The time the reminder was set
 	 * @param inputGuildId The ID of the guild the reminder was set in
 	 * @param inputUserId The ID of the user the reminder was set by
+	 * @param id The numerical ID of the reminder
 	 *
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	suspend fun removeReminder(initialSetTime: Instant, inputGuildId: Snowflake, inputUserId: Snowflake) {
+	suspend inline fun removeReminder(
+        inputGuildId: Snowflake,
+        inputUserId: Snowflake,
+        id: Int
+    ) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.deleteOne(
-			RemindMeData::initialSetTime eq initialSetTime,
 			RemindMeData::guildId eq inputGuildId,
-			RemindMeData::userId eq inputUserId
+			RemindMeData::userId eq inputUserId,
+			RemindMeData::id eq id
 		)
 	}
 
@@ -468,7 +504,7 @@ object DatabaseHelper {
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	suspend fun getReminders(): List<RemindMeData> {
+	suspend inline fun getReminders(): List<RemindMeData> {
 		val collection = database.getCollection<RemindMeData>()
 		return collection.find().toList()
 	}
@@ -513,18 +549,20 @@ data class WarnData(
 )
 
 /**
- * The data for role menu components.
+ * The data for role menus.
  *
- * @param componentId The ID of the components
- * @param roleId The ID of the role the component will add
- * @param addOrRemove Whether to add or remove the role from the user, when the component is clicked
- * @since 3.0.0
+ * @param messageId The ID of the message of the role menu
+ * @param channelId The ID of the channel the role menu is in
+ * @param guildId The ID of the guild the role menu is in
+ * @param roles A [MutableList] of the role IDs associated with this role menu.
+ * @since 3.4.0
  */
 @Serializable
-data class ComponentData(
-	val componentId: String,
-	val roleId: Snowflake,
-	val addOrRemove: String
+data class RoleMenuData(
+	val messageId: Snowflake,
+	val channelId: Snowflake,
+	val guildId: Snowflake,
+	val roles: MutableList<Snowflake>
 )
 
 /**
@@ -606,6 +644,8 @@ data class GalleryChannelData(
  * @param remindTime The time the user would like to be reminded at
  * @param originalMessageUrl The URL to the original message that set the reminder
  * @param customMessage A custom message to attach to the reminder
+ * @param repeating Whether the reminder should repeat
+ * @param id The numerical ID of the reminder
  *
  * @since 3.3.2
  */
@@ -617,5 +657,7 @@ data class RemindMeData(
 	val channelId: Snowflake,
 	val remindTime: Instant,
 	val originalMessageUrl: String,
-	val customMessage: String?
+	val customMessage: String?,
+	val repeating: Boolean,
+	val id: Int
 )

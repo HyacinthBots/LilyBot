@@ -16,11 +16,13 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.ban
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
@@ -30,6 +32,7 @@ import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.baseModerationEmbed
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
 import net.irisshaders.lilybot.utils.isBotOrModerator
@@ -56,17 +59,22 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.BanMembers)
 				configPresent()
+				hasPermission(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				// Clarify the user is not a bot or moderator
 				isBotOrModerator(userArg, "ban") ?: return@action
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				}
 
 				// DM the user before the ban task is run, to avoid error, null if fails
 				val dm = userArg.dm {
@@ -114,10 +122,10 @@ class TerminalModeration : Extension() {
 				}
 
 				try {
-					actionLog.createMessage { embeds.add(embed) }
+					actionLog?.createMessage { embeds.add(embed) }
 				} catch (e: KtorRequestException) {
 					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+					actionLog?.createMessage { embeds.add(embed) }
 				}
 			}
 		}
@@ -133,16 +141,21 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.BanMembers)
 				configPresent()
+				hasPermission(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers)
 			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 				// Get all the bans into a list
 				val bans = guild!!.bans.toList().map { it.userId }
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				}
 
 				// Search the list for the banned user
 				if (userArg.id in bans) {
@@ -157,7 +170,7 @@ class TerminalModeration : Extension() {
 					content = "Unbanned user"
 				}
 
-				actionLog.createEmbed {
+				actionLog?.createEmbed {
 					title = "Unbanned a user"
 					description = "${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})"
 					field {
@@ -185,16 +198,21 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.BanMembers)
 				configPresent()
+				hasPermission(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				}
 
 				// DM the user before the ban task is run
 				val dm = userArg.dm {
@@ -243,10 +261,10 @@ class TerminalModeration : Extension() {
 				}
 
 				try {
-					actionLog.createMessage { embeds.add(embed) }
+					actionLog?.createMessage { embeds.add(embed) }
 				} catch (e: KtorRequestException) {
 					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+					actionLog?.createMessage { embeds.add(embed) }
 				}
 
 				// Unban the user, as you're supposed to in soft-ban
@@ -265,17 +283,22 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.KickMembers)
 				configPresent()
+				hasPermission(Permission.KickMembers)
+				requireBotPermissions(Permission.KickMembers)
 			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				// Clarify the user isn't a bot or a moderator
 				isBotOrModerator(userArg, "kick") ?: return@action
+
+				this@ephemeralSlashCommand.check {
+					botHasChannelPerms(config.modActionLog, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				}
 
 				// DM the user about it before the kick
 				val dm = userArg.dm {
@@ -309,10 +332,10 @@ class TerminalModeration : Extension() {
 				embed.timestamp = Clock.System.now()
 
 				try {
-					actionLog.createMessage { embeds.add(embed) }
+					actionLog?.createMessage { embeds.add(embed) }
 				} catch (e: KtorRequestException) {
 					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+					actionLog?.createMessage { embeds.add(embed) }
 				}
 			}
 		}

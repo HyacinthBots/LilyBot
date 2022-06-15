@@ -118,10 +118,10 @@ These commands are for use by moderators. They utilize built-in permission check
 
 | Points |     Sanction     |
 |:------:|:----------------:|
-|   1    | None.            |
+|   1    |      None.       |
 |   2    | 3 hour timeout.  |
 |   3    | 12 hour timeout. |
-|   3+   | 3 day timeout.   |
+|   3+   |  3 day timeout.  |
 
 **Required Permissions**: `Moderate Members`
 
@@ -197,19 +197,57 @@ None
 ## Utility commands
 These commands are just handy to have around. Moderator only commands are at the top and clearly marked.
 
-### Name: `role-menu`
+### Name: `role-menu create`
 **Arguments**:
 (Moderator only)
-* `role` - Role users will be able to select through the menu - Role
-* `title` - Title of the embed to be created along with the menu - Optional String (default: Role Selection Menu)
-* `description` - Text of the embed to be created along with the menu - Optional String
-(default: `Use the button below to add/remove the <role> role.`)
-* `channel` - Channel for the embed and menu to be created in - Optional Channel (default: channel executed in)
+* `role` - A role to start the menu with - Role
+* `content` - Content of the embed to be created along with the menu - String
+* `embed` - If the message should be an embed` - Optional Boolean (default: true)
 * `color` - Color for the embed - Optional Color (default: black)
 
-**Result**: Creates a menu with buttons to add and remove `role` in `channel` along with an `color` colored embed with description `description` and title `title`.
+**Result**: Creates a menu with a button attached to a `color` colored embed with content `content`. Pressing the button allows the user to select roles.
 
-**Required Permissions**: `Manage Messages`
+**Required Permissions**: `Manage Roles`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `role-menu add`
+**Arguments**:
+(Moderator only)
+* `menuId` - The message ID of the role menu to edit - Snowflake
+* `role` - The role to add to the menu - String
+
+**Result**: Adds the `role` to the menu associated with `menuId`.
+
+**Required Permissions**: `Manage Roles`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `role-menu remove`
+**Arguments**:
+(Moderator only)
+* `menuId` - The message ID of the role menu to edit - Snowflake
+* `role` - The role to remove from the menu - String
+
+**Result**: Removes the `role` from the menu associated with `menuId`.
+
+**Required Permissions**: `Manage Roles`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `role-menu pronouns`
+**Arguments**:
+None
+
+**Result**: Creates a role menu and associated roles (if needed) to select pronouns.
+
+**Required Permissions**: `Manage Roles`
 
 **Command category**: `Utility commands`
 
@@ -318,12 +356,48 @@ None
 
 ---
 
-### Name: `remind`
+### Name: `reminder set`
 **Arguments**:
 * `time` - The time until the bot should send the reminder - Coalescing Duration
 * `customMessage` - A custom message to attach to the reminder - Optional String
 
 **Result**: Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `remind list`
+**Arguments**:
+None
+
+**Result**: Sends an embed containing all the reminders you have set in that guild. If there are none, it returns a messages saying so.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `reminder remove`
+**Arguments**:
+None
+
+**Result**: Allows the user to input the number ID of the reminder they would like to delete. It is advised to use `/reminder list` to find out what reminder id is.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `reminder remove-all`
+**Arguments**:
+* `type` - The type of reminder to remove all of, can be `repeating`, `non-repeating` or `all` - String Choice
+
+**Result**: Removes all the specific `type` of reminders for the user from the guild the command was executed in.
 
 **Required Permissions**: `None`
 
