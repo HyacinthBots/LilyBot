@@ -71,7 +71,7 @@ object PluralKit {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	 private suspend inline fun isProxied(id: String): Boolean {
+	 private suspend fun isProxied(id: String): Boolean {
 		val url = MESSAGE_URL.replace("{id}", id)
 
 		var isProxied = false
@@ -99,7 +99,7 @@ object PluralKit {
 	 * @author NoComment1105
 	 * @since 3.3.2
 	 */
-	 private suspend inline fun getProxiedMessageAuthorId(id: String): Snowflake? {
+	 private suspend fun getProxiedMessageAuthorId(id: String): Snowflake? {
 		val url = MESSAGE_URL.replace("{id}", id)
 
 		var authorId: Snowflake? = null
