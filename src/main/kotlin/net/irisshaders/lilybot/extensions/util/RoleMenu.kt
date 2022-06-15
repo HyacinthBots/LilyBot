@@ -546,6 +546,12 @@ class RoleMenu : Extension() {
 		val content by string {
 			name = "content"
 			description = "The content of the embed or message."
+
+			// Fix newline escape characters
+			mutate {
+				it.replace("\\n", "\n")
+					.replace("\n ", "\n")
+			}
 		}
 
 		/** If the message the role menu is attached to should be an embed. */
