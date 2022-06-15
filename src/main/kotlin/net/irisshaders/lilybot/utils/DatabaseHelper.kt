@@ -454,7 +454,9 @@ object DatabaseHelper {
 		inputChannelId: Snowflake,
 		remindTime: Instant,
 		originalMessageUrl: String,
-		customMessage: String?
+		customMessage: String?,
+		repeating: Boolean,
+		id: Int
 	) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.insertOne(
@@ -465,7 +467,9 @@ object DatabaseHelper {
 				inputChannelId,
 				remindTime,
 				originalMessageUrl,
-				customMessage
+				customMessage,
+				repeating,
+				id
 			)
 		)
 	}
@@ -473,19 +477,23 @@ object DatabaseHelper {
 	/**
 	 * Removes old reminders from the Database.
 	 *
-	 * @param initialSetTime The time the reminder was set
 	 * @param inputGuildId The ID of the guild the reminder was set in
 	 * @param inputUserId The ID of the user the reminder was set by
+	 * @param id The numerical ID of the reminder
 	 *
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	suspend inline fun removeReminder(initialSetTime: Instant, inputGuildId: Snowflake, inputUserId: Snowflake) {
+	suspend inline fun removeReminder(
+        inputGuildId: Snowflake,
+        inputUserId: Snowflake,
+        id: Int
+    ) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.deleteOne(
-			RemindMeData::initialSetTime eq initialSetTime,
 			RemindMeData::guildId eq inputGuildId,
-			RemindMeData::userId eq inputUserId
+			RemindMeData::userId eq inputUserId,
+			RemindMeData::id eq id
 		)
 	}
 
@@ -636,6 +644,8 @@ data class GalleryChannelData(
  * @param remindTime The time the user would like to be reminded at
  * @param originalMessageUrl The URL to the original message that set the reminder
  * @param customMessage A custom message to attach to the reminder
+ * @param repeating Whether the reminder should repeat
+ * @param id The numerical ID of the reminder
  *
  * @since 3.3.2
  */
@@ -647,5 +657,7 @@ data class RemindMeData(
 	val channelId: Snowflake,
 	val remindTime: Instant,
 	val originalMessageUrl: String,
-	val customMessage: String?
+	val customMessage: String?,
+	val repeating: Boolean,
+	val id: Int
 )
