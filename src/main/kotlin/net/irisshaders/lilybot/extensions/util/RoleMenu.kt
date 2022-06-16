@@ -308,6 +308,10 @@ class RoleMenu : Extension() {
 				}
 
 				action {
+					respond {
+						content = "Pronoun role menu created."
+					}
+
 					val menuMessage = channel.createMessage {
 						content = "Select pronoun roles from the menu below!"
 					}
@@ -375,10 +379,6 @@ class RoleMenu : Extension() {
 								url = menuMessage.getJumpUrl()
 							}
 						}
-					}
-
-					respond {
-						content = "Pronoun role menu created."
 					}
 				}
 			}
