@@ -1,13 +1,13 @@
 package net.irisshaders.lilybot.utils
 
+import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Permissions
-import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
@@ -43,39 +43,37 @@ suspend inline fun CheckContext<*>.configPresent() {
 }
 
 /**
- * Gets the channel of the event from the provided [channelId] and that the bot has the required [permissions].
+ * Gets the channel of the event and checks that the bot has the required [permissions].
  *
- * @param channelId The ID of the channel to check
  * @param permissions The permissions to check the bot for
  *
  * @author NoComment1105
  * @since 3.4.0
  */
-suspend inline fun CheckContext<*>.botHasChannelPerms(channelId: Snowflake, permissions: Permissions) {
+suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) {
 	if (!passed) {
 		return
 	}
-	val channel = guildFor(event)!!.getChannel(channelId)
 
 	/* Use `TextChannel` when the channel is a Text channel */
-	if (channel.type == ChannelType.GuildText) {
-		if (guildFor(event)!!.getChannelOf<TextChannel>(channelId).getEffectivePermissions(event.kord.selfId)
+	if (channelFor(event)!!.asChannel().type == ChannelType.GuildText) {
+		if (channelFor(event)!!.asChannelOf<TextChannel>().getEffectivePermissions(event.kord.selfId)
 				.contains(Permissions(permissions))
 		) {
 			pass()
 		} else {
-			fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channel.mention}")
+			fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channelFor(event)?.mention}")
 		}
-	} else if (channel.type == ChannelType.PublicGuildThread ||
-		channel.type == ChannelType.PublicNewsThread ||
-		channel.type == ChannelType.PrivateThread
+	} else if (channelFor(event)!!.asChannel().type == ChannelType.PublicGuildThread ||
+		channelFor(event)!!.asChannel().type == ChannelType.PublicNewsThread ||
+		channelFor(event)!!.asChannel().type == ChannelType.PrivateThread
 	) {
-		if (guildFor(event)!!.getChannelOf<ThreadChannel>(channelId).getParent().getEffectivePermissions(event.kord.selfId)
+		if (channelFor(event)!!.asChannelOf<ThreadChannel>().getParent().getEffectivePermissions(event.kord.selfId)
 				.contains(Permissions(permissions))
 		) {
 			pass()
 		} else {
-			fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channel.mention}")
+			fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channelFor(event)?.mention}")
 		}
 	} else {
 		fail("Unable to get permissions for channel! Please report this to the developers!")

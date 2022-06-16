@@ -302,7 +302,7 @@ None
 
 **Result**: Archives the thread executed in **if executed by a moderator or the thread owner**. Locks the thread if executed by a moderator and `lock` is true.
 
-**Required Permissions**: `none (Moderate Members for locking)`
+**Required Permissions**: `none (Manage Threads for locking)`
 
 **Command category**: `Utility commands`
 
@@ -314,7 +314,7 @@ None
 
 **Result**: Renames the thread executed in **if executed by a moderator or the thread owner**.
 
-**Required Permissions**: `none (Moderate Members if not owner)`
+**Required Permissions**: `none (Manage Threads if not owner)`
 
 **Command category**: `Utility commands`
 
@@ -326,7 +326,19 @@ None
 
 **Result**: Transfers ownership of the thread executed in to `newOwner` **if executed by a moderator or the thread owner**. Creates a message in the executed thread noting this transfer.
 
-**Required Permissions**: `none (Moderate Members if not owner)`
+**Required Permissions**: `none (Manage Threads if not owner)`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `thread prevent-archiving`
+**Arguments**:
+None
+
+**Result**: Prevents the thread the command was run in from being archived
+
+**Required Permissions**: `none (Manage Threads if not owner)`
 
 **Command category**: `Utility commands`
 

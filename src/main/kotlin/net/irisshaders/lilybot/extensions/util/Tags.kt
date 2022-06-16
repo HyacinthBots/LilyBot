@@ -4,7 +4,6 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalUser
@@ -48,7 +47,7 @@ class Tags : Extension() {
 			check {
 				anyGuild()
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
-				botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
@@ -93,7 +92,7 @@ class Tags : Extension() {
 
 			check {
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
-				botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
@@ -138,7 +137,7 @@ class Tags : Extension() {
 				configPresent()
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
-				botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
@@ -202,7 +201,7 @@ class Tags : Extension() {
 				configPresent()
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
-				botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
@@ -241,7 +240,7 @@ class Tags : Extension() {
 			check {
 				anyGuild()
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
-				botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {

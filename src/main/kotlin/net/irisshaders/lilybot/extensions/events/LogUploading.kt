@@ -10,13 +10,17 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.sentry.tag
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
+import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.MessageChannel
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.actionRow
@@ -27,11 +31,14 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.readBytes
 import io.ktor.http.Parameters
+import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
+import net.irisshaders.lilybot.utils.configPresent
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
@@ -59,12 +66,34 @@ class LogUploading : Extension() {
 			check {
 				anyGuild()
 				botHasChannelPerms(
-					event.message.channel.id,
 					Permissions(Permission.SendMessages, Permission.EmbedLinks)
 				)
+				configPresent()
+				failIf {
+					event.message.author.isNullOrBot()
+				}
 			}
 			action {
+				val config = DatabaseHelper.getConfig(event.guildId!!)!!
+				var deferUploadUntilThread = false
+				if (config.supportChannel != null && event.message.channel.id == config.supportChannel) {
+					deferUploadUntilThread = true
+				}
+
 				val eventMessage = event.message.asMessageOrNull() // Get the message
+				var uploadChannel = eventMessage.channel.asChannel()
+
+				if (deferUploadUntilThread) {
+					delay(1500) // Delay to allow for thread creation
+					DatabaseHelper.getOwnerThreads(event.member!!.id).forEach {
+						if (event.getGuild()!!.getChannelOf<TextChannelThread>(it.threadId).parentId ==
+							config.supportChannel
+						) {
+							uploadChannel = event.getGuild()!!.getChannel(it.threadId) as MessageChannel
+						}
+					}
+				}
+
 				eventMessage.attachments.forEach { attachment ->
 					val attachmentFileName = attachment.filename
 					val attachmentFileExtension = attachmentFileName.substring(
@@ -92,7 +121,7 @@ class LogUploading : Extension() {
 						val necText = "at Not Enough Crashes"
 						val indexOfNECText = builder.indexOf(necText)
 						if (indexOfNECText != -1) {
-							eventMessage.channel.createEmbed {
+							uploadChannel.createEmbed {
 								title = "Not Enough Crashes detected in logs"
 								description = "Not Enough Crashes (NEC) is well known to cause issues and often " +
 										"makes the debugging process more difficult. " +
@@ -108,7 +137,7 @@ class LogUploading : Extension() {
 							// Ask the user if they're ok with uploading their log to a paste site
 							var confirmationMessage: Message? = null
 
-							confirmationMessage = eventMessage.channel.createMessage {
+							confirmationMessage = uploadChannel.createMessage {
 								embed {
 									title = "Do you want to upload this file to mclo.gs?"
 									description =
@@ -133,7 +162,7 @@ class LogUploading : Extension() {
 												// Delete the confirmation and proceed to upload
 												confirmationMessage!!.delete()
 
-												val uploadMessage = eventMessage.channel.createEmbed {
+												val uploadMessage = uploadChannel.createEmbed {
 													title = "Uploading `$attachmentFileName` to mclo.gs..."
 													footer {
 														text = "Uploaded by ${eventMessage.author?.tag}"

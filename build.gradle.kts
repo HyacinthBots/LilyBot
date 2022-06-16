@@ -12,7 +12,10 @@ plugins {
 }
 
 group = "net.irisshaders.lilybot"
-version = "3.4.0"
+version = "3.4.1"
+
+val javaVersion = 17
+val kotlinVersion = "${libs.versions.kotlin.get().split(".")[0]}.${libs.versions.kotlin.get().split(".")[1]}"
 
 repositories {
     mavenCentral()
@@ -85,9 +88,10 @@ gitHooks {
 tasks {
     withType<KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "17"
-            sourceCompatibility = "17"
-            targetCompatibility = "17"
+            jvmTarget = javaVersion.toString()
+            languageVersion = kotlinVersion
+            sourceCompatibility = javaVersion.toString()
+            targetCompatibility = javaVersion.toString()
             incremental = true
             freeCompilerArgs = listOf(
                 "-Xopt-in=kotlin.RequiresOptIn"

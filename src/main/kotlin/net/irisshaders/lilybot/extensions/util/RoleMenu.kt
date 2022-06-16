@@ -37,6 +37,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -71,6 +72,9 @@ class RoleMenu : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+					botHasChannelPerms(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				var menuMessage: Message?
@@ -97,7 +101,7 @@ class RoleMenu : Extension() {
 								label = "Select roles"
 								style = ButtonStyle.Primary
 
-								this.id = "role-menu${menuMessage!!.id}"
+								id = "role-menu${menuMessage!!.id}"
 
 								action { }
 							}
@@ -164,6 +168,9 @@ class RoleMenu : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+					botHasChannelPerms(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				action {
@@ -201,13 +208,6 @@ class RoleMenu : Extension() {
 					val config = DatabaseHelper.getConfig(guild!!.id)
 					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
 
-					this@ephemeralSubCommand.check {
-						botHasChannelPerms(
-							actionLog.id,
-							Permissions(Permission.SendMessages, Permission.EmbedLinks)
-						)
-					}
-
 					actionLog.createMessage {
 						embed {
 							title = "Role Added to Role Menu"
@@ -240,6 +240,9 @@ class RoleMenu : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+					botHasChannelPerms(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				action {
@@ -266,13 +269,6 @@ class RoleMenu : Extension() {
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
 					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
-
-					this@ephemeralSubCommand.check {
-						botHasChannelPerms(
-							actionLog.id,
-							Permissions(Permission.SendMessages, Permission.EmbedLinks)
-						)
-					}
 
 					actionLog.createMessage {
 						embed {
@@ -306,16 +302,12 @@ class RoleMenu : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+					botHasChannelPerms(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				action {
-					this@ephemeralSubCommand.check {
-						botHasChannelPerms(
-							channel.id,
-							Permissions(Permission.SendMessages, Permission.EmbedLinks)
-						)
-					}
-
 					respond {
 						content = "Pronoun role menu created."
 					}
@@ -376,13 +368,6 @@ class RoleMenu : Extension() {
 					val config = DatabaseHelper.getConfig(guild!!.id)
 					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
 
-					this@ephemeralSubCommand.check {
-						botHasChannelPerms(
-							actionLog.id,
-							Permissions(Permission.SendMessages, Permission.EmbedLinks)
-						)
-					}
-
 					actionLog.createMessage {
 						embed {
 							title = "Pronoun Role Menu Created"
@@ -405,7 +390,9 @@ class RoleMenu : Extension() {
 		event<ButtonInteractionCreateEvent> {
 			check {
 				anyGuild()
-				event.interaction.componentId.contains("role-menu")
+				failIfNot {
+					event.interaction.componentId.contains("role-menu")
+				}
 			}
 			action {
 				val data = DatabaseHelper.getRoleData(event.interaction.message.id)
@@ -440,30 +427,43 @@ class RoleMenu : Extension() {
 					}
 				}
 
+				val userRoles = event.interaction.user.asMember(guild.id).roles.toList().map { it.id }
+
 				event.interaction.respondEphemeral {
 					content = "Use the menu below to select roles."
 					components {
 						ephemeralSelectMenu {
 							placeholder = "Select roles..."
 							maximumChoices = roles.size
+							minimumChoices = 0
+
 							roles.forEach {
 								option(
 									label = "@${it.name}",
 									value = it.id.toString()
-								)
+								) {
+									default = it.id in userRoles
+								}
 							}
+
 							action {
 								val member = user.asMember(guild.id)
 								var changes = 0
 
 								selected.forEach {
-									if (member.roleIds.contains(Snowflake(it))) {
+									if (userRoles.contains(Snowflake(it))) {
 										member.removeRole(Snowflake(it))
-										changes += 1
-									} else if (!member.roleIds.contains(Snowflake(it))) {
+										changes++
+									} else if (!userRoles.contains(Snowflake(it))) {
 										member.addRole(Snowflake(it))
-										changes += 1
+										changes++
 									}
+								}
+								if (selected.isEmpty()) {
+									roles.forEach {
+										member.removeRole(it.id)
+									}
+									changes++
 								}
 
 								if (changes == 0) {

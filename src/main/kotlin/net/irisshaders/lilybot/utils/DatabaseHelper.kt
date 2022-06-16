@@ -259,18 +259,28 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [inputThreadId] the owner's ID or null is returned from the database.
+	 * Gets all threads into a list and return them to the user.
+	 *
+	 * @author NoComment1105
+	 * @since 3.4.1
+	 */
+	suspend inline fun getAllThreads(): List<ThreadData> {
+		val collection = database.getCollection<ThreadData>()
+		return collection.find().toList()
+	}
+
+	/**
+	 * Using the provided [inputThreadId] the thread is returned.
 	 *
 	 * @param inputThreadId The ID of the thread you wish to find the owner for
 	 *
-	 * @return null or the thread owner's ID
+	 * @return null or the thread
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend inline fun getThreadOwner(inputThreadId: Snowflake): Snowflake? {
+	suspend inline fun getThread(inputThreadId: Snowflake): ThreadData? {
 		val collection = database.getCollection<ThreadData>()
-		val selectedThread = collection.findOne(ThreadData::threadId eq inputThreadId) ?: return null
-		return selectedThread.ownerId
+		return collection.findOne(ThreadData::threadId eq inputThreadId)
 	}
 
 	/**
@@ -292,15 +302,16 @@ object DatabaseHelper {
 	 *
 	 * @param inputThreadId The ID of the thread you wish to update or set the owner for
 	 * @param newOwnerId The new owner of the thread
+	 * @param preventArchiving Whether to stop the thread from being archived or not
 	 *
 	 * @return null or the thread owner's ID
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend inline fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake) {
+	suspend inline fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake, preventArchiving: Boolean = false) {
 		val collection = database.getCollection<ThreadData>()
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
-		collection.insertOne(ThreadData(inputThreadId, newOwnerId))
+		collection.insertOne(ThreadData(inputThreadId, newOwnerId, preventArchiving))
 	}
 
 	/**
@@ -323,6 +334,7 @@ object DatabaseHelper {
 	 * @since 3.2.0
 	 */
 	suspend inline fun cleanupThreadData(kordInstance: Kord) {
+		databaseLogger.info("Starting thread cleanup...")
 		val collection = database.getCollection<ThreadData>()
 		val threads = collection.find().toList()
 		var deletedThreads = 0
@@ -372,6 +384,7 @@ object DatabaseHelper {
 	 * @since 3.2.0
 	 */
 	suspend fun cleanupGuildData() {
+		databaseLogger.info("Starting guild cleanup...")
 		val collection = database.getCollection<GuildLeaveTimeData>()
 		val leaveTimeData = collection.find().toList()
 		var deletedGuildData = 0
@@ -600,12 +613,15 @@ data class TagsData(
  *
  * @param threadId The ID of the thread
  * @param ownerId The ID of the thread's owner
+ * @param preventArchiving Whether to stop the thread from being archived or not
  * @since 3.2.0
  */
 @Serializable
+@Suppress("DataClassShouldBeImmutable")
 data class ThreadData(
 	val threadId: Snowflake,
 	val ownerId: Snowflake,
+	var preventArchiving: Boolean = false
 )
 
 /**
