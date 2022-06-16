@@ -156,21 +156,27 @@ category = "Utility commands"
 name = "thread archive"
 args = "* `lock` - If the thread executed in should be locked - Boolean (default: false)"
 result = "Archives the thread executed in **if executed by a moderator or the thread owner**. Locks the thread if executed by a moderator and `lock` is true."
-permissions = "none (Moderate Members for locking)"
+permissions = "none (Manage Threads for locking)"
 
 [[command]]
 category = "Utility commands"
 name = "thread rename"
 args = "* `newName` - New name for the thread executed in - String"
 result = "Renames the thread executed in **if executed by a moderator or the thread owner**."
-permissions = "none (Moderate Members if not owner)"
+permissions = "none (Manage Threads if not owner)"
 
 [[command]]
 category = "Utility commands"
 name = "thread transfer"
 args = "* `newOwner` - The person you want to transfer ownership of the thread to - User"
 result = "Transfers ownership of the thread executed in to `newOwner` **if executed by a moderator or the thread owner**. Creates a message in the executed thread noting this transfer."
-permissions = "none (Moderate Members if not owner)"
+permissions = "none (Manage Threads if not owner)"
+
+[[command]]
+category = "Utility commands"
+name = "thread prevent-archiving"
+result = "Prevents the thread the command was run in from being archived"
+permissions = "none (Manage Threads if not owner)"
 
 [[command]]
 category = "Utility commands"
