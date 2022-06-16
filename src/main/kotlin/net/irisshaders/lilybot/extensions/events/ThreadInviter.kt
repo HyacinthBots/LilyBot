@@ -124,12 +124,18 @@ class ThreadInviter : Extension() {
 
 					DatabaseHelper.setThreadOwner(thread.id, userId)
 
-					val editMessage = thread.createMessage("edit message")
+					val threadMessageData = DatabaseHelper.getThreadMessageData(guild.id)
 
-					editMessage.edit {
-						this.content =
+					if (threadMessageData != null) {
+						thread.createMessage(
+							threadMessageData.message.replace("\\n", "\n")
+								.replace("@user", event.member!!.asUser().mention)
+						)
+					} else {
+						thread.createMessage(
 							user.asUser().mention + ", the " + event.getGuild()
 								?.getRole(config.supportTeam)?.mention + " will be with you shortly!"
+						)
 					}
 
 					if (textChannel.messages.last().author?.id == kord.selfId) {

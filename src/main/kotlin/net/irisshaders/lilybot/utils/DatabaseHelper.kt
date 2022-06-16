@@ -60,6 +60,28 @@ object DatabaseHelper {
 	}
 
 	/**
+	 * Gets the thread message for the provided [inputGuildId] from the database.
+	 *
+	 * @param inputGuildId The ID of the guild the command was run in
+	 * @return null or the result from the database
+	 */
+	suspend fun getThreadMessageData(inputGuildId: Snowflake): ThreadMessageData? {
+		val collection = database.getCollection<ThreadMessageData>()
+		return collection.findOne(ThreadMessageData::guildId eq inputGuildId)
+	}
+
+	/**
+	 * Updates the provided [threadMessageData] in the database.
+	 *
+	 * @param threadMessageData The thread message.
+	 */
+	suspend fun setThreadMessageData(threadMessageData: ThreadMessageData) {
+		val collection = database.getCollection<ThreadMessageData>()
+		collection.deleteOne(ThreadMessageData::guildId eq threadMessageData.guildId)
+		collection.insertOne(threadMessageData)
+	}
+
+	/**
 	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database.
 	 *
 	 * @param inputUserId The ID of the user to get the point value for
@@ -541,6 +563,18 @@ data class ConfigData(
 	val joinChannel: Snowflake,
 	val supportChannel: Snowflake?,
 	val supportTeam: Snowflake?,
+)
+
+/**
+ * The data for thread messages.
+ *
+ * @param guildId The ID of the guild the config is for
+ * @param message The message
+ */
+@Serializable
+data class ThreadMessageData(
+	val guildId: Snowflake,
+	val message: String
 )
 
 /**

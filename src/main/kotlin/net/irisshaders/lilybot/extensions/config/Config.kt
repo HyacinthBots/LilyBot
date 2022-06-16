@@ -9,18 +9,22 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
 import com.kotlindiscord.kord.extensions.commands.converters.impl.role
+import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
+import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.TextChannel
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.ThreadMessageData
 import net.irisshaders.lilybot.utils.botHasChannelPerms
+import net.irisshaders.lilybot.utils.configPresent
 
 /**
  * The class for configuring LilyBot in your guilds.
@@ -93,6 +97,49 @@ class Config : Extension() {
 								Support Team = ${arguments.supportTeam?.mention ?: "null"}
 								Support Channel = ${arguments.supportChannel?.mention ?: "null"}
 							""".trimIndent()
+						}
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+					}
+				}
+			}
+
+			ephemeralSubCommand(::ThreadMessage) {
+				name = "threadmessage"
+				description = "Set the thread message"
+
+				check { anyGuild() }
+				check { hasPermission(Permission.ManageGuild) }
+				check { configPresent() }
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+
+				action {
+					val threadMessageData = ThreadMessageData(
+						guild!!.id,
+						arguments.message
+					)
+
+					DatabaseHelper.setThreadMessageData(threadMessageData)
+
+					if (DatabaseHelper.getThreadMessageData(guild!!.id)?.guildId == null) {
+						respond { content = "Thread message set for Guild ID: ${guild!!.id}!" }
+					} else {
+						respond { content = "Thread message updated for Guild ID: ${guild!!.id}!" }
+					}
+
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					// Log the config being set in the action log
+					val actionLogChannel = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					actionLogChannel.createEmbed {
+						title = "Thread message set!"
+						description = "A guild manager has set a thread message for this guild!"
+						color = DISCORD_BLACK
+						timestamp = Clock.System.now()
+						field {
+							name = "Message:"
+							value = arguments.message.replace("\\n", "\n")
 						}
 						footer {
 							text = user.asUser().tag
@@ -183,6 +230,13 @@ class Config : Extension() {
 		val supportChannel by optionalChannel {
 			name = "supportChannel"
 			description = "Your Support Channel"
+		}
+	}
+
+	inner class ThreadMessage : Arguments() {
+		val message by string {
+			name = "threadMessage"
+			description = "The thread message"
 		}
 	}
 }
