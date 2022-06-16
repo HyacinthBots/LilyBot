@@ -29,6 +29,7 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
+import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
@@ -68,7 +69,7 @@ class ThreadInviter : Extension() {
 				}
 			}
 			action {
-				delay(PluralKit.PK_API_DELAY) // Allow the PK API to catch up
+				delay(PK_API_DELAY) // Allow the PK API to catch up
 				val config = DatabaseHelper.getConfig(event.guildId!!)!!
 
 				config.supportTeam ?: return@action

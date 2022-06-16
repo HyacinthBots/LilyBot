@@ -405,7 +405,9 @@ class RoleMenu : Extension() {
 		event<ButtonInteractionCreateEvent> {
 			check {
 				anyGuild()
-				event.interaction.componentId.contains("role-menu")
+				failIfNot {
+					event.interaction.componentId.contains("role-menu")
+				}
 			}
 			action {
 				val data = DatabaseHelper.getRoleData(event.interaction.message.id)

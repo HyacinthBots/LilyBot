@@ -10,6 +10,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.message.MessageDeleteEvent
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
@@ -35,7 +36,7 @@ class MessageDelete : Extension() {
 			}
 
 			action {
-				delay(PluralKit.PK_API_DELAY) // Allow the PK API to catch up
+				delay(PK_API_DELAY) // Allow the PK API to catch up
 				if (event.message?.author?.isBot == true) return@action
 
 				val config = DatabaseHelper.getConfig(event.guild!!.id)!!
@@ -55,9 +56,10 @@ class MessageDelete : Extension() {
 				val messageLocation = event.channel.id.value
 
 				// Avoid logging messages proxied by PluralKit, since these messages aren't "actually deleted"
-				if (PluralKit.isProxied(eventMessage!!.id)) {
+				if (PluralKit.isProxied(eventMessage?.id)) {
 					return@action
 				}
+				if (eventMessage == null) return@action
 
 				messageLog?.createEmbed {
 					color = DISCORD_PINK
