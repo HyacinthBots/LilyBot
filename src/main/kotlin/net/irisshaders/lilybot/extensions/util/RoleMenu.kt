@@ -37,6 +37,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -100,7 +101,7 @@ class RoleMenu : Extension() {
 								label = "Select roles"
 								style = ButtonStyle.Primary
 
-								this.id = "role-menu${menuMessage!!.id}"
+								id = "role-menu${menuMessage!!.id}"
 
 								action { }
 							}
@@ -426,6 +427,8 @@ class RoleMenu : Extension() {
 					}
 				}
 
+				val userRoles = event.interaction.user.asMember(guild.id).roles.toList().map { it.id }
+
 				event.interaction.respondEphemeral {
 					content = "Use the menu below to select roles."
 					components {
@@ -436,20 +439,29 @@ class RoleMenu : Extension() {
 								option(
 									label = "@${it.name}",
 									value = it.id.toString()
-								)
+								) {
+									default = it.id in userRoles
+								}
 							}
+							minimumChoices = 0
 							action {
 								val member = user.asMember(guild.id)
 								var changes = 0
 
 								selected.forEach {
-									if (member.roleIds.contains(Snowflake(it))) {
+									if (userRoles.contains(Snowflake(it))) {
 										member.removeRole(Snowflake(it))
-										changes += 1
-									} else if (!member.roleIds.contains(Snowflake(it))) {
+										changes++
+									} else if (!userRoles.contains(Snowflake(it))) {
 										member.addRole(Snowflake(it))
-										changes += 1
+										changes++
 									}
+								}
+								if (selected.isEmpty()) {
+									roles.forEach {
+										member.removeRole(it.id)
+									}
+									changes++
 								}
 
 								if (changes == 0) {
