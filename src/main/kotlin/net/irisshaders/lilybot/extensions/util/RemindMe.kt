@@ -72,13 +72,10 @@ class RemindMe : Extension() {
 				check {
 					anyGuild()
 					requireBotPermissions(Permission.SendMessages)
+					botHasChannelPerms(Permissions(Permission.SendMessages))
 				}
 
 				action {
-					this@publicSlashCommand.check {
-						botHasChannelPerms(channel.id, Permissions(Permission.SendMessages))
-					}
-
 					val setTime = Clock.System.now()
 					val remindTime = Clock.System.now().plus(arguments.time, TimeZone.UTC)
 					val duration = arguments.time

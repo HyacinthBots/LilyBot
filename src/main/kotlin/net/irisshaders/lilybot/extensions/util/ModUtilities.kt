@@ -63,15 +63,11 @@ class ModUtilities : Extension() {
 				configPresent()
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(
+					Permissions(Permission.SendMessages, Permission.EmbedLinks)
+				)
 			}
 			action {
-				this@ephemeralSlashCommand.check {
-					botHasChannelPerms(
-						arguments.channel?.id ?: channel.id,
-						Permissions(Permission.SendMessages, Permission.EmbedLinks)
-					)
-				}
-
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
 				val targetChannel: TextChannel =
@@ -313,10 +309,6 @@ class ModUtilities : Extension() {
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
-
-				this@ephemeralSlashCommand.check {
-					botHasChannelPerms(actionLog.id, Permissions(Permission.SendMessages, Permission.EmbedLinks))
-				}
 
 				// Update the presence in the action
 				this@ephemeralSlashCommand.kord.editPresence {

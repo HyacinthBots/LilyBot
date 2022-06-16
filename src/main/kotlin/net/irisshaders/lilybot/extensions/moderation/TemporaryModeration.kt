@@ -4,7 +4,6 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
@@ -76,8 +75,7 @@ class TemporaryModeration : Extension() {
 				hasPermission(Permission.ManageMessages)
 				requireBotPermissions(Permission.ManageMessages)
 				botHasChannelPerms(
-					channelFor(event)!!.id,
-					Permissions(Permission.ManageMessages, Permission.ReadMessageHistory)
+					Permissions(Permission.ManageChannels)
 				)
 			}
 
@@ -133,10 +131,6 @@ class TemporaryModeration : Extension() {
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "warn") ?: return@action
-
-				this@ephemeralSlashCommand.check {
-					botHasChannelPerms(config.modActionLog, Permissions(Permission.EmbedLinks))
-				}
 
 				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
 				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)?.strikes
@@ -351,10 +345,6 @@ class TemporaryModeration : Extension() {
 				// Clarify the user is not bot or a moderator
 				isBotOrModerator(userArg, "timeout") ?: return@action
 
-				this@ephemeralSlashCommand.check {
-					botHasChannelPerms(config.modActionLog, Permissions(Permission.EmbedLinks))
-				}
-
 				try {
 					// Run the timeout task
 					guild?.getMember(userArg.id)?.edit {
@@ -479,13 +469,6 @@ class TemporaryModeration : Extension() {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 
-					this@ephemeralSlashCommand.check {
-						botHasChannelPerms(
-							arguments.channel?.id ?: event.interaction.getChannel().id,
-							Permissions(Permission.ManageChannels)
-						)
-					}
-
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
 					if (channelArg is TextChannelThread) {
@@ -597,13 +580,6 @@ class TemporaryModeration : Extension() {
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
-
-					this@ephemeralSlashCommand.check {
-						botHasChannelPerms(
-							arguments.channel?.id ?: event.interaction.getChannel().id,
-							Permissions(Permission.ManageChannels)
-						)
-					}
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null

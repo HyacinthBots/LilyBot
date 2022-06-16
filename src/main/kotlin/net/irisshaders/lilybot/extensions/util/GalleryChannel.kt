@@ -3,7 +3,6 @@ package net.irisshaders.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
@@ -66,7 +65,7 @@ class GalleryChannel : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.ManageChannels)
-					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageChannels))
+					botHasChannelPerms(Permissions(Permission.ManageChannels))
 				}
 
 				action {
@@ -118,7 +117,7 @@ class GalleryChannel : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.ManageChannels)
-					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageChannels))
+					botHasChannelPerms(Permissions(Permission.ManageChannels))
 				}
 
 				action {
@@ -170,7 +169,6 @@ class GalleryChannel : Extension() {
 					anyGuild()
 					requireBotPermissions(Permission.SendMessages)
 					botHasChannelPerms(
-						channelFor(event)!!.id,
 						Permissions(Permission.SendMessages, Permission.EmbedLinks)
 					)
 				}

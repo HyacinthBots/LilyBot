@@ -49,17 +49,14 @@ class Config : Extension() {
 					anyGuild()
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+					botHasChannelPerms(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				action {
 					val actionLogChannel = guild!!.getChannelOf<TextChannel>(arguments.modActionLog.id)
 
-					this@ephemeralSubCommand.check {
-						botHasChannelPerms(
-							actionLogChannel.id,
-							Permissions(Permission.SendMessages, Permission.EmbedLinks)
-						)
-					}
 					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
 					if (DatabaseHelper.getConfig(guild!!.id)?.modActionLog == null) {
@@ -113,6 +110,9 @@ class Config : Extension() {
 					anyGuild()
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+					botHasChannelPerms(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				action {
@@ -125,13 +125,6 @@ class Config : Extension() {
 						// Log the config being cleared to the action log
 						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
 						val actionLogChannel = guild!!.getChannelOf<TextChannel>(actionLogId!!)
-
-						this@ephemeralSubCommand.check {
-							botHasChannelPerms(
-								actionLogId,
-								Permissions(Permission.SendMessages, Permission.EmbedLinks)
-							)
-						}
 
 						respond {
 							content = "Config cleared for Guild ID: ${guild!!.id}!"

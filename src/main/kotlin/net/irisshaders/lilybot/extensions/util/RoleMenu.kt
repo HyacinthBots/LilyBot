@@ -71,6 +71,9 @@ class RoleMenu : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+					botHasChannelPerms(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				var menuMessage: Message?
@@ -164,6 +167,9 @@ class RoleMenu : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+					botHasChannelPerms(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				action {
@@ -201,13 +207,6 @@ class RoleMenu : Extension() {
 					val config = DatabaseHelper.getConfig(guild!!.id)
 					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
 
-					this@ephemeralSubCommand.check {
-						botHasChannelPerms(
-							actionLog.id,
-							Permissions(Permission.SendMessages, Permission.EmbedLinks)
-						)
-					}
-
 					actionLog.createMessage {
 						embed {
 							title = "Role Added to Role Menu"
@@ -240,6 +239,9 @@ class RoleMenu : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+					botHasChannelPerms(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				action {
@@ -266,13 +268,6 @@ class RoleMenu : Extension() {
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
 					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
-
-					this@ephemeralSubCommand.check {
-						botHasChannelPerms(
-							actionLog.id,
-							Permissions(Permission.SendMessages, Permission.EmbedLinks)
-						)
-					}
 
 					actionLog.createMessage {
 						embed {
@@ -306,16 +301,12 @@ class RoleMenu : Extension() {
 					configPresent()
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
+					botHasChannelPerms(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
 				}
 
 				action {
-					this@ephemeralSubCommand.check {
-						botHasChannelPerms(
-							channel.id,
-							Permissions(Permission.SendMessages, Permission.EmbedLinks)
-						)
-					}
-
 					val menuMessage = channel.createMessage {
 						content = "Select pronoun roles from the menu below!"
 					}
@@ -371,13 +362,6 @@ class RoleMenu : Extension() {
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
 					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
-
-					this@ephemeralSubCommand.check {
-						botHasChannelPerms(
-							actionLog.id,
-							Permissions(Permission.SendMessages, Permission.EmbedLinks)
-						)
-					}
 
 					actionLog.createMessage {
 						embed {

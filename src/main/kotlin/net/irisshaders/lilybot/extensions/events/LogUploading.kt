@@ -66,7 +66,6 @@ class LogUploading : Extension() {
 			check {
 				anyGuild()
 				botHasChannelPerms(
-					event.message.channel.id,
 					Permissions(Permission.SendMessages, Permission.EmbedLinks)
 				)
 				configPresent()
