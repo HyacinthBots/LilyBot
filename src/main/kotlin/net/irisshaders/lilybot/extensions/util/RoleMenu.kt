@@ -435,6 +435,8 @@ class RoleMenu : Extension() {
 						ephemeralSelectMenu {
 							placeholder = "Select roles..."
 							maximumChoices = roles.size
+							minimumChoices = 0
+
 							roles.forEach {
 								option(
 									label = "@${it.name}",
@@ -443,7 +445,7 @@ class RoleMenu : Extension() {
 									default = it.id in userRoles
 								}
 							}
-							minimumChoices = 0
+
 							action {
 								val member = user.asMember(guild.id)
 								var changes = 0
