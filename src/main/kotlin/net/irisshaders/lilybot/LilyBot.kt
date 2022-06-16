@@ -96,6 +96,7 @@ suspend fun main() {
 			add(::RemindMe)
 			add(::Report)
 			add(::RoleMenu)
+			add(::StartupHooks)
 			add(::Tags)
 			add(::TemporaryModeration)
 			add(::TerminalModeration)
@@ -137,11 +138,6 @@ suspend fun main() {
 	DocsGenerator.clearDocs(ENVIRONMENT)
 	DocsGenerator.writeNewDocs(ENVIRONMENT)
 
-	bot.startAsync()
-
-	bot.addExtension(::StartupHooks)
-
-	bot.stop()
 	bot.start()
 }
 
