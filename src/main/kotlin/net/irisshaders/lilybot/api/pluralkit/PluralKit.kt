@@ -21,9 +21,9 @@ internal const val PK_API_URL = "https://api.pluralkit.me/v2"
 /** The URL of messages from the [PluralKit API](https://pluralkit.me/api). */
 internal const val MESSAGE_URL = "$PK_API_URL/messages/{id}"
 
-object PluralKit {
+const val PK_API_DELAY: Long = 500
 
-	const val PK_API_DELAY: Long = 500
+object PluralKit {
 
 	/** The client used for querying values from the API. */
 	private val client = HttpClient {
@@ -46,7 +46,7 @@ object PluralKit {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend fun isProxied(id: Snowflake) = isProxied(id.toString())
+	suspend fun isProxied(id: Snowflake?) = isProxied(id.toString())
 
 	/**
 	 * Using a provided message ID, we call [getProxiedMessageAuthorId] to find out the author of the message.
@@ -71,7 +71,10 @@ object PluralKit {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	 private suspend inline fun isProxied(id: String): Boolean {
+	 private suspend inline fun isProxied(id: String?): Boolean {
+		if (id.isNullOrEmpty()) {
+			return false
+		}
 		val url = MESSAGE_URL.replace("{id}", id)
 
 		var isProxied = false
