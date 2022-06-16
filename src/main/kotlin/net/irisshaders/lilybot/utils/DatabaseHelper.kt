@@ -333,6 +333,7 @@ object DatabaseHelper {
 	 * @since 3.2.0
 	 */
 	suspend inline fun cleanupThreadData(kordInstance: Kord) {
+		databaseLogger.info("Starting thread cleanup...")
 		val collection = database.getCollection<ThreadData>()
 		val threads = collection.find().toList()
 		var deletedThreads = 0
@@ -382,6 +383,7 @@ object DatabaseHelper {
 	 * @since 3.2.0
 	 */
 	suspend fun cleanupGuildData() {
+		databaseLogger.info("Starting guild cleanup...")
 		val collection = database.getCollection<GuildLeaveTimeData>()
 		val leaveTimeData = collection.find().toList()
 		var deletedGuildData = 0
