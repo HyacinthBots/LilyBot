@@ -14,12 +14,13 @@ import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
-import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.MessageChannel
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.actionRow
@@ -31,7 +32,6 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.readBytes
 import io.ktor.http.Parameters
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -86,10 +86,11 @@ class LogUploading : Extension() {
 
 				if (deferUploadUntilThread) {
 					delay(1500) // Delay to allow for thread creation
-					val threads = eventMessage.channel.asChannelOf<TextChannel>().activeThreads.toList()
-					threads.forEach {
-						if (it.name.contains(eventMessage.author!!.username)) {
-							uploadChannel = it
+					DatabaseHelper.getOwnerThreads(event.member!!.id).forEach {
+						if (event.getGuild()!!.getChannelOf<TextChannelThread>(it.threadId).parentId ==
+							config.supportChannel
+						) {
+							uploadChannel = event.getGuild()!!.getChannel(it.threadId) as MessageChannel
 						}
 					}
 				}
