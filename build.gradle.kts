@@ -15,6 +15,7 @@ group = "net.irisshaders.lilybot"
 version = "3.4.1"
 
 val javaVersion = 17
+val kotlinVersion = libs.versions.kotlin.get().split(".")[0] + libs.versions.kotlin.get().split(".")[1]
 
 repositories {
     mavenCentral()
@@ -88,7 +89,7 @@ tasks {
     withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = javaVersion.toString()
-            languageVersion = libs.versions.kotlin.get()
+            languageVersion = kotlinVersion
             sourceCompatibility = javaVersion.toString()
             targetCompatibility = javaVersion.toString()
             incremental = true
