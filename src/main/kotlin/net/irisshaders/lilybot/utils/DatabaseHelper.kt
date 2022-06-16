@@ -259,18 +259,28 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Using the provided [inputThreadId] the owner's ID or null is returned from the database.
+	 * Gets all threads into a list and return them to the user.
+	 *
+	 * @author NoComment1105
+	 * @since 3.4.1
+	 */
+	suspend inline fun getAllThreads(): List<ThreadData> {
+		val collection = database.getCollection<ThreadData>()
+		return collection.find().toList()
+	}
+
+	/**
+	 * Using the provided [inputThreadId] the thread is returned.
 	 *
 	 * @param inputThreadId The ID of the thread you wish to find the owner for
 	 *
-	 * @return null or the thread owner's ID
+	 * @return null or the thread
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend inline fun getThreadOwner(inputThreadId: Snowflake): Snowflake? {
+	suspend inline fun getThread(inputThreadId: Snowflake): ThreadData? {
 		val collection = database.getCollection<ThreadData>()
-		val selectedThread = collection.findOne(ThreadData::threadId eq inputThreadId) ?: return null
-		return selectedThread.ownerId
+		return collection.findOne(ThreadData::threadId eq inputThreadId)
 	}
 
 	/**
@@ -297,10 +307,10 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend inline fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake) {
+	suspend inline fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake, preventArchiving: Boolean = false) {
 		val collection = database.getCollection<ThreadData>()
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
-		collection.insertOne(ThreadData(inputThreadId, newOwnerId))
+		collection.insertOne(ThreadData(inputThreadId, newOwnerId, preventArchiving))
 	}
 
 	/**
@@ -603,9 +613,11 @@ data class TagsData(
  * @since 3.2.0
  */
 @Serializable
+@Suppress("DataClassShouldBeImmutable")
 data class ThreadData(
 	val threadId: Snowflake,
 	val ownerId: Snowflake,
+	var preventArchiving: Boolean = false
 )
 
 /**

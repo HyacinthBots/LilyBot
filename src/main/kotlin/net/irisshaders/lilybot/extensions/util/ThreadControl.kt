@@ -6,7 +6,8 @@
 
 package net.irisshaders.lilybot.extensions.util
 
-import com.kotlindiscord.kord.extensions.checks.channelFor
+import com.kotlindiscord.kord.extensions.DISCORD_FUCHSIA
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.isInThread
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
@@ -15,16 +16,22 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBool
 import com.kotlindiscord.kord.extensions.commands.converters.impl.member
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.edit
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.threads.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Member
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.kord.core.event.channel.thread.ThreadUpdateEvent
+import dev.kord.rest.builder.message.create.embed
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -34,7 +41,7 @@ class ThreadControl : Extension() {
 	override val name = "thread-control"
 
 	override suspend fun setup() {
-		publicSlashCommand {
+		ephemeralSlashCommand {
 			name = "thread"
 			description = "The parent command for all /thread commands"
 
@@ -46,7 +53,7 @@ class ThreadControl : Extension() {
 					isInThread()
 					configPresent()
 					requireBotPermissions(Permission.ManageThreads)
-					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
+					botHasChannelPerms(Permissions(Permission.ManageThreads))
 				}
 
 				action {
@@ -73,7 +80,7 @@ class ThreadControl : Extension() {
 					isInThread()
 					configPresent()
 					requireBotPermissions(Permission.ManageThreads)
-					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
+					botHasChannelPerms(Permissions(Permission.ManageThreads))
 				}
 
 				action {
@@ -111,14 +118,14 @@ class ThreadControl : Extension() {
 					isInThread()
 					configPresent()
 					requireBotPermissions(Permission.ManageThreads)
-					botHasChannelPerms(channelFor(event)!!.id, Permissions(Permission.ManageThreads))
+					botHasChannelPerms(Permissions(Permission.ManageThreads))
 				}
 
 				action {
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 
-					val oldOwnerId = DatabaseHelper.getThreadOwner(threadChannel.id) ?: threadChannel.ownerId
+					val oldOwnerId = DatabaseHelper.getThread(threadChannel.id)?.ownerId ?: threadChannel.ownerId
 					val oldOwner = guild!!.getMember(oldOwnerId)
 
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
@@ -143,6 +150,77 @@ class ThreadControl : Extension() {
 					if (member != oldOwner) content += " Transferred by ${member.mention}"
 
 					threadChannel.createMessage(content)
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "prevent-archiving"
+				description = "Stop a thread from being archived"
+
+				check {
+					anyGuild()
+					isInThread()
+					configPresent()
+					requireBotPermissions(Permission.ManageThreads)
+					botHasChannelPerms(Permissions(Permission.ManageThreads))
+				}
+
+				action {
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val threadChannel = channel.asChannelOf<ThreadChannel>()
+					val member = user.asMember(guild!!.id)
+					if (!ownsThreadOrModerator(threadChannel, member)) return@action
+
+					if (threadChannel.isArchived) {
+						threadChannel.edit {
+							archived = false
+							reason = "`/thread prevent-archiving` run by ${member.tag}"
+						}
+					}
+
+					val threads = DatabaseHelper.getAllThreads()
+					threads.forEach {
+						if (it.threadId == threadChannel.id && it.preventArchiving) {
+							edit {
+								content = "Thread archiving is already being prevented!"
+							}
+							return@action
+						} else if (it.threadId == threadChannel.id && !it.preventArchiving) {
+							DatabaseHelper.setThreadOwner(it.threadId, it.ownerId, true)
+						}
+					}
+
+					edit { content = "Thread archiving will now be prevented" }
+
+					guild!!.getChannelOf<TextChannel>(config.modActionLog).createMessage {
+						embed {
+							title = "Thread archiving disabled"
+							color = DISCORD_FUCHSIA
+
+							field {
+								name = "User"
+								value = user.asUser().tag
+							}
+							field {
+								name = "Thread"
+								value = threadChannel.mention
+							}
+						}
+					}
+				}
+			}
+		}
+
+		event<ThreadUpdateEvent> {
+			action {
+				val channel = event.channel
+				val ownedThread = DatabaseHelper.getThread(channel.id)
+
+				if (channel.isArchived && ownedThread != null && ownedThread.preventArchiving) {
+					channel.edit {
+						archived = false
+						reason = "Preventing thread from being archived."
+					}
 				}
 			}
 		}
@@ -186,7 +264,7 @@ class ThreadControl : Extension() {
 		inputThread: ThreadChannel,
 		inputMember: Member
 	): Boolean {
-		val databaseThreadOwner = DatabaseHelper.getThreadOwner(inputThread.id)
+		val databaseThreadOwner = DatabaseHelper.getThread(inputThread.id)?.ownerId
 
 		if (inputMember.hasPermission(Permission.ModerateMembers) || databaseThreadOwner == inputMember.id) {
 			return true
