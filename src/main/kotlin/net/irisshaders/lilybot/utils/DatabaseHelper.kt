@@ -302,6 +302,7 @@ object DatabaseHelper {
 	 *
 	 * @param inputThreadId The ID of the thread you wish to update or set the owner for
 	 * @param newOwnerId The new owner of the thread
+	 * @param preventArchiving Whether to stop the thread from being archived or not
 	 *
 	 * @return null or the thread owner's ID
 	 * @author tempest15
@@ -612,6 +613,7 @@ data class TagsData(
  *
  * @param threadId The ID of the thread
  * @param ownerId The ID of the thread's owner
+ * @param preventArchiving Whether to stop the thread from being archived or not
  * @since 3.2.0
  */
 @Serializable
