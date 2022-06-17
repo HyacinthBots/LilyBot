@@ -77,7 +77,12 @@ class ThreadInviter : Extension() {
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
-				val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
+				val textChannel: TextChannel
+				try {
+					textChannel = event.message.getChannel().asChannelOf()
+				} catch (e: ClassCastException) {
+					return@action // To avoid NPE exceptions until kordex releases with new TiV support
+				}
 				val guild = event.getGuild()
 				val supportChannel = guild?.getChannelOf<TextChannel>(config.supportChannel)
 
