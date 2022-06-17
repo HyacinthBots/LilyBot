@@ -14,17 +14,19 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.dm
 import dev.kord.common.entity.ButtonStyle
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
-import net.irisshaders.lilybot.utils.userDMEmbed
 
 /**
  * This class contains a few utility commands that can be used by the public in guilds, or that are often seen by the
@@ -85,7 +87,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
@@ -94,29 +96,30 @@ class PublicUtilities : Extension() {
 
 					respond { content = "Nickname request sent!" }
 
-					actionLogEmbed = actionLog.createEmbed {
-						color = DISCORD_YELLOW
-						title = "Nickname Request"
-						timestamp = Clock.System.now()
+					actionLogEmbed = actionLog?.createMessage {
+						embed {
+							color = DISCORD_YELLOW
+							title = "Nickname Request"
+							timestamp = Clock.System.now()
 
-						field {
-							name = "User:"
-							value = "${requester.mention}\n${requester.asUser().tag}\n${requester.id}"
-							inline = false
-						}
+							field {
+								name = "User:"
+								value = "${requester.mention}\n${requester.asUser().tag}\n${requester.id}"
+								inline = false
+							}
 
-						field {
-							name = "Current Nickname:"
-							value = "`${requesterAsMember.nickname}`"
-							inline = false
-						}
+							field {
+								name = "Current Nickname:"
+								value = "`${requesterAsMember.nickname}`"
+								inline = false
+							}
 
-						field {
-							name = "Requested Nickname:"
-							value = "`${arguments.newNick}`"
-							inline = false
+							field {
+								name = "Requested Nickname:"
+								value = "`${arguments.newNick}`"
+								inline = false
+							}
 						}
-					}.edit {
 						components {
 							ephemeralButton(row = 0) {
 								label = "Accept"
@@ -125,13 +128,14 @@ class PublicUtilities : Extension() {
 								action {
 									requesterAsMember.edit { nickname = arguments.newNick }
 
-									userDMEmbed(
-										requester.asUser(),
-										"Nickname Change Accepted in ${guild!!.asGuild().name}",
-										"Nickname updated from `${requesterAsMember.nickname}` to " +
-												"`${arguments.newNick}`",
-										DISCORD_GREEN
-									)
+									requester.dm {
+										embed {
+											title = "Nickname Change Accepted in ${guild!!.asGuild().name}"
+											description = "Nickname updated from `${requesterAsMember.nickname}` to " +
+													"`${arguments.newNick}`"
+											color = DISCORD_GREEN
+										}
+									}
 
 									actionLogEmbed!!.edit {
 										components { removeAll() }
@@ -201,23 +205,23 @@ class PublicUtilities : Extension() {
 														"inappropriate" -> reason = "is inappropriate for this server."
 														"impersonation" -> reason = "impersonates another user."
 														"hoisting" ->
-														    reason = "deliberately hoists you up the user " +
-																"ladder, which is not allowed."
+															reason = "deliberately hoists you up the user " +
+																	"ladder, which is not allowed."
 													}
 
-													userDMEmbed(
-														requester.asUser(),
-														"Nickname Change Denied in ${guild!!.asGuild().name}",
-														"Staff have reviewed your nickname request (" +
-																"`${arguments.newNick}`) and rejected it," +
-																" because it $reason",
-														DISCORD_RED
-													)
+													requester.dm {
+														embed {
+															title = "Nickname Change Denied in ${guild!!.asGuild().name}"
+															description = "Staff have reviewed your nickname request (" +
+																	"`${arguments.newNick}`) and rejected it," +
+																	" because it $reason"
+															color = DISCORD_RED
+														}
+													}
 
 													actionLogEmbed!!.edit {
 														components { removeAll() }
 														embed {
-															color = DISCORD_RED
 															title = "Nickname Request Denied"
 
 															field {
@@ -251,6 +255,7 @@ class PublicUtilities : Extension() {
 															}
 
 															timestamp = Clock.System.now()
+															color = DISCORD_RED
 														}
 													}
 												}
@@ -275,7 +280,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {
@@ -285,7 +290,7 @@ class PublicUtilities : Extension() {
 
 					respond { content = "Nickname cleared" }
 
-					actionLog.createEmbed {
+					actionLog?.createEmbed {
 						title = "Nickname Cleared"
 						color = DISCORD_YELLOW
 						timestamp = Clock.System.now()

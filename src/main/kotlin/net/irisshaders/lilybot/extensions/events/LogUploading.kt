@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -9,11 +10,19 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.sentry.tag
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
+import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.MessageChannel
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.HttpClient
@@ -22,11 +31,14 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.readBytes
 import io.ktor.http.Parameters
+import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import net.irisshaders.lilybot.utils.responseEmbedInChannel
+import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.botHasChannelPerms
+import net.irisshaders.lilybot.utils.configPresent
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
@@ -51,8 +63,36 @@ class LogUploading : Extension() {
 		 * @since 2.0
 		 */
 		event<MessageCreateEvent> {
+			check {
+				anyGuild()
+				botHasChannelPerms(
+					Permissions(Permission.SendMessages, Permission.EmbedLinks)
+				)
+				configPresent()
+				failIf {
+					event.message.author.isNullOrBot()
+				}
+			}
 			action {
+				val config = DatabaseHelper.getConfig(event.guildId!!)!!
+				var deferUploadUntilThread = false
+				if (config.supportChannel != null && event.message.channel.id == config.supportChannel) {
+					deferUploadUntilThread = true
+				}
+
 				val eventMessage = event.message.asMessageOrNull() // Get the message
+				var uploadChannel = eventMessage.channel.asChannel()
+
+				if (deferUploadUntilThread) {
+					delay(1500) // Delay to allow for thread creation
+					DatabaseHelper.getOwnerThreads(event.member!!.id).forEach {
+						if (event.getGuild()!!.getChannelOf<TextChannelThread>(it.threadId).parentId ==
+							config.supportChannel
+						) {
+							uploadChannel = event.getGuild()!!.getChannel(it.threadId) as MessageChannel
+						}
+					}
+				}
 
 				eventMessage.attachments.forEach { attachment ->
 					val attachmentFileName = attachment.filename
@@ -81,29 +121,36 @@ class LogUploading : Extension() {
 						val necText = "at Not Enough Crashes"
 						val indexOfNECText = builder.indexOf(necText)
 						if (indexOfNECText != -1) {
-							responseEmbedInChannel(
-								eventMessage.channel,
-								"Not Enough Crashes detected in logs",
-								"Not Enough Crashes (NEC) is well known to cause issues and often " +
+							uploadChannel.createEmbed {
+								title = "Not Enough Crashes detected in logs"
+								description = "Not Enough Crashes (NEC) is well known to cause issues and often " +
 										"makes the debugging process more difficult. " +
 										"Please remove NEC, recreate the issue, and resend the relevant files " +
-										"(i.e. log or crash report) if the issue persists.",
-								DISCORD_PINK,
-								eventMessage.author
-							)
+										"(i.e. log or crash report) if the issue persists."
+								footer {
+									text = eventMessage.author?.tag ?: ""
+									icon = eventMessage.author?.avatar?.url
+								}
+								color = DISCORD_PINK
+							}
 						} else {
 							// Ask the user if they're ok with uploading their log to a paste site
 							var confirmationMessage: Message? = null
 
-							confirmationMessage = responseEmbedInChannel(
-								eventMessage.channel,
-								"Do you want to upload this file to mclo.gs?",
-								"mclo.gs is a website that allows users to share minecraft logs through " +
-										"public posts.\nIt's easier for the support team to view " +
-										"the file on mclo.gs, do you want it to be uploaded?",
-								DISCORD_PINK,
-								eventMessage.author
-							).edit {
+							confirmationMessage = uploadChannel.createMessage {
+								embed {
+									title = "Do you want to upload this file to mclo.gs?"
+									description =
+										"mclo.gs is a website that allows users to share minecraft logs " +
+												"through public posts.\nIt's easier for the support team to view " +
+												"the file on mclo.gs, do you want it to be uploaded?"
+									footer {
+										text = eventMessage.author?.tag ?: ""
+										icon = eventMessage.author?.avatar?.url
+									}
+									color = DISCORD_PINK
+								}
+
 								components {
 									ephemeralButton(row = 0) {
 										label = "Yes"
@@ -115,15 +162,14 @@ class LogUploading : Extension() {
 												// Delete the confirmation and proceed to upload
 												confirmationMessage!!.delete()
 
-												val uploadMessage = eventMessage.channel.createEmbed {
-													color = DISCORD_PINK
+												val uploadMessage = uploadChannel.createEmbed {
 													title = "Uploading `$attachmentFileName` to mclo.gs..."
-													timestamp = Clock.System.now()
-
 													footer {
 														text = "Uploaded by ${eventMessage.author?.tag}"
 														icon = eventMessage.author?.avatar?.url
 													}
+													timestamp = Clock.System.now()
+													color = DISCORD_PINK
 												}
 
 												try {
@@ -131,14 +177,13 @@ class LogUploading : Extension() {
 
 													uploadMessage.edit {
 														embed {
-															color = DISCORD_PINK
 															title = "`$attachmentFileName` uploaded to mclo.gs"
-															timestamp = Clock.System.now()
-
 															footer {
 																text = "Uploaded by ${eventMessage.author?.tag}"
 																icon = eventMessage.author?.avatar?.url
 															}
+															timestamp = Clock.System.now()
+															color = DISCORD_PINK
 														}
 
 														actionRow {
@@ -151,14 +196,15 @@ class LogUploading : Extension() {
 													// If the upload fails, we'll just show the error
 													uploadMessage.edit {
 														embed {
-															color = DISCORD_RED
-															title = "Failed to upload `$attachmentFileName` to mclo.gs"
-															timestamp = Clock.System.now()
+															title =
+																"Failed to upload `$attachmentFileName` to mclo.gs"
 															description = "Error: $e"
 															footer {
 																text = "Uploaded by ${eventMessage.author?.tag}"
 																icon = eventMessage.author?.avatar?.url
 															}
+															timestamp = Clock.System.now()
+															color = DISCORD_RED
 														}
 													}
 													// Capture Exception to Sentry
@@ -223,11 +269,11 @@ class LogUploading : Extension() {
 		val client = HttpClient()
 		val response = client.post("https://api.mclo.gs/1/log") {
 			setBody(
-			    FormDataContent(
-			        Parameters.build {
-				append("content", text)
-			}
-			    )
+				FormDataContent(
+					Parameters.build {
+						append("content", text)
+					}
+				)
 			)
 		}.readBytes().decodeToString()
 		client.close()

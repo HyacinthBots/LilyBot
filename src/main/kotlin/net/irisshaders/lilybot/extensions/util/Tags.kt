@@ -14,14 +14,16 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.suggestStringMap
 import dev.kord.common.entity.Permission
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
-import net.irisshaders.lilybot.utils.responseEmbedInChannel
 
 /**
  * The class that holds the commands to create tags commands.
@@ -42,7 +44,11 @@ class Tags : Extension() {
 			name = "tag"
 			description = "Call a tag from this guild! Use /tag-help for more info."
 
-			check { anyGuild() }
+			check {
+				anyGuild()
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
+			}
 
 			action {
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
@@ -55,6 +61,14 @@ class Tags : Extension() {
 
 				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!
 
+				if (tagFromDatabase.tagValue.length > 1024) {
+					respond {
+						content = "The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
+								"more, which is above the Discord limit. Please re-create this tag!"
+					}
+					return@action
+				}
+
 				respond { content = "Tag sent" }
 
 				// This is not the best way to do this. Ideally the ping would be in the same message as the embed in
@@ -62,13 +76,13 @@ class Tags : Extension() {
 				channel.createMessage {
 					if (arguments.user != null) content = arguments.user!!.mention
 					embed {
-						color = DISCORD_BLURPLE
 						title = tagFromDatabase.tagTitle
 						description = tagFromDatabase.tagValue
 						footer {
 							text = "Tag requested by ${user.asUser().tag}"
 							icon = user.asUser().avatar!!.url
 						}
+						color = DISCORD_BLURPLE
 					}
 				}
 			}
@@ -83,6 +97,11 @@ class Tags : Extension() {
 		publicSlashCommand {
 			name = "tag-help"
 			description = "Explains how the tag command works!"
+
+			check {
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
+			}
 
 			action {
 				respond {
@@ -123,23 +142,32 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
 
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) != null) {
 					respond { content = "A tag with that name already exists in this guild." }
 					return@action
 				}
 
+				if (arguments.tagValue.length > 1024) {
+					respond {
+						content = "That tag is body is too long! Due to Discord limitations tag bodies can only be " +
+								"1024 characters or less!"
+					}
+					return@action
+				}
+
 				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
 
 				actionLog.createEmbed {
-					color = DISCORD_GREEN
 					title = "Tag created!"
 					description = "The tag `${arguments.tagName}` has been created"
 					field {
@@ -157,6 +185,7 @@ class Tags : Extension() {
 						text = "Requested by ${user.asUser().tag}"
 					}
 					timestamp = Clock.System.now()
+					color = DISCORD_GREEN
 				}
 
 				respond {
@@ -177,8 +206,10 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				hasPermission(Permission.ModerateMembers)
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
@@ -191,20 +222,52 @@ class Tags : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannel(config.modActionLog) as GuildMessageChannelBehavior
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
 
 				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
 
-				responseEmbedInChannel(
-					actionLog,
-					"Tag deleted!",
-					"The tag ${arguments.tagName} was deleted",
-					DISCORD_RED,
-					user.asUser()
-				)
-
+				actionLog.createEmbed {
+					title = "Tag deleted!"
+					description = "The tag ${arguments.tagName} was deleted"
+					footer {
+						text = user.asUser().tag
+						icon = user.asUser().avatar?.url
+					}
+					color = DISCORD_RED
+				}
 				respond {
 					content = "Tag: `${arguments.tagName}` deleted"
+				}
+			}
+		}
+
+		ephemeralSlashCommand {
+			name = "tag-list"
+			description = "List all tags for this guild"
+
+			check {
+				anyGuild()
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
+			}
+
+			action {
+				val tags = DatabaseHelper.getAllTags(guild!!.id)
+
+				var response = ""
+				tags.forEach { response += "• `${it.name}` - ${it.tagTitle}\n" }
+				if (response == "") {
+					response = "This guild has no tags."
+				}
+
+				respond {
+					embed {
+						title = "Tags for this guild"
+						description = "Here is a list of tags for this guild, with the title as extra information."
+						field {
+							value = response
+						}
+					}
 				}
 			}
 		}

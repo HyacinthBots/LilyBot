@@ -4,10 +4,14 @@ import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.message.MessageDeleteEvent
+import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
+import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
+import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -32,17 +36,32 @@ class MessageDelete : Extension() {
 			}
 
 			action {
+				delay(PK_API_DELAY) // Allow the PK API to catch up
 				if (event.message?.author?.isBot == true) return@action
 
 				val config = DatabaseHelper.getConfig(event.guild!!.id)!!
 
 				val guild = kord.getGuild(event.guildId!!)
-				val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
+				val messageLog = guild?.getChannelOf<TextChannel>(config.messageLogs)
 				val eventMessage = event.message
-				val messageContent = eventMessage?.asMessageOrNull()?.content.toString()
+				val messageContent = if (eventMessage?.asMessageOrNull() != null) {
+					if (eventMessage.asMessageOrNull().content.length > 1024) {
+						eventMessage.asMessageOrNull().content.substring(0, 1020) + " ..."
+					} else {
+						eventMessage.asMessageOrNull().content
+					}
+				} else {
+					null
+				}
 				val messageLocation = event.channel.id.value
 
-				messageLog.createEmbed {
+				// Avoid logging messages proxied by PluralKit, since these messages aren't "actually deleted"
+				if (PluralKit.isProxied(eventMessage?.id)) {
+					return@action
+				}
+				if (eventMessage == null) return@action
+
+				messageLog?.createEmbed {
 					color = DISCORD_PINK
 					title = "Message Deleted"
 					description = "Location: <#$messageLocation>"
@@ -50,18 +69,19 @@ class MessageDelete : Extension() {
 
 					field {
 						name = "Message Contents:"
-						value = messageContent.ifEmpty { "Failed to get content of message" }
+						value =
+							if (messageContent.isNullOrEmpty()) "Failed to get content of message" else messageContent
 						inline = false
 					}
 					// If the message has an attachment, add the link to it to the embed
-					if (eventMessage?.attachments != null && eventMessage.attachments.isNotEmpty()) {
+					if (eventMessage.attachments.isNotEmpty()) {
 						val attachmentUrls = StringBuilder()
 						for (attachment in eventMessage.attachments) {
 							attachmentUrls.append(
-							    "https://media.discordapp.net/attachments/" +
-									"${attachment.data.url.split("/")[4]}/" + // Get the channel
-									"${attachment.data.url.split("/")[5]}/" + // Get the message ID
-									attachment.data.filename + "\n"
+								"https://media.discordapp.net/attachments/" +
+										"${attachment.data.url.split("/")[4]}/" + // Get the channel
+										"${attachment.data.url.split("/")[5]}/" + // Get the message ID
+										attachment.data.filename + "\n"
 							)
 						}
 						field {
@@ -72,12 +92,12 @@ class MessageDelete : Extension() {
 					}
 					field {
 						name = "Message Author:"
-						value = eventMessage?.author?.tag.toString()
+						value = eventMessage.author?.tag.toString()
 						inline = true
 					}
 					field {
 						name = "Author ID:"
-						value = eventMessage?.author?.id.toString()
+						value = eventMessage.author?.id.toString()
 						inline = true
 					}
 				}

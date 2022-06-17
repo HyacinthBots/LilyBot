@@ -11,7 +11,8 @@ COPY build/libs/LilyBot-*-all.jar /usr/local/lib/LilyBot.jar
 
 ENV TEST_GUILD_ID=934324779811483718
 ENV ONLINE_STATUS_CHANNEL=941669186533474344
+ENV ENVIRONMENT=production
 
 WORKDIR /bot
 
-ENTRYPOINT ["java", "-Xms2G", "-Xmx2G", "-jar", "/usr/local/lib/LilyBot.jar"]
+ENTRYPOINT ["java", "-Xms2G", "-Xmx2G", "-XX:+DisableExplicitGC", "-jar", "/usr/local/lib/LilyBot.jar"]

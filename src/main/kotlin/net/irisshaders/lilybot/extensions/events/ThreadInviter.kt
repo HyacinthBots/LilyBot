@@ -10,12 +10,15 @@ import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.utils.delete
+import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.ArchiveDuration
 import dev.kord.common.entity.MessageType
-import dev.kord.core.behavior.channel.MessageChannelBehavior
+import dev.kord.core.behavior.UserBehavior
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
@@ -26,6 +29,8 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
+import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
+import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration.Companion.seconds
@@ -55,14 +60,16 @@ class ThreadInviter : Extension() {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
 							event.message.type == MessageType.ThreadStarterMessage ||
-							event.message.getChannel() is TextChannelThread ||
 							event.message.author?.id == kord.selfId ||
-							event.message.author?.isBot == true ||
-							event.message.getChannel() is NewsChannel ||
-							event.message.getChannel() is NewsChannelThread
+							// Make use of getChannelOrNull here because the channel "may not exist". This is to help
+							// fix an issue with the new ViT channels in Discord.
+							event.message.getChannelOrNull() is TextChannelThread ||
+							event.message.getChannelOrNull() is NewsChannel ||
+							event.message.getChannelOrNull() is NewsChannelThread
 				}
 			}
 			action {
+				delay(PK_API_DELAY) // Allow the PK API to catch up
 				val config = DatabaseHelper.getConfig(event.guildId!!)!!
 
 				config.supportTeam ?: return@action
@@ -70,13 +77,20 @@ class ThreadInviter : Extension() {
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
-				val textChannel = event.message.getChannel() as TextChannel
+				val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
 				val guild = event.getGuild()
-				val supportChannel = guild?.getChannel(config.supportChannel) as MessageChannelBehavior
+				val supportChannel = guild?.getChannelOf<TextChannel>(config.supportChannel)
 
 				if (textChannel != supportChannel) return@action
 
-				DatabaseHelper.getOwnerThreads(event.member!!.id).forEach {
+				if (event.message.author?.isNullOrBot() == false &&
+					PluralKit.isProxied(event.message.id)
+				) return@action
+
+				val userId = PluralKit.getProxiedMessageAuthorId(event.message.id) ?: event.member!!.id
+				val user = UserBehavior(userId, kord)
+
+				DatabaseHelper.getOwnerThreads(userId).forEach {
 					try {
 						val thread = guild.getChannel(it.threadId) as TextChannelThread
 						if (thread.parent == supportChannel && !thread.isArchived) {
@@ -100,21 +114,21 @@ class ThreadInviter : Extension() {
 					response.delete(10000L, false)
 				} else {
 					val thread =
-						// Create a thread with the message sent, title it with the users tag and set the archive
+					// Create a thread with the message sent, title it with the users tag and set the archive
 						// duration to the channels settings. If they're null, set it to one day
 						textChannel.startPublicThreadWithMessage(
 							event.message.id,
-							"Support thread for " + event.member!!.asUser().username,
+							"Support thread for " + user.asUser().username,
 							event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 						)
 
-					DatabaseHelper.setThreadOwner(thread.id, event.member!!.id)
+					DatabaseHelper.setThreadOwner(thread.id, userId)
 
 					val editMessage = thread.createMessage("edit message")
 
 					editMessage.edit {
 						this.content =
-							event.member!!.asUser().mention + ", the " + event.getGuild()
+							user.asUser().mention + ", the " + event.getGuild()
 								?.getRole(config.supportTeam)?.mention + " will be with you shortly!"
 					}
 
