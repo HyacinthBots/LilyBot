@@ -88,7 +88,7 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 
 	action {
 		val config = DatabaseHelper.getConfig(guild!!.id)!!
-		val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
+		val messageLog = guild?.getChannel(config.loggingConfigData.messageChannel) as GuildMessageChannelBehavior
 		val reportedMessage: Message
 		val messageAuthor: Member?
 
@@ -141,7 +141,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 
 	action {
 		val config = DatabaseHelper.getConfig(guild!!.id)!!
-		val messageLog = guild?.getChannel(config.messageLogs) as GuildMessageChannelBehavior
+		val messageLog = guild?.getChannel(config.loggingConfigData.messageChannel) as GuildMessageChannelBehavior
 		val channel: MessageChannel
 		val reportedMessage: Message
 		val messageAuthor: Member?
@@ -235,8 +235,8 @@ suspend fun createReportModal(
 		messageLog,
 		messageAuthor,
 		reportedMessage,
-		config.moderatorsPing,
-		config.modActionLog,
+		config.moderationConfigData.team,
+		config.moderationConfigData.channel,
 		reason,
 		modalResponse
 	)

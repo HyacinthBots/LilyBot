@@ -72,14 +72,13 @@ class ThreadInviter : Extension() {
 				delay(PK_API_DELAY) // Allow the PK API to catch up
 				val config = DatabaseHelper.getConfig(event.guildId!!)!!
 
-				config.supportTeam ?: return@action
-				config.supportChannel ?: return@action
+				if (!config.supportConfigData.enabled) return@action
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
 				val guild = event.getGuild()
-				val supportChannel = guild?.getChannelOf<TextChannel>(config.supportChannel)
+				val supportChannel = guild?.getChannelOf<TextChannel>(config.supportConfigData.channel)
 
 				if (textChannel != supportChannel) return@action
 
@@ -129,7 +128,7 @@ class ThreadInviter : Extension() {
 					editMessage.edit {
 						this.content =
 							user.asUser().mention + ", the " + event.getGuild()
-								?.getRole(config.supportTeam)?.mention + " will be with you shortly!"
+								?.getRole(config.supportConfigData.team)?.mention + " will be with you shortly!"
 					}
 
 					if (textChannel.messages.last().author?.id == kord.selfId) {
@@ -165,18 +164,13 @@ class ThreadInviter : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(event.channel.guildId)!!
-				val modRole = event.channel.guild.getRole(config.moderatorsPing)
+				val modRole = event.channel.guild.getRole(config.moderationConfigData.team)
 				val threadOwner = event.channel.owner.asUser()
 
 				DatabaseHelper.setThreadOwner(event.channel.id, threadOwner.id)
 
-				var supportConfigSet = true
-				if (config.supportTeam == null || config.supportChannel == null) {
-					supportConfigSet = false
-				}
-
-				if (supportConfigSet && event.channel.parentId == config.supportChannel) {
-					val supportRole = event.channel.guild.getRole(config.supportTeam!!)
+				if (config.supportConfigData.enabled && event.channel.parentId == config.supportConfigData.channel) {
+					val supportRole = event.channel.guild.getRole(config.supportConfigData.team)
 
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
@@ -190,14 +184,16 @@ class ThreadInviter : Extension() {
 					event.channel.withTyping { delay(3.seconds) }
 					message.edit {
 						content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
-								" you can just send a message in <#${config.supportChannel}> and I'll automatically" +
-								" make a thread for you!\n\nOnce you're finished, use `/thread archive` to close" +
-								" your thread. If you want to change the thread name, use `/thread rename`" +
-								" to do so."
+								" you can just send a message in <#${event.channel.guild.getChannel(
+									config.supportConfigData.channel
+								).mention
+								}> and I'll automatically make a thread for you!\n\nOnce you're finished, use" +
+								" `/thread archive` to close  " +
+								" your thread. If you want to change the thread name, use `/thread rename` to do so."
 					}
 				}
 
-				if (!supportConfigSet || event.channel.parentId != config.supportChannel) {
+				if (!config.supportConfigData.enabled || event.channel.parentId != config.supportConfigData.channel) {
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
 						content = "Hello there! Lemme just grab the moderators..."

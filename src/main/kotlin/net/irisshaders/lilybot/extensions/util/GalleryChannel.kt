@@ -70,7 +70,7 @@ class GalleryChannel : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 					// Using the global var, find guild channels for the given guildId and iterate through them to
 					// check for the presence of the channel and return if it is present
 					val guildGalleryChannels =
@@ -122,7 +122,7 @@ class GalleryChannel : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 					var channelFound = false
 
 					val guildGalleryChannels =

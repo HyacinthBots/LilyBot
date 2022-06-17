@@ -19,7 +19,6 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
-import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -36,7 +35,6 @@ class Config : Extension() {
 suspend fun Config.configCommand() = unsafeSlashCommand {
 	name = "config"
 	description = "Configuring Lily's Modules"
-	guild(TEST_GUILD_ID)
 
 	unsafeSubCommand(::SupportModuleArgs) {
 		name = "support"

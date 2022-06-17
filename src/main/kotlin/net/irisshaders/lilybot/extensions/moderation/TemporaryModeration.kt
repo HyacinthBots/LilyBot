@@ -82,7 +82,7 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val messageAmount = arguments.messages
 				val textChannel = channel.asChannelOf<TextChannel>()
 
@@ -127,7 +127,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "warn") ?: return@action
@@ -276,7 +276,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 
 				val targetUser = guild?.getMember(userArg.id)
@@ -338,7 +338,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
 
@@ -414,7 +414,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 
 				// Set timeout to null, or no timeout
@@ -467,7 +467,7 @@ class TemporaryModeration : Extension() {
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -523,7 +523,7 @@ class TemporaryModeration : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -579,7 +579,7 @@ class TemporaryModeration : Extension() {
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -640,7 +640,7 @@ class TemporaryModeration : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (everyoneRole.permissions.contains(Permission.SendMessages)) {

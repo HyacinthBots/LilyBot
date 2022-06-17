@@ -69,7 +69,7 @@ class ModUtilities : Extension() {
 			}
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val targetChannel: TextChannel =
 					if (arguments.channel != null) {
 						guild!!.getChannelOf(arguments.channel!!.id)
@@ -163,7 +163,7 @@ class ModUtilities : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val message: Message
 
 				try {
@@ -315,7 +315,7 @@ class ModUtilities : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 				// Update the presence in the action
 				this@ephemeralSlashCommand.kord.editPresence {

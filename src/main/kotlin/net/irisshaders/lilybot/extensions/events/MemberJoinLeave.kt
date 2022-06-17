@@ -32,7 +32,7 @@ class MemberJoinLeave : Extension() {
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.joinChannel)
+				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.loggingConfigData.joinChannel)
 
 				joinChannel.createEmbed {
 					title = "User joined the server!"
@@ -66,7 +66,7 @@ class MemberJoinLeave : Extension() {
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.joinChannel)
+				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.loggingConfigData.joinChannel)
 
 				joinChannel.createEmbed {
 					title = "User left the server!"

@@ -87,7 +87,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
@@ -280,7 +280,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {

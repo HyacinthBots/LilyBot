@@ -76,7 +76,7 @@ class LogUploading : Extension() {
 			action {
 				val config = DatabaseHelper.getConfig(event.guildId!!)!!
 				var deferUploadUntilThread = false
-				if (config.supportChannel != null && event.message.channel.id == config.supportChannel) {
+				if (config.supportConfigData.enabled && event.message.channel.id == config.supportConfigData.channel) {
 					deferUploadUntilThread = true
 				}
 
@@ -87,7 +87,7 @@ class LogUploading : Extension() {
 					delay(1500) // Delay to allow for thread creation
 					DatabaseHelper.getOwnerThreads(event.member!!.id).forEach {
 						if (event.getGuild()!!.getChannelOf<TextChannelThread>(it.threadId).parentId ==
-							config.supportChannel
+							config.supportConfigData.channel
 						) {
 							uploadChannel = event.getGuild()!!.getChannel(it.threadId) as MessageChannel
 						}

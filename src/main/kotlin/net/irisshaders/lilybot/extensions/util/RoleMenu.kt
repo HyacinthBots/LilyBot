@@ -117,8 +117,8 @@ class RoleMenu : Extension() {
 						mutableListOf(arguments.initialRole.id)
 					)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					actionLog.createMessage {
 						embed {
@@ -205,8 +205,8 @@ class RoleMenu : Extension() {
 						data.roles
 					)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					actionLog.createMessage {
 						embed {
@@ -267,8 +267,8 @@ class RoleMenu : Extension() {
 
 					DatabaseHelper.deleteRoleFromMenu(menuMessage!!.id, arguments.role.id)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					actionLog.createMessage {
 						embed {
@@ -365,8 +365,8 @@ class RoleMenu : Extension() {
 						roles
 					)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					actionLog.createMessage {
 						embed {

@@ -192,7 +192,7 @@ class ThreadControl : Extension() {
 
 					edit { content = "Thread archiving will now be prevented" }
 
-					guild!!.getChannelOf<TextChannel>(config.modActionLog).createMessage {
+					guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel).createMessage {
 						embed {
 							title = "Thread archiving disabled"
 							color = DISCORD_FUCHSIA
