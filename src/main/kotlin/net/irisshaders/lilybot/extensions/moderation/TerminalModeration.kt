@@ -29,7 +29,7 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
-import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseGetters
 import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
@@ -63,7 +63,7 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 
@@ -141,7 +141,7 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 				// Get all the bans into a list
@@ -194,7 +194,7 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<TextChannel>(config.supportConfigData.channel)
 				val userArg = arguments.userArgument
 
@@ -275,7 +275,7 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 

@@ -13,6 +13,7 @@ import com.mongodb.MongoClientSettings
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
+import net.irisshaders.lilybot.database.DatabaseHelper
 import net.irisshaders.lilybot.extensions.config.Config
 import net.irisshaders.lilybot.extensions.config.JoinLeaveDetection
 import net.irisshaders.lilybot.extensions.events.LogUploading
@@ -33,7 +34,6 @@ import net.irisshaders.lilybot.extensions.util.StartupHooks
 import net.irisshaders.lilybot.extensions.util.Tags
 import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
-import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ENVIRONMENT
 import net.irisshaders.lilybot.utils.MONGO_URI
 import net.irisshaders.lilybot.utils.SENTRY_DSN
@@ -59,6 +59,7 @@ private val settings = MongoClientSettings
 
 private val client = KMongo.createClient(settings).coroutine
 val database = client.getDatabase("LilyBot")
+val configDatabase = client.getDatabase("LilyBotConfig")
 
 var commandDocs: CommandDocs? = null
 

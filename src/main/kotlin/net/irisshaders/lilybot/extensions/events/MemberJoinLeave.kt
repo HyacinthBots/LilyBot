@@ -11,7 +11,7 @@ import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseGetters
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -27,7 +27,7 @@ class MemberJoinLeave : Extension() {
 		event<MemberJoinEvent> {
 			check { configPresent() }
 			action {
-				val config = DatabaseHelper.getConfig(event.guildId)!!
+				val config = DatabaseGetters.getConfig()
 
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
@@ -61,7 +61,7 @@ class MemberJoinLeave : Extension() {
 			action {
 				// If it's Lily leaving, return the action, otherwise the log will fill with errors
 				if (event.user.id == kord.selfId) return@action
-				val config = DatabaseHelper.getConfig(event.guildId)!!
+				val config = DatabaseGetters.getConfig()
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()

@@ -23,8 +23,9 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
-import net.irisshaders.lilybot.utils.DatabaseHelper
-import net.irisshaders.lilybot.utils.GalleryChannelData
+import net.irisshaders.lilybot.database.DatabaseGetters
+import net.irisshaders.lilybot.database.DatabaseRemovers
+import net.irisshaders.lilybot.database.DatabaseTables
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import org.litote.kmongo.eq
@@ -42,7 +43,7 @@ class GalleryChannel : Extension() {
 		 * This variable is a cached variable for gallery channels, present to avoid polling the database every message
 		 * sent.
 		 */
-		var galleryChannels = DatabaseHelper.getGalleryChannels()
+		var galleryChannels = DatabaseGetters.getGalleryChannels()
 
 		/**
 		 * gallery channel commands.
@@ -69,12 +70,12 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig()
 					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 					// Using the global var, find guild channels for the given guildId and iterate through them to
 					// check for the presence of the channel and return if it is present
 					val guildGalleryChannels =
-						galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
+						galleryChannels.find(DatabaseTables.GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
 					guildGalleryChannels.forEach {
 						if (channel.asChannel().id == it.channelId) {
 							respond {
@@ -87,7 +88,7 @@ class GalleryChannel : Extension() {
 					DatabaseHelper.setGalleryChannel(guild!!.id, channel.asChannel().id)
 
 					// Update the global var
-					galleryChannels = DatabaseHelper.getGalleryChannels()
+					galleryChannels = DatabaseGetters.getGalleryChannels()
 
 					respond {
 						content = "Set channel as gallery channel."
@@ -121,17 +122,17 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig()
 					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 					var channelFound = false
 
 					val guildGalleryChannels =
-						galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
+						galleryChannels.find(DatabaseTables.GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
 					guildGalleryChannels.forEach {
 						if (channel.asChannel().id == it.channelId) {
-							DatabaseHelper.deleteGalleryChannel(guild!!.id, channel.asChannel().id)
+							DatabaseRemovers.deleteGalleryChannel(guild!!.id, channel.asChannel().id)
 							// Update the global var
-							galleryChannels = DatabaseHelper.getGalleryChannels()
+							galleryChannels = DatabaseGetters.getGalleryChannels()
 							channelFound = true
 						}
 					}
@@ -177,7 +178,7 @@ class GalleryChannel : Extension() {
 					var channels = ""
 
 					val guildGalleryChannels =
-						galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
+						galleryChannels.find(DatabaseTables.GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
 					guildGalleryChannels.forEach {
 						channels += "<#${it.channelId}> "
 					}

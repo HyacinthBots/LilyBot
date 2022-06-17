@@ -14,6 +14,8 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
+import net.irisshaders.lilybot.database.DatabaseGetters
+import net.irisshaders.lilybot.database.DatabaseHelper
 
 val utilsLogger = KotlinLogging.logger("Checks Logger")
 
@@ -90,8 +92,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  * @since 2.1.0
  */
 suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
-	val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderationConfigData!!.team
-	if (DatabaseHelper.getConfig(guild!!.id)?.moderationConfigData!!.enabled) {
+	val moderatorRoleId = DatabaseGetters.getConfig(guild!!.id)?.moderationConfigData!!.team
+	if (DatabaseGetters.getConfig(guild!!.id)?.moderationConfigData!!.enabled) {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
 		}

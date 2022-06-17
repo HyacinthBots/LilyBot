@@ -21,7 +21,9 @@ import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseGetters
+import net.irisshaders.lilybot.database.DatabaseRemovers
+import net.irisshaders.lilybot.database.DatabaseSetters
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -51,7 +53,7 @@ class Tags : Extension() {
 			}
 
 			action {
-				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
+				if (DatabaseGetters.getTag(guild!!.id, arguments.tagName) == null) {
 					respond {
 						content = "Unable to find tag `${arguments.tagName}`. " +
 								"Be sure it exists and you've typed it correctly."
@@ -59,7 +61,7 @@ class Tags : Extension() {
 					return@action
 				}
 
-				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!
+				val tagFromDatabase = DatabaseGetters.getTag(guild!!.id, arguments.tagName)!!
 
 				if (tagFromDatabase.tagValue.length > 1024) {
 					respond {
@@ -149,10 +151,10 @@ class Tags : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
-				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) != null) {
+				if (DatabaseGetters.getTag(guild!!.id, arguments.tagName) != null) {
 					respond { content = "A tag with that name already exists in this guild." }
 					return@action
 				}
@@ -165,7 +167,7 @@ class Tags : Extension() {
 					return@action
 				}
 
-				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
+				DatabaseSetters.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
 
 				actionLog.createEmbed {
 					title = "Tag created!"
@@ -214,17 +216,17 @@ class Tags : Extension() {
 
 			action {
 				// Check to make sure the tag exists in the database
-				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName)?.name == null) {
+				if (DatabaseGetters.getTag(guild!!.id, arguments.tagName)?.name == null) {
 					respond {
 						content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?"
 					}
 					return@action
 				}
 
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
-				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
+				DatabaseRemovers.deleteTag(guild!!.id, arguments.tagName)
 
 				actionLog.createEmbed {
 					title = "Tag deleted!"
@@ -252,7 +254,7 @@ class Tags : Extension() {
 			}
 
 			action {
-				val tags = DatabaseHelper.getAllTags(guild!!.id)
+				val tags = DatabaseGetters.getAllTags(guild!!.id)
 
 				var response = ""
 				tags.forEach { response += "• `${it.name}` - ${it.tagTitle}\n" }
@@ -280,7 +282,7 @@ class Tags : Extension() {
 			description = "The name of the tag you want to call"
 
 			autoComplete {
-				val tags = DatabaseHelper.getAllTags(data.guildId.value!!)
+				val tags = DatabaseGetters.getAllTags(data.guildId.value!!)
 				val map = mutableMapOf<String, String>()
 
 				tags.forEach {
@@ -303,7 +305,7 @@ class Tags : Extension() {
 			description = "The name of the tag you want to delete"
 
 			autoComplete {
-				val tags = DatabaseHelper.getAllTags(data.guildId.value!!)
+				val tags = DatabaseGetters.getAllTags(data.guildId.value!!)
 				val map = mutableMapOf<String, String>()
 
 				// Add each tag in the database to the tag variable

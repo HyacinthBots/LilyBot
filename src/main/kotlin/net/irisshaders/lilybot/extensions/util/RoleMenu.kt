@@ -38,7 +38,8 @@ import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
-import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseGetters
+import net.irisshaders.lilybot.database.DatabaseRemovers
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -110,14 +111,14 @@ class RoleMenu : Extension() {
 						components.removeAll()
 					}
 
-					DatabaseHelper.setRoleMenu(
+					DatabaseSetters.setRoleMenu(
 						menuMessage!!.id,
 						channel.id,
 						guild!!.id,
 						mutableListOf(arguments.initialRole.id)
 					)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					actionLog.createMessage {
@@ -181,7 +182,7 @@ class RoleMenu : Extension() {
 					val message = channel.getMessageOrNull(arguments.messageId)
 					if (!roleMenuExists(message, arguments.messageId)) return@action
 
-					val data = DatabaseHelper.getRoleData(arguments.messageId)!!
+					val data = DatabaseGetters.getRoleData(arguments.messageId)!!
 
 					if (arguments.role.id in data.roles) {
 						respond {
@@ -198,14 +199,14 @@ class RoleMenu : Extension() {
 					}
 
 					data.roles.add(arguments.role.id)
-					DatabaseHelper.setRoleMenu(
+					DatabaseSetters.setRoleMenu(
 						data.messageId,
 						data.channelId,
 						data.guildId,
 						data.roles
 					)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					actionLog.createMessage {
@@ -249,7 +250,7 @@ class RoleMenu : Extension() {
 					val menuMessage = channel.getMessageOrNull(arguments.messageId)
 					if (!roleMenuExists(menuMessage, arguments.messageId)) return@action
 
-					val data = DatabaseHelper.getRoleData(arguments.messageId)!!
+					val data = DatabaseGetters.getRoleData(arguments.messageId)!!
 
 					if (arguments.role.id !in data.roles) {
 						respond {
@@ -267,7 +268,7 @@ class RoleMenu : Extension() {
 
 					DatabaseHelper.deleteRoleFromMenu(menuMessage!!.id, arguments.role.id)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					actionLog.createMessage {
@@ -358,14 +359,14 @@ class RoleMenu : Extension() {
 						}
 					}
 
-					DatabaseHelper.setRoleMenu(
+					DatabaseSetters.setRoleMenu(
 						menuMessage.id,
 						channel.id,
 						guild!!.id,
 						roles
 					)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					actionLog.createMessage {
@@ -395,7 +396,7 @@ class RoleMenu : Extension() {
 				}
 			}
 			action {
-				val data = DatabaseHelper.getRoleData(event.interaction.message.id)
+				val data = DatabaseGetters.getRoleData(event.interaction.message.id)
 
 				if (data == null) {
 					event.interaction.respondEphemeral {
@@ -421,7 +422,7 @@ class RoleMenu : Extension() {
 				data.roles.forEach {
 					val role = guild.getRoleOrNull(it)
 					if (role == null) {
-						DatabaseHelper.deleteRoleFromMenu(event.interaction.message.id, it)
+						DatabaseRemovers.deleteRoleFromMenu(event.interaction.message.id, it)
 					} else {
 						roles.add(role)
 					}
@@ -502,7 +503,7 @@ class RoleMenu : Extension() {
 			return false
 		}
 
-		val data = DatabaseHelper.getRoleData(argumentMessageId)
+		val data = DatabaseGetters.getRoleData(argumentMessageId)
 		if (data == null) {
 			respond {
 				content = "That message doesn't seem to be a role menu."

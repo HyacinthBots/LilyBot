@@ -7,7 +7,7 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.gateway.ReadyEvent
-import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseCleanups
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 
@@ -43,7 +43,7 @@ class StartupHooks : Extension() {
 				 * @author tempest15
 				 * @since 3.2.0
 				 */
-				DatabaseHelper.cleanupThreadData(kord)
+				DatabaseCleanups.cleanupThreadData(kord)
 
 				/**
 				 * This function is called to remove any guilds in the database that haven't had Lily in them for more than
@@ -52,7 +52,7 @@ class StartupHooks : Extension() {
 				 * @author NoComment1105
 				 * @since 3.2.0
 				 */
-				DatabaseHelper.cleanupGuildData()
+				DatabaseCleanups.cleanupGuildData()
 			}
 		}
 	}

@@ -42,7 +42,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseGetters
+import net.irisshaders.lilybot.database.DatabaseSetters
 import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -80,7 +81,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig(guild!!.id)!!
 
 				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val messageAmount = arguments.messages
@@ -126,14 +127,14 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "warn") ?: return@action
 
-				DatabaseHelper.setWarn(userArg.id, guild!!.id, false)
-				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)?.strikes
+				DatabaseSetters.setWarn(userArg.id, guild!!.id, false)
+				val newStrikes = DatabaseGetters.getWarn(userArg.id, guild!!.id)?.strikes
 
 				respond {
 					content = "Warned user."
@@ -275,12 +276,12 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 
 				val targetUser = guild?.getMember(userArg.id)
-				val userStrikes = DatabaseHelper.getWarn(targetUser!!.id, guild!!.id)?.strikes
+				val userStrikes = DatabaseGetters.getWarn(targetUser!!.id, guild!!.id)?.strikes
 				if (userStrikes == 0 || userStrikes == null) {
 					respond {
 						content = "This user does not have any warning strikes!"
@@ -288,8 +289,8 @@ class TemporaryModeration : Extension() {
 					return@action
 				}
 
-				DatabaseHelper.setWarn(userArg.id, guild!!.id, true)
-				val newStrikes = DatabaseHelper.getWarn(userArg.id, guild!!.id)
+				DatabaseSetters.setWarn(userArg.id, guild!!.id, true)
+				val newStrikes = DatabaseGetters.getWarn(userArg.id, guild!!.id)
 
 				respond {
 					content = "Removed strike from user"
@@ -337,7 +338,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig()
 				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
@@ -413,7 +414,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig()
 				val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val userArg = arguments.userArgument
 
@@ -466,7 +467,7 @@ class TemporaryModeration : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig()
 					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
@@ -522,7 +523,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				action {
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig()
 					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
@@ -578,7 +579,7 @@ class TemporaryModeration : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig()
 					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
@@ -639,7 +640,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				action {
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig()
 					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 

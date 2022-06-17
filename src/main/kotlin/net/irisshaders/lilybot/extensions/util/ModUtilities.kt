@@ -35,7 +35,8 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseGetters
+import net.irisshaders.lilybot.database.DatabaseSetters
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -68,7 +69,7 @@ class ModUtilities : Extension() {
 				)
 			}
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig()
 				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val targetChannel: TextChannel =
 					if (arguments.channel != null) {
@@ -162,7 +163,7 @@ class ModUtilities : Extension() {
 					channel
 				}
 
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig()
 				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 				val message: Message
 
@@ -314,7 +315,7 @@ class ModUtilities : Extension() {
 					return@action
 				}
 
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val config = DatabaseGetters.getConfig()
 				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 				// Update the presence in the action
@@ -324,7 +325,7 @@ class ModUtilities : Extension() {
 				}
 
 				// Store the new presence in the database for if there is a restart
-				DatabaseHelper.setStatus(arguments.presenceArgument)
+				DatabaseSetters.setStatus(arguments.presenceArgument)
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
 

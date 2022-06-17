@@ -25,7 +25,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.utils.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseGetters
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -86,7 +86,7 @@ class PublicUtilities : Extension() {
 				}
 
 				action {
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig()
 					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					val requester = user.asUser()
@@ -279,7 +279,7 @@ class PublicUtilities : Extension() {
 				}
 
 				action {
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications

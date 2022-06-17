@@ -19,6 +19,8 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
+import net.irisshaders.lilybot.database.DatabaseSetters
+import net.irisshaders.lilybot.database.DatabaseTables
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -94,6 +96,16 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						}
 					}
 				}
+
+				DatabaseSetters.setSupportConfig(
+					DatabaseTables.SupportConfigData(
+						guild!!.id,
+						arguments.enable,
+						arguments.channel.id,
+						arguments.role.id,
+						supportMsg
+					)
+				)
 			} else {
 				event.interaction.respondEphemeral {
 					embed {
@@ -115,6 +127,16 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						}
 					}
 				}
+
+				DatabaseSetters.setSupportConfig(
+					DatabaseTables.SupportConfigData(
+						guild!!.id,
+						arguments.enable,
+						arguments.channel.id,
+						arguments.role.id,
+						null
+					)
+				)
 			}
 		}
 	}
@@ -148,6 +170,15 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 			}
+
+			DatabaseSetters.setModerationConfig(
+				DatabaseTables.ModerationConfigData(
+					guild!!.id,
+					arguments.enabled,
+					arguments.modActionLog.id,
+					arguments.moderatorRole.id
+				)
+			)
 		}
 	}
 
@@ -180,6 +211,16 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 			}
+
+			DatabaseSetters.setLoggingConfig(
+				DatabaseTables.LoggingConfigData(
+					guild!!.id,
+					arguments.enableMessageLogs,
+					arguments.messageLogs.id,
+					arguments.enableJoinChannel,
+					arguments.joinChannel.id
+				)
+			)
 		}
 	}
 
@@ -201,6 +242,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 }
 
 class SupportModuleArgs : Arguments() {
+	val enable by boolean {
+		name = "enable"
+		description = "Whether to enable the support system"
+	}
+
 	val channel by channel {
 		name = "channel"
 		description = "The channel to be used for creating support threads in."
@@ -218,6 +264,11 @@ class SupportModuleArgs : Arguments() {
 }
 
 class ModerationModuleArgs : Arguments() {
+	val enabled by boolean {
+		name = "enable"
+		description = "Whether to enable the moderation module"
+	}
+
 	val moderatorRole by role {
 		name = "moderatorrole"
 		description = "The role of your moderators, used for pinging in message logs."
@@ -230,6 +281,16 @@ class ModerationModuleArgs : Arguments() {
 }
 
 class LoggingModuleArgs : Arguments() {
+	val enableMessageLogs by boolean {
+		name = "enablemesssgelogs"
+		description = "Enable logging of message deletions"
+	}
+
+	val enableJoinChannel by boolean {
+		name = "enablejoinchannel"
+		description = "Enable logging of joins and leaves"
+	}
+
 	val messageLogs by channel {
 		name = "messagelogs"
 		description = "The channel for logging message deletions"
