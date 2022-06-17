@@ -61,6 +61,14 @@ class Tags : Extension() {
 
 				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!
 
+				if (tagFromDatabase.tagValue.length > 1024) {
+					respond {
+						content = "The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
+								"more, which is above the Discord limit. Please re-create this tag!"
+					}
+					return@action
+				}
+
 				respond { content = "Tag sent" }
 
 				// This is not the best way to do this. Ideally the ping would be in the same message as the embed in
