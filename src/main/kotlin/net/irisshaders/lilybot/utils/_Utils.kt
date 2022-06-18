@@ -15,7 +15,6 @@ import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.DatabaseGetters
-import net.irisshaders.lilybot.database.DatabaseHelper
 
 val utilsLogger = KotlinLogging.logger("Checks Logger")
 
@@ -35,7 +34,7 @@ suspend inline fun CheckContext<*>.configPresent() {
 	if (guildFor(event) == null) fail("Must be in a server")
 
 	// Check all not-null values in the database are not null
-	if (DatabaseHelper.getConfig(guildFor(event)!!.id) == null) {
+	if (DatabaseGetters.getModerationConfig(guildFor(event)!!.id) == null) {
 		fail("Unable to access config for this guild! Please inform a member of staff")
 	} else pass()
 }
@@ -92,8 +91,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  * @since 2.1.0
  */
 suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
-	val moderatorRoleId = DatabaseGetters.getConfig(guild!!.id)?.moderationConfigData!!.team
-	if (DatabaseGetters.getConfig(guild!!.id)?.moderationConfigData!!.enabled) {
+	val moderatorRoleId = DatabaseGetters.getModerationConfig(guild!!.id)?.team
+	if (DatabaseGetters.getModerationConfig(guild!!.id)!!.enabled) {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
 		}

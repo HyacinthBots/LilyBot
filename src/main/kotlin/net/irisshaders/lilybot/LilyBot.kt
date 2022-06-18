@@ -13,7 +13,7 @@ import com.mongodb.MongoClientSettings
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
-import net.irisshaders.lilybot.database.DatabaseHelper
+import net.irisshaders.lilybot.database.DatabaseGetters
 import net.irisshaders.lilybot.extensions.config.Config
 import net.irisshaders.lilybot.extensions.config.JoinLeaveDetection
 import net.irisshaders.lilybot.extensions.events.LogUploading
@@ -124,7 +124,7 @@ suspend fun main() {
 		}
 
 		// Pull the status from the database and set it to `Playing <status>
-		presence { playing(DatabaseHelper.getStatus()) }
+		presence { playing(DatabaseGetters.getStatus()) }
 
 		// Connect to GitHub to allow the GitHub commands to function
 		try {

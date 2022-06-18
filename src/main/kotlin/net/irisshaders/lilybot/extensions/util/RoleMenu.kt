@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.database.DatabaseGetters
 import net.irisshaders.lilybot.database.DatabaseRemovers
+import net.irisshaders.lilybot.database.DatabaseSetters
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -118,8 +119,8 @@ class RoleMenu : Extension() {
 						mutableListOf(arguments.initialRole.id)
 					)
 
-					val config = DatabaseGetters.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+					val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 
 					actionLog.createMessage {
 						embed {
@@ -206,8 +207,8 @@ class RoleMenu : Extension() {
 						data.roles
 					)
 
-					val config = DatabaseGetters.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+					val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 
 					actionLog.createMessage {
 						embed {
@@ -266,10 +267,10 @@ class RoleMenu : Extension() {
 						return@action
 					}
 
-					DatabaseHelper.deleteRoleFromMenu(menuMessage!!.id, arguments.role.id)
+					DatabaseRemovers.deleteRoleFromMenu(menuMessage!!.id, arguments.role.id)
 
-					val config = DatabaseGetters.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+					val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 
 					actionLog.createMessage {
 						embed {
@@ -366,8 +367,8 @@ class RoleMenu : Extension() {
 						roles
 					)
 
-					val config = DatabaseGetters.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+					val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 
 					actionLog.createMessage {
 						embed {

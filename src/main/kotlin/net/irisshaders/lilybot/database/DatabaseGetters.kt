@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.database
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.coroutines.runBlocking
+import net.irisshaders.lilybot.configDatabase
 import net.irisshaders.lilybot.database
 import net.irisshaders.lilybot.database.DatabaseTables.GalleryChannelData
 import net.irisshaders.lilybot.database.DatabaseTables.RoleMenuData
@@ -12,9 +13,19 @@ import org.litote.kmongo.eq
 // TODO Organise into A-Z
 object DatabaseGetters {
 
-	// FIXME
-	suspend fun getConfig() {
-		"lol"
+	suspend inline fun getSupportConfig(inputGuildId: Snowflake): DatabaseTables.SupportConfigData? {
+		val collection = configDatabase.getCollection<DatabaseTables.SupportConfigData>()
+		return collection.findOne(DatabaseTables.SupportConfigData::guildId eq inputGuildId)
+	}
+
+	suspend inline fun getModerationConfig(inputGuildId: Snowflake): DatabaseTables.ModerationConfigData? {
+		val collection = configDatabase.getCollection<DatabaseTables.ModerationConfigData>()
+		return collection.findOne(DatabaseTables.ModerationConfigData::guildId eq inputGuildId)
+	}
+
+	suspend inline fun getLoggingConfig(inputGuildId: Snowflake): DatabaseTables.LoggingConfigData? {
+		val collection = configDatabase.getCollection<DatabaseTables.LoggingConfigData>()
+		return collection.findOne(DatabaseTables.LoggingConfigData::guildId eq inputGuildId)
 	}
 
 	/**

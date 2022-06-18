@@ -7,6 +7,7 @@
 package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.utils.delete
@@ -72,14 +73,14 @@ class ThreadInviter : Extension() {
 			}
 			action {
 				delay(PK_API_DELAY) // Allow the PK API to catch up
-				val config = DatabaseGetters.getConfig(event.guildId!!)!!
+				val config = DatabaseGetters.getSupportConfig(event.guildId!!)!!
 
-				if (config.supportConfigData.enabled) {
+				if (config.enabled) {
 					var userThreadExists = false
 					var existingUserThread: TextChannelThread? = null
 					val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
 					val guild = event.getGuild()
-					val supportChannel = guild?.getChannelOf<TextChannel>(config.supportConfigData.channel)
+					val supportChannel = guild?.getChannelOf<TextChannel>(config.channel)
 
 					if (textChannel != supportChannel) return@action
 
@@ -129,7 +130,7 @@ class ThreadInviter : Extension() {
 						editMessage.edit {
 							this.content =
 								user.asUser().mention + ", the " + event.getGuild()
-									?.getRole(config.supportConfigData.team)?.mention + " will be with you shortly!"
+									?.getRole(config.team)?.mention + " will be with you shortly!"
 						}
 
 						if (textChannel.messages.last().author?.id == kord.selfId) {
@@ -165,14 +166,15 @@ class ThreadInviter : Extension() {
 			}
 
 			action {
-				val config = DatabaseGetters.getConfig()
-				val modRole = event.channel.guild.getRole(config.moderationConfigData.team)
+				val supportConfig = DatabaseGetters.getSupportConfig(guildFor(event)!!.id)!!
+				val moderationConfig = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
+				val modRole = event.channel.guild.getRole(moderationConfig.team)
 				val threadOwner = event.channel.owner.asUser()
 
 				DatabaseSetters.setThreadOwner(event.channel.id, threadOwner.id)
 
-				if (config.supportConfigData.enabled && event.channel.parentId == config.supportConfigData.channel) {
-					val supportRole = event.channel.guild.getRole(config.supportConfigData.team)
+				if (supportConfig.enabled && event.channel.parentId == supportConfig.channel) {
+					val supportRole = event.channel.guild.getRole(supportConfig.team)
 
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
@@ -187,7 +189,7 @@ class ThreadInviter : Extension() {
 					message.edit {
 						content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
 								" you can just send a message in <#${event.channel.guild.getChannel(
-									config.supportConfigData.channel
+									supportConfig.channel
 								).mention
 								}> and I'll automatically make a thread for you!\n\nOnce you're finished, use" +
 								" `/thread archive` to close  " +
@@ -195,7 +197,7 @@ class ThreadInviter : Extension() {
 					}
 				}
 
-				if (!config.supportConfigData.enabled || event.channel.parentId != config.supportConfigData.channel) {
+				if (!supportConfig.enabled || event.channel.parentId != supportConfig.channel) {
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
 						content = "Hello there! Lemme just grab the moderators..."

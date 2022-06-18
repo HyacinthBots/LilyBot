@@ -3,6 +3,7 @@ package net.irisshaders.lilybot.extensions.events
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -74,9 +75,9 @@ class LogUploading : Extension() {
 				}
 			}
 			action {
-				val config = DatabaseGetters.getConfig()!!
+				val supportConfig = DatabaseGetters.getSupportConfig(guildFor(event)!!.id)!!
 				var deferUploadUntilThread = false
-				if (config.supportConfigData.enabled && event.message.channel.id == config.supportConfigData.channel) {
+				if (supportConfig.enabled && event.message.channel.id == supportConfig.channel) {
 					deferUploadUntilThread = true
 				}
 
@@ -87,7 +88,7 @@ class LogUploading : Extension() {
 					delay(1500) // Delay to allow for thread creation
 					DatabaseGetters.getOwnerThreads(event.member!!.id).forEach {
 						if (event.getGuild()!!.getChannelOf<TextChannelThread>(it.threadId).parentId ==
-							config.supportConfigData.channel
+							supportConfig.channel
 						) {
 							uploadChannel = event.getGuild()!!.getChannel(it.threadId) as MessageChannel
 						}

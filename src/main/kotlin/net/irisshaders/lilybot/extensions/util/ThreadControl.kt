@@ -167,7 +167,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val config = DatabaseGetters.getConfig(guild!!.id)!!
+					val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
@@ -193,7 +193,7 @@ class ThreadControl : Extension() {
 
 					edit { content = "Thread archiving will now be prevented" }
 
-					guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel).createMessage {
+					guild!!.getChannelOf<TextChannel>(config.channel).createMessage {
 						embed {
 							title = "Thread archiving disabled"
 							color = DISCORD_FUCHSIA

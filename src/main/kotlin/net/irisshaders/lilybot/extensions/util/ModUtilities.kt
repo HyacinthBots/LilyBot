@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_WHITE
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
@@ -69,8 +70,8 @@ class ModUtilities : Extension() {
 				)
 			}
 			action {
-				val config = DatabaseGetters.getConfig()
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+				val config = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 				val targetChannel: TextChannel =
 					if (arguments.channel != null) {
 						guild!!.getChannelOf(arguments.channel!!.id)
@@ -163,8 +164,8 @@ class ModUtilities : Extension() {
 					channel
 				}
 
-				val config = DatabaseGetters.getConfig()
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+				val config = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 				val message: Message
 
 				try {
@@ -315,8 +316,8 @@ class ModUtilities : Extension() {
 					return@action
 				}
 
-				val config = DatabaseGetters.getConfig()
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+				val config = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 
 				// Update the presence in the action
 				this@ephemeralSlashCommand.kord.editPresence {

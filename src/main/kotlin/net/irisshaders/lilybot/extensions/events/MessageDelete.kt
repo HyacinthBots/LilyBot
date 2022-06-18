@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
@@ -39,10 +40,10 @@ class MessageDelete : Extension() {
 				delay(PK_API_DELAY) // Allow the PK API to catch up
 				if (event.message?.author?.isBot == true) return@action
 
-				val config = DatabaseGetters.getConfig()
+				val config = DatabaseGetters.getLoggingConfig(guildFor(event)!!.id)!!
 
 				val guild = kord.getGuild(event.guildId!!)
-				val messageLog = guild?.getChannelOf<TextChannel>(config.loggingConfigData.messageChannel)
+				val messageLog = guild?.getChannelOf<TextChannel>(config.messageChannel)
 				val eventMessage = event.message
 				val messageContent = if (eventMessage?.asMessageOrNull() != null) {
 					if (eventMessage.asMessageOrNull().content.length > 1024) {

@@ -151,8 +151,8 @@ class Tags : Extension() {
 			}
 
 			action {
-				val config = DatabaseGetters.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+				val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 
 				if (DatabaseGetters.getTag(guild!!.id, arguments.tagName) != null) {
 					respond { content = "A tag with that name already exists in this guild." }
@@ -223,8 +223,8 @@ class Tags : Extension() {
 					return@action
 				}
 
-				val config = DatabaseGetters.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+				val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 
 				DatabaseRemovers.deleteTag(guild!!.id, arguments.tagName)
 

@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
@@ -27,12 +28,12 @@ class MemberJoinLeave : Extension() {
 		event<MemberJoinEvent> {
 			check { configPresent() }
 			action {
-				val config = DatabaseGetters.getConfig()
+				val config = DatabaseGetters.getLoggingConfig(guildFor(event)!!.id)!!
 
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.loggingConfigData.joinChannel)
+				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.joinChannel)
 
 				joinChannel.createEmbed {
 					title = "User joined the server!"
@@ -61,12 +62,12 @@ class MemberJoinLeave : Extension() {
 			action {
 				// If it's Lily leaving, return the action, otherwise the log will fill with errors
 				if (event.user.id == kord.selfId) return@action
-				val config = DatabaseGetters.getConfig()
+				val config = DatabaseGetters.getLoggingConfig(guildFor(event)!!.id)!!
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.loggingConfigData.joinChannel)
+				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.joinChannel)
 
 				joinChannel.createEmbed {
 					title = "User left the server!"

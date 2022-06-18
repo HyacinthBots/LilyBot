@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.database
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.Instant
+import net.irisshaders.lilybot.configDatabase
 import net.irisshaders.lilybot.database
 import net.irisshaders.lilybot.database.DatabaseGetters.getWarn
 import org.litote.kmongo.eq
@@ -16,19 +17,19 @@ object DatabaseSetters {
 	 * @since 4.0.0
 	 */
 	suspend inline fun setSupportConfig(supportConfig: DatabaseTables.SupportConfigData) {
-		val collection = database.getCollection<DatabaseTables.SupportConfigData>()
+		val collection = configDatabase.getCollection<DatabaseTables.SupportConfigData>()
 		collection.deleteOne(DatabaseTables.SupportConfigData::guildId eq supportConfig.guildId)
 		collection.insertOne(supportConfig)
 	}
 
 	suspend inline fun setModerationConfig(moderationConfig: DatabaseTables.ModerationConfigData) {
-		val collection = database.getCollection<DatabaseTables.ModerationConfigData>()
+		val collection = configDatabase.getCollection<DatabaseTables.ModerationConfigData>()
 		collection.deleteOne(DatabaseTables.ModerationConfigData::guildId eq moderationConfig.guildId)
 		collection.insertOne(moderationConfig)
 	}
 
 	suspend inline fun setLoggingConfig(loggingConfig: DatabaseTables.LoggingConfigData) {
-		val collection = database.getCollection<DatabaseTables.LoggingConfigData>()
+		val collection = configDatabase.getCollection<DatabaseTables.LoggingConfigData>()
 		collection.deleteOne(DatabaseTables.LoggingConfigData::guildId eq loggingConfig.guildId)
 		collection.insertOne(loggingConfig)
 	}

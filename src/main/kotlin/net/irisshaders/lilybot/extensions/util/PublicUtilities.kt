@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
@@ -86,8 +87,8 @@ class PublicUtilities : Extension() {
 				}
 
 				action {
-					val config = DatabaseGetters.getConfig()
-					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+					val config = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
+					val actionLog = guild?.getChannelOf<TextChannel>(config.channel)
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
@@ -279,8 +280,8 @@ class PublicUtilities : Extension() {
 				}
 
 				action {
-					val config = DatabaseGetters.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+					val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
+					val actionLog = guild?.getChannelOf<TextChannel>(config.channel)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {

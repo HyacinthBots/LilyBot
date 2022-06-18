@@ -25,6 +25,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import net.irisshaders.lilybot.database.DatabaseGetters
 import net.irisshaders.lilybot.database.DatabaseRemovers
+import net.irisshaders.lilybot.database.DatabaseSetters
 import net.irisshaders.lilybot.database.DatabaseTables
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -70,8 +71,8 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = DatabaseGetters.getConfig()
-					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+					val config = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 					// Using the global var, find guild channels for the given guildId and iterate through them to
 					// check for the presence of the channel and return if it is present
 					val guildGalleryChannels =
@@ -85,7 +86,7 @@ class GalleryChannel : Extension() {
 						}
 					}
 
-					DatabaseHelper.setGalleryChannel(guild!!.id, channel.asChannel().id)
+					DatabaseSetters.setGalleryChannel(guild!!.id, channel.asChannel().id)
 
 					// Update the global var
 					galleryChannels = DatabaseGetters.getGalleryChannels()
@@ -122,8 +123,8 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = DatabaseGetters.getConfig()
-					val actionLog = guild!!.getChannelOf<TextChannel>(config.moderationConfigData.channel)
+					val config = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
+					val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
 					var channelFound = false
 
 					val guildGalleryChannels =
@@ -209,7 +210,7 @@ class GalleryChannel : Extension() {
 
 			action {
 				val guildGalleryChannels =
-					galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
+					galleryChannels.find(DatabaseTables.GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
 
 				for (i in guildGalleryChannels) {
 					// If there are no attachments to the message and the channel we're in is an image channel
