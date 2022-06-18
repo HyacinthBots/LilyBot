@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
@@ -427,7 +428,9 @@ class RoleMenu : Extension() {
 					}
 				}
 
-				val userRoles = event.interaction.user.asMember(guild.id).roles.toList().map { it.id }
+				val guildRoles = guildFor(event)!!.roles.toList().map { it.id }
+				val member = event.interaction.user.asMember(guild.id)
+				val userRoles = member.roleIds.filter { it in guildRoles }
 
 				event.interaction.respondEphemeral {
 					content = "Use the menu below to select roles."
@@ -447,32 +450,36 @@ class RoleMenu : Extension() {
 							}
 
 							action {
-								val member = user.asMember(guild.id)
-								var changes = 0
+								val selectedRoles = selected.map { Snowflake(it) }.filter { it in guildRoles }
 
-								selected.forEach {
-									if (userRoles.contains(Snowflake(it))) {
-										member.removeRole(Snowflake(it))
-										changes++
-									} else if (!userRoles.contains(Snowflake(it))) {
-										member.addRole(Snowflake(it))
-										changes++
-									}
-								}
 								if (selected.isEmpty()) {
-									roles.forEach {
-										member.removeRole(it.id)
+									member.edit {
+										roles.forEach {
+											member.removeRole(it.id)
+										}
 									}
-									changes++
+									respond { content = "Your roles have been adjusted" }
+									return@action
 								}
 
-								if (changes == 0) {
+								val rolesToAdd = selectedRoles.filterNot { it in userRoles }
+								val rolesToRemove = selectedRoles.filterNot { it in selectedRoles }
+
+								if (rolesToAdd.isEmpty() && rolesToRemove.isEmpty()) {
 									respond {
 										content = "You didn't select any different roles, so no changes were made."
 									}
-								} else if (changes > 0) {
-									respond { content = "Your roles have been adjusted." }
+									return@action
 								}
+
+								member.edit {
+									this@edit.roles = member.roleIds.toMutableSet()
+
+									// toSet() to increase performance. Idea advised this.
+									this@edit.roles!!.addAll(rolesToAdd.toSet())
+									this@edit.roles!!.removeAll(rolesToRemove.toSet())
+								}
+								respond { content = "Your roles have been adjusted." }
 							}
 						}
 					}
@@ -480,6 +487,12 @@ class RoleMenu : Extension() {
 			}
 		}
 	}
+
+// 	private suspend fun getGuildRoles(guild: GuildBehavior) =
+// 		guild.roles
+// 			.filter { it.id in guild.roles. }
+// 			.toList()
+// 			.associateBy { it.id }
 
 	/**
 	 * This function checks if a given [inputMessage] with an associated [argumentMessageId] exists and is a role menu.
