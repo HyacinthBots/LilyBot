@@ -21,7 +21,7 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
@@ -64,7 +64,7 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				// Clarify the user is not a bot or moderator
@@ -142,7 +142,7 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 				// Get all the bans into a list
 				val bans = guild!!.bans.toList().map { it.userId }
@@ -195,7 +195,7 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
@@ -276,7 +276,7 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				// Clarify the user isn't a bot or a moderator

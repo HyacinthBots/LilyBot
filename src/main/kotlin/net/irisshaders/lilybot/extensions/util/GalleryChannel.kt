@@ -18,7 +18,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
@@ -70,7 +70,7 @@ class GalleryChannel : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
 					// Using the global var, find guild channels for the given guildId and iterate through them to
 					// check for the presence of the channel and return if it is present
 					val guildGalleryChannels =
@@ -122,7 +122,7 @@ class GalleryChannel : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
 					var channelFound = false
 
 					val guildGalleryChannels =

@@ -27,7 +27,7 @@ import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
@@ -189,7 +189,7 @@ class RemindMe : Extension() {
 
 							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 							DatabaseHelper.removeReminder(guild!!.id, user.id, arguments.reminder)
-							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId)
+							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
 								.getMessage(messageId).edit {
 									content =
 										"${if (it.repeating) "Repeating" else ""} Reminder set at ${
@@ -236,7 +236,7 @@ class RemindMe : Extension() {
 									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
-										.getChannelOf<TextChannel>(it.channelId)
+										.getChannelOf<GuildMessageChannel>(it.channelId)
 										.getMessage(messageId).edit {
 											content = "${if (it.repeating) "Repeating" else ""} Reminder cancelled."
 										}
@@ -252,7 +252,7 @@ class RemindMe : Extension() {
 									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
-										.getChannelOf<TextChannel>(it.channelId)
+										.getChannelOf<GuildMessageChannel>(it.channelId)
 										.getMessage(messageId).edit {
 											content = "Repeating Reminder cancelled."
 										}
@@ -268,7 +268,7 @@ class RemindMe : Extension() {
 									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
-										.getChannelOf<TextChannel>(it.channelId)
+										.getChannelOf<GuildMessageChannel>(it.channelId)
 										.getMessage(messageId).edit {
 											content = "Reminder cancelled."
 										}
@@ -351,7 +351,7 @@ class RemindMe : Extension() {
 
 					if (!it.repeating) {
 						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-						kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId).getMessage(messageId)
+						kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId).getMessage(messageId)
 							.edit {
 								content = "Reminder completed!"
 							}
@@ -381,7 +381,7 @@ class RemindMe : Extension() {
 
 					if (!it.repeating) {
 						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-						kord.getGuild(it.guildId)!!.getChannelOf<TextChannel>(it.channelId).getMessage(messageId)
+						kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId).getMessage(messageId)
 							.edit {
 								content = "Reminder completed!"
 							}

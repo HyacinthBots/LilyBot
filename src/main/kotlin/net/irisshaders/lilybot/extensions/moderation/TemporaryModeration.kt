@@ -30,6 +30,7 @@ import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.supplier.EntitySupplyStrategy
@@ -82,9 +83,9 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 				val messageAmount = arguments.messages
-				val textChannel = channel.asChannelOf<TextChannel>()
+				val textChannel = channel.asChannelOf<GuildMessageChannel>()
 
 				// Get the specified amount of messages into an array list of Snowflakes and delete them
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
@@ -127,7 +128,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "warn") ?: return@action
@@ -276,7 +277,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				val targetUser = guild?.getMember(userArg.id)
@@ -338,7 +339,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
 
@@ -414,7 +415,7 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 				val userArg = arguments.userArgument
 
 				// Set timeout to null, or no timeout
@@ -467,7 +468,7 @@ class TemporaryModeration : Extension() {
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -523,7 +524,7 @@ class TemporaryModeration : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -579,7 +580,7 @@ class TemporaryModeration : Extension() {
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -640,7 +641,7 @@ class TemporaryModeration : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.modActionLog)
+					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (everyoneRole.permissions.contains(Permission.SendMessages)) {
