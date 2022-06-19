@@ -4,9 +4,11 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.flow.count
@@ -29,10 +31,20 @@ class MemberJoinLeave : Extension() {
 			action {
 				val config = DatabaseHelper.getConfig(event.guildId)!!
 
+				// If it's Lily joining, don't try to log since a channel won't be set
+				if (event.member.id == kord.selfId) return@action
+
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel)
+				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.joinChannel)
+
+				if (!joinChannel.getEffectivePermissions(kord.selfId).contains(
+						Permissions(Permission.SendMessages, Permission.EmbedLinks)
+					)
+				) {
+					return@action
+				}
 
 				joinChannel.createEmbed {
 					title = "User joined the server!"
@@ -66,7 +78,14 @@ class MemberJoinLeave : Extension() {
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel)
+				val joinChannel = event.getGuild().getChannelOf<TextChannel>(config.joinChannel)
+
+				if (!joinChannel.getEffectivePermissions(kord.selfId).contains(
+						Permissions(Permission.EmbedLinks, Permission.SendMessages)
+					)
+				) {
+					return@action
+				}
 
 				joinChannel.createEmbed {
 					title = "User left the server!"
