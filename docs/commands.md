@@ -336,7 +336,7 @@ None
 **Arguments**:
 None
 
-**Result**: Prevents the thread the command was run in from being archived
+**Result**: Prevents the thread the command was run in from being archived, if archiving is already being prevent, a choice of allowing archiving to happen again will be presented to the user
 
 **Required Permissions**: `none (Manage Threads if not owner)`
 
