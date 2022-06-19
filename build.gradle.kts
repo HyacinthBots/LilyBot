@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "net.irisshaders.lilybot"
-version = "3.4.1"
+version = "3.4.2"
 
 val javaVersion = 17
 val kotlinVersion = "${libs.versions.kotlin.get().split(".")[0]}.${libs.versions.kotlin.get().split(".")[1]}"
