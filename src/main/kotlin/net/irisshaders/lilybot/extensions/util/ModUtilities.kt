@@ -190,6 +190,13 @@ class ModUtilities : Extension() {
 					} else if (arguments.newContent == null) {
 						respond { content = "Please specify a new message content" }
 						return@action
+					} else if (arguments.newContent != null && arguments.newContent!!.length > 1024) {
+						respond {
+							content =
+								"Maximum embed length reached! Your embed character length cannot be more than 1024 " +
+										"characters, due to Discord limitations"
+						}
+						return@action
 					}
 
 					message.edit { content = arguments.newContent }
