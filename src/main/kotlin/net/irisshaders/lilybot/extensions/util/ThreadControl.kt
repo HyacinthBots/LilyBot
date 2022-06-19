@@ -32,7 +32,7 @@ import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.entity.Member
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
 import dev.kord.core.event.channel.thread.ThreadUpdateEvent
@@ -198,7 +198,7 @@ class ThreadControl : Extension() {
 										action {
 											DatabaseHelper.setThreadOwner(it.threadId, it.ownerId, false)
 											edit { content = "Thread archiving will no longer be prevented" }
-											guild!!.getChannelOf<TextChannel>(config.modActionLog).createMessage {
+											guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
 												embed {
 													title = "Thread archiving enabled"
 													color = DISCORD_FUCHSIA
@@ -230,7 +230,7 @@ class ThreadControl : Extension() {
 							return@action
 						} else if (it.threadId == threadChannel.id && !it.preventArchiving) {
 							DatabaseHelper.setThreadOwner(it.threadId, it.ownerId, true)
-							guild!!.getChannelOf<TextChannel>(config.modActionLog).createMessage {
+							guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
 								embed {
 									title = "Thread archiving disabled"
 									color = DISCORD_FUCHSIA

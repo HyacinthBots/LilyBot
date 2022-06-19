@@ -18,7 +18,7 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -150,7 +150,7 @@ class Tags : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
 
 				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) != null) {
 					respond { content = "A tag with that name already exists in this guild." }
@@ -222,7 +222,7 @@ class Tags : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.modActionLog)
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
 
 				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
 

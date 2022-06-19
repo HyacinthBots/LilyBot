@@ -19,7 +19,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.channel.MessageChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.create.embed
@@ -89,7 +89,7 @@ class LogUploading : Extension() {
 						if (event.getGuild()!!.getChannelOf<TextChannelThread>(it.threadId).parentId ==
 							config.supportChannel
 						) {
-							uploadChannel = event.getGuild()!!.getChannel(it.threadId) as MessageChannel
+							uploadChannel = event.getGuild()!!.getChannelOf<GuildMessageChannel>(it.threadId)
 						}
 					}
 				}

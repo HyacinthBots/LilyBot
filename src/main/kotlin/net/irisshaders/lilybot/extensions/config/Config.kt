@@ -16,7 +16,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -55,7 +55,7 @@ class Config : Extension() {
 				}
 
 				action {
-					val actionLogChannel = guild!!.getChannelOf<TextChannel>(arguments.modActionLog.id)
+					val actionLogChannel = guild!!.getChannelOf<GuildMessageChannel>(arguments.modActionLog.id)
 
 					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
@@ -124,7 +124,7 @@ class Config : Extension() {
 					} else {
 						// Log the config being cleared to the action log
 						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
-						val actionLogChannel = guild!!.getChannelOf<TextChannel>(actionLogId!!)
+						val actionLogChannel = guild!!.getChannelOf<GuildMessageChannel>(actionLogId!!)
 
 						respond {
 							content = "Config cleared for Guild ID: ${guild!!.id}!"

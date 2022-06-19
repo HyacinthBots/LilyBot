@@ -175,7 +175,7 @@ permissions = "none (Manage Threads if not owner)"
 [[command]]
 category = "Utility commands"
 name = "thread prevent-archiving"
-result = "Prevents the thread the command was run in from being archived"
+result = "Prevents the thread the command was run in from being archived, if archiving is already being prevent, a choice of allowing archiving to happen again will be presented to the user"
 permissions = "none (Manage Threads if not owner)"
 
 [[command]]

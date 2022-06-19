@@ -34,7 +34,7 @@ import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.Role
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.firstOrNull
@@ -119,7 +119,7 @@ class RoleMenu : Extension() {
 					)
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config!!.modActionLog)
 
 					actionLog.createMessage {
 						embed {
@@ -207,7 +207,7 @@ class RoleMenu : Extension() {
 					)
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config!!.modActionLog)
 
 					actionLog.createMessage {
 						embed {
@@ -269,7 +269,7 @@ class RoleMenu : Extension() {
 					DatabaseHelper.deleteRoleFromMenu(menuMessage!!.id, arguments.role.id)
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config!!.modActionLog)
 
 					actionLog.createMessage {
 						embed {
@@ -367,7 +367,7 @@ class RoleMenu : Extension() {
 					)
 
 					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<TextChannel>(config!!.modActionLog)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config!!.modActionLog)
 
 					actionLog.createMessage {
 						embed {

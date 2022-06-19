@@ -6,7 +6,7 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageDeleteEvent
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
@@ -42,7 +42,7 @@ class MessageDelete : Extension() {
 				val config = DatabaseHelper.getConfig(event.guild!!.id)!!
 
 				val guild = kord.getGuild(event.guildId!!)
-				val messageLog = guild?.getChannelOf<TextChannel>(config.messageLogs)
+				val messageLog = guild?.getChannelOf<GuildMessageChannel>(config.messageLogs)
 				val eventMessage = event.message
 				val messageContent = if (eventMessage?.asMessageOrNull() != null) {
 					if (eventMessage.asMessageOrNull().content.length > 1024) {
