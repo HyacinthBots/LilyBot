@@ -199,7 +199,7 @@ class ThreadControl : Extension() {
 										action {
 											DatabaseSetters.setThreadOwner(it.threadId, it.ownerId, false)
 											edit { content = "Thread archiving will no longer be prevented" }
-											guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+											guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 												.createMessage {
 													embed {
 														title = "Thread archiving enabled"

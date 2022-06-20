@@ -71,7 +71,7 @@ class ModUtilities : Extension() {
 			}
 			action {
 				val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 				val targetChannel: GuildMessageChannel =
 					if (arguments.channel != null) {
 						guild!!.getChannelOf(arguments.channel!!.id)
