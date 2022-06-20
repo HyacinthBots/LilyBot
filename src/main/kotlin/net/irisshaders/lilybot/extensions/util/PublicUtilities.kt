@@ -22,7 +22,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.datetime.Clock
@@ -88,7 +88,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.channel)
+					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
@@ -281,7 +281,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<TextChannel>(config.channel)
+					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {

@@ -32,6 +32,7 @@ import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.ModalParentInteractionBehavior
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.response.DeferredEphemeralMessageInteractionResponseBehavior
@@ -41,6 +42,7 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
@@ -89,7 +91,7 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 	action {
 		val loggingConfig = DatabaseGetters.getLoggingConfig(guild!!.id)!!
 		val moderationConfig = DatabaseGetters.getModerationConfig(guild!!.id)!!
-		val messageLog = guild?.getChannel(loggingConfig.messageChannel) as GuildMessageChannelBehavior
+		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
 		val reportedMessage: Message
 		val messageAuthor: Member?
 
@@ -143,7 +145,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 	action {
 		val loggingConfig = DatabaseGetters.getLoggingConfig(guild!!.id)!!
 		val moderationConfig = DatabaseGetters.getModerationConfig(guild!!.id)!!
-		val messageLog = guild?.getChannel(loggingConfig.messageChannel) as GuildMessageChannelBehavior
+		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
 		val channel: MessageChannel
 		val reportedMessage: Message
 		val messageAuthor: Member?
@@ -204,7 +206,7 @@ suspend fun createReportModal(
 	inputInteraction: ModalParentInteractionBehavior,
 	user: UserBehavior,
 	config: DatabaseTables.ModerationConfigData,
-	messageLog: GuildMessageChannelBehavior,
+	messageLog: GuildMessageChannel,
 	reportedMessage: Message,
 	messageAuthor: Member?,
 ) {
@@ -260,7 +262,7 @@ suspend fun createReportModal(
  */
 private suspend inline fun createReport(
 	user: UserBehavior,
-	messageLog: GuildMessageChannelBehavior,
+	messageLog: GuildMessageChannel,
 	messageAuthor: Member?,
 	reportedMessage: Message,
 	moderatorRole: Snowflake,

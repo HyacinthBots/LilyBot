@@ -30,7 +30,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
@@ -70,9 +70,9 @@ class ModUtilities : Extension() {
 				)
 			}
 			action {
-				val config = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
-				val targetChannel: TextChannel =
+				val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+				val targetChannel: GuildMessageChannel =
 					if (arguments.channel != null) {
 						guild!!.getChannelOf(arguments.channel!!.id)
 					} else {
@@ -165,7 +165,7 @@ class ModUtilities : Extension() {
 				}
 
 				val config = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 				val message: Message
 
 				try {
@@ -317,7 +317,7 @@ class ModUtilities : Extension() {
 				}
 
 				val config = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
-				val actionLog = guild!!.getChannelOf<TextChannel>(config.channel)
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 				// Update the presence in the action
 				this@ephemeralSlashCommand.kord.editPresence {

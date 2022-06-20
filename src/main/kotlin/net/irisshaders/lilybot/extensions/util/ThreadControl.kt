@@ -15,21 +15,26 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSub
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.member
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
+import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.edit
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.hasPermission
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.entity.Member
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
 import dev.kord.core.event.channel.thread.ThreadUpdateEvent
 import dev.kord.rest.builder.message.create.embed
 import net.irisshaders.lilybot.database.DatabaseGetters
@@ -180,10 +185,49 @@ class ThreadControl : Extension() {
 					}
 
 					val threads = DatabaseGetters.getAllThreads()
+					var message: EphemeralMessageInteractionResponse? = null
 					threads.forEach {
 						if (it.threadId == threadChannel.id && it.preventArchiving) {
-							edit {
-								content = "Thread archiving is already being prevented!"
+							message = edit {
+								content = "Thread archiving is already being prevented, would you like to remove this?"
+							}.edit {
+								components {
+									ephemeralButton {
+										label = "Yes"
+										style = ButtonStyle.Primary
+
+										action {
+											DatabaseSetters.setThreadOwner(it.threadId, it.ownerId, false)
+											edit { content = "Thread archiving will no longer be prevented" }
+											guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+												.createMessage {
+													embed {
+														title = "Thread archiving enabled"
+														color = DISCORD_FUCHSIA
+
+														field {
+															name = "User"
+															value = user.asUser().tag
+														}
+														field {
+															name = "Thread"
+															value = threadChannel.mention
+														}
+													}
+												}
+											message!!.edit { components { removeAll() } }
+										}
+									}
+									ephemeralButton {
+										label = "No"
+										style = ButtonStyle.Secondary
+
+										action {
+											edit { content = "Thread archiving will remain prevented" }
+											message!!.edit { components { removeAll() } }
+										}
+									}
+								}
 							}
 							return@action
 						} else if (it.threadId == threadChannel.id && !it.preventArchiving) {
@@ -193,7 +237,7 @@ class ThreadControl : Extension() {
 
 					edit { content = "Thread archiving will now be prevented" }
 
-					guild!!.getChannelOf<TextChannel>(config.channel).createMessage {
+					guild!!.getChannelOf<GuildMessageChannel>(config.channel).createMessage {
 						embed {
 							title = "Thread archiving disabled"
 							color = DISCORD_FUCHSIA
@@ -208,6 +252,7 @@ class ThreadControl : Extension() {
 							}
 						}
 					}
+					edit { content = "Thread archiving will now be prevented" }
 				}
 			}
 		}
