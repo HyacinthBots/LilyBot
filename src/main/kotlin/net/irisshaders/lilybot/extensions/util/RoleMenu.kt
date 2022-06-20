@@ -268,7 +268,7 @@ class RoleMenu : Extension() {
 						return@action
 					}
 
-					DatabaseRemovers.deleteRoleFromMenu(menuMessage!!.id, arguments.role.id)
+					DatabaseRemovers.removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
 
 					val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
@@ -424,7 +424,7 @@ class RoleMenu : Extension() {
 				data.roles.forEach {
 					val role = guild.getRoleOrNull(it)
 					if (role == null) {
-						DatabaseRemovers.deleteRoleFromMenu(event.interaction.message.id, it)
+						DatabaseRemovers.removeRoleFromMenu(event.interaction.message.id, it)
 					} else {
 						roles.add(role)
 					}

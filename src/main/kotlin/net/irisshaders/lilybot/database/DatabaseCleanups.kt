@@ -31,8 +31,8 @@ object DatabaseCleanups {
 			if (leaveDuration.inWholeDays > 30) {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
 				// DatabaseRemovers.clearConfig(it.guildId)
-				DatabaseRemovers.clearTags(it.guildId)
-				DatabaseRemovers.clearWarn(it.guildId)
+				DatabaseRemovers.removeTags(it.guildId)
+				DatabaseRemovers.removeWarn(it.guildId)
 				// Once role menu is rewritten, component data should also be cleared here.
 				collection.deleteOne(DatabaseTables.GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging

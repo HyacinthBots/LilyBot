@@ -131,7 +131,7 @@ class GalleryChannel : Extension() {
 						galleryChannels.find(DatabaseTables.GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
 					guildGalleryChannels.forEach {
 						if (channel.asChannel().id == it.channelId) {
-							DatabaseRemovers.deleteGalleryChannel(guild!!.id, channel.asChannel().id)
+							DatabaseRemovers.removeGalleryChannel(guild!!.id, channel.asChannel().id)
 							// Update the global var
 							galleryChannels = DatabaseGetters.getGalleryChannels()
 							channelFound = true

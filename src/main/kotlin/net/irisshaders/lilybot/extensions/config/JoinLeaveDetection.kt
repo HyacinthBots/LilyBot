@@ -38,7 +38,7 @@ class JoinLeaveDetection : Extension() {
 		 */
 		event<GuildCreateEvent> {
 			action {
-				DatabaseRemovers.deleteLeaveTime(event.guild.id)
+				DatabaseRemovers.removeLeaveTime(event.guild.id)
 			}
 		}
 	}

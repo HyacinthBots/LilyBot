@@ -15,7 +15,7 @@ object DatabaseRemovers {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend inline fun deleteGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+	suspend inline fun removeGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
 		val collection = database.getCollection<DatabaseTables.GalleryChannelData>()
 		collection.deleteOne(
 			DatabaseTables.GalleryChannelData::channelId eq inputChannelId,
@@ -54,7 +54,7 @@ object DatabaseRemovers {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend inline fun deleteLeaveTime(inputGuildId: Snowflake) {
+	suspend inline fun removeLeaveTime(inputGuildId: Snowflake) {
 		val collection = database.getCollection<GuildLeaveTimeData>()
 		collection.deleteOne(GuildLeaveTimeData::guildId eq inputGuildId)
 	}
@@ -66,7 +66,7 @@ object DatabaseRemovers {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend inline fun clearWarn(inputGuildId: Snowflake) {
+	suspend inline fun removeWarn(inputGuildId: Snowflake) {
 		val collection = database.getCollection<DatabaseTables.WarnData>()
 		collection.deleteMany(DatabaseTables.WarnData::guildId eq inputGuildId)
 	}
@@ -79,7 +79,7 @@ object DatabaseRemovers {
 	 * @author tempest15
 	 * @since 3.4.0
 	 */
-	suspend inline fun deleteRoleFromMenu(inputMessageId: Snowflake, inputRoleId: Snowflake) {
+	suspend inline fun removeRoleFromMenu(inputMessageId: Snowflake, inputRoleId: Snowflake) {
 		val collection = database.getCollection<DatabaseTables.RoleMenuData>()
 		val roleMenu = collection.findOne(DatabaseTables.RoleMenuData::messageId eq inputMessageId) ?: return
 
@@ -97,7 +97,7 @@ object DatabaseRemovers {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend inline fun deleteTag(inputGuildId: Snowflake, name: String) {
+	suspend inline fun removeTag(inputGuildId: Snowflake, name: String) {
 		val collection = database.getCollection<DatabaseTables.TagsData>()
 		collection.deleteOne(DatabaseTables.TagsData::guildId eq inputGuildId, DatabaseTables.TagsData::name eq name)
 	}
@@ -109,7 +109,7 @@ object DatabaseRemovers {
 	 * @author tempest15
 	 * @since 3.1.0
 	 */
-	suspend inline fun clearTags(inputGuildId: Snowflake) {
+	suspend inline fun removeTags(inputGuildId: Snowflake) {
 		val collection = database.getCollection<DatabaseTables.TagsData>()
 		collection.deleteMany(DatabaseTables.TagsData::guildId eq inputGuildId)
 	}
@@ -122,7 +122,7 @@ object DatabaseRemovers {
 	 * @author henkelmax
 	 * @since 3.2.2
 	 */
-	suspend inline fun deleteThread(inputThreadId: Snowflake) {
+	suspend inline fun removeThread(inputThreadId: Snowflake) {
 		val collection = database.getCollection<DatabaseTables.ThreadData>()
 		collection.deleteOne(DatabaseTables.ThreadData::threadId eq inputThreadId)
 	}

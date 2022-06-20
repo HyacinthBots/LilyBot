@@ -99,9 +99,9 @@ class ThreadInviter : Extension() {
 								existingUserThread = thread
 							}
 						} catch (e: EntityNotFoundException) {
-							DatabaseRemovers.deleteThread(it.threadId)
+							DatabaseRemovers.removeThread(it.threadId)
 						} catch (e: IllegalArgumentException) {
-							DatabaseRemovers.deleteThread(it.threadId)
+							DatabaseRemovers.removeThread(it.threadId)
 						}
 					}
 
