@@ -39,9 +39,8 @@ import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
-import net.irisshaders.lilybot.database.DbGetters
-import net.irisshaders.lilybot.database.DbRemovers
-import net.irisshaders.lilybot.database.DbSetters
+import net.irisshaders.lilybot.database.functions.ModerationConfigDatabase
+import net.irisshaders.lilybot.database.functions.RoleMenuDatabase
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -113,14 +112,14 @@ class RoleMenu : Extension() {
 						components.removeAll()
 					}
 
-					DbSetters.setRoleMenu(
+					RoleMenuDatabase.setRoleMenu(
 						menuMessage!!.id,
 						channel.id,
 						guild!!.id,
 						mutableListOf(arguments.initialRole.id)
 					)
 
-					val config = DbGetters.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {
@@ -184,7 +183,7 @@ class RoleMenu : Extension() {
 					val message = channel.getMessageOrNull(arguments.messageId)
 					if (!roleMenuExists(message, arguments.messageId)) return@action
 
-					val data = DbGetters.getRoleData(arguments.messageId)!!
+					val data = RoleMenuDatabase.getRoleData(arguments.messageId)!!
 
 					if (arguments.role.id in data.roles) {
 						respond {
@@ -201,14 +200,14 @@ class RoleMenu : Extension() {
 					}
 
 					data.roles.add(arguments.role.id)
-					DbSetters.setRoleMenu(
+					RoleMenuDatabase.setRoleMenu(
 						data.messageId,
 						data.channelId,
 						data.guildId,
 						data.roles
 					)
 
-					val config = DbGetters.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {
@@ -252,7 +251,7 @@ class RoleMenu : Extension() {
 					val menuMessage = channel.getMessageOrNull(arguments.messageId)
 					if (!roleMenuExists(menuMessage, arguments.messageId)) return@action
 
-					val data = DbGetters.getRoleData(arguments.messageId)!!
+					val data = RoleMenuDatabase.getRoleData(arguments.messageId)!!
 
 					if (arguments.role.id !in data.roles) {
 						respond {
@@ -268,9 +267,9 @@ class RoleMenu : Extension() {
 						return@action
 					}
 
-					DbRemovers.removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
+					RoleMenuDatabase.removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
 
-					val config = DbGetters.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {
@@ -361,14 +360,14 @@ class RoleMenu : Extension() {
 						}
 					}
 
-					DbSetters.setRoleMenu(
+					RoleMenuDatabase.setRoleMenu(
 						menuMessage.id,
 						channel.id,
 						guild!!.id,
 						roles
 					)
 
-					val config = DbGetters.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {
@@ -398,7 +397,7 @@ class RoleMenu : Extension() {
 				}
 			}
 			action {
-				val data = DbGetters.getRoleData(event.interaction.message.id)
+				val data = RoleMenuDatabase.getRoleData(event.interaction.message.id)
 
 				if (data == null) {
 					event.interaction.respondEphemeral {
@@ -424,7 +423,7 @@ class RoleMenu : Extension() {
 				data.roles.forEach {
 					val role = guild.getRoleOrNull(it)
 					if (role == null) {
-						DbRemovers.removeRoleFromMenu(event.interaction.message.id, it)
+						RoleMenuDatabase.removeRoleFromMenu(event.interaction.message.id, it)
 					} else {
 						roles.add(role)
 					}
@@ -490,12 +489,6 @@ class RoleMenu : Extension() {
 		}
 	}
 
-// 	private suspend fun getGuildRoles(guild: GuildBehavior) =
-// 		guild.roles
-// 			.filter { it.id in guild.roles. }
-// 			.toList()
-// 			.associateBy { it.id }
-
 	/**
 	 * This function checks if a given [inputMessage] with an associated [argumentMessageId] exists and is a role menu.
 	 *
@@ -517,7 +510,7 @@ class RoleMenu : Extension() {
 			return false
 		}
 
-		val data = DbGetters.getRoleData(argumentMessageId)
+		val data = RoleMenuDatabase.getRoleData(argumentMessageId)
 		if (data == null) {
 			respond {
 				content = "That message doesn't seem to be a role menu."

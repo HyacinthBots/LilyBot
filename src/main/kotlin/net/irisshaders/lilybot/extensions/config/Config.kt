@@ -19,8 +19,12 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
-import net.irisshaders.lilybot.database.DbSetters
-import net.irisshaders.lilybot.database.DbTables
+import net.irisshaders.lilybot.database.functions.LoggingConfigDatabase
+import net.irisshaders.lilybot.database.functions.ModerationConfigDatabase
+import net.irisshaders.lilybot.database.functions.SupportConfigDatabase
+import net.irisshaders.lilybot.database.tables.LoggingConfigData
+import net.irisshaders.lilybot.database.tables.ModerationConfigData
+import net.irisshaders.lilybot.database.tables.SupportConfigData
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -97,8 +101,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				DbSetters.setSupportConfig(
-					DbTables.SupportConfigData(
+				SupportConfigDatabase.setSupportConfig(
+					SupportConfigData(
 						guild!!.id,
 						arguments.enable,
 						arguments.channel.id,
@@ -128,8 +132,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				DbSetters.setSupportConfig(
-					DbTables.SupportConfigData(
+				SupportConfigDatabase.setSupportConfig(
+					SupportConfigData(
 						guild!!.id,
 						arguments.enable,
 						arguments.channel.id,
@@ -171,8 +175,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			DbSetters.setModerationConfig(
-				DbTables.ModerationConfigData(
+			ModerationConfigDatabase.setModerationConfig(
+				ModerationConfigData(
 					guild!!.id,
 					arguments.enabled,
 					arguments.modActionLog.id,
@@ -212,8 +216,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			DbSetters.setLoggingConfig(
-				DbTables.LoggingConfigData(
+			LoggingConfigDatabase.setLoggingConfig(
+				LoggingConfigData(
 					guild!!.id,
 					arguments.enableMessageLogs,
 					arguments.messageLogs.id,
@@ -223,22 +227,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			)
 		}
 	}
-
-	// Maybe some stuff iono
-// 	unsafeSubCommand {
-// 		name = "bot"
-// 		description = "Configure general aspects of the bot"
-//
-// 		initialResponse = InitialSlashCommandResponse.None
-//
-// 		check {
-// 			anyGuild()
-// 			// hasPermission(Permission.ManageGuild)
-// 		}
-//
-// 		action {
-// 		}
-// 	}
 }
 
 class SupportModuleArgs : Arguments() {

@@ -5,9 +5,13 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.functions.TagsDatabase
+import net.irisshaders.lilybot.database.functions.WarnDatabase
+import net.irisshaders.lilybot.database.tables.GuildLeaveTimeData
+import net.irisshaders.lilybot.database.tables.ThreadData
 import org.litote.kmongo.eq
 
-object DbCleanups {
+object Cleanups {
 
 	@PublishedApi
 	internal val cleanupsLogger = KotlinLogging.logger("Database Cleanups")
@@ -20,7 +24,7 @@ object DbCleanups {
 	 */
 	suspend inline fun cleanupGuildData() {
 		cleanupsLogger.info("Starting guild cleanup...")
-		val collection = database.getCollection<DbTables.GuildLeaveTimeData>()
+		val collection = database.getCollection<GuildLeaveTimeData>()
 		val leaveTimeData = collection.find().toList()
 		var deletedGuildData = 0
 
@@ -31,10 +35,10 @@ object DbCleanups {
 			if (leaveDuration.inWholeDays > 30) {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
 				// DatabaseRemovers.clearConfig(it.guildId)
-				DbRemovers.removeTags(it.guildId)
-				DbRemovers.removeWarn(it.guildId)
+				TagsDatabase.removeTags(it.guildId)
+				WarnDatabase.removeWarn(it.guildId)
 				// Once role menu is rewritten, component data should also be cleared here.
-				collection.deleteOne(DbTables.GuildLeaveTimeData::guildId eq it.guildId)
+				collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
 			}
 		}
@@ -50,7 +54,7 @@ object DbCleanups {
 	 */
 	suspend inline fun cleanupThreadData(kordInstance: Kord) {
 		cleanupsLogger.info("Starting thread cleanup...")
-		val collection = database.getCollection<DbTables.ThreadData>()
+		val collection = database.getCollection<ThreadData>()
 		val threads = collection.find().toList()
 		var deletedThreads = 0
 		for (it in threads) {
@@ -58,7 +62,7 @@ object DbCleanups {
 			val latestMessage = thread.getLastMessage() ?: continue
 			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 			if (timeSinceLatestMessage.inWholeDays > 7) {
-				collection.deleteOne(DbTables.ThreadData::threadId eq thread.id)
+				collection.deleteOne(ThreadData::threadId eq thread.id)
 				deletedThreads++
 			}
 		}

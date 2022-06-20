@@ -13,7 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
-import net.irisshaders.lilybot.database.DbGetters
+import net.irisshaders.lilybot.database.functions.LoggingConfigDatabase
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -40,7 +40,7 @@ class MessageDelete : Extension() {
 				delay(PK_API_DELAY) // Allow the PK API to catch up
 				if (event.message?.author?.isBot == true) return@action
 
-				val config = DbGetters.getLoggingConfig(guildFor(event)!!.id)!!
+				val config = LoggingConfigDatabase.getLoggingConfig(guildFor(event)!!.id)!!
 
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLog = guild?.getChannelOf<GuildMessageChannel>(config.messageChannel)

@@ -36,8 +36,8 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DbGetters
-import net.irisshaders.lilybot.database.DbSetters
+import net.irisshaders.lilybot.database.functions.ModerationConfigDatabase
+import net.irisshaders.lilybot.database.functions.StatusDatabase
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -70,7 +70,7 @@ class ModUtilities : Extension() {
 				)
 			}
 			action {
-				val config = DbGetters.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 				val targetChannel: GuildMessageChannel =
 					if (arguments.channel != null) {
@@ -164,7 +164,7 @@ class ModUtilities : Extension() {
 					channel
 				}
 
-				val config = DbGetters.getModerationConfig(guildFor(event)!!.id)!!
+				val config = ModerationConfigDatabase.getModerationConfig(guildFor(event)!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 				val message: Message
 
@@ -316,7 +316,7 @@ class ModUtilities : Extension() {
 					return@action
 				}
 
-				val config = DbGetters.getModerationConfig(guildFor(event)!!.id)!!
+				val config = ModerationConfigDatabase.getModerationConfig(guildFor(event)!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 				// Update the presence in the action
@@ -326,7 +326,7 @@ class ModUtilities : Extension() {
 				}
 
 				// Store the new presence in the database for if there is a restart
-				DbSetters.setStatus(arguments.presenceArgument)
+				StatusDatabase.setStatus(arguments.presenceArgument)
 
 				respond { content = "Presence set to `${arguments.presenceArgument}`" }
 

@@ -5,8 +5,7 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DbRemovers
-import net.irisshaders.lilybot.database.DbSetters
+import net.irisshaders.lilybot.database.functions.GuildLeaveTimeDatabase
 
 /**
  * This class is used to detect when Lily leaves or joins a guild, allowing us to delete old guild data, if Lily has
@@ -26,7 +25,7 @@ class JoinLeaveDetection : Extension() {
 		 */
 		event<GuildDeleteEvent> {
 			action {
-				DbSetters.setLeaveTime(event.guildId, Clock.System.now())
+				GuildLeaveTimeDatabase.setLeaveTime(event.guildId, Clock.System.now())
 			}
 		}
 
@@ -38,7 +37,7 @@ class JoinLeaveDetection : Extension() {
 		 */
 		event<GuildCreateEvent> {
 			action {
-				DbRemovers.removeLeaveTime(event.guild.id)
+				GuildLeaveTimeDatabase.removeLeaveTime(event.guild.id)
 			}
 		}
 	}
