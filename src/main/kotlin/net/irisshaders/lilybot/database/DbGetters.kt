@@ -4,28 +4,28 @@ import dev.kord.common.entity.Snowflake
 import kotlinx.coroutines.runBlocking
 import net.irisshaders.lilybot.configDatabase
 import net.irisshaders.lilybot.database
-import net.irisshaders.lilybot.database.DatabaseTables.GalleryChannelData
-import net.irisshaders.lilybot.database.DatabaseTables.RoleMenuData
-import net.irisshaders.lilybot.database.DatabaseTables.TagsData
+import net.irisshaders.lilybot.database.DbTables.GalleryChannelData
+import net.irisshaders.lilybot.database.DbTables.RoleMenuData
+import net.irisshaders.lilybot.database.DbTables.TagsData
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.eq
 
 // TODO Organise into A-Z
-object DatabaseGetters {
+object DbGetters {
 
-	suspend inline fun getSupportConfig(inputGuildId: Snowflake): DatabaseTables.SupportConfigData? {
-		val collection = configDatabase.getCollection<DatabaseTables.SupportConfigData>()
-		return collection.findOne(DatabaseTables.SupportConfigData::guildId eq inputGuildId)
+	suspend inline fun getSupportConfig(inputGuildId: Snowflake): DbTables.SupportConfigData? {
+		val collection = configDatabase.getCollection<DbTables.SupportConfigData>()
+		return collection.findOne(DbTables.SupportConfigData::guildId eq inputGuildId)
 	}
 
-	suspend inline fun getModerationConfig(inputGuildId: Snowflake): DatabaseTables.ModerationConfigData? {
-		val collection = configDatabase.getCollection<DatabaseTables.ModerationConfigData>()
-		return collection.findOne(DatabaseTables.ModerationConfigData::guildId eq inputGuildId)
+	suspend inline fun getModerationConfig(inputGuildId: Snowflake): DbTables.ModerationConfigData? {
+		val collection = configDatabase.getCollection<DbTables.ModerationConfigData>()
+		return collection.findOne(DbTables.ModerationConfigData::guildId eq inputGuildId)
 	}
 
-	suspend inline fun getLoggingConfig(inputGuildId: Snowflake): DatabaseTables.LoggingConfigData? {
-		val collection = configDatabase.getCollection<DatabaseTables.LoggingConfigData>()
-		return collection.findOne(DatabaseTables.LoggingConfigData::guildId eq inputGuildId)
+	suspend inline fun getLoggingConfig(inputGuildId: Snowflake): DbTables.LoggingConfigData? {
+		val collection = configDatabase.getCollection<DbTables.LoggingConfigData>()
+		return collection.findOne(DbTables.LoggingConfigData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -37,11 +37,11 @@ object DatabaseGetters {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend inline fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): DatabaseTables.WarnData? {
-		val collection = database.getCollection<DatabaseTables.WarnData>()
+	suspend inline fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): DbTables.WarnData? {
+		val collection = database.getCollection<DbTables.WarnData>()
 		return collection.findOne(
-			DatabaseTables.WarnData::userId eq inputUserId,
-			DatabaseTables.WarnData::guildId eq inputGuildId
+			DbTables.WarnData::userId eq inputUserId,
+			DbTables.WarnData::guildId eq inputGuildId
 		)
 	}
 
@@ -66,10 +66,10 @@ object DatabaseGetters {
 	 * @since 3.0.0
 	 */
 	fun getStatus(): String {
-		var selectedStatus: DatabaseTables.StatusData?
+		var selectedStatus: DbTables.StatusData?
 		runBlocking {
-			val collection = database.getCollection<DatabaseTables.StatusData>()
-			selectedStatus = collection.findOne(DatabaseTables.StatusData::key eq "LilyStatus")
+			val collection = database.getCollection<DbTables.StatusData>()
+			selectedStatus = collection.findOne(DbTables.StatusData::key eq "LilyStatus")
 		}
 		return selectedStatus?.status ?: "Iris"
 	}
@@ -95,8 +95,8 @@ object DatabaseGetters {
 	 * @author NoComment1105
 	 * @since 3.4.1
 	 */
-	suspend inline fun getAllThreads(): List<DatabaseTables.ThreadData> {
-		val collection = database.getCollection<DatabaseTables.ThreadData>()
+	suspend inline fun getAllThreads(): List<DbTables.ThreadData> {
+		val collection = database.getCollection<DbTables.ThreadData>()
 		return collection.find().toList()
 	}
 
@@ -109,9 +109,9 @@ object DatabaseGetters {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend inline fun getThread(inputThreadId: Snowflake): DatabaseTables.ThreadData? {
-		val collection = database.getCollection<DatabaseTables.ThreadData>()
-		return collection.findOne(DatabaseTables.ThreadData::threadId eq inputThreadId)
+	suspend inline fun getThread(inputThreadId: Snowflake): DbTables.ThreadData? {
+		val collection = database.getCollection<DbTables.ThreadData>()
+		return collection.findOne(DbTables.ThreadData::threadId eq inputThreadId)
 	}
 
 	/**
@@ -123,9 +123,9 @@ object DatabaseGetters {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend inline fun getOwnerThreads(inputOwnerId: Snowflake): List<DatabaseTables.ThreadData> {
-		val collection = database.getCollection<DatabaseTables.ThreadData>()
-		return collection.find(DatabaseTables.ThreadData::ownerId eq inputOwnerId).toList()
+	suspend inline fun getOwnerThreads(inputOwnerId: Snowflake): List<DbTables.ThreadData> {
+		val collection = database.getCollection<DbTables.ThreadData>()
+		return collection.find(DbTables.ThreadData::ownerId eq inputOwnerId).toList()
 	}
 
 	/**
@@ -144,8 +144,8 @@ object DatabaseGetters {
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	suspend inline fun getReminders(): List<DatabaseTables.RemindMeData> {
-		val collection = database.getCollection<DatabaseTables.RemindMeData>()
+	suspend inline fun getReminders(): List<DbTables.RemindMeData> {
+		val collection = database.getCollection<DbTables.RemindMeData>()
 		return collection.find().toList()
 	}
 

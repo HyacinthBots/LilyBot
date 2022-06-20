@@ -37,8 +37,8 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
 import dev.kord.core.event.channel.thread.ThreadUpdateEvent
 import dev.kord.rest.builder.message.create.embed
-import net.irisshaders.lilybot.database.DatabaseGetters
-import net.irisshaders.lilybot.database.DatabaseSetters
+import net.irisshaders.lilybot.database.DbGetters
+import net.irisshaders.lilybot.database.DbSetters
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -131,7 +131,7 @@ class ThreadControl : Extension() {
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 
-					val oldOwnerId = DatabaseGetters.getThread(threadChannel.id)?.ownerId ?: threadChannel.ownerId
+					val oldOwnerId = DbGetters.getThread(threadChannel.id)?.ownerId ?: threadChannel.ownerId
 					val oldOwner = guild!!.getMember(oldOwnerId)
 
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
@@ -146,7 +146,7 @@ class ThreadControl : Extension() {
 						return@action
 					}
 
-					DatabaseSetters.setThreadOwner(threadChannel.id, arguments.newOwner.id)
+					DbSetters.setThreadOwner(threadChannel.id, arguments.newOwner.id)
 
 					respond { content = "Ownership transferred." }
 
@@ -172,7 +172,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val config = DatabaseGetters.getModerationConfig(guild!!.id)!!
+					val config = DbGetters.getModerationConfig(guild!!.id)!!
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
@@ -184,7 +184,7 @@ class ThreadControl : Extension() {
 						}
 					}
 
-					val threads = DatabaseGetters.getAllThreads()
+					val threads = DbGetters.getAllThreads()
 					var message: EphemeralMessageInteractionResponse? = null
 					threads.forEach {
 						if (it.threadId == threadChannel.id && it.preventArchiving) {
@@ -197,7 +197,7 @@ class ThreadControl : Extension() {
 										style = ButtonStyle.Primary
 
 										action {
-											DatabaseSetters.setThreadOwner(it.threadId, it.ownerId, false)
+											DbSetters.setThreadOwner(it.threadId, it.ownerId, false)
 											edit { content = "Thread archiving will no longer be prevented" }
 											guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 												.createMessage {
@@ -231,7 +231,7 @@ class ThreadControl : Extension() {
 							}
 							return@action
 						} else if (it.threadId == threadChannel.id && !it.preventArchiving) {
-							DatabaseSetters.setThreadOwner(it.threadId, it.ownerId, true)
+							DbSetters.setThreadOwner(it.threadId, it.ownerId, true)
 						}
 					}
 
@@ -260,7 +260,7 @@ class ThreadControl : Extension() {
 		event<ThreadUpdateEvent> {
 			action {
 				val channel = event.channel
-				val ownedThread = DatabaseGetters.getThread(channel.id)
+				val ownedThread = DbGetters.getThread(channel.id)
 
 				if (channel.isArchived && ownedThread != null && ownedThread.preventArchiving) {
 					channel.edit {
@@ -310,7 +310,7 @@ class ThreadControl : Extension() {
 		inputThread: ThreadChannel,
 		inputMember: Member
 	): Boolean {
-		val databaseThreadOwner = DatabaseGetters.getThread(inputThread.id)?.ownerId
+		val databaseThreadOwner = DbGetters.getThread(inputThread.id)?.ownerId
 
 		if (inputMember.hasPermission(Permission.ModerateMembers) || databaseThreadOwner == inputMember.id) {
 			return true

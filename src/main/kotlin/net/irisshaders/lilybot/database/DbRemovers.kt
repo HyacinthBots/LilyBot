@@ -2,11 +2,11 @@ package net.irisshaders.lilybot.database
 
 import dev.kord.common.entity.Snowflake
 import net.irisshaders.lilybot.database
-import net.irisshaders.lilybot.database.DatabaseTables.GuildLeaveTimeData
+import net.irisshaders.lilybot.database.DbTables.GuildLeaveTimeData
 import org.litote.kmongo.eq
 
 // TODO Organise into A-Z
-object DatabaseRemovers {
+object DbRemovers {
 	/**
 	 * Removes a channel ID from the gallery channel database.
 	 *
@@ -16,10 +16,10 @@ object DatabaseRemovers {
 	 * @since 3.3.0
 	 */
 	suspend inline fun removeGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
-		val collection = database.getCollection<DatabaseTables.GalleryChannelData>()
+		val collection = database.getCollection<DbTables.GalleryChannelData>()
 		collection.deleteOne(
-			DatabaseTables.GalleryChannelData::channelId eq inputChannelId,
-			DatabaseTables.GalleryChannelData::guildId eq inputGuildId
+			DbTables.GalleryChannelData::channelId eq inputChannelId,
+			DbTables.GalleryChannelData::guildId eq inputGuildId
 		)
 	}
 
@@ -38,11 +38,11 @@ object DatabaseRemovers {
 		inputUserId: Snowflake,
 		id: Int
 	) {
-		val collection = database.getCollection<DatabaseTables.RemindMeData>()
+		val collection = database.getCollection<DbTables.RemindMeData>()
 		collection.deleteOne(
-			DatabaseTables.RemindMeData::guildId eq inputGuildId,
-			DatabaseTables.RemindMeData::userId eq inputUserId,
-			DatabaseTables.RemindMeData::id eq id
+			DbTables.RemindMeData::guildId eq inputGuildId,
+			DbTables.RemindMeData::userId eq inputUserId,
+			DbTables.RemindMeData::id eq id
 		)
 	}
 
@@ -67,8 +67,8 @@ object DatabaseRemovers {
 	 * @since 3.0.0
 	 */
 	suspend inline fun removeWarn(inputGuildId: Snowflake) {
-		val collection = database.getCollection<DatabaseTables.WarnData>()
-		collection.deleteMany(DatabaseTables.WarnData::guildId eq inputGuildId)
+		val collection = database.getCollection<DbTables.WarnData>()
+		collection.deleteMany(DbTables.WarnData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -80,12 +80,12 @@ object DatabaseRemovers {
 	 * @since 3.4.0
 	 */
 	suspend inline fun removeRoleFromMenu(inputMessageId: Snowflake, inputRoleId: Snowflake) {
-		val collection = database.getCollection<DatabaseTables.RoleMenuData>()
-		val roleMenu = collection.findOne(DatabaseTables.RoleMenuData::messageId eq inputMessageId) ?: return
+		val collection = database.getCollection<DbTables.RoleMenuData>()
+		val roleMenu = collection.findOne(DbTables.RoleMenuData::messageId eq inputMessageId) ?: return
 
 		roleMenu.roles.remove(inputRoleId)
 
-		collection.deleteOne(DatabaseTables.RoleMenuData::messageId eq inputMessageId)
+		collection.deleteOne(DbTables.RoleMenuData::messageId eq inputMessageId)
 		collection.insertOne(roleMenu)
 	}
 
@@ -98,8 +98,8 @@ object DatabaseRemovers {
 	 * @since 3.1.0
 	 */
 	suspend inline fun removeTag(inputGuildId: Snowflake, name: String) {
-		val collection = database.getCollection<DatabaseTables.TagsData>()
-		collection.deleteOne(DatabaseTables.TagsData::guildId eq inputGuildId, DatabaseTables.TagsData::name eq name)
+		val collection = database.getCollection<DbTables.TagsData>()
+		collection.deleteOne(DbTables.TagsData::guildId eq inputGuildId, DbTables.TagsData::name eq name)
 	}
 
 	/**
@@ -110,8 +110,8 @@ object DatabaseRemovers {
 	 * @since 3.1.0
 	 */
 	suspend inline fun removeTags(inputGuildId: Snowflake) {
-		val collection = database.getCollection<DatabaseTables.TagsData>()
-		collection.deleteMany(DatabaseTables.TagsData::guildId eq inputGuildId)
+		val collection = database.getCollection<DbTables.TagsData>()
+		collection.deleteMany(DbTables.TagsData::guildId eq inputGuildId)
 	}
 
 	/**
@@ -123,7 +123,7 @@ object DatabaseRemovers {
 	 * @since 3.2.2
 	 */
 	suspend inline fun removeThread(inputThreadId: Snowflake) {
-		val collection = database.getCollection<DatabaseTables.ThreadData>()
-		collection.deleteOne(DatabaseTables.ThreadData::threadId eq inputThreadId)
+		val collection = database.getCollection<DbTables.ThreadData>()
+		collection.deleteOne(DbTables.ThreadData::threadId eq inputThreadId)
 	}
 }

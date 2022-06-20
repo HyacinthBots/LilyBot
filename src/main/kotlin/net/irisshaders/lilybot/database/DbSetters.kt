@@ -4,11 +4,11 @@ import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.Instant
 import net.irisshaders.lilybot.configDatabase
 import net.irisshaders.lilybot.database
-import net.irisshaders.lilybot.database.DatabaseGetters.getWarn
+import net.irisshaders.lilybot.database.DbGetters.getWarn
 import org.litote.kmongo.eq
 
 // TODO Organise into A-Z
-object DatabaseSetters {
+object DbSetters {
 
 	/**
 	 * Adds the given [supportConfig] to the database.
@@ -16,21 +16,21 @@ object DatabaseSetters {
 	 * @author Miss Corruption
 	 * @since 4.0.0
 	 */
-	suspend inline fun setSupportConfig(supportConfig: DatabaseTables.SupportConfigData) {
-		val collection = configDatabase.getCollection<DatabaseTables.SupportConfigData>()
-		collection.deleteOne(DatabaseTables.SupportConfigData::guildId eq supportConfig.guildId)
+	suspend inline fun setSupportConfig(supportConfig: DbTables.SupportConfigData) {
+		val collection = configDatabase.getCollection<DbTables.SupportConfigData>()
+		collection.deleteOne(DbTables.SupportConfigData::guildId eq supportConfig.guildId)
 		collection.insertOne(supportConfig)
 	}
 
-	suspend inline fun setModerationConfig(moderationConfig: DatabaseTables.ModerationConfigData) {
-		val collection = configDatabase.getCollection<DatabaseTables.ModerationConfigData>()
-		collection.deleteOne(DatabaseTables.ModerationConfigData::guildId eq moderationConfig.guildId)
+	suspend inline fun setModerationConfig(moderationConfig: DbTables.ModerationConfigData) {
+		val collection = configDatabase.getCollection<DbTables.ModerationConfigData>()
+		collection.deleteOne(DbTables.ModerationConfigData::guildId eq moderationConfig.guildId)
 		collection.insertOne(moderationConfig)
 	}
 
-	suspend inline fun setLoggingConfig(loggingConfig: DatabaseTables.LoggingConfigData) {
-		val collection = configDatabase.getCollection<DatabaseTables.LoggingConfigData>()
-		collection.deleteOne(DatabaseTables.LoggingConfigData::guildId eq loggingConfig.guildId)
+	suspend inline fun setLoggingConfig(loggingConfig: DbTables.LoggingConfigData) {
+		val collection = configDatabase.getCollection<DbTables.LoggingConfigData>()
+		collection.deleteOne(DbTables.LoggingConfigData::guildId eq loggingConfig.guildId)
 		collection.insertOne(loggingConfig)
 	}
 
@@ -45,10 +45,10 @@ object DatabaseSetters {
 	 */
 	suspend inline fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
 		val currentStrikes = getWarn(inputUserId, inputGuildId)?.strikes ?: 0
-		val collection = database.getCollection<DatabaseTables.WarnData>()
-		collection.deleteOne(DatabaseTables.WarnData::userId eq inputUserId, DatabaseTables.WarnData::guildId eq inputGuildId)
+		val collection = database.getCollection<DbTables.WarnData>()
+		collection.deleteOne(DbTables.WarnData::userId eq inputUserId, DbTables.WarnData::guildId eq inputGuildId)
 		collection.insertOne(
-			DatabaseTables.WarnData(
+			DbTables.WarnData(
 				inputUserId,
 				inputGuildId,
 				if (!remove) currentStrikes.plus(1) else currentStrikes.minus(1)
@@ -73,9 +73,9 @@ object DatabaseSetters {
 		inputGuildId: Snowflake,
 		inputRoles: MutableList<Snowflake>
 	) {
-		val newRoleMenu = DatabaseTables.RoleMenuData(inputMessageId, inputChannelId, inputGuildId, inputRoles)
-		val collection = database.getCollection<DatabaseTables.RoleMenuData>()
-		collection.deleteOne(DatabaseTables.RoleMenuData::messageId eq inputMessageId)
+		val newRoleMenu = DbTables.RoleMenuData(inputMessageId, inputChannelId, inputGuildId, inputRoles)
+		val collection = database.getCollection<DbTables.RoleMenuData>()
+		collection.deleteOne(DbTables.RoleMenuData::messageId eq inputMessageId)
 		collection.insertOne(newRoleMenu)
 	}
 
@@ -87,9 +87,9 @@ object DatabaseSetters {
 	 * @since 3.0.0
 	 */
 	suspend inline fun setStatus(newStatus: String) {
-		val collection = database.getCollection<DatabaseTables.StatusData>()
-		collection.deleteOne(DatabaseTables.StatusData::key eq "LilyStatus")
-		collection.insertOne(DatabaseTables.StatusData("LilyStatus", newStatus))
+		val collection = database.getCollection<DbTables.StatusData>()
+		collection.deleteOne(DbTables.StatusData::key eq "LilyStatus")
+		collection.insertOne(DbTables.StatusData("LilyStatus", newStatus))
 	}
 
 	/**
@@ -103,8 +103,8 @@ object DatabaseSetters {
 	 * @since 3.1.0
 	 */
 	suspend inline fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
-		val collection = database.getCollection<DatabaseTables.TagsData>()
-		collection.insertOne(DatabaseTables.TagsData(inputGuildId, name, tagTitle, tagValue))
+		val collection = database.getCollection<DbTables.TagsData>()
+		collection.insertOne(DbTables.TagsData(inputGuildId, name, tagTitle, tagValue))
 	}
 
 	/**
@@ -123,9 +123,9 @@ object DatabaseSetters {
 		newOwnerId: Snowflake,
 		preventArchiving: Boolean = false
 	) {
-		val collection = database.getCollection<DatabaseTables.ThreadData>()
-		collection.deleteOne(DatabaseTables.ThreadData::threadId eq inputThreadId)
-		collection.insertOne(DatabaseTables.ThreadData(inputThreadId, newOwnerId, preventArchiving))
+		val collection = database.getCollection<DbTables.ThreadData>()
+		collection.deleteOne(DbTables.ThreadData::threadId eq inputThreadId)
+		collection.insertOne(DbTables.ThreadData(inputThreadId, newOwnerId, preventArchiving))
 	}
 
 	/**
@@ -138,8 +138,8 @@ object DatabaseSetters {
 	 * @since 3.2.0
 	 */
 	suspend inline fun setLeaveTime(inputGuildId: Snowflake, time: Instant) {
-		val collection = database.getCollection<DatabaseTables.GuildLeaveTimeData>()
-		collection.insertOne(DatabaseTables.GuildLeaveTimeData(inputGuildId, time))
+		val collection = database.getCollection<DbTables.GuildLeaveTimeData>()
+		collection.insertOne(DbTables.GuildLeaveTimeData(inputGuildId, time))
 	}
 
 	/**
@@ -152,8 +152,8 @@ object DatabaseSetters {
 	 * @since 3.3.0
 	 */
 	suspend inline fun setGalleryChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
-		val collection = database.getCollection<DatabaseTables.GalleryChannelData>()
-		collection.insertOne(DatabaseTables.GalleryChannelData(inputGuildId, inputChannelId))
+		val collection = database.getCollection<DbTables.GalleryChannelData>()
+		collection.insertOne(DbTables.GalleryChannelData(inputGuildId, inputChannelId))
 	}
 
 	/**
@@ -181,9 +181,9 @@ object DatabaseSetters {
 		repeating: Boolean,
 		id: Int
 	) {
-		val collection = database.getCollection<DatabaseTables.RemindMeData>()
+		val collection = database.getCollection<DbTables.RemindMeData>()
 		collection.insertOne(
-			DatabaseTables.RemindMeData(
+			DbTables.RemindMeData(
 				initialSetTime,
 				inputGuildId,
 				inputUserId,

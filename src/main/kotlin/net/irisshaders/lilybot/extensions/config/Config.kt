@@ -19,8 +19,8 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
-import net.irisshaders.lilybot.database.DatabaseSetters
-import net.irisshaders.lilybot.database.DatabaseTables
+import net.irisshaders.lilybot.database.DbSetters
+import net.irisshaders.lilybot.database.DbTables
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -97,8 +97,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				DatabaseSetters.setSupportConfig(
-					DatabaseTables.SupportConfigData(
+				DbSetters.setSupportConfig(
+					DbTables.SupportConfigData(
 						guild!!.id,
 						arguments.enable,
 						arguments.channel.id,
@@ -128,8 +128,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				DatabaseSetters.setSupportConfig(
-					DatabaseTables.SupportConfigData(
+				DbSetters.setSupportConfig(
+					DbTables.SupportConfigData(
 						guild!!.id,
 						arguments.enable,
 						arguments.channel.id,
@@ -171,8 +171,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			DatabaseSetters.setModerationConfig(
-				DatabaseTables.ModerationConfigData(
+			DbSetters.setModerationConfig(
+				DbTables.ModerationConfigData(
 					guild!!.id,
 					arguments.enabled,
 					arguments.modActionLog.id,
@@ -212,8 +212,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			DatabaseSetters.setLoggingConfig(
-				DatabaseTables.LoggingConfigData(
+			DbSetters.setLoggingConfig(
+				DbTables.LoggingConfigData(
 					guild!!.id,
 					arguments.enableMessageLogs,
 					arguments.messageLogs.id,

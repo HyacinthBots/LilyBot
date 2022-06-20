@@ -51,8 +51,8 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.DatabaseGetters
-import net.irisshaders.lilybot.database.DatabaseTables
+import net.irisshaders.lilybot.database.DbGetters
+import net.irisshaders.lilybot.database.DbTables
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -89,8 +89,8 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 	}
 
 	action {
-		val loggingConfig = DatabaseGetters.getLoggingConfig(guild!!.id)!!
-		val moderationConfig = DatabaseGetters.getModerationConfig(guild!!.id)!!
+		val loggingConfig = DbGetters.getLoggingConfig(guild!!.id)!!
+		val moderationConfig = DbGetters.getModerationConfig(guild!!.id)!!
 		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
 		val reportedMessage: Message
 		val messageAuthor: Member?
@@ -143,8 +143,8 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 	}
 
 	action {
-		val loggingConfig = DatabaseGetters.getLoggingConfig(guild!!.id)!!
-		val moderationConfig = DatabaseGetters.getModerationConfig(guild!!.id)!!
+		val loggingConfig = DbGetters.getLoggingConfig(guild!!.id)!!
+		val moderationConfig = DbGetters.getModerationConfig(guild!!.id)!!
 		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
 		val channel: MessageChannel
 		val reportedMessage: Message
@@ -203,12 +203,12 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
  * @since 3.3.0
  */
 suspend fun createReportModal(
-	inputInteraction: ModalParentInteractionBehavior,
-	user: UserBehavior,
-	config: DatabaseTables.ModerationConfigData,
-	messageLog: GuildMessageChannel,
-	reportedMessage: Message,
-	messageAuthor: Member?,
+    inputInteraction: ModalParentInteractionBehavior,
+    user: UserBehavior,
+    config: DbTables.ModerationConfigData,
+    messageLog: GuildMessageChannel,
+    reportedMessage: Message,
+    messageAuthor: Member?,
 ) {
 	val modal = inputInteraction.modal("Report a message", "reportModal") {
 		actionRow {

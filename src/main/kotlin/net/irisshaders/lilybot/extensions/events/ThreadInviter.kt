@@ -32,9 +32,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
-import net.irisshaders.lilybot.database.DatabaseGetters
-import net.irisshaders.lilybot.database.DatabaseRemovers
-import net.irisshaders.lilybot.database.DatabaseSetters
+import net.irisshaders.lilybot.database.DbGetters
+import net.irisshaders.lilybot.database.DbRemovers
+import net.irisshaders.lilybot.database.DbSetters
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration.Companion.seconds
 
@@ -73,7 +73,7 @@ class ThreadInviter : Extension() {
 			}
 			action {
 				delay(PK_API_DELAY) // Allow the PK API to catch up
-				val config = DatabaseGetters.getSupportConfig(event.guildId!!)!!
+				val config = DbGetters.getSupportConfig(event.guildId!!)!!
 
 				if (config.enabled) {
 					var userThreadExists = false
@@ -91,7 +91,7 @@ class ThreadInviter : Extension() {
 					val userId = PluralKit.getProxiedMessageAuthorId(event.message.id) ?: event.member!!.id
 					val user = UserBehavior(userId, kord)
 
-					DatabaseGetters.getOwnerThreads(userId).forEach {
+					DbGetters.getOwnerThreads(userId).forEach {
 						try {
 							val thread = guild.getChannel(it.threadId) as TextChannelThread
 							if (thread.parent == supportChannel && !thread.isArchived) {
@@ -99,9 +99,9 @@ class ThreadInviter : Extension() {
 								existingUserThread = thread
 							}
 						} catch (e: EntityNotFoundException) {
-							DatabaseRemovers.removeThread(it.threadId)
+							DbRemovers.removeThread(it.threadId)
 						} catch (e: IllegalArgumentException) {
-							DatabaseRemovers.removeThread(it.threadId)
+							DbRemovers.removeThread(it.threadId)
 						}
 					}
 
@@ -123,7 +123,7 @@ class ThreadInviter : Extension() {
 								event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 							)
 
-						DatabaseSetters.setThreadOwner(thread.id, userId)
+						DbSetters.setThreadOwner(thread.id, userId)
 
 						val editMessage = thread.createMessage("edit message")
 
@@ -166,12 +166,12 @@ class ThreadInviter : Extension() {
 			}
 
 			action {
-				val supportConfig = DatabaseGetters.getSupportConfig(guildFor(event)!!.id)!!
-				val moderationConfig = DatabaseGetters.getModerationConfig(guildFor(event)!!.id)!!
+				val supportConfig = DbGetters.getSupportConfig(guildFor(event)!!.id)!!
+				val moderationConfig = DbGetters.getModerationConfig(guildFor(event)!!.id)!!
 				val modRole = event.channel.guild.getRole(moderationConfig.team)
 				val threadOwner = event.channel.owner.asUser()
 
-				DatabaseSetters.setThreadOwner(event.channel.id, threadOwner.id)
+				DbSetters.setThreadOwner(event.channel.id, threadOwner.id)
 
 				if (supportConfig.enabled && event.channel.parentId == supportConfig.channel) {
 					val supportRole = event.channel.guild.getRole(supportConfig.team)

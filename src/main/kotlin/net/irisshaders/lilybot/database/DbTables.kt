@@ -5,7 +5,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
 // TODO Organise into A-Z
-object DatabaseTables {
+object DbTables {
 	/**
 	 * The data for image channels in a guild.
 	 *
