@@ -21,7 +21,7 @@ import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.functions.ModerationConfigDatabase
+import net.irisshaders.lilybot.database.functions.ConfigDatabase
 import net.irisshaders.lilybot.database.functions.TagsDatabase
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -150,7 +150,7 @@ class Tags : Extension() {
 			}
 
 			action {
-				val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+				val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 				if (TagsDatabase.getTag(guild!!.id, arguments.tagName) != null) {
@@ -222,7 +222,7 @@ class Tags : Extension() {
 					return@action
 				}
 
-				val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+				val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 				TagsDatabase.removeTag(guild!!.id, arguments.tagName)

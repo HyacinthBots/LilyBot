@@ -51,9 +51,8 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.functions.LoggingConfigDatabase
-import net.irisshaders.lilybot.database.functions.ModerationConfigDatabase
-import net.irisshaders.lilybot.database.tables.ModerationConfigData
+import net.irisshaders.lilybot.database.functions.ConfigDatabase
+import net.irisshaders.lilybot.database.tables.ConfigData
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -90,8 +89,8 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 	}
 
 	action {
-		val loggingConfig = LoggingConfigDatabase.getLoggingConfig(guild!!.id)!!
-		val moderationConfig = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+		val loggingConfig = ConfigDatabase.LoggingConfig.getLoggingConfig(guild!!.id)!!
+		val moderationConfig = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
 		val reportedMessage: Message
 		val messageAuthor: Member?
@@ -144,8 +143,8 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 	}
 
 	action {
-		val loggingConfig = LoggingConfigDatabase.getLoggingConfig(guild!!.id)!!
-		val moderationConfig = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+		val loggingConfig = ConfigDatabase.LoggingConfig.getLoggingConfig(guild!!.id)!!
+		val moderationConfig = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
 		val channel: MessageChannel
 		val reportedMessage: Message
@@ -206,7 +205,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 suspend fun createReportModal(
 	inputInteraction: ModalParentInteractionBehavior,
 	user: UserBehavior,
-	config: ModerationConfigData,
+	config: ConfigData.ModerationConfigData,
 	messageLog: GuildMessageChannel,
 	reportedMessage: Message,
 	messageAuthor: Member?,

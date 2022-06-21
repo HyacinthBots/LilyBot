@@ -37,7 +37,7 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import net.irisshaders.lilybot.database.functions.SupportConfigDatabase
+import net.irisshaders.lilybot.database.functions.ConfigDatabase
 import net.irisshaders.lilybot.database.functions.ThreadsDatabase
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -76,7 +76,7 @@ class LogUploading : Extension() {
 				}
 			}
 			action {
-				val supportConfig = SupportConfigDatabase.getSupportConfig(guildFor(event)!!.id)!!
+				val supportConfig = ConfigDatabase.SupportConfig.getSupportConfig(guildFor(event)!!.id)!!
 				var deferUploadUntilThread = false
 				if (supportConfig.enabled && event.message.channel.id == supportConfig.channel) {
 					deferUploadUntilThread = true

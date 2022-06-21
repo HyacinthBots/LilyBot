@@ -19,12 +19,8 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
-import net.irisshaders.lilybot.database.functions.LoggingConfigDatabase
-import net.irisshaders.lilybot.database.functions.ModerationConfigDatabase
-import net.irisshaders.lilybot.database.functions.SupportConfigDatabase
-import net.irisshaders.lilybot.database.tables.LoggingConfigData
-import net.irisshaders.lilybot.database.tables.ModerationConfigData
-import net.irisshaders.lilybot.database.tables.SupportConfigData
+import net.irisshaders.lilybot.database.functions.ConfigDatabase
+import net.irisshaders.lilybot.database.tables.ConfigData
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -101,8 +97,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				SupportConfigDatabase.setSupportConfig(
-					SupportConfigData(
+				ConfigDatabase.SupportConfig.setSupportConfig(
+					ConfigData.SupportConfigData(
 						guild!!.id,
 						arguments.enable,
 						arguments.channel.id,
@@ -132,8 +128,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				SupportConfigDatabase.setSupportConfig(
-					SupportConfigData(
+				ConfigDatabase.SupportConfig.setSupportConfig(
+					ConfigData.SupportConfigData(
 						guild!!.id,
 						arguments.enable,
 						arguments.channel.id,
@@ -175,8 +171,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			ModerationConfigDatabase.setModerationConfig(
-				ModerationConfigData(
+			ConfigDatabase.ModerationConfig.setModerationConfig(
+				ConfigData.ModerationConfigData(
 					guild!!.id,
 					arguments.enabled,
 					arguments.modActionLog.id,
@@ -216,8 +212,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			LoggingConfigDatabase.setLoggingConfig(
-				LoggingConfigData(
+			ConfigDatabase.LoggingConfig.setLoggingConfig(
+				ConfigData.LoggingConfigData(
 					guild!!.id,
 					arguments.enableMessageLogs,
 					arguments.messageLogs.id,

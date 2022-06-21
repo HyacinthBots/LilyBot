@@ -43,7 +43,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import net.irisshaders.lilybot.database.functions.ModerationConfigDatabase
+import net.irisshaders.lilybot.database.functions.ConfigDatabase
 import net.irisshaders.lilybot.database.functions.WarnDatabase
 import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.botHasChannelPerms
@@ -82,7 +82,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+				val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val messageAmount = arguments.messages
@@ -128,7 +128,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+				val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 
@@ -277,7 +277,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+				val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 
@@ -339,7 +339,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+				val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
@@ -415,7 +415,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+				val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 
@@ -468,7 +468,7 @@ class TemporaryModeration : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
@@ -524,7 +524,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
@@ -580,7 +580,7 @@ class TemporaryModeration : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
@@ -641,7 +641,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigDatabase.getModerationConfig(guild!!.id)!!
+					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
