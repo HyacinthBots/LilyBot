@@ -32,8 +32,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
-import net.irisshaders.lilybot.database.functions.ConfigDatabase
-import net.irisshaders.lilybot.database.functions.ThreadsDatabase
+import net.irisshaders.lilybot.database.ModerationConfig
+import net.irisshaders.lilybot.database.SupportConfig
+import net.irisshaders.lilybot.database.ThreadsDatabase
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration.Companion.seconds
 
@@ -72,7 +73,7 @@ class ThreadInviter : Extension() {
 			}
 			action {
 				delay(PK_API_DELAY) // Allow the PK API to catch up
-				val config = ConfigDatabase.SupportConfig.getSupportConfig(event.guildId!!)!!
+				val config = SupportConfig.getSupportConfig(event.guildId!!)!!
 
 				if (config.enabled) {
 					var userThreadExists = false
@@ -165,8 +166,8 @@ class ThreadInviter : Extension() {
 			}
 
 			action {
-				val supportConfig = ConfigDatabase.SupportConfig.getSupportConfig(guildFor(event)!!.id)!!
-				val moderationConfig = ConfigDatabase.ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
+				val supportConfig = SupportConfig.getSupportConfig(guildFor(event)!!.id)!!
+				val moderationConfig = ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
 				val modRole = event.channel.guild.getRole(moderationConfig.team)
 				val threadOwner = event.channel.owner.asUser()
 

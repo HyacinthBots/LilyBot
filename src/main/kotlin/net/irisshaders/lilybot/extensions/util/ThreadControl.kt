@@ -37,8 +37,8 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
 import dev.kord.core.event.channel.thread.ThreadUpdateEvent
 import dev.kord.rest.builder.message.create.embed
-import net.irisshaders.lilybot.database.functions.ConfigDatabase
-import net.irisshaders.lilybot.database.functions.ThreadsDatabase
+import net.irisshaders.lilybot.database.ModerationConfig
+import net.irisshaders.lilybot.database.ThreadsDatabase
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -172,7 +172,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action

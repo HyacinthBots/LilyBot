@@ -39,8 +39,8 @@ import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
-import net.irisshaders.lilybot.database.functions.ConfigDatabase
-import net.irisshaders.lilybot.database.functions.RoleMenuDatabase
+import net.irisshaders.lilybot.database.ModerationConfig
+import net.irisshaders.lilybot.database.RoleMenuDatabase
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -119,7 +119,7 @@ class RoleMenu : Extension() {
 						mutableListOf(arguments.initialRole.id)
 					)
 
-					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {
@@ -207,7 +207,7 @@ class RoleMenu : Extension() {
 						data.roles
 					)
 
-					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {
@@ -268,7 +268,7 @@ class RoleMenu : Extension() {
 					}
 
 					RoleMenuDatabase.removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
-					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {
@@ -366,7 +366,7 @@ class RoleMenu : Extension() {
 						roles
 					)
 
-					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {

@@ -5,12 +5,9 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database
-import net.irisshaders.lilybot.database.functions.TagsDatabase
-import net.irisshaders.lilybot.database.functions.WarnDatabase
-import net.irisshaders.lilybot.database.tables.GuildLeaveTimeData
-import net.irisshaders.lilybot.database.tables.ThreadData
 import org.litote.kmongo.eq
 
+// TODO Kdoc
 object Cleanups {
 
 	@PublishedApi

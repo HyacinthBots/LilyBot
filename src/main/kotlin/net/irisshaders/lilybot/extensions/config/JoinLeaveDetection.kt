@@ -5,7 +5,7 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.functions.GuildLeaveTimeDatabase
+import net.irisshaders.lilybot.database.GuildLeaveTimeDatabase
 
 /**
  * This class is used to detect when Lily leaves or joins a guild, allowing us to delete old guild data, if Lily has

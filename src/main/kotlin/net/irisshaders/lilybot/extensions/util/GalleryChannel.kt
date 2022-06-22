@@ -23,9 +23,9 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
-import net.irisshaders.lilybot.database.functions.ConfigDatabase
-import net.irisshaders.lilybot.database.functions.GalleryChannelDatabase
-import net.irisshaders.lilybot.database.tables.GalleryChannelData
+import net.irisshaders.lilybot.database.GalleryChannelData
+import net.irisshaders.lilybot.database.GalleryChannelDatabase
+import net.irisshaders.lilybot.database.ModerationConfig
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import org.litote.kmongo.eq
@@ -70,7 +70,7 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
+					val config = ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 					// Using the global var, find guild channels for the given guildId and iterate through them to
 					// check for the presence of the channel and return if it is present
@@ -122,7 +122,7 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ConfigDatabase.ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
+					val config = ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 					var channelFound = false
 

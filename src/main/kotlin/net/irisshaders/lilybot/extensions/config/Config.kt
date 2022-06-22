@@ -19,8 +19,12 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
-import net.irisshaders.lilybot.database.functions.ConfigDatabase
-import net.irisshaders.lilybot.database.tables.ConfigData
+import net.irisshaders.lilybot.database.LoggingConfig
+import net.irisshaders.lilybot.database.LoggingConfigData
+import net.irisshaders.lilybot.database.ModerationConfig
+import net.irisshaders.lilybot.database.ModerationConfigData
+import net.irisshaders.lilybot.database.SupportConfig
+import net.irisshaders.lilybot.database.SupportConfigData
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -49,8 +53,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
-			// TODO new database functions to store this stuff
-
 			if (arguments.customMessage) {
 				val response = event.interaction.modal("Support Module", "supportModuleModal") {
 					actionRow {
@@ -97,8 +99,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				ConfigDatabase.SupportConfig.setSupportConfig(
-					ConfigData.SupportConfigData(
+				SupportConfig.setSupportConfig(
+					SupportConfigData(
 						guild!!.id,
 						arguments.enable,
 						arguments.channel.id,
@@ -128,8 +130,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				ConfigDatabase.SupportConfig.setSupportConfig(
-					ConfigData.SupportConfigData(
+				SupportConfig.setSupportConfig(
+					SupportConfigData(
 						guild!!.id,
 						arguments.enable,
 						arguments.channel.id,
@@ -153,7 +155,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
-			// TODO Database
 			event.interaction.respondEphemeral {
 				embed {
 					title = "Module configured: Moderation"
@@ -171,8 +172,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			ConfigDatabase.ModerationConfig.setModerationConfig(
-				ConfigData.ModerationConfigData(
+			ModerationConfig.setModerationConfig(
+				ModerationConfigData(
 					guild!!.id,
 					arguments.enabled,
 					arguments.modActionLog.id,
@@ -194,7 +195,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
-			// TODO DATABASE
 			event.interaction.respondEphemeral {
 				embed {
 					title = "Module Configured: Logging"
@@ -212,8 +212,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			ConfigDatabase.LoggingConfig.setLoggingConfig(
-				ConfigData.LoggingConfigData(
+			LoggingConfig.setLoggingConfig(
+				LoggingConfigData(
 					guild!!.id,
 					arguments.enableMessageLogs,
 					arguments.messageLogs.id,
