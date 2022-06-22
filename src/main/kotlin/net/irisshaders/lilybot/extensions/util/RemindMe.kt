@@ -33,7 +33,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import net.irisshaders.lilybot.database.functions.RemindMeDatabase
+import net.irisshaders.lilybot.database.RemindMeDatabase
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days

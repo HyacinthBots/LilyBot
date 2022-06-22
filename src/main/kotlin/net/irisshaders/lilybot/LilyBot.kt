@@ -13,7 +13,7 @@ import com.mongodb.MongoClientSettings
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
-import net.irisshaders.lilybot.database.functions.StatusDatabase
+import net.irisshaders.lilybot.database.StatusDatabase
 import net.irisshaders.lilybot.extensions.config.Config
 import net.irisshaders.lilybot.extensions.config.JoinLeaveDetection
 import net.irisshaders.lilybot.extensions.events.LogUploading
