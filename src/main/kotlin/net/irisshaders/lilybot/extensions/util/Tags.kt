@@ -35,6 +35,52 @@ class Tags : Extension() {
 
 	override suspend fun setup() {
 		/**
+		 * The command that allows users to preview tag contents before sending it in public
+		 *
+		 * @author NoComment1105
+		 * @since 3.4.3
+		 */
+		ephemeralSlashCommand(::DeleteTagArgs) {
+			name = "tag-preview"
+			description = "Preview a tag's contents without sending it publicly."
+
+			check {
+				configPresent()
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
+			}
+
+			action {
+				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName) ?: run {
+					respond {
+						content = "Unable to find tag `${arguments.tagName}` for preview. " +
+								"Be sure it exists and you've typed it correctly."
+					}
+					return@action
+				}
+
+				if (tagFromDatabase.tagValue.length > 1024) {
+					respond {
+						content = "The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
+								"more, which is above the Discord limit. Please re-create this tag!"
+					}
+					return@action
+				}
+
+				respond {
+					embed {
+						title = tagFromDatabase.tagTitle
+						description = tagFromDatabase.tagValue
+						footer {
+							text = "Tag preview"
+						}
+						color = DISCORD_BLURPLE
+					}
+				}
+			}
+		}
+
+		/**
 		 * The command for calling tags.
 		 *
 		 * @author NoComment1105
@@ -51,15 +97,13 @@ class Tags : Extension() {
 			}
 
 			action {
-				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
+				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName) ?: run {
 					respond {
 						content = "Unable to find tag `${arguments.tagName}`. " +
 								"Be sure it exists and you've typed it correctly."
 					}
 					return@action
 				}
-
-				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!
 
 				if (tagFromDatabase.tagValue.length > 1024) {
 					respond {
@@ -74,7 +118,7 @@ class Tags : Extension() {
 				// This is not the best way to do this. Ideally the ping would be in the same message as the embed in
 				// a `respond` builder. A Discord limitation makes this not possible.
 				channel.createMessage {
-					if (arguments.user != null) content = arguments.user!!.mention
+					content = arguments.user?.mention
 					embed {
 						title = tagFromDatabase.tagTitle
 						description = tagFromDatabase.tagValue
@@ -300,7 +344,7 @@ class Tags : Extension() {
 	inner class DeleteTagArgs : Arguments() {
 		val tagName by string {
 			name = "name"
-			description = "The name of the tag you want to delete"
+			description = "The name of the tag"
 
 			autoComplete {
 				val tags = DatabaseHelper.getAllTags(data.guildId.value!!)

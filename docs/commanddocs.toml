@@ -265,6 +265,12 @@ result = "Posts the tag embed you requested"
 category = "Tag commands"
 name = "tag-help"
 result = "Displays a help command with all this information, in greater detail."
+
+[[command]]
+category = "Tag commands"
+name = "tag-preview"
+args = "* `tagName` - The named identifier of the tag you wish to preview - String"
+result = "Displays a preview of the tag embed you requested."
 # End tag commands
 
 # Gallery channel commands

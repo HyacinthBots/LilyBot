@@ -513,6 +513,18 @@ None
 
 ---
 
+### Name: `tag-preview`
+**Arguments**:
+* `tagName` - The named identifier of the tag you wish to preview - String
+
+**Result**: Displays a preview of the tag embed you requested.
+
+**Required Permissions**: `None`
+
+**Command category**: `Tag commands`
+
+---
+
 
 ## Gallery channel commands
 Gallery channels are channels that only allow attachments or links to be sent within them, deleting messages that don't contain either of these things.
