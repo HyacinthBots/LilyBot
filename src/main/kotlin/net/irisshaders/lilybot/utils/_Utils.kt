@@ -55,6 +55,19 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		return
 	}
 
+	val permissionsList: MutableSet<String> = mutableSetOf()
+	var count = 0
+	permissions.values.forEach { _ ->
+		permissionsList.add(
+			permissions.values.toString()
+				.split(",")[count]
+				.split(".")[4]
+				.split("$")[1]
+				.split("@")[0]
+		)
+		count++
+	}
+
 	/* Use `TextChannel` when the channel is a Text channel */
 	if (channelFor(event)!!.asChannel().type == ChannelType.GuildText) {
 		if (channelFor(event)!!.asChannelOf<TextChannel>().getEffectivePermissions(event.kord.selfId)
@@ -62,7 +75,13 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		) {
 			pass()
 		} else {
-			fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channelFor(event)?.mention}")
+			fail(
+				"Incorrect permissions!\nI do not have the ${
+					permissionsList.toString()
+						.replace("[", "`")
+						.replace("]", "`")
+				} permissions for ${channelFor(event)?.mention}"
+			)
 		}
 	} else if (channelFor(event)!!.asChannel().type == ChannelType.PublicGuildThread ||
 		channelFor(event)!!.asChannel().type == ChannelType.PublicNewsThread ||
@@ -73,7 +92,13 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		) {
 			pass()
 		} else {
-			fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channelFor(event)?.mention}")
+			fail(
+				"Incorrect permissions!\nI do not have the ${
+					permissionsList.toString()
+						.replace("[", "`")
+						.replace("]", "`")
+				} permissions for ${channelFor(event)?.mention}"
+			)
 		}
 	} else {
 		fail("Unable to get permissions for channel! Please report this to the developers!")
