@@ -10,10 +10,8 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import dev.kord.core.exception.EntityNotFoundException
-import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
-import mu.KotlinLogging
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -24,8 +22,6 @@ import net.irisshaders.lilybot.utils.configPresent
  */
 class MemberJoinLeave : Extension() {
 	override val name = "member-join-leave"
-
-	private val joinLeaveLogger = KotlinLogging.logger("Join Leave logger")
 
 	override suspend fun setup() {
 		/** Create an embed in the join channel on user join */
@@ -47,31 +43,23 @@ class MemberJoinLeave : Extension() {
 					DatabaseHelper.clearConfig(event.guildId) // Clear the config to make the user fix it
 				}
 
-				try {
-					joinChannel!!.createEmbed {
-						title = "User joined the server!"
-						field {
-							name = "Welcome:"
-							value = "${eventMember.mention} (${eventMember.tag})"
-							inline = true
-						}
-						field {
-							name = "ID:"
-							value = eventMember.id.toString()
-							inline = false
-						}
-						footer {
-							text = "Member Count: $guildMemberCount"
-						}
-						timestamp = Clock.System.now()
-						color = DISCORD_GREEN
+				joinChannel!!.createEmbed {
+					title = "User joined the server!"
+					field {
+						name = "Welcome:"
+						value = "${eventMember.mention} (${eventMember.tag})"
+						inline = true
 					}
-				} catch (e: KtorRequestException) {
-					if (e.httpResponse.status.value == 400) {
-						return@action
-					} else {
-						joinLeaveLogger.warn("Join embed failed to send. This was not due to a permission error!")
+					field {
+						name = "ID:"
+						value = eventMember.id.toString()
+						inline = false
 					}
+					footer {
+						text = "Member Count: $guildMemberCount"
+					}
+					timestamp = Clock.System.now()
+					color = DISCORD_GREEN
 				}
 			}
 		}
@@ -84,36 +72,33 @@ class MemberJoinLeave : Extension() {
 				if (event.user.id == kord.selfId) return@action
 				val config = DatabaseHelper.getConfig(event.guildId)!!
 
+				var joinChannel: GuildMessageChannel? = null
+				try {
+					joinChannel = event.getGuild().getChannelOf(config.joinChannel)
+				} catch (e: EntityNotFoundException) {
+					DatabaseHelper.clearConfig(event.guildId) // Clear the config to make the user fix it
+				}
+
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel)
-
-				try {
-					joinChannel.createEmbed {
-						title = "User left the server!"
-						field {
-							name = "Goodbye:"
-							value = eventUser.tag
-							inline = true
-						}
-						field {
-							name = "ID:"
-							value = eventUser.id.toString()
-							inline = false
-						}
-						footer {
-							text = "Member count: $guildMemberCount"
-						}
-						timestamp = Clock.System.now()
-						color = DISCORD_RED
+				joinChannel!!.createEmbed {
+					title = "User left the server!"
+					field {
+						name = "Goodbye:"
+						value = eventUser.tag
+						inline = true
 					}
-				} catch (e: KtorRequestException) {
-					if (e.httpResponse.status.value == 400) {
-						return@action
-					} else {
-						joinLeaveLogger.warn("Leave embed failed to send. This was not due to a permission error!")
+					field {
+						name = "ID:"
+						value = eventUser.id.toString()
+						inline = false
 					}
+					footer {
+						text = "Member count: $guildMemberCount"
+					}
+					timestamp = Clock.System.now()
+					color = DISCORD_RED
 				}
 			}
 		}
