@@ -36,6 +36,7 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
 import dev.kord.core.event.channel.thread.ThreadUpdateEvent
+import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
@@ -198,21 +199,22 @@ class ThreadControl : Extension() {
 										action {
 											DatabaseHelper.setThreadOwner(it.threadId, it.ownerId, false)
 											edit { content = "Thread archiving will no longer be prevented" }
-											guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
-												embed {
-													title = "Thread archiving enabled"
-													color = DISCORD_FUCHSIA
+											guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+												.createMessage {
+													embed {
+														title = "Thread archiving enabled"
+														color = DISCORD_FUCHSIA
 
-													field {
-														name = "User"
-														value = user.asUser().tag
-													}
-													field {
-														name = "Thread"
-														value = threadChannel.mention
+														field {
+															name = "User"
+															value = user.asUser().tag
+														}
+														field {
+															name = "Thread"
+															value = threadChannel.mention
+														}
 													}
 												}
-											}
 											message!!.edit { components { removeAll() } }
 										}
 									}
@@ -230,22 +232,30 @@ class ThreadControl : Extension() {
 							return@action
 						} else if (it.threadId == threadChannel.id && !it.preventArchiving) {
 							DatabaseHelper.setThreadOwner(it.threadId, it.ownerId, true)
-							guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
-								embed {
-									title = "Thread archiving disabled"
-									color = DISCORD_FUCHSIA
+							try {
+								guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
+									embed {
+										title = "Thread archiving disabled"
+										color = DISCORD_FUCHSIA
 
-									field {
-										name = "User"
-										value = user.asUser().tag
-									}
-									field {
-										name = "Thread"
-										value = threadChannel.mention
+										field {
+											name = "User"
+											value = user.asUser().tag
+										}
+										field {
+											name = "Thread"
+											value = threadChannel.mention
+										}
 									}
 								}
+								edit { content = "Thread archiving will now be prevented" }
+							} catch (e: EntityNotFoundException) {
+								edit {
+									content = "Thread archiving will now be prevented\nNote: Failed to send a log" +
+											"to your specified mod action log. Please check the channel exists and " +
+											"permissions are right"
+								}
 							}
-							edit { content = "Thread archiving will now be prevented" }
 						}
 					}
 				}

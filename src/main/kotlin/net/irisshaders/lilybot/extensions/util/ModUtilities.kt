@@ -63,19 +63,23 @@ class ModUtilities : Extension() {
 				configPresent()
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
-				botHasChannelPerms(
-					Permissions(Permission.SendMessages, Permission.EmbedLinks)
-				)
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
-				val targetChannel: GuildMessageChannel =
-					if (arguments.channel != null) {
-						guild!!.getChannelOf(arguments.channel!!.id)
-					} else {
-						channel.asChannelOf()
-					}
+				val targetChannel: GuildMessageChannel
+				try {
+					targetChannel =
+						if (arguments.channel != null) {
+							guild!!.getChannelOf(arguments.channel!!.id)
+						} else {
+							channel.asChannelOf()
+						}
+				} catch (e: EntityNotFoundException) {
+					respond { content = "Channel not found." }
+					return@action
+				}
 				val createdMessage: Message
 
 				try {
