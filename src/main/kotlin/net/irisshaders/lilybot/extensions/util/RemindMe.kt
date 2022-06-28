@@ -17,19 +17,20 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
@@ -189,7 +190,8 @@ class RemindMe : Extension() {
 
 							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 							DatabaseHelper.removeReminder(guild!!.id, user.id, arguments.reminder)
-							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
+							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+								.getChannelOf<GuildMessageChannel>(it.channelId)
 								.getMessage(messageId).edit {
 									content =
 										"${if (it.repeating) "Repeating" else ""} Reminder set at ${
@@ -325,63 +327,117 @@ class RemindMe : Extension() {
 
 		reminders.forEach {
 			if (it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0) {
-				val channel = kord.getGuild(it.guildId)!!.getChannel(it.channelId) as GuildMessageChannelBehavior
+				val channel = kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
 				if (it.customMessage.isNullOrEmpty()) {
-					channel.createMessage {
-						content = if (it.repeating) {
-							"Repeating reminder for <@${it.userId}>"
-						} else {
-							"Reminder for <@${it.userId}> set ${
-								it.initialSetTime.toDiscord(
-									TimestampType.RelativeTime
-								)
-							} at ${
-								it.initialSetTime.toDiscord(
-									TimestampType.ShortDateTime
-								)
-							}"
+					try {
+						channel.createMessage {
+							content = if (it.repeating) {
+								"Repeating reminder for <@${it.userId}>"
+							} else {
+								"Reminder for <@${it.userId}> set ${
+									it.initialSetTime.toDiscord(
+										TimestampType.RelativeTime
+									)
+								} at ${
+									it.initialSetTime.toDiscord(
+										TimestampType.ShortDateTime
+									)
+								}"
+							}
+							components {
+								linkButton {
+									label = "Jump to message"
+									url = it.originalMessageUrl
+								}
+							}
 						}
-						components {
-							linkButton {
-								label = "Jump to message"
-								url = it.originalMessageUrl
+					} catch (e: KtorRequestException) {
+						kord.getUser(it.userId)?.dm {
+							content = "I was unable to send your reminder in <#${it.channelId}> from ${
+								kord.getGuild(it.guildId)?.name
+							}.\n\n${
+								if (it.repeating) {
+									"Repeating reminder for <@${it.userId}>"
+								} else {
+									"Reminder for <@${it.userId}> set ${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} at ${
+										it.initialSetTime.toDiscord(
+											TimestampType.ShortDateTime
+										)
+									}"
+								}
+							}"
+							components {
+								linkButton {
+									label = "Jump to message"
+									url = it.originalMessageUrl
+								}
 							}
 						}
 					}
 
 					if (!it.repeating) {
 						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-						kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId).getMessage(messageId)
+						kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
+							.getMessage(messageId)
 							.edit {
 								content = "Reminder completed!"
 							}
 					}
 				} else {
-					channel.createMessage {
-						content = if (it.repeating) {
-							"Repeating reminder for <@${it.userId}>\n> ${it.customMessage}"
-						} else {
-							"Reminder for <@${it.userId}> set ${
-								it.initialSetTime.toDiscord(
-									TimestampType.RelativeTime
-								)
-							} at ${
-								it.initialSetTime.toDiscord(
-									TimestampType.ShortDateTime
-								)
-							}\n> ${it.customMessage}"
+					try {
+						channel.createMessage {
+							content = if (it.repeating) {
+								"Repeating reminder for <@${it.userId}>\n> ${it.customMessage}"
+							} else {
+								"Reminder for <@${it.userId}> set ${
+									it.initialSetTime.toDiscord(
+										TimestampType.RelativeTime
+									)
+								} at ${
+									it.initialSetTime.toDiscord(
+										TimestampType.ShortDateTime
+									)
+								}\n> ${it.customMessage}"
+							}
+							components {
+								linkButton {
+									label = "Jump to message"
+									url = it.originalMessageUrl
+								}
+							}
 						}
-						components {
-							linkButton {
-								label = "Jump to message"
-								url = it.originalMessageUrl
+					} catch (e: KtorRequestException) {
+						kord.getUser(it.userId)?.dm {
+							content = "I was unable to send your reminder in <#${it.channelId}> from ${
+								kord.getGuild(it.guildId)?.name
+							}.\n\n${
+								if (it.repeating) {
+									"Repeating reminder for <@${it.userId}>\n> ${it.customMessage}"
+								} else {
+									"Reminder for <@${it.userId}> set ${
+										it.initialSetTime.toDiscord(
+											TimestampType.RelativeTime
+										)
+									} at ${
+										it.initialSetTime.toDiscord(
+											TimestampType.ShortDateTime
+										)
+									}\n> ${it.customMessage}"
+								}
+							}"
+							components {
+								linkButton {
+									label = "Jump to message"
+									url = it.originalMessageUrl
+								}
 							}
 						}
 					}
 
 					if (!it.repeating) {
 						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-						kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId).getMessage(messageId)
+						kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
+							.getMessage(messageId)
 							.edit {
 								content = "Reminder completed!"
 							}
