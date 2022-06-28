@@ -8,6 +8,7 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageDeleteEvent
+import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
@@ -42,7 +43,12 @@ class MessageDelete : Extension() {
 				val config = DatabaseHelper.getConfig(event.guild!!.id)!!
 
 				val guild = kord.getGuild(event.guildId!!)
-				val messageLog = guild?.getChannelOf<GuildMessageChannel>(config.messageLogs)
+				var messageLog: GuildMessageChannel? = null
+				try {
+					messageLog = guild?.getChannelOf(config.messageLogs)
+				} catch (e: EntityNotFoundException) {
+					DatabaseHelper.clearConfig(event.guildId!!) // Clear the config to make the user fix it
+				}
 				val eventMessage = event.message
 				val messageContent = if (eventMessage?.asMessageOrNull() != null) {
 					if (eventMessage.asMessageOrNull().content.length > 1024) {

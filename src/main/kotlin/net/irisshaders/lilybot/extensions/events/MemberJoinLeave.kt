@@ -9,6 +9,7 @@ import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
+import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
@@ -39,10 +40,15 @@ class MemberJoinLeave : Extension() {
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel)
+				var joinChannel: GuildMessageChannel? = null
+				try {
+					joinChannel = event.getGuild().getChannelOf(config.joinChannel)
+				} catch (e: EntityNotFoundException) {
+					DatabaseHelper.clearConfig(event.guildId) // Clear the config to make the user fix it
+				}
 
 				try {
-					joinChannel.createEmbed {
+					joinChannel!!.createEmbed {
 						title = "User joined the server!"
 						field {
 							name = "Welcome:"
