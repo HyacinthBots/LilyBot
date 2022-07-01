@@ -74,9 +74,7 @@ dependencies {
 }
 
 application {
-    // This is deprecated, but the Shadow plugin requires it
-    @Suppress("DEPRECATION")
-    mainClassName = "net.irisshaders.lilybot.LilyBotKt"
+    mainClass.set("net.irisshaders.lilybot.LilyBotKt")
 }
 
 gitHooks {
