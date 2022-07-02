@@ -264,7 +264,7 @@ permissions = "Moderate members"
 [[command]]
 category = "Tag commands"
 name = "tag-edit"
-args = "* `tagName` - The named identifier of the tag you wish to edit - String\n* `newName` - The new named identifier of the tag\n* `newTitle` - The new embed title - String\n* `newValue` - The new embed description - String"
+args = "* `tagName` - The named identifier of the tag you wish to edit - String\n* `newName` - The new named identifier of the tag - Optional String\n* `newTitle` - The new embed title - Optional String\n* `newValue` - The new embed description - Optional String"
 result = "Edits the tag for the guild you ran this command in"
 permissions = "Moderate members"
 
@@ -272,6 +272,11 @@ permissions = "Moderate members"
 category = "Tag commands"
 name = "tag-help"
 result = "Displays a help command with all this information, in greater detail."
+
+[[command]]
+category = "Tag commands"
+name = "tag-list"
+result = "Displays a paginated list of all the tags for the guild you ran this command in. There are 10 tags on each page"
 
 [[command]]
 category = "Tag commands"

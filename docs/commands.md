@@ -528,6 +528,18 @@ None
 
 ---
 
+### Name: `tag-list`
+**Arguments**:
+None
+
+**Result**: Displays a paginated list of all the tags for the guild you ran this command in. There are 10 tags on each page
+
+**Required Permissions**: `None`
+
+**Command category**: `Tag commands`
+
+---
+
 ### Name: `tag-preview`
 **Arguments**:
 * `tagName` - The named identifier of the tag you wish to preview - String

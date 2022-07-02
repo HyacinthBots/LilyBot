@@ -13,8 +13,12 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.pagination.EphemeralResponsePaginator
+import com.kotlindiscord.kord.extensions.pagination.pages.Page
+import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.suggestStringMap
+import dev.kord.common.Locale
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
@@ -168,9 +172,13 @@ class Tags : Extension() {
 									"list all the tags that the guild has.\n\n**To delete a tag**, if you have " +
 									"the Moderate Members permission, run the following command:\n" +
 									"`/tag-delete <name>`\nYou will be prompted to enter the name of the tag, " +
-									"again aided by autocomplete.\n\n**Guilds can have any number of tags " +
-									"they like.** The limit on `tagValue` for tags is 1024 characters, " +
-									"which is the embed description limit enforced by Discord."
+									"again aided by autocomplete.\n`/tag-edit`\nYou will be prompted to enter a " +
+									"tag name, but will have an autocomplete window to aid you. The window will " +
+									"list all the tags that the guild has. From there you can enter a new name, title " +
+									"or value. None of these are mandatory.\n`/tag-list\nDisplays a paginated list " +
+									"of all tags for this guild. There are 10 tags on each page.\n\n**Guilds can " +
+									"have any number of tags they like.** The limit on `tagValue` for tags is 1024 " +
+									"characters, which is the embed description limit enforced by Discord."
 						color = DISCORD_BLURPLE
 						timestamp = Clock.System.now()
 					}
@@ -389,23 +397,35 @@ class Tags : Extension() {
 			}
 
 			action {
+				val pagesObj = Pages()
 				val tags = DatabaseHelper.getAllTags(guild!!.id)
 
-				var response = ""
-				tags.forEach { response += "• `${it.name}` - ${it.tagTitle}\n" }
-				if (response == "") {
-					response = "This guild has no tags."
+				tags.chunked(10).forEach { tag ->
+					var response = ""
+					tag.forEach {
+						response += "• ${it.name} - ${it.tagTitle} - ${it.tagValue.substring(0..it.tagValue.length.div(2))}\n"
+					}
+					pagesObj.addPage(
+						Page {
+							title = "Tags for this guild"
+							description = "Here are all the tags for this guild"
+							field {
+								name = "Name | Title | Value"
+								value = response
+							}
+						}
+					)
 				}
 
-				respond {
-					embed {
-						title = "Tags for this guild"
-						description = "Here is a list of tags for this guild, with the title as extra information."
-						field {
-							value = response
-						}
-					}
-				}
+				val paginator = EphemeralResponsePaginator(
+					pages = pagesObj,
+					owner = event.interaction.user,
+					timeoutSeconds = 500,
+					locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
+					interaction = interactionResponse,
+				)
+
+				paginator.send()
 			}
 		}
 	}
