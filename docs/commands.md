@@ -504,9 +504,9 @@ Tag commands are guild specific commands, that can be added at runtime. They are
 ### Name: `tag-edit`
 **Arguments**:
 * `tagName` - The named identifier of the tag you wish to edit - String
-* `newName` - The new named identifier of the tag
-* `newTitle` - The new embed title - String
-* `newValue` - The new embed description - String
+* `newName` - The new named identifier of the tag - Optional String
+* `newTitle` - The new embed title - Optional String
+* `newValue` - The new embed description - Optional String
 
 **Result**: Edits the tag for the guild you ran this command in
 
