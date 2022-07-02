@@ -350,6 +350,7 @@ object DatabaseHelper {
 				}
 			} catch (e: KtorRequestException) {
 				collection.deleteOne(ThreadData::threadId eq it.threadId)
+				deletedThreads++
 			}
 		}
 		databaseLogger.info("Deleted $deletedThreads old threads from the database")
