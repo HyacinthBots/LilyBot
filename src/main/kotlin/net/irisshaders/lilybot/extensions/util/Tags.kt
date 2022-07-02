@@ -324,7 +324,7 @@ class Tags : Extension() {
 
 				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
 
-				if (arguments.newValue!!.length > 1024) {
+				if (arguments.newValue != null && arguments.newValue!!.length > 1024) {
 					respond {
 						content =
 							"That tag is body is too long! Due to Discord limitations tag bodies can only be " +
