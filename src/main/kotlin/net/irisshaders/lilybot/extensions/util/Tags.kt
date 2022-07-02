@@ -3,9 +3,11 @@ package net.irisshaders.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalUser
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -61,8 +63,9 @@ class Tags : Extension() {
 
 				if (tagFromDatabase.tagValue.length > 1024) {
 					respond {
-						content = "The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
-								"more, which is above the Discord limit. Please re-create this tag!"
+						content =
+							"The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
+									"more, which is above the Discord limit. Please re-create this tag!"
 					}
 					return@action
 				}
@@ -107,8 +110,9 @@ class Tags : Extension() {
 
 				if (tagFromDatabase.tagValue.length > 1024) {
 					respond {
-						content = "The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
-								"more, which is above the Discord limit. Please re-create this tag!"
+						content =
+							"The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
+									"more, which is above the Discord limit. Please re-create this tag!"
 					}
 					return@action
 				}
@@ -285,6 +289,95 @@ class Tags : Extension() {
 			}
 		}
 
+		ephemeralSlashCommand(::EditTagArgs) {
+			name = "tag-edit"
+			description = "Edit a tag in your guild. Use /tag-help for more info."
+
+			check {
+				anyGuild()
+				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
+			}
+
+			action {
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+
+				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
+					respond { content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?" }
+					return@action
+				}
+
+				val originalName = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.name
+				val originalTitle = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.tagTitle
+				val originalValue = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.tagValue
+
+				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
+
+				if (arguments.newValue!!.length > 1024) {
+					respond {
+						content =
+							"That tag is body is too long! Due to Discord limitations tag bodies can only be " +
+									"1024 characters or less!"
+					}
+					return@action
+				}
+
+				DatabaseHelper.setTag(
+					guild!!.id,
+					arguments.newName ?: originalName,
+					arguments.newTitle ?: originalTitle,
+					arguments.newValue ?: originalValue
+				)
+
+				actionLog.createMessage {
+					embed {
+						title = "Tag Edited"
+						description = "The tag `${arguments.tagName}` was edited"
+						field {
+							name = "Name"
+							value =
+								if (arguments.newName.isNullOrEmpty()) {
+									originalName
+								} else {
+									"${arguments.tagName} -> ${arguments.newName!!}"
+								}
+						}
+						field {
+							name = "Title"
+							value =
+								if (arguments.newTitle.isNullOrEmpty()) {
+									originalTitle
+								} else {
+									"${arguments.newTitle} -> ${arguments.newTitle!!}"
+								}
+						}
+						field {
+							name = "Value"
+							value =
+								if (arguments.newValue.isNullOrEmpty()) {
+									originalValue
+								} else {
+									"${arguments.newValue} -> ${arguments.newValue!!}"
+								}
+						}
+						footer {
+							text = "Edited by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_YELLOW
+					}
+				}
+
+				respond {
+					content = "Tag edited!"
+				}
+			}
+		}
+
 		ephemeralSlashCommand {
 			name = "tag-list"
 			description = "List all tags for this guild"
@@ -384,6 +477,45 @@ class Tags : Extension() {
 				it.replace("\\n", "\n")
 					.replace("\n ", "\n")
 			}
+		}
+	}
+
+	inner class EditTagArgs : Arguments() {
+		/** The named identifier of the tag being edited. */
+		val tagName by string {
+			name = "name"
+			description = "The name of the tag you're editing"
+
+			autoComplete {
+				val tags = DatabaseHelper.getAllTags(data.guildId.value!!)
+				val map = mutableMapOf<String, String>()
+
+				// Add each tag in the database to the tag variable
+				tags.forEach {
+					map[it.name] = it.name
+				}
+
+				// Provide the autocomplete with the tags map
+				suggestStringMap(map)
+			}
+		}
+
+		/** The new name for the tag being edited. */
+		val newName by optionalString {
+			name = "newName"
+			description = "The new name for the tag you're editing"
+		}
+
+		/** The new title for the tag being edited. */
+		val newTitle by optionalString {
+			name = "newTitle"
+			description = "The new title for the tag you're editing"
+		}
+
+		/** The new value for the tag being edited. */
+		val newValue by optionalString {
+			name = "newValue"
+			description = "The new value for the tag you're editing"
 		}
 	}
 }

@@ -462,6 +462,18 @@ The GitHub commands allow users to query GitHub for things such as issues, pull 
 ## Tag commands
 Tag commands are guild specific commands, that can be added at runtime. They are all embed commands. You will be assisted by auto-complete when typing these commands.
 
+### Name: `tag`
+**Arguments**:
+* `tagName` - The named identifier of the tag you wish to run - String
+
+**Result**: Posts the tag embed you requested
+
+**Required Permissions**: `None`
+
+**Command category**: `Tag commands`
+
+---
+
 ### Name: `tag-create`
 **Arguments**:
 (Moderators only)
@@ -489,13 +501,16 @@ Tag commands are guild specific commands, that can be added at runtime. They are
 
 ---
 
-### Name: `tag`
+### Name: `tag-edit`
 **Arguments**:
-* `tagName` - The named identifier of the tag you wish to run - String
+* `tagName` - The named identifier of the tag you wish to edit - String
+* `newName` - The new named identifier of the tag
+* `newTitle` - The new embed title - String
+* `newValue` - The new embed description - String
 
-**Result**: Posts the tag embed you requested
+**Result**: Edits the tag for the guild you ran this command in
 
-**Required Permissions**: `None`
+**Required Permissions**: `Moderate members`
 
 **Command category**: `Tag commands`
 

@@ -243,6 +243,12 @@ description = "Tag commands are guild specific commands, that can be added at ru
 
 [[command]]
 category = "Tag commands"
+name = "tag"
+args = "* `tagName` - The named identifier of the tag you wish to run - String"
+result = "Posts the tag embed you requested"
+
+[[command]]
+category = "Tag commands"
 name = "tag-create"
 args = "(Moderators only)\n* `tagName` - The named identifier of the tag you wish to create. - String\n* `tagTitle` - The tag embed title - String\n* `tagValue` - The tag embed description - String"
 result = "Creates a tag for the guild you ran this command in"
@@ -257,9 +263,10 @@ permissions = "Moderate members"
 
 [[command]]
 category = "Tag commands"
-name = "tag"
-args = "* `tagName` - The named identifier of the tag you wish to run - String"
-result = "Posts the tag embed you requested"
+name = "tag-edit"
+args = "* `tagName` - The named identifier of the tag you wish to edit - String\n* `newName` - The new named identifier of the tag\n* `newTitle` - The new embed title - String\n* `newValue` - The new embed description - String"
+result = "Edits the tag for the guild you ran this command in"
+permissions = "Moderate members"
 
 [[command]]
 category = "Tag commands"
