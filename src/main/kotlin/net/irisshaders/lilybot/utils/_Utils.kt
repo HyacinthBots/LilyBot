@@ -160,7 +160,7 @@ suspend inline fun Extension.updateDefaultPresence() {
 
 	kord.editPresence {
 		status = PresenceStatus.Online
-		watching("over ${getGuildCount()} servers.")
+		watching("${getGuildCount()} servers")
 	}
 }
 
