@@ -91,8 +91,9 @@ class RemindMe : Extension() {
 							} else {
 								"Reminder set!\nI will remind you ${
 									remindTime.toDiscord(TimestampType.RelativeTime)
-								} at ${remindTime.toDiscord(TimestampType.ShortTime)} " +
-										"everyday unless cancelled."
+								} at ${remindTime.toDiscord(TimestampType.ShortTime)}. That's `${
+									Duration.parse(duration.toString())
+								}` after this message was sent."
 							}
 						} else {
 							if (arguments.repeating) {
