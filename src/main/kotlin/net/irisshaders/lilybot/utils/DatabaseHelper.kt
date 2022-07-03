@@ -4,7 +4,6 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.request.KtorRequestException
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
@@ -133,10 +132,10 @@ object DatabaseHelper {
 	 * @since 3.4.0
 	 */
 	suspend inline fun setRoleMenu(
-		 inputMessageId: Snowflake,
-		 inputChannelId: Snowflake,
-		 inputGuildId: Snowflake,
-		 inputRoles: MutableList<Snowflake>
+		inputMessageId: Snowflake,
+		inputChannelId: Snowflake,
+		inputGuildId: Snowflake,
+		inputRoles: MutableList<Snowflake>
 	) {
 		val newRoleMenu = RoleMenuData(inputMessageId, inputChannelId, inputGuildId, inputRoles)
 		val collection = database.getCollection<RoleMenuData>()
@@ -165,17 +164,14 @@ object DatabaseHelper {
 	/**
 	 * Gets Lily's status from the database.
 	 *
-	 * @return null or the set status in the database.
+	 * @return "default" or the set status in the database.
 	 * @author NoComment1105
 	 * @since 3.0.0
 	 */
-	fun getStatus(): String {
-		var selectedStatus: StatusData?
-		runBlocking {
-			val collection = database.getCollection<StatusData>()
-			selectedStatus = collection.findOne(StatusData::key eq "LilyStatus")
-		}
-		return selectedStatus?.status ?: "Iris"
+	suspend fun getStatus(): String {
+		val collection = database.getCollection<StatusData>()
+		val selectedStatus = collection.findOne(StatusData::key eq "LilyStatus")
+		return selectedStatus?.status ?: "default"
 	}
 
 	/**
@@ -309,7 +305,11 @@ object DatabaseHelper {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend inline fun setThreadOwner(inputThreadId: Snowflake, newOwnerId: Snowflake, preventArchiving: Boolean = false) {
+	suspend inline fun setThreadOwner(
+		inputThreadId: Snowflake,
+		newOwnerId: Snowflake,
+		preventArchiving: Boolean = false
+	) {
 		val collection = database.getCollection<ThreadData>()
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
 		collection.insertOne(ThreadData(inputThreadId, newOwnerId, preventArchiving))
@@ -504,10 +504,10 @@ object DatabaseHelper {
 	 * @author NoComment1105
 	 */
 	suspend inline fun removeReminder(
-        inputGuildId: Snowflake,
-        inputUserId: Snowflake,
-        id: Int
-    ) {
+		inputGuildId: Snowflake,
+		inputUserId: Snowflake,
+		id: Int
+	) {
 		val collection = database.getCollection<RemindMeData>()
 		collection.deleteOne(
 			RemindMeData::guildId eq inputGuildId,

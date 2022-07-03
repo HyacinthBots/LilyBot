@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_WHITE
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
@@ -17,6 +18,7 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.Permission
@@ -30,15 +32,19 @@ import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.event.guild.GuildCreateEvent
+import dev.kord.core.event.guild.GuildDeleteEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
+import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.updateDefaultPresence
 
 /**
  * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
@@ -303,44 +309,115 @@ class ModUtilities : Extension() {
 		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::PresenceArgs) {
-			name = "set-status"
+			name = "status"
 			description = "Set Lily's current presence/status."
 
-			check {
-				hasPermission(Permission.Administrator)
-				configPresent()
+			ephemeralSubCommand(::PresenceArgs) {
+				name = "set"
+				description = "Set a custom status for Lily."
+
+				check {
+					hasPermission(Permission.Administrator)
+					configPresent()
+				}
+
+				action {
+					// Lock this command to the testing guild
+					if (guild?.id != TEST_GUILD_ID) {
+						respond { content = "**Error:** This command can only be run in Lily's testing guild." }
+						return@action
+					}
+
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+
+					// Update the presence in the action
+					this@ephemeralSlashCommand.kord.editPresence {
+						status = PresenceStatus.Online
+						playing(arguments.presenceArgument)
+					}
+
+					// Store the new presence in the database for if there is a restart
+					DatabaseHelper.setStatus(arguments.presenceArgument)
+
+					respond { content = "Presence set to `${arguments.presenceArgument}`" }
+
+					actionLog.createEmbed {
+						title = "Presence changed"
+						description = "Lily's presence has been set to `${arguments.presenceArgument}`"
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						color = DISCORD_BLACK
+					}
+				}
 			}
 
-			action {
-				// Lock this command to the testing guild
-				if (guild?.id != TEST_GUILD_ID) {
-					respond { content = "**Error:** This command can only be run in Lily's testing guild." }
-					return@action
+			ephemeralSubCommand {
+				name = "reset"
+				description = "Reset Lily's presence to the default status."
+
+				check {
+					hasPermission(Permission.Administrator)
+					configPresent()
 				}
 
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
-
-				// Update the presence in the action
-				this@ephemeralSlashCommand.kord.editPresence {
-					status = PresenceStatus.Online
-					playing(arguments.presenceArgument)
-				}
-
-				// Store the new presence in the database for if there is a restart
-				DatabaseHelper.setStatus(arguments.presenceArgument)
-
-				respond { content = "Presence set to `${arguments.presenceArgument}`" }
-
-				actionLog.createEmbed {
-					title = "Presence changed"
-					description = "Lily's presence has been set to `${arguments.presenceArgument}`"
-					footer {
-						text = user.asUser().tag
-						icon = user.asUser().avatar?.url
+				action {
+					// Lock this command to the testing guild
+					if (guild?.id != TEST_GUILD_ID) {
+						respond { content = "**Error:** This command can only be run in Lily's testing guild." }
+						return@action
 					}
-					color = DISCORD_BLACK
+
+					// Store the new presence in the database for if there is a restart
+					DatabaseHelper.setStatus("default")
+
+					updateDefaultPresence()
+					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size
+
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+
+					respond { content = "Presence set to default" }
+
+					actionLog.createEmbed {
+						title = "Presence changed"
+						description = "Lily's presence has been set to default."
+						field {
+							value = "Watching over $guilds servers."
+						}
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						color = DISCORD_BLACK
+					}
 				}
+			}
+		}
+
+		/**
+		 * Update the presence to reflect the new number of guilds, if the presence is set to "default"
+		 *
+		 * @author NoComment1105
+		 * @since 3.4.5
+		 */
+		event<GuildCreateEvent> {
+			action {
+				updateDefaultPresence()
+			}
+		}
+
+		/**
+		 * Update the presence to reflect the new number of guilds, if the presence is set to "default"
+		 *
+		 * @author NoComment1105
+		 * @since 3.4.5
+		 */
+		event<GuildDeleteEvent> {
+			action {
+				updateDefaultPresence()
 			}
 		}
 	}

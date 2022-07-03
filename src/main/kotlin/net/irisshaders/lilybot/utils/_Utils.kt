@@ -4,9 +4,11 @@ import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
+import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.TextChannel
@@ -143,3 +145,28 @@ suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, 
 
 	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
 }
+
+/**
+ * Update the presence to reflect the new number of guilds, if the presence is set to "default".
+ * @author NoComment1105
+ * @since 3.4.5
+ */
+suspend inline fun Extension.updateDefaultPresence() {
+	if (DatabaseHelper.getStatus() != "default") {
+		return
+	}
+
+	kord.editPresence {
+		status = PresenceStatus.Online
+		watching("over ${getGuildCount()} servers.")
+	}
+}
+
+/**
+ * Get the number of guilds the bot is in.
+ *
+ * @return The number of guilds the bot is in.
+ * @author NoComment1105
+ * @since 3.4.5
+ */
+suspend inline fun Extension.getGuildCount() = kord.guilds.toList().size

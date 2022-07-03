@@ -33,7 +33,6 @@ import net.irisshaders.lilybot.extensions.util.StartupHooks
 import net.irisshaders.lilybot.extensions.util.Tags
 import net.irisshaders.lilybot.extensions.util.ThreadControl
 import net.irisshaders.lilybot.utils.BOT_TOKEN
-import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ENVIRONMENT
 import net.irisshaders.lilybot.utils.MONGO_URI
 import net.irisshaders.lilybot.utils.SENTRY_DSN
@@ -121,9 +120,6 @@ suspend fun main() {
 				enableIfDSN(SENTRY_DSN) // Use the nullable sentry function to allow the bot to be used without a DSN
 			}
 		}
-
-		// Pull the status from the database and set it to `Playing <status>
-		presence { playing(DatabaseHelper.getStatus()) }
 
 		// Connect to GitHub to allow the GitHub commands to function
 		try {
