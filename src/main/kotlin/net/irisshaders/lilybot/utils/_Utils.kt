@@ -14,6 +14,7 @@ import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.exception.EntityNotFoundException
+import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
@@ -170,4 +171,4 @@ suspend inline fun Extension.updateDefaultPresence() {
  * @author NoComment1105
  * @since 3.4.5
  */
-suspend inline fun Extension.getGuildCount() = kord.guilds.count()
+suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.rest).guilds.count()
