@@ -171,4 +171,4 @@ suspend inline fun Extension.updateDefaultPresence() {
  * @author NoComment1105
  * @since 3.4.5
  */
-suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.cacheWithRestFallback).guilds.count()
+suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.cachingRest).guilds.count()
