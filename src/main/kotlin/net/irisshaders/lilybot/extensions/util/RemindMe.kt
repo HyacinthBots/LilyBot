@@ -81,6 +81,11 @@ class RemindMe : Extension() {
 					val remindTime = Clock.System.now().plus(arguments.time, TimeZone.UTC)
 					val duration = arguments.time
 
+					if (arguments.customMessage != null && arguments.customMessage!!.length >= 1000) {
+						respond { content = "Message is too long. Message must be 1000 characters or fewer" }
+						return@action
+					}
+
 					val response = respond {
 						content = if (arguments.customMessage.isNullOrEmpty()) {
 							if (arguments.repeating) {
@@ -186,7 +191,7 @@ class RemindMe : Extension() {
 									"reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
 										it.remindTime.toDiscord(TimestampType.ShortDateTime)
 									}),\nCustom Message: ${
-										it.customMessage ?: "none"
+										it.customMessage?.substring(0..1000) ?: "none"
 									}\n---\n"
 
 							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
@@ -305,7 +310,7 @@ class RemindMe : Extension() {
 							"Time until reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
 								it.remindTime.toDiscord(TimestampType.ShortDateTime)
 							}),\nCustom Message: ${
-								it.customMessage ?: "none"
+								it.customMessage?.substring(0..1000) ?: "none"
 							}\n---\n"
 			}
 		}
@@ -388,17 +393,13 @@ class RemindMe : Extension() {
 					try {
 						channel.createMessage {
 							content = if (it.repeating) {
-								"Repeating reminder for <@${it.userId}>\n> ${it.customMessage}"
+								"Repeating reminder for <@${it.userId}>\n> ${it.customMessage.substring(0..1000)}"
 							} else {
 								"Reminder for <@${it.userId}> set ${
-									it.initialSetTime.toDiscord(
-										TimestampType.RelativeTime
-									)
+									it.initialSetTime.toDiscord(TimestampType.RelativeTime)
 								} at ${
-									it.initialSetTime.toDiscord(
-										TimestampType.ShortDateTime
-									)
-								}\n> ${it.customMessage}"
+									it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
+								}\n> ${it.customMessage.substring(0..1000)}"
 							}
 							components {
 								linkButton {
@@ -413,17 +414,13 @@ class RemindMe : Extension() {
 								kord.getGuild(it.guildId)?.name
 							}.\n\n${
 								if (it.repeating) {
-									"Repeating reminder for <@${it.userId}>\n> ${it.customMessage}"
+									"Repeating reminder for <@${it.userId}>\n> ${it.customMessage.substring(0..1000)}"
 								} else {
 									"Reminder for <@${it.userId}> set ${
-										it.initialSetTime.toDiscord(
-											TimestampType.RelativeTime
-										)
+										it.initialSetTime.toDiscord(TimestampType.RelativeTime)
 									} at ${
-										it.initialSetTime.toDiscord(
-											TimestampType.ShortDateTime
-										)
-									}\n> ${it.customMessage}"
+										it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
+									}\n> ${it.customMessage.substring(0..1000)}"
 								}
 							}"
 							components {
