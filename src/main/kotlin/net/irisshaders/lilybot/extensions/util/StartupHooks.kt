@@ -28,19 +28,6 @@ class StartupHooks : Extension() {
 		event<ReadyEvent> {
 			action {
 				/**
-				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
-				 * else the database value.
-				 */
-				if (DatabaseHelper.getStatus() == "default") {
-					updateDefaultPresence()
-				} else {
-					this@event.kord.editPresence {
-						status = PresenceStatus.Online
-						playing(DatabaseHelper.getStatus())
-					}
-				}
-
-				/**
 				 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
 				 * @author IMS212
 				 * @since v2.0
@@ -68,6 +55,19 @@ class StartupHooks : Extension() {
 				 * @since 3.2.0
 				 */
 				DatabaseHelper.cleanupGuildData()
+
+				/**
+				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
+				 * else the database value.
+				 */
+				if (DatabaseHelper.getStatus() == "default") {
+					updateDefaultPresence()
+				} else {
+					this@event.kord.editPresence {
+						status = PresenceStatus.Online
+						playing(DatabaseHelper.getStatus())
+					}
+				}
 			}
 		}
 	}
