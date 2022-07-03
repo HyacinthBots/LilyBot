@@ -403,14 +403,14 @@ class Tags : Extension() {
 				tags.chunked(10).forEach { tag ->
 					var response = ""
 					tag.forEach {
-						response += "• ${it.name} - ${it.tagTitle} - ${it.tagValue.substring(0..it.tagValue.length.div(2))}\n"
+						response += "• ${it.name} - ${it.tagTitle}\n"
 					}
 					pagesObj.addPage(
 						Page {
 							title = "Tags for this guild"
 							description = "Here are all the tags for this guild"
 							field {
-								name = "Name | Title | Value"
+								name = "Name | Title"
 								value = response
 							}
 						}
