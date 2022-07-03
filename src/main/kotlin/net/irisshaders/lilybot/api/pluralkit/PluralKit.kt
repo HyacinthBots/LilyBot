@@ -1,6 +1,7 @@
 package net.irisshaders.lilybot.api.pluralkit
 
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.entity.Message
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
@@ -56,6 +57,16 @@ object PluralKit {
 	 * @since 3.3.2
 	 */
 	suspend fun getProxiedMessageAuthorId(id: Snowflake) = getProxiedMessageAuthorId(id.toString())
+
+	/**
+	 * Use a provided message, we check to see if the message contains the PluralKit chat command prefix.
+	 *
+	 * @param message The message that needs checking
+	 * @return True if the message contains the prefix, false if not
+	 * @author NoComment1105
+	 * @since 3.4.5
+	 */
+	fun containsPkChatCommandPrefix(message: Message) = message.content.startsWith("pk;")
 
 	/**
 	 * Using a provided message ID, we check against the [PluralKit API](https://pluralkit.me/api/) to find out if
