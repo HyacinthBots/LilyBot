@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "net.irisshaders.lilybot"
-version = "3.4.5"
+version = "3.4.6"
 
 repositories {
     mavenCentral()
