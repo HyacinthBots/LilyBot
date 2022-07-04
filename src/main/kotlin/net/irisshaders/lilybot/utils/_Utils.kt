@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.ModerationConfig
+import net.irisshaders.lilybot.database.StatusDatabase
 
 val utilsLogger = KotlinLogging.logger("Checks Logger")
 
@@ -151,7 +152,7 @@ suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, 
  * @since 3.4.5
  */
 suspend inline fun Extension.updateDefaultPresence() {
-	if (DatabaseHelper.getStatus() != "default") {
+	if (StatusDatabase.getStatus() != "default") {
 		return
 	}
 

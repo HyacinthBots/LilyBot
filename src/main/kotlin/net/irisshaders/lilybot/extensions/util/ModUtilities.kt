@@ -367,13 +367,13 @@ class ModUtilities : Extension() {
 					}
 
 					// Store the new presence in the database for if there is a restart
-					DatabaseHelper.setStatus("default")
+					StatusDatabase.setStatus("default")
 
 					updateDefaultPresence()
 					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size
 
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					respond { content = "Presence set to default" }
 

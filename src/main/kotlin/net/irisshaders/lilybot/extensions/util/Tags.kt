@@ -58,7 +58,7 @@ class Tags : Extension() {
 			}
 
 			action {
-				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName) ?: run {
+				val tagFromDatabase = TagsDatabase.getTag(guild!!.id, arguments.tagName) ?: run {
 					respond {
 						content = "Unable to find tag `${arguments.tagName}` for preview. " +
 								"Be sure it exists and you've typed it correctly."
@@ -311,19 +311,19 @@ class Tags : Extension() {
 			}
 
 			action {
-				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
-				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
+				if (TagsDatabase.getTag(guild!!.id, arguments.tagName) == null) {
 					respond { content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?" }
 					return@action
 				}
 
-				val originalName = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.name
-				val originalTitle = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.tagTitle
-				val originalValue = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.tagValue
+				val originalName = TagsDatabase.getTag(guild!!.id, arguments.tagName)!!.name
+				val originalTitle = TagsDatabase.getTag(guild!!.id, arguments.tagName)!!.tagTitle
+				val originalValue = TagsDatabase.getTag(guild!!.id, arguments.tagName)!!.tagValue
 
-				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
+				TagsDatabase.removeTag(guild!!.id, arguments.tagName)
 
 				if (arguments.newValue != null && arguments.newValue!!.length > 1024) {
 					respond {
@@ -334,7 +334,7 @@ class Tags : Extension() {
 					return@action
 				}
 
-				DatabaseHelper.setTag(
+				TagsDatabase.setTag(
 					guild!!.id,
 					arguments.newName ?: originalName,
 					arguments.newTitle ?: originalTitle,
@@ -508,7 +508,7 @@ class Tags : Extension() {
 			description = "The name of the tag you're editing"
 
 			autoComplete {
-				val tags = DatabaseHelper.getAllTags(data.guildId.value!!)
+				val tags = TagsDatabase.getAllTags(data.guildId.value!!)
 				val map = mutableMapOf<String, String>()
 
 				// Add each tag in the database to the tag variable

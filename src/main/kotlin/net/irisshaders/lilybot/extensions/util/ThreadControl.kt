@@ -234,7 +234,7 @@ class ThreadControl : Extension() {
 						} else if (it.threadId == threadChannel.id && !it.preventArchiving) {
 							ThreadsDatabase.setThreadOwner(it.threadId, it.ownerId, true)
 							try {
-								guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
+								guild!!.getChannelOf<GuildMessageChannel>(config.channel).createMessage {
 									embed {
 										title = "Thread archiving disabled"
 										color = DISCORD_FUCHSIA

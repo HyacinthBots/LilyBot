@@ -10,7 +10,6 @@ import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
-import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.LoggingConfig
@@ -37,14 +36,9 @@ class MemberJoinLeave : Extension() {
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				var joinChannel: GuildMessageChannel? = null
-				try {
-					joinChannel = event.getGuild().getChannelOf(config.joinChannel)
-				} catch (e: EntityNotFoundException) {
-					DatabaseHelper.clearConfig(event.guildId) // Clear the config to make the user fix it
-				}
+				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel)
 
-				joinChannel!!.createEmbed {
+				joinChannel.createEmbed {
 					title = "User joined the server!"
 					field {
 						name = "Welcome:"
@@ -73,17 +67,12 @@ class MemberJoinLeave : Extension() {
 				if (event.user.id == kord.selfId) return@action
 				val config = LoggingConfig.getLoggingConfig(guildFor(event)!!.id)!!
 
-				var joinChannel: GuildMessageChannel? = null
-				try {
-					joinChannel = event.getGuild().getChannelOf(config.joinChannel)
-				} catch (e: EntityNotFoundException) {
-					DatabaseHelper.clearConfig(event.guildId) // Clear the config to make the user fix it
-				}
+				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel)
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()
 
-				joinChannel!!.createEmbed {
+				joinChannel.createEmbed {
 					title = "User left the server!"
 					field {
 						name = "Goodbye:"
