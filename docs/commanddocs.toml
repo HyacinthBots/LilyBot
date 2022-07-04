@@ -243,6 +243,12 @@ description = "Tag commands are guild specific commands, that can be added at ru
 
 [[command]]
 category = "Tag commands"
+name = "tag"
+args = "* `tagName` - The named identifier of the tag you wish to run - String"
+result = "Posts the tag embed you requested"
+
+[[command]]
+category = "Tag commands"
 name = "tag-create"
 args = "(Moderators only)\n* `tagName` - The named identifier of the tag you wish to create. - String\n* `tagTitle` - The tag embed title - String\n* `tagValue` - The tag embed description - String"
 result = "Creates a tag for the guild you ran this command in"
@@ -257,14 +263,26 @@ permissions = "Moderate members"
 
 [[command]]
 category = "Tag commands"
-name = "tag"
-args = "* `tagName` - The named identifier of the tag you wish to run - String"
-result = "Posts the tag embed you requested"
+name = "tag-edit"
+args = "* `tagName` - The named identifier of the tag you wish to edit - String\n* `newName` - The new named identifier of the tag - Optional String\n* `newTitle` - The new embed title - Optional String\n* `newValue` - The new embed description - Optional String"
+result = "Edits the tag for the guild you ran this command in"
+permissions = "Moderate members"
 
 [[command]]
 category = "Tag commands"
 name = "tag-help"
 result = "Displays a help command with all this information, in greater detail."
+
+[[command]]
+category = "Tag commands"
+name = "tag-list"
+result = "Displays a paginated list of all the tags for the guild you ran this command in. There are 10 tags on each page"
+
+[[command]]
+category = "Tag commands"
+name = "tag-preview"
+args = "* `tagName` - The named identifier of the tag you wish to preview - String"
+result = "Displays a preview of the tag embed you requested."
 # End tag commands
 
 # Gallery channel commands

@@ -12,10 +12,7 @@ plugins {
 }
 
 group = "net.irisshaders.lilybot"
-version = "3.4.2"
-
-val javaVersion = 17
-val kotlinVersion = "${libs.versions.kotlin.get().split(".")[0]}.${libs.versions.kotlin.get().split(".")[1]}"
+version = "3.4.6"
 
 repositories {
     mavenCentral()
@@ -23,6 +20,11 @@ repositories {
     maven {
         name = "Kotlin Discord"
         url = uri("https://maven.kotlindiscord.com/repository/maven-public/")
+    }
+
+    maven {
+        name = "Sonatype Snapshots"
+        url = uri("https://oss.sonatype.org/content/repositories/snapshots")
     }
 
     maven {
@@ -74,9 +76,7 @@ dependencies {
 }
 
 application {
-    // This is deprecated, but the Shadow plugin requires it
-    @Suppress("DEPRECATION")
-    mainClassName = "net.irisshaders.lilybot.LilyBotKt"
+    mainClass.set("net.irisshaders.lilybot.LilyBotKt")
 }
 
 gitHooks {
@@ -88,13 +88,11 @@ gitHooks {
 tasks {
     withType<KotlinCompile> {
         kotlinOptions {
-            jvmTarget = javaVersion.toString()
-            languageVersion = kotlinVersion
-            sourceCompatibility = javaVersion.toString()
-            targetCompatibility = javaVersion.toString()
+            jvmTarget = "17"
+            languageVersion = "1.6"
             incremental = true
             freeCompilerArgs = listOf(
-                "-Xopt-in=kotlin.RequiresOptIn"
+                "-opt-in=kotlin.RequiresOptIn"
             )
         }
     }

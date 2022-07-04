@@ -462,6 +462,18 @@ The GitHub commands allow users to query GitHub for things such as issues, pull 
 ## Tag commands
 Tag commands are guild specific commands, that can be added at runtime. They are all embed commands. You will be assisted by auto-complete when typing these commands.
 
+### Name: `tag`
+**Arguments**:
+* `tagName` - The named identifier of the tag you wish to run - String
+
+**Result**: Posts the tag embed you requested
+
+**Required Permissions**: `None`
+
+**Command category**: `Tag commands`
+
+---
+
 ### Name: `tag-create`
 **Arguments**:
 (Moderators only)
@@ -489,13 +501,16 @@ Tag commands are guild specific commands, that can be added at runtime. They are
 
 ---
 
-### Name: `tag`
+### Name: `tag-edit`
 **Arguments**:
-* `tagName` - The named identifier of the tag you wish to run - String
+* `tagName` - The named identifier of the tag you wish to edit - String
+* `newName` - The new named identifier of the tag - Optional String
+* `newTitle` - The new embed title - Optional String
+* `newValue` - The new embed description - Optional String
 
-**Result**: Posts the tag embed you requested
+**Result**: Edits the tag for the guild you ran this command in
 
-**Required Permissions**: `None`
+**Required Permissions**: `Moderate members`
 
 **Command category**: `Tag commands`
 
@@ -506,6 +521,30 @@ Tag commands are guild specific commands, that can be added at runtime. They are
 None
 
 **Result**: Displays a help command with all this information, in greater detail.
+
+**Required Permissions**: `None`
+
+**Command category**: `Tag commands`
+
+---
+
+### Name: `tag-list`
+**Arguments**:
+None
+
+**Result**: Displays a paginated list of all the tags for the guild you ran this command in. There are 10 tags on each page
+
+**Required Permissions**: `None`
+
+**Command category**: `Tag commands`
+
+---
+
+### Name: `tag-preview`
+**Arguments**:
+* `tagName` - The named identifier of the tag you wish to preview - String
+
+**Result**: Displays a preview of the tag embed you requested.
 
 **Required Permissions**: `None`
 

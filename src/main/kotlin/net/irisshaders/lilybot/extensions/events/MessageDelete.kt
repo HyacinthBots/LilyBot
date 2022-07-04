@@ -39,6 +39,7 @@ class MessageDelete : Extension() {
 			action {
 				delay(PK_API_DELAY) // Allow the PK API to catch up
 				if (event.message?.author?.isBot == true) return@action
+				if (PluralKit.containsPkChatCommandPrefix(event.message!!)) return@action
 
 				val config = LoggingConfig.getLoggingConfig(guildFor(event)!!.id)!!
 

@@ -302,6 +302,11 @@ private suspend inline fun createReport(
 									inline = true
 								}
 								field {
+									name = "Message Author:"
+									value =
+										reportedMessage.author?.tag ?: "Failed to get author of message"
+								}
+								field {
 									name = "Report reason:"
 									value = reportReason ?: "No reason provided"
 								}

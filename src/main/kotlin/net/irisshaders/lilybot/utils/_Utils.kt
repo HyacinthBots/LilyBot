@@ -4,14 +4,18 @@ import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
+import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.exception.EntityNotFoundException
+import dev.kord.core.supplier.EntitySupplyStrategy
+import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.ModerationConfig
@@ -52,6 +56,21 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		return
 	}
 
+	val permissionsSet: MutableSet<String> = mutableSetOf()
+	var count = 0
+	permissions.values.forEach { _ ->
+		permissionsSet.add(
+			permissions.values.toString()
+				.split(",")[count]
+				.split(".")[4]
+				.split("$")[1]
+				.split("@")[0]
+				.replace("[", "`")
+				.replace("]", "`")
+		)
+		count++
+	}
+
 	/* Use `TextChannel` when the channel is a Text channel */
 	if (channelFor(event)!!.asChannel().type == ChannelType.GuildText) {
 		if (channelFor(event)!!.asChannelOf<TextChannel>().getEffectivePermissions(event.kord.selfId)
@@ -59,7 +78,9 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		) {
 			pass()
 		} else {
-			fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channelFor(event)?.mention}")
+			fail(
+				"Incorrect permissions!\nI do not have the $permissionsSet permissions for ${channelFor(event)?.mention}"
+			)
 		}
 	} else if (channelFor(event)!!.asChannel().type == ChannelType.PublicGuildThread ||
 		channelFor(event)!!.asChannel().type == ChannelType.PublicNewsThread ||
@@ -70,7 +91,9 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		) {
 			pass()
 		} else {
-			fail("Incorrect permissions!\nI do not have the ${permissions.values} permissions for ${channelFor(event)?.mention}")
+			fail(
+				"Incorrect permissions!\nI do not have the $permissionsSet permissions for ${channelFor(event)?.mention}"
+			)
 		}
 	} else {
 		fail("Unable to get permissions for channel! Please report this to the developers!")
@@ -121,3 +144,28 @@ suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, 
 
 	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
 }
+
+/**
+ * Update the presence to reflect the new number of guilds, if the presence is set to "default".
+ * @author NoComment1105
+ * @since 3.4.5
+ */
+suspend inline fun Extension.updateDefaultPresence() {
+	if (DatabaseHelper.getStatus() != "default") {
+		return
+	}
+
+	kord.editPresence {
+		status = PresenceStatus.Online
+		watching("${getGuildCount()} servers")
+	}
+}
+
+/**
+ * Get the number of guilds the bot is in.
+ *
+ * @return The number of guilds the bot is in.
+ * @author NoComment1105
+ * @since 3.4.5
+ */
+suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.cacheWithRestFallback).guilds.count()

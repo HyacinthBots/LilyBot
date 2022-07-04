@@ -76,9 +76,7 @@ class TemporaryModeration : Extension() {
 				configPresent()
 				hasPermission(Permission.ManageMessages)
 				requireBotPermissions(Permission.ManageMessages)
-				botHasChannelPerms(
-					Permissions(Permission.ManageChannels)
-				)
+				botHasChannelPerms(Permissions(Permission.ManageMessages))
 			}
 
 			action {
@@ -463,7 +461,8 @@ class TemporaryModeration : Extension() {
 					anyGuild()
 					configPresent()
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ManageChannels)
+					botHasChannelPerms(Permissions(Permission.ManageChannels))
 				}
 
 				@Suppress("DuplicatedCode")
@@ -520,7 +519,7 @@ class TemporaryModeration : Extension() {
 					anyGuild()
 					configPresent()
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ManageChannels)
 				}
 
 				action {
@@ -575,7 +574,8 @@ class TemporaryModeration : Extension() {
 					anyGuild()
 					configPresent()
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ManageChannels)
+					botHasChannelPerms(Permissions(Permission.ManageChannels))
 				}
 
 				@Suppress("DuplicatedCode")
@@ -637,7 +637,7 @@ class TemporaryModeration : Extension() {
 					anyGuild()
 					configPresent()
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ManageChannels)
 				}
 
 				action {

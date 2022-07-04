@@ -13,11 +13,9 @@ import com.mongodb.MongoClientSettings
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
-import net.irisshaders.lilybot.database.StatusDatabase
 import net.irisshaders.lilybot.extensions.config.Config
 import net.irisshaders.lilybot.extensions.config.JoinLeaveDetection
 import net.irisshaders.lilybot.extensions.events.LogUploading
-import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
 import net.irisshaders.lilybot.extensions.events.MessageDelete
 import net.irisshaders.lilybot.extensions.events.ThreadInviter
 import net.irisshaders.lilybot.extensions.moderation.Report
@@ -122,9 +120,6 @@ suspend fun main() {
 				enableIfDSN(SENTRY_DSN) // Use the nullable sentry function to allow the bot to be used without a DSN
 			}
 		}
-
-		// Pull the status from the database and set it to `Playing <status>
-		presence { playing(StatusDatabase.getStatus()) }
 
 		// Connect to GitHub to allow the GitHub commands to function
 		try {

@@ -3,16 +3,22 @@ package net.irisshaders.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalUser
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.pagination.EphemeralResponsePaginator
+import com.kotlindiscord.kord.extensions.pagination.pages.Page
+import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.suggestStringMap
+import dev.kord.common.Locale
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
@@ -36,6 +42,53 @@ class Tags : Extension() {
 
 	override suspend fun setup() {
 		/**
+		 * The command that allows users to preview tag contents before sending it in public
+		 *
+		 * @author NoComment1105
+		 * @since 3.4.3
+		 */
+		ephemeralSlashCommand(::DeleteTagArgs) {
+			name = "tag-preview"
+			description = "Preview a tag's contents without sending it publicly."
+
+			check {
+				configPresent()
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
+			}
+
+			action {
+				val tagFromDatabase = DatabaseHelper.getTag(guild!!.id, arguments.tagName) ?: run {
+					respond {
+						content = "Unable to find tag `${arguments.tagName}` for preview. " +
+								"Be sure it exists and you've typed it correctly."
+					}
+					return@action
+				}
+
+				if (tagFromDatabase.tagValue.length > 1024) {
+					respond {
+						content =
+							"The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
+									"more, which is above the Discord limit. Please re-create this tag!"
+					}
+					return@action
+				}
+
+				respond {
+					embed {
+						title = tagFromDatabase.tagTitle
+						description = tagFromDatabase.tagValue
+						footer {
+							text = "Tag preview"
+						}
+						color = DISCORD_BLURPLE
+					}
+				}
+			}
+		}
+
+		/**
 		 * The command for calling tags.
 		 *
 		 * @author NoComment1105
@@ -52,7 +105,7 @@ class Tags : Extension() {
 			}
 
 			action {
-				if (TagsDatabase.getTag(guild!!.id, arguments.tagName) == null) {
+				val tagFromDatabase = TagsDatabase.getTag(guild!!.id, arguments.tagName) ?: run {
 					respond {
 						content = "Unable to find tag `${arguments.tagName}`. " +
 								"Be sure it exists and you've typed it correctly."
@@ -60,12 +113,11 @@ class Tags : Extension() {
 					return@action
 				}
 
-				val tagFromDatabase = TagsDatabase.getTag(guild!!.id, arguments.tagName)!!
-
 				if (tagFromDatabase.tagValue.length > 1024) {
 					respond {
-						content = "The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
-								"more, which is above the Discord limit. Please re-create this tag!"
+						content =
+							"The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
+									"more, which is above the Discord limit. Please re-create this tag!"
 					}
 					return@action
 				}
@@ -75,7 +127,7 @@ class Tags : Extension() {
 				// This is not the best way to do this. Ideally the ping would be in the same message as the embed in
 				// a `respond` builder. A Discord limitation makes this not possible.
 				channel.createMessage {
-					if (arguments.user != null) content = arguments.user!!.mention
+					content = arguments.user?.mention
 					embed {
 						title = tagFromDatabase.tagTitle
 						description = tagFromDatabase.tagValue
@@ -121,9 +173,13 @@ class Tags : Extension() {
 									"list all the tags that the guild has.\n\n**To delete a tag**, if you have " +
 									"the Moderate Members permission, run the following command:\n" +
 									"`/tag-delete <name>`\nYou will be prompted to enter the name of the tag, " +
-									"again aided by autocomplete.\n\n**Guilds can have any number of tags " +
-									"they like.** The limit on `tagValue` for tags is 1024 characters, " +
-									"which is the embed description limit enforced by Discord."
+									"again aided by autocomplete.\n`/tag-edit`\nYou will be prompted to enter a " +
+									"tag name, but will have an autocomplete window to aid you. The window will " +
+									"list all the tags that the guild has. From there you can enter a new name, title " +
+									"or value. None of these are mandatory.\n`/tag-list\nDisplays a paginated list " +
+									"of all tags for this guild. There are 10 tags on each page.\n\n**Guilds can " +
+									"have any number of tags they like.** The limit on `tagValue` for tags is 1024 " +
+									"characters, which is the embed description limit enforced by Discord."
 						color = DISCORD_BLURPLE
 						timestamp = Clock.System.now()
 					}
@@ -242,6 +298,95 @@ class Tags : Extension() {
 			}
 		}
 
+		ephemeralSlashCommand(::EditTagArgs) {
+			name = "tag-edit"
+			description = "Edit a tag in your guild. Use /tag-help for more info."
+
+			check {
+				anyGuild()
+				configPresent()
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
+				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
+			}
+
+			action {
+				val config = DatabaseHelper.getConfig(guild!!.id)!!
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+
+				if (DatabaseHelper.getTag(guild!!.id, arguments.tagName) == null) {
+					respond { content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?" }
+					return@action
+				}
+
+				val originalName = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.name
+				val originalTitle = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.tagTitle
+				val originalValue = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.tagValue
+
+				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
+
+				if (arguments.newValue != null && arguments.newValue!!.length > 1024) {
+					respond {
+						content =
+							"That tag is body is too long! Due to Discord limitations tag bodies can only be " +
+									"1024 characters or less!"
+					}
+					return@action
+				}
+
+				DatabaseHelper.setTag(
+					guild!!.id,
+					arguments.newName ?: originalName,
+					arguments.newTitle ?: originalTitle,
+					arguments.newValue ?: originalValue
+				)
+
+				actionLog.createMessage {
+					embed {
+						title = "Tag Edited"
+						description = "The tag `${arguments.tagName}` was edited"
+						field {
+							name = "Name"
+							value =
+								if (arguments.newName.isNullOrEmpty()) {
+									originalName
+								} else {
+									"${arguments.tagName} -> ${arguments.newName!!}"
+								}
+						}
+						field {
+							name = "Title"
+							value =
+								if (arguments.newTitle.isNullOrEmpty()) {
+									originalTitle
+								} else {
+									"${arguments.newTitle} -> ${arguments.newTitle!!}"
+								}
+						}
+						field {
+							name = "Value"
+							value =
+								if (arguments.newValue.isNullOrEmpty()) {
+									originalValue
+								} else {
+									"${arguments.newValue} -> ${arguments.newValue!!}"
+								}
+						}
+						footer {
+							text = "Edited by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_YELLOW
+					}
+				}
+
+				respond {
+					content = "Tag edited!"
+				}
+			}
+		}
+
 		ephemeralSlashCommand {
 			name = "tag-list"
 			description = "List all tags for this guild"
@@ -253,23 +398,35 @@ class Tags : Extension() {
 			}
 
 			action {
+				val pagesObj = Pages()
 				val tags = TagsDatabase.getAllTags(guild!!.id)
 
-				var response = ""
-				tags.forEach { response += "• `${it.name}` - ${it.tagTitle}\n" }
-				if (response == "") {
-					response = "This guild has no tags."
+				tags.chunked(10).forEach { tag ->
+					var response = ""
+					tag.forEach {
+						response += "• ${it.name} - ${it.tagTitle}\n"
+					}
+					pagesObj.addPage(
+						Page {
+							title = "Tags for this guild"
+							description = "Here are all the tags for this guild"
+							field {
+								name = "Name | Title"
+								value = response
+							}
+						}
+					)
 				}
 
-				respond {
-					embed {
-						title = "Tags for this guild"
-						description = "Here is a list of tags for this guild, with the title as extra information."
-						field {
-							value = response
-						}
-					}
-				}
+				val paginator = EphemeralResponsePaginator(
+					pages = pagesObj,
+					owner = event.interaction.user,
+					timeoutSeconds = 500,
+					locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
+					interaction = interactionResponse,
+				)
+
+				paginator.send()
 			}
 		}
 	}
@@ -301,7 +458,7 @@ class Tags : Extension() {
 	inner class DeleteTagArgs : Arguments() {
 		val tagName by string {
 			name = "name"
-			description = "The name of the tag you want to delete"
+			description = "The name of the tag"
 
 			autoComplete {
 				val tags = TagsDatabase.getAllTags(data.guildId.value!!)
@@ -341,6 +498,45 @@ class Tags : Extension() {
 				it.replace("\\n", "\n")
 					.replace("\n ", "\n")
 			}
+		}
+	}
+
+	inner class EditTagArgs : Arguments() {
+		/** The named identifier of the tag being edited. */
+		val tagName by string {
+			name = "name"
+			description = "The name of the tag you're editing"
+
+			autoComplete {
+				val tags = DatabaseHelper.getAllTags(data.guildId.value!!)
+				val map = mutableMapOf<String, String>()
+
+				// Add each tag in the database to the tag variable
+				tags.forEach {
+					map[it.name] = it.name
+				}
+
+				// Provide the autocomplete with the tags map
+				suggestStringMap(map)
+			}
+		}
+
+		/** The new name for the tag being edited. */
+		val newName by optionalString {
+			name = "newName"
+			description = "The new name for the tag you're editing"
+		}
+
+		/** The new title for the tag being edited. */
+		val newTitle by optionalString {
+			name = "newTitle"
+			description = "The new title for the tag you're editing"
+		}
+
+		/** The new value for the tag being edited. */
+		val newValue by optionalString {
+			name = "newValue"
+			description = "The new value for the tag you're editing"
 		}
 	}
 }
