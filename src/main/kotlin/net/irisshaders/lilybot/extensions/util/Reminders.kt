@@ -43,8 +43,8 @@ import kotlin.time.Duration.Companion.days
  * The class that contains the reminding functions in the bot.
  * @since 3.3.2
  */
-class RemindMe : Extension() {
-	override val name = "remind-me"
+class Reminders : Extension() {
+	override val name = "reminds"
 
 	/** The timer for checking reminders. */
 	private val scheduler = Scheduler()
@@ -200,16 +200,15 @@ class RemindMe : Extension() {
 
 							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 							DatabaseHelper.removeReminder(guild!!.id, user.id, arguments.reminder)
-							this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+							@Suppress("DuplicatedCode")
+							val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 								.getChannelOf<GuildMessageChannel>(it.channelId)
-								.getMessage(messageId).edit {
-									content =
-										"${if (it.repeating) "Repeating" else ""} Reminder set at ${
-											it.initialSetTime.toDiscord(
-												TimestampType.ShortDateTime
-											)
-										} cancelled."
-								}
+								.getMessage(messageId)
+							message.edit {
+								content = "${message.content} ${
+									if (it.repeating) "**Repeating" else "**"
+								} Reminder cancelled.**"
+							}
 						}
 					}
 
@@ -241,16 +240,20 @@ class RemindMe : Extension() {
 				action {
 					val reminders = DatabaseHelper.getReminders()
 
+					// FIXME Duplicaten't the code
+					@Suppress("DuplicatedCode")
 					reminders.forEach {
 						when (arguments.reminderType) {
 							"all" -> {
 								if (it.guildId == guild?.id && it.userId == user.id) {
 									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+									val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
-										.getMessage(messageId).edit {
-											content = "${if (it.repeating) "Repeating" else ""} Reminder cancelled."
+										.getMessage(messageId)
+
+									message.edit {
+											content = "${message.content} ${if (it.repeating) "**Repeating" else "**"} Reminder cancelled.**"
 										}
 								}
 
@@ -263,10 +266,12 @@ class RemindMe : Extension() {
 								if (it.guildId == guild?.id && it.userId == user.id && it.repeating) {
 									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+									val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
-										.getMessage(messageId).edit {
-											content = "Repeating Reminder cancelled."
+										.getMessage(messageId)
+
+									message.edit {
+											content = "${message.content} **Repeating Reminder cancelled.**"
 										}
 								}
 
@@ -279,10 +284,12 @@ class RemindMe : Extension() {
 								if (it.guildId == guild?.id && it.userId == user.id && !it.repeating) {
 									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-									this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+									val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
-										.getMessage(messageId).edit {
-											content = "Reminder cancelled."
+										.getMessage(messageId)
+
+									message.edit {
+											content = "${message.content} **Reminder cancelled.**"
 										}
 								}
 
@@ -398,6 +405,8 @@ class RemindMe : Extension() {
 							}
 					}
 				} else {
+					// FIXME Maybe duplicaten't?
+					@Suppress("DuplicatedCode")
 					try {
 						channel.createMessage {
 							content = if (it.repeating) {
@@ -527,14 +536,11 @@ class RemindMe : Extension() {
 		val reminderType by stringChoice {
 			name = "type"
 			description = "Choose which reminder type to remove all of"
-			val list = ArrayList<String>()
-			list.add("repeating")
-			list.add("all")
-			list.add("non-repeating")
-
-			list.forEach {
-				choices[it] = it
-			}
+			choices = mutableMapOf(
+				"all" to "All",
+				"repeating" to "Repeating",
+				"non-repeating" to "Non-repeating"
+			)
 		}
 	}
 }
