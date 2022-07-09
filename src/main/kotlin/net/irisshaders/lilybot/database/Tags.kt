@@ -22,6 +22,17 @@ data class TagsData(
 	val tagValue: String
 )
 
+/**
+ * This object contains the functions for interacting with the [Tags Database][TagsData]. This object has functions for
+ * getting tags, getting all tags, adding tags, and removing a tag or tags.
+ *
+ * @since 4.0.0
+ * @see getTag
+ * @see getAllTags
+ * @see setTag
+ * @see removeTag
+ * @see removeTags
+ */
 object TagsDatabase {
 	/**
 	 * Gets the given tag using it's [name] and returns its [TagsData]. If the tag does not exist.

@@ -39,7 +39,7 @@ suspend inline fun CheckContext<*>.configPresent() {
 	if (guildFor(event) == null) fail("Must be in a server")
 
 	// Check all not-null values in the database are not null
-	if (ModerationConfig.getModerationConfig(guildFor(event)!!.id) == null) {
+	if (ModerationConfig.getConfig(guildFor(event)!!.id) == null) {
 		fail("Unable to access config for this guild! Please inform a member of staff")
 	} else pass()
 }
@@ -115,8 +115,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  * @since 2.1.0
  */
 suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
-	val moderatorRoleId = ModerationConfig.getModerationConfig(guild!!.id)?.team
-	if (ModerationConfig.getModerationConfig(guild!!.id)!!.enabled) {
+	val moderatorRoleId = ModerationConfig.getConfig(guild!!.id)?.team
+	if (ModerationConfig.getConfig(guild!!.id)!!.enabled) {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
 		}

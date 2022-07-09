@@ -22,6 +22,15 @@ data class RoleMenuData(
 	val roles: MutableList<Snowflake>
 )
 
+/**
+ * This object contains the functions for interacting with the [Role Menu Database][RoleMenuData]. This object contains
+ * the functions for getting a menu, setting a menu and removing a role from a menu.
+ *
+ * @since 4.0.0
+ * @see getRoleData
+ * @see setRoleMenu
+ * @see removeRoleFromMenu
+ */
 object RoleMenuDatabase {
 	/**
 	 * Using the provided [inputMessageId] the associated [RoleMenuData] will be returned from the database.

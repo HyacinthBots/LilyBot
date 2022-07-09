@@ -41,7 +41,7 @@ class MessageDelete : Extension() {
 				if (event.message?.author?.isBot == true) return@action
 				if (PluralKit.containsPkChatCommandPrefix(event.message!!)) return@action
 
-				val config = LoggingConfig.getLoggingConfig(guildFor(event)!!.id)!!
+				val config = LoggingConfig.getConfig(guildFor(event)!!.id)!!
 
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLog = guild?.getChannelOf<GuildMessageChannel>(config.messageChannel)

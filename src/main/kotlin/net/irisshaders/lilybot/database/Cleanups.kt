@@ -7,14 +7,21 @@ import mu.KotlinLogging
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
 
-// TODO Kdoc
+/**
+ * This object contains the Database clean up functions, for removing old data from the database that Lily no longer
+ * requires.
+ *
+ * @since 4.0.0
+ * @see cleanupGuildData
+ * @see cleanupThreadData
+ */
 object Cleanups {
 
 	@PublishedApi
 	internal val cleanupsLogger = KotlinLogging.logger("Database Cleanups")
 
 	/**
-	 * This function deletes the [ConfigData] stored in the database for guilds Lily left a month or more ago.
+	 * This function deletes the Configs stored in the database for guilds Lily left a month or more ago.
 	 *
 	 * @author NoComment1105
 	 * @since 3.2.0
@@ -31,7 +38,9 @@ object Cleanups {
 
 			if (leaveDuration.inWholeDays > 30) {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
-				// DatabaseRemovers.clearConfig(it.guildId)
+				ModerationConfig.clearConfig(it.guildId)
+				SupportConfig.clearConfig(it.guildId)
+				LoggingConfig.clearConfig(it.guildId)
 				TagsDatabase.removeTags(it.guildId)
 				WarnDatabase.removeWarn(it.guildId)
 				// Once role menu is rewritten, component data should also be cleared here.

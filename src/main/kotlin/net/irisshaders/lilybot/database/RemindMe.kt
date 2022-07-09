@@ -34,6 +34,15 @@ data class RemindMeData(
 	val id: Int
 )
 
+/**
+ * This object contains the functions or interacting with the [Reminder Database][RemindMeData]. This object contains
+ * functions for getting, setting and removing reminders.
+ *
+ * @since 4.0.0
+ * @see getReminders
+ * @see setReminder
+ * @see removeReminder
+ */
 object RemindMeDatabase {
 	/**
 	 * Gets every reminder in the database.

@@ -119,7 +119,7 @@ class RoleMenu : Extension() {
 						mutableListOf(arguments.initialRole.id)
 					)
 
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {
@@ -207,7 +207,7 @@ class RoleMenu : Extension() {
 						data.roles
 					)
 
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {
@@ -268,7 +268,7 @@ class RoleMenu : Extension() {
 					}
 
 					RoleMenuDatabase.removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {
@@ -366,7 +366,7 @@ class RoleMenu : Extension() {
 						roles
 					)
 
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					actionLog.createMessage {

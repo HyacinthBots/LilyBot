@@ -206,7 +206,7 @@ class Tags : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 				if (TagsDatabase.getTag(guild!!.id, arguments.tagName) != null) {
@@ -278,7 +278,7 @@ class Tags : Extension() {
 					return@action
 				}
 
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 				TagsDatabase.removeTag(guild!!.id, arguments.tagName)
@@ -311,7 +311,7 @@ class Tags : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 				if (TagsDatabase.getTag(guild!!.id, arguments.tagName) == null) {

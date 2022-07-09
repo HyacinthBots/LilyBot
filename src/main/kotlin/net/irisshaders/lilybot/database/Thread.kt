@@ -21,6 +21,18 @@ data class ThreadData(
 	var preventArchiving: Boolean = false
 )
 
+/**
+ * This object stores all the functions for interacting with the [Threads Database][ThreadData]. This object contains
+ * the functions for getting threads, based on different criteria such as owner, thread ID, or all of them. It also has
+ * functions for setting and removing threads.
+ *
+ * @since 4.0.0
+ * @see getThread
+ * @see getAllThreads
+ * @see getOwnerThreads
+ * @see setThreadOwner
+ * @see removeThread
+ */
 object ThreadsDatabase {
 	/**
 	 * Using the provided [inputThreadId] the thread is returned.

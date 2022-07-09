@@ -87,7 +87,7 @@ class PublicUtilities : Extension() {
 				}
 
 				action {
-					val config = ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
+					val config = ModerationConfig.getConfig(guildFor(event)!!.id)!!
 					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 
 					val requester = user.asUser()
@@ -280,7 +280,7 @@ class PublicUtilities : Extension() {
 				}
 
 				action {
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications

@@ -20,7 +20,15 @@ data class WarnData(
 	val strikes: Int
 )
 
-// TODO KDoc this object and all the others in this package
+/**
+ * This object stores all the functions for interacting with the [Warn Database][WarnData]. The object contains the
+ * functions for querying, adding and removal of warnings for a user.
+ *
+ * @see getWarn
+ * @see setWarn
+ * @see removeWarn
+ * @since 4.0.0
+ */
 object WarnDatabase {
 	/**
 	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database.

@@ -1,6 +1,5 @@
 package net.irisshaders.lilybot.database
 
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.eq
@@ -18,6 +17,14 @@ data class StatusData(
 	val status: String
 )
 
+/**
+ * This object contains the functions for interacting with the [Status Database][StatusData]. This object contains the
+ * function for getting and setting the status.
+ *
+ * @since 4.0.0
+ * @see getStatus
+ * @see setStatus
+ */
 object StatusDatabase {
 	/**
 	 * Gets Lily's status from the database.
@@ -26,13 +33,9 @@ object StatusDatabase {
 	 * @author NoComment1105
 	 * @since 3.0.0
 	 */
-	fun getStatus(): String {
-		var selectedStatus: StatusData?
-		runBlocking {
-			val collection = database.getCollection<StatusData>()
-			selectedStatus = collection.findOne(StatusData::key eq "LilyStatus")
-		}
-		return selectedStatus?.status ?: "Iris"
+	suspend inline fun getStatus(): String {
+		val collection = database.getCollection<StatusData>()
+		return collection.findOne(StatusData::key eq "LilyStatus")?.status ?: "default"
 	}
 
 	/**

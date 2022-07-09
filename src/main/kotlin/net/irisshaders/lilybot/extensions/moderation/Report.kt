@@ -90,8 +90,8 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 	}
 
 	action {
-		val loggingConfig = LoggingConfig.getLoggingConfig(guild!!.id)!!
-		val moderationConfig = ModerationConfig.getModerationConfig(guild!!.id)!!
+		val loggingConfig = LoggingConfig.getConfig(guild!!.id)!!
+		val moderationConfig = ModerationConfig.getConfig(guild!!.id)!!
 		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
 		val reportedMessage: Message
 		val messageAuthor: Member?
@@ -144,8 +144,8 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 	}
 
 	action {
-		val loggingConfig = LoggingConfig.getLoggingConfig(guild!!.id)!!
-		val moderationConfig = ModerationConfig.getModerationConfig(guild!!.id)!!
+		val loggingConfig = LoggingConfig.getConfig(guild!!.id)!!
+		val moderationConfig = ModerationConfig.getConfig(guild!!.id)!!
 		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
 		val channel: MessageChannel
 		val reportedMessage: Message

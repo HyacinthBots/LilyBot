@@ -80,7 +80,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val messageAmount = arguments.messages
@@ -126,7 +126,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 
@@ -275,7 +275,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 
@@ -337,7 +337,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
@@ -413,7 +413,7 @@ class TemporaryModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 
@@ -467,7 +467,7 @@ class TemporaryModeration : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
@@ -523,7 +523,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				action {
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
@@ -580,7 +580,7 @@ class TemporaryModeration : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
@@ -641,7 +641,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				action {
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 					val everyoneRole = guild!!.getRole(guild!!.id)
 

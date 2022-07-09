@@ -19,6 +19,15 @@ data class GalleryChannelData(
 	val channelId: Snowflake
 )
 
+/**
+ * This object contains the functions or interacting with the [Gallery Channel Database][GalleryChannelData]. This
+ * object contains functions for getting, setting and removing gallery channels.
+ *
+ * @since 4.0.0
+ * @see getChannels
+ * @see setChannel
+ * @see removeChannel
+ */
 object GalleryChannelDatabase {
 	/**
 	 * Collects every gallery channel in the database into a [List].

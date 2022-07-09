@@ -99,7 +99,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				SupportConfig.setSupportConfig(
+				SupportConfig.setConfig(
 					SupportConfigData(
 						guild!!.id,
 						arguments.enable,
@@ -130,7 +130,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				SupportConfig.setSupportConfig(
+				SupportConfig.setConfig(
 					SupportConfigData(
 						guild!!.id,
 						arguments.enable,
@@ -172,7 +172,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			ModerationConfig.setModerationConfig(
+			ModerationConfig.setConfig(
 				ModerationConfigData(
 					guild!!.id,
 					arguments.enabled,
@@ -212,7 +212,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			LoggingConfig.setLoggingConfig(
+			LoggingConfig.setConfig(
 				LoggingConfigData(
 					guild!!.id,
 					arguments.enableMessageLogs,

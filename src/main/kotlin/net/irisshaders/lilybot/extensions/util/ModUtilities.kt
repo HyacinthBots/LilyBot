@@ -74,7 +74,7 @@ class ModUtilities : Extension() {
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 				val targetChannel: GuildMessageChannel =
 					if (arguments.channel != null) {
@@ -168,7 +168,7 @@ class ModUtilities : Extension() {
 					channel
 				}
 
-				val config = ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
+				val config = ModerationConfig.getConfig(guildFor(event)!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 				val message: Message
 
@@ -324,7 +324,7 @@ class ModUtilities : Extension() {
 						return@action
 					}
 
-				val config = ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
+				val config = ModerationConfig.getConfig(guildFor(event)!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					// Update the presence in the action
@@ -372,7 +372,7 @@ class ModUtilities : Extension() {
 					updateDefaultPresence()
 					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size
 
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					respond { content = "Presence set to default" }

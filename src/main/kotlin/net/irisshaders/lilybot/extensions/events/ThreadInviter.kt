@@ -73,7 +73,7 @@ class ThreadInviter : Extension() {
 			}
 			action {
 				delay(PK_API_DELAY) // Allow the PK API to catch up
-				val config = SupportConfig.getSupportConfig(event.guildId!!)!!
+				val config = SupportConfig.getConfig(event.guildId!!)!!
 
 				if (config.enabled) {
 					var userThreadExists = false
@@ -166,8 +166,8 @@ class ThreadInviter : Extension() {
 			}
 
 			action {
-				val supportConfig = SupportConfig.getSupportConfig(guildFor(event)!!.id)!!
-				val moderationConfig = ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
+				val supportConfig = SupportConfig.getConfig(guildFor(event)!!.id)!!
+				val moderationConfig = ModerationConfig.getConfig(guildFor(event)!!.id)!!
 				val modRole = event.channel.guild.getRole(moderationConfig.team)
 				val threadOwner = event.channel.owner.asUser()
 

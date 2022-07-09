@@ -76,7 +76,7 @@ class LogUploading : Extension() {
 				configPresent()
 			}
 			action {
-				val supportConfig = SupportConfig.getSupportConfig(guildFor(event)!!.id)!!
+				val supportConfig = SupportConfig.getConfig(guildFor(event)!!.id)!!
 				var deferUploadUntilThread = false
 				if (supportConfig.enabled && event.message.channel.id == supportConfig.channel) {
 					deferUploadUntilThread = true

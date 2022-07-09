@@ -3,6 +3,9 @@ package net.irisshaders.lilybot.database
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.configDatabase
+import net.irisshaders.lilybot.database.LoggingConfig.clearConfig
+import net.irisshaders.lilybot.database.LoggingConfig.getConfig
+import net.irisshaders.lilybot.database.LoggingConfig.setConfig
 import org.litote.kmongo.eq
 
 /**
@@ -60,38 +63,71 @@ data class SupportConfigData(
 	val message: String?
 )
 
+/**
+ * This object contains the functions or interacting with the [Logging Config Database][LoggingConfigData]. This object
+ * contains functions for getting, setting and removing logging config.
+ *
+ * @since 4.0.0
+ * @see getConfig
+ * @see setConfig
+ * @see clearConfig
+ */
 object LoggingConfig {
-	suspend inline fun getLoggingConfig(inputGuildId: Snowflake): LoggingConfigData? {
+	suspend inline fun getConfig(inputGuildId: Snowflake): LoggingConfigData? {
 		val collection = configDatabase.getCollection<LoggingConfigData>()
 		return collection.findOne(LoggingConfigData::guildId eq inputGuildId)
 	}
 
-	suspend inline fun setLoggingConfig(loggingConfig: LoggingConfigData) {
+	suspend inline fun setConfig(loggingConfig: LoggingConfigData) {
 		val collection = configDatabase.getCollection<LoggingConfigData>()
 		collection.deleteOne(LoggingConfigData::guildId eq loggingConfig.guildId)
 		collection.insertOne(loggingConfig)
 	}
 
-	// TODO Removal/Clear
+	suspend inline fun clearConfig(inputGuildId: Snowflake) {
+		val collection = configDatabase.getCollection<LoggingConfigData>()
+		collection.deleteOne(LoggingConfigData::guildId eq inputGuildId)
+	}
 }
 
+/**
+ * This object contains the functions or interacting with the [Moderation Config Database][ModerationConfigData]. This
+ * object contains functions for getting, setting and removing logging config.
+ *
+ * @since 4.0.0
+ * @see getConfig
+ * @see setConfig
+ * @see clearConfig
+ */
 object ModerationConfig {
-	suspend inline fun getModerationConfig(inputGuildId: Snowflake): ModerationConfigData? {
+	suspend inline fun getConfig(inputGuildId: Snowflake): ModerationConfigData? {
 		val collection = configDatabase.getCollection<ModerationConfigData>()
 		return collection.findOne(ModerationConfigData::guildId eq inputGuildId)
 	}
 
-	suspend inline fun setModerationConfig(moderationConfig: ModerationConfigData) {
+	suspend inline fun setConfig(moderationConfig: ModerationConfigData) {
 		val collection = configDatabase.getCollection<ModerationConfigData>()
 		collection.deleteOne(ModerationConfigData::guildId eq moderationConfig.guildId)
 		collection.insertOne(moderationConfig)
 	}
 
-	// TODO Removal/Clear
+	suspend inline fun clearConfig(inputGuildId: Snowflake) {
+		val collection = configDatabase.getCollection<ModerationConfigData>()
+		collection.deleteOne(ModerationConfigData::guildId eq inputGuildId)
+	}
 }
 
+/**
+ * This object contains the functions or interacting with the [Support Config Database][SupportConfigData]. This object
+ * contains functions for getting, setting and removing support config.
+ *
+ * @since 4.0.0
+ * @see getConfig
+ * @see setConfig
+ * @see clearConfig
+ */
 object SupportConfig {
-	suspend inline fun getSupportConfig(inputGuildId: Snowflake): SupportConfigData? {
+	suspend inline fun getConfig(inputGuildId: Snowflake): SupportConfigData? {
 		val collection = configDatabase.getCollection<SupportConfigData>()
 		return collection.findOne(SupportConfigData::guildId eq inputGuildId)
 	}
@@ -102,11 +138,14 @@ object SupportConfig {
 	 * @author Miss Corruption
 	 * @since 4.0.0
 	 */
-	suspend inline fun setSupportConfig(supportConfig: SupportConfigData) {
+	suspend inline fun setConfig(supportConfig: SupportConfigData) {
 		val collection = configDatabase.getCollection<SupportConfigData>()
 		collection.deleteOne(SupportConfigData::guildId eq supportConfig.guildId)
 		collection.insertOne(supportConfig)
 	}
 
-	// TODO Removal/Clear
+	suspend inline fun clearConfig(inputGuildId: Snowflake) {
+		val collection = configDatabase.getCollection<SupportConfigData>()
+		collection.deleteOne(SupportConfigData::guildId eq inputGuildId)
+	}
 }

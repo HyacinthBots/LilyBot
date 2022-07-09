@@ -173,7 +173,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+					val config = ModerationConfig.getConfig(guild!!.id)!!
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action

@@ -70,7 +70,7 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
+					val config = ModerationConfig.getConfig(guildFor(event)!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 					// Using the global var, find guild channels for the given guildId and iterate through them to
 					// check for the presence of the channel and return if it is present
@@ -122,7 +122,7 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ModerationConfig.getModerationConfig(guildFor(event)!!.id)!!
+					val config = ModerationConfig.getConfig(guildFor(event)!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 					var channelFound = false
 

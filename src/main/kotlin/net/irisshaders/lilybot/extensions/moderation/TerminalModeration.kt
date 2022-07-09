@@ -63,7 +63,7 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 
@@ -141,7 +141,7 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 				// Get all the bans into a list
@@ -194,7 +194,7 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 
@@ -275,7 +275,7 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getModerationConfig(guild!!.id)!!
+				val config = ModerationConfig.getConfig(guild!!.id)!!
 				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
 				val userArg = arguments.userArgument
 

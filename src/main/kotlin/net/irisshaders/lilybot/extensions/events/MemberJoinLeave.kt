@@ -28,7 +28,7 @@ class MemberJoinLeave : Extension() {
 		event<MemberJoinEvent> {
 			check { configPresent() }
 			action {
-				val config = LoggingConfig.getLoggingConfig(guildFor(event)!!.id)!!
+				val config = LoggingConfig.getConfig(guildFor(event)!!.id)!!
 
 				// If it's Lily joining, don't try to log since a channel won't be set
 				if (event.member.id == kord.selfId) return@action
@@ -65,7 +65,7 @@ class MemberJoinLeave : Extension() {
 			action {
 				// If it's Lily leaving, return the action, otherwise the log will fill with errors
 				if (event.user.id == kord.selfId) return@action
-				val config = LoggingConfig.getLoggingConfig(guildFor(event)!!.id)!!
+				val config = LoggingConfig.getConfig(guildFor(event)!!.id)!!
 
 				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel)
 
