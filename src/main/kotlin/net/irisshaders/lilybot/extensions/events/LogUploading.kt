@@ -208,7 +208,7 @@ class LogUploading : Extension() {
 														}
 													}
 													// Capture Exception to Sentry
-													this.sentry.captureException(e, "Log Uploading failed") {
+													this.sentry.captureException(e) {
 														tag("log_file_name", attachmentFileName)
 														tag("extension", extension.name)
 														tag("id", eventMessage.id.toString())
