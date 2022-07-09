@@ -2,7 +2,6 @@ package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
@@ -37,6 +36,7 @@ import dev.kord.core.entity.Role
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.database.ModerationConfig
@@ -395,6 +395,7 @@ class RoleMenu : Extension() {
 					event.interaction.componentId.contains("role-menu")
 				}
 			}
+
 			action {
 				val data = RoleMenuDatabase.getRoleData(event.interaction.message.id)
 
@@ -428,9 +429,12 @@ class RoleMenu : Extension() {
 					}
 				}
 
-				val guildRoles = guildFor(event)!!.roles.toList().map { it.id }
+				val guildRoles = guild.roles
+					.filter { it.id in data.roles.map { it }.toList().associateBy { it } }
+					.toList()
+					.associateBy { it.id }
 				val member = event.interaction.user.asMember(guild.id)
-				val userRoles = member.roleIds.filter { it in guildRoles }
+				val userRoles = member.roleIds.filter { it in guildRoles.keys }
 
 				event.interaction.respondEphemeral {
 					content = "Use the menu below to select roles."
@@ -450,9 +454,9 @@ class RoleMenu : Extension() {
 							}
 
 							action {
-								val selectedRoles = selected.map { Snowflake(it) }.filter { it in guildRoles }
+								val selectedRoles = event.interaction.values.toList().map { Snowflake(it) }.filter { it in guildRoles.keys }
 
-								if (selected.isEmpty()) {
+								if (event.interaction.values.isEmpty()) {
 									member.edit {
 										roles.forEach {
 											member.removeRole(it.id)
@@ -463,7 +467,7 @@ class RoleMenu : Extension() {
 								}
 
 								val rolesToAdd = selectedRoles.filterNot { it in userRoles }
-								val rolesToRemove = selectedRoles.filterNot { it in selectedRoles }
+								val rolesToRemove = userRoles.filterNot { it in selectedRoles }
 
 								if (rolesToAdd.isEmpty() && rolesToRemove.isEmpty()) {
 									respond {
