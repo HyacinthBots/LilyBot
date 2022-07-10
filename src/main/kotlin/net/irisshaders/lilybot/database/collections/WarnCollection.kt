@@ -1,8 +1,10 @@
 package net.irisshaders.lilybot.database.collections
 
+import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
-import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.WarnData
+import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
@@ -14,7 +16,12 @@ import org.litote.kmongo.eq
  * @see removeWarn
  * @since 4.0.0
  */
-class WarnCollection {
+class WarnCollection : KordExKoinComponent {
+	private val db: Database by inject()
+
+	@PublishedApi
+	internal val collection = db.mainDatabase.getCollection<WarnData>()
+
 	/**
 	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database.
 	 *
@@ -24,13 +31,11 @@ class WarnCollection {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend inline fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? {
-		val collection = database.getCollection<WarnData>()
-		return collection.findOne(
+	suspend inline fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? =
+		collection.findOne(
 			WarnData::userId eq inputUserId,
 			WarnData::guildId eq inputGuildId
 		)
-	}
 
 	/**
 	 * Updates the number of points the provided [inputUserId] has in the provided [inputGuildId] in the database.
@@ -43,7 +48,6 @@ class WarnCollection {
 	 */
 	suspend inline fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
 		val currentStrikes = getWarn(inputUserId, inputGuildId)?.strikes ?: 0
-		val collection = database.getCollection<WarnData>()
 		collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
 		collection.insertOne(
 			WarnData(
@@ -61,8 +65,6 @@ class WarnCollection {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend inline fun removeWarn(inputGuildId: Snowflake) {
-		val collection = database.getCollection<WarnData>()
+	suspend inline fun removeWarn(inputGuildId: Snowflake) =
 		collection.deleteMany(WarnData::guildId eq inputGuildId)
-	}
 }

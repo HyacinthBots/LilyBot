@@ -1,11 +1,13 @@
 package net.irisshaders.lilybot.utils
 
+import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
 import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.loadModule
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
@@ -17,9 +19,22 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import net.irisshaders.lilybot.database.Database
+import net.irisshaders.lilybot.database.collections.GalleryChannelCollection
+import net.irisshaders.lilybot.database.collections.GuildLeaveTimeCollection
+import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
+import net.irisshaders.lilybot.database.collections.MetaCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
+import net.irisshaders.lilybot.database.collections.RemindMeCollection
+import net.irisshaders.lilybot.database.collections.RoleMenuCollection
 import net.irisshaders.lilybot.database.collections.StatusCollection
+import net.irisshaders.lilybot.database.collections.SupportConfigCollection
+import net.irisshaders.lilybot.database.collections.TagsCollection
+import net.irisshaders.lilybot.database.collections.ThreadsCollection
+import net.irisshaders.lilybot.database.collections.WarnCollection
+import org.koin.dsl.bind
 
 val utilsLogger = KotlinLogging.logger("Checks Logger")
 
@@ -30,6 +45,9 @@ val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 3.2.0
  */
+// FIXME Update this to the new system.
+// The probable best way is to use an argument to determine what we're checking for, and the process that, check it and
+// produce the expected response.
 suspend inline fun CheckContext<*>.configPresent() {
 	if (!passed) {
 		return
@@ -170,3 +188,42 @@ suspend inline fun Extension.updateDefaultPresence() {
  * @since 3.4.5
  */
 suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.cacheWithRestFallback).guilds.count()
+
+/**
+ * This function loads the database and checks if it is up-to-date. If it isn't, it will update the database via
+ * migrations.
+ *
+ * @since 4.0.0
+ */
+suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean = false) {
+	val db = Database()
+
+	hooks {
+		beforeKoinSetup {
+			loadModule {
+				single { db } bind Database::class
+			}
+
+			loadModule {
+				single { ModerationConfigCollection() } bind ModerationConfigCollection::class
+				single { SupportConfigCollection() } bind SupportConfigCollection::class
+				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
+				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
+				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
+				single { MetaCollection() } bind MetaCollection::class
+				single { RemindMeCollection() } bind RemindMeCollection::class
+				single { RoleMenuCollection() } bind RoleMenuCollection::class
+				single { StatusCollection() } bind StatusCollection::class
+				single { TagsCollection() } bind TagsCollection::class
+				single { ThreadsCollection() } bind ThreadsCollection::class
+				single { WarnCollection() } bind WarnCollection::class
+			}
+
+			if (migrate) {
+				runBlocking {
+					// db.migrate() Soon:tm:
+				}
+			}
+		}
+	}
+}

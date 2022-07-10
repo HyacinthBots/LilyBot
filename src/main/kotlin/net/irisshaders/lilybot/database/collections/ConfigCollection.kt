@@ -1,10 +1,12 @@
 package net.irisshaders.lilybot.database.collections
 
+import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
-import net.irisshaders.lilybot.configDatabase
+import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.LoggingConfigData
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
 import net.irisshaders.lilybot.database.entities.SupportConfigData
+import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
@@ -16,22 +18,22 @@ import org.litote.kmongo.eq
  * @see setConfig
  * @see clearConfig
  */
-class LoggingConfigCollection {
-	suspend inline fun getConfig(inputGuildId: Snowflake): LoggingConfigData? {
-		val collection = configDatabase.getCollection<LoggingConfigData>()
-		return collection.findOne(LoggingConfigData::guildId eq inputGuildId)
-	}
+class LoggingConfigCollection : KordExKoinComponent {
+	private val configDb: Database by inject()
+
+	@PublishedApi
+	internal val collection = configDb.configDatabase.getCollection<LoggingConfigData>()
+
+	suspend inline fun getConfig(inputGuildId: Snowflake): LoggingConfigData? =
+		collection.findOne(LoggingConfigData::guildId eq inputGuildId)
 
 	suspend inline fun setConfig(loggingConfig: LoggingConfigData) {
-		val collection = configDatabase.getCollection<LoggingConfigData>()
 		collection.deleteOne(LoggingConfigData::guildId eq loggingConfig.guildId)
 		collection.insertOne(loggingConfig)
 	}
 
-	suspend inline fun clearConfig(inputGuildId: Snowflake) {
-		val collection = configDatabase.getCollection<LoggingConfigData>()
+	suspend inline fun clearConfig(inputGuildId: Snowflake) =
 		collection.deleteOne(LoggingConfigData::guildId eq inputGuildId)
-	}
 }
 
 /**
@@ -43,22 +45,22 @@ class LoggingConfigCollection {
  * @see setConfig
  * @see clearConfig
  */
-class ModerationConfigCollection {
-	suspend inline fun getConfig(inputGuildId: Snowflake): ModerationConfigData? {
-		val collection = configDatabase.getCollection<ModerationConfigData>()
-		return collection.findOne(ModerationConfigData::guildId eq inputGuildId)
-	}
+class ModerationConfigCollection : KordExKoinComponent {
+	private val configDb: Database by inject()
+
+	@PublishedApi
+	internal val collection = configDb.configDatabase.getCollection<ModerationConfigData>()
+
+	suspend inline fun getConfig(inputGuildId: Snowflake): ModerationConfigData? =
+		collection.findOne(ModerationConfigData::guildId eq inputGuildId)
 
 	suspend inline fun setConfig(moderationConfig: ModerationConfigData) {
-		val collection = configDatabase.getCollection<ModerationConfigData>()
 		collection.deleteOne(ModerationConfigData::guildId eq moderationConfig.guildId)
 		collection.insertOne(moderationConfig)
 	}
 
-	suspend inline fun clearConfig(inputGuildId: Snowflake) {
-		val collection = configDatabase.getCollection<ModerationConfigData>()
+	suspend inline fun clearConfig(inputGuildId: Snowflake) =
 		collection.deleteOne(ModerationConfigData::guildId eq inputGuildId)
-	}
 }
 
 /**
@@ -70,11 +72,14 @@ class ModerationConfigCollection {
  * @see setConfig
  * @see clearConfig
  */
-class SupportConfigCollection {
-	suspend inline fun getConfig(inputGuildId: Snowflake): SupportConfigData? {
-		val collection = configDatabase.getCollection<SupportConfigData>()
-		return collection.findOne(SupportConfigData::guildId eq inputGuildId)
-	}
+class SupportConfigCollection : KordExKoinComponent {
+	private val configDb: Database by inject()
+
+	@PublishedApi
+	internal val collection = configDb.configDatabase.getCollection<SupportConfigData>()
+
+	suspend inline fun getConfig(inputGuildId: Snowflake): SupportConfigData? =
+		collection.findOne(SupportConfigData::guildId eq inputGuildId)
 
 	/**
 	 * Adds the given [supportConfig] to the database.
@@ -83,13 +88,10 @@ class SupportConfigCollection {
 	 * @since 4.0.0
 	 */
 	suspend inline fun setConfig(supportConfig: SupportConfigData) {
-		val collection = configDatabase.getCollection<SupportConfigData>()
 		collection.deleteOne(SupportConfigData::guildId eq supportConfig.guildId)
 		collection.insertOne(supportConfig)
 	}
 
-	suspend inline fun clearConfig(inputGuildId: Snowflake) {
-		val collection = configDatabase.getCollection<SupportConfigData>()
+	suspend inline fun clearConfig(inputGuildId: Snowflake) =
 		collection.deleteOne(SupportConfigData::guildId eq inputGuildId)
-	}
 }

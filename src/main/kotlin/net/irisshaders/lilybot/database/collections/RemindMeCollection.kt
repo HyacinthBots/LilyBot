@@ -1,9 +1,11 @@
 package net.irisshaders.lilybot.database.collections
 
+import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.Instant
-import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.RemindMeData
+import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
@@ -15,7 +17,12 @@ import org.litote.kmongo.eq
  * @see setReminder
  * @see removeReminder
  */
-class RemindMeCollection {
+class RemindMeCollection : KordExKoinComponent {
+	private val db: Database by inject()
+
+	@PublishedApi
+	internal val collection = db.mainDatabase.getCollection<RemindMeData>()
+
 	/**
 	 * Gets every reminder in the database.
 	 *
@@ -23,10 +30,8 @@ class RemindMeCollection {
 	 * @since 3.3.2
 	 * @author NoComment1105
 	 */
-	suspend inline fun getReminders(): List<RemindMeData> {
-		val collection = database.getCollection<RemindMeData>()
-		return collection.find().toList()
-	}
+	suspend inline fun getReminders(): List<RemindMeData> =
+		collection.find().toList()
 
 	/**
 	 * Stores a reminder in the database.
@@ -52,8 +57,7 @@ class RemindMeCollection {
 		customMessage: String?,
 		repeating: Boolean,
 		id: Int
-	) {
-		val collection = database.getCollection<RemindMeData>()
+	) =
 		collection.insertOne(
 			RemindMeData(
 				initialSetTime,
@@ -67,7 +71,6 @@ class RemindMeCollection {
 				id
 			)
 		)
-	}
 
 	/**
 	 * Removes old reminders from the Database.
@@ -83,12 +86,10 @@ class RemindMeCollection {
 		inputGuildId: Snowflake,
 		inputUserId: Snowflake,
 		id: Int
-	) {
-		val collection = database.getCollection<RemindMeData>()
+	) =
 		collection.deleteOne(
 			RemindMeData::guildId eq inputGuildId,
 			RemindMeData::userId eq inputUserId,
 			RemindMeData::id eq id
 		)
-	}
 }

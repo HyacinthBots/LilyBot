@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.extensions.config
 
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
 import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.role
@@ -29,7 +30,6 @@ import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
 	override val name: String = "config"
-	override val bundle: String = "config"
 
 	@OptIn(UnsafeAPI::class)
 	override suspend fun setup() {
@@ -47,11 +47,13 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		description = "Configure the support module"
 
 		initialResponse = InitialSlashCommandResponse.None
+
 		check {
 			anyGuild()
 			// hasPermission(Permission.ManageGuild)
 		}
 
+		// TODO Audit Log logging
 		action {
 			if (arguments.customMessage) {
 				val response = event.interaction.modal("Support Module", "supportModuleModal") {
@@ -154,6 +156,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			// hasPermission(Permission.ManageGuild)
 		}
 
+		// TODO Audit Log logging
 		action {
 			event.interaction.respondEphemeral {
 				embed {
@@ -194,6 +197,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			// hasPermission(Permission.ManageGuild)
 		}
 
+		// TODO Audit Log logging
 		action {
 			event.interaction.respondEphemeral {
 				embed {
@@ -221,6 +225,65 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					arguments.joinChannel.id
 				)
 			)
+		}
+	}
+
+	// TODO Validate the presence of database values
+	unsafeSubCommand(::ClearArgs) {
+		name = "clear"
+		description = "Clear a config type"
+
+		initialResponse = InitialSlashCommandResponse.None
+
+		action {
+			when (arguments.config) {
+				ConfigType.MODERATION.name -> {
+					ModerationConfigCollection().clearConfig(guild!!.id)
+					event.interaction.respondEphemeral {
+						embed {
+							title = "Module Config cleared: Moderation"
+							footer {
+								text = "Config cleared by ${user.asUser().tag}"
+							}
+						}
+					}
+				}
+				ConfigType.LOGGING.name -> {
+					LoggingConfigCollection().clearConfig(guild!!.id)
+					event.interaction.respondEphemeral {
+						embed {
+							title = "Module Config cleared: Logging"
+							footer {
+								text = "Config cleared by ${user.asUser().tag}"
+							}
+						}
+					}
+				}
+				ConfigType.SUPPORT.name -> {
+					SupportConfigCollection().clearConfig(guild!!.id)
+					event.interaction.respondEphemeral {
+						embed {
+							title = "Module Config cleared: Support"
+							footer {
+								text = "Config cleared by ${user.asUser().tag}"
+							}
+						}
+					}
+				}
+				ConfigType.ALL.name -> {
+					ModerationConfigCollection().clearConfig(guild!!.id)
+					LoggingConfigCollection().clearConfig(guild!!.id)
+					SupportConfigCollection().clearConfig(guild!!.id)
+					event.interaction.respondEphemeral {
+						embed {
+							title = "Config cleared"
+							footer {
+								text = "Config cleared by ${user.asUser().tag}"
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -284,4 +347,24 @@ class LoggingModuleArgs : Arguments() {
 		name = "joinchannel"
 		description = "The channel for logging member joins/leaves"
 	}
+}
+
+class ClearArgs : Arguments() {
+	val config by stringChoice {
+		name = "configType"
+		description = "The type of config to clear"
+		choices = mutableMapOf(
+			"support" to ConfigType.SUPPORT.name,
+			"moderation" to ConfigType.MODERATION.name,
+			"logging" to ConfigType.LOGGING.name,
+			"all" to ConfigType.ALL.name
+		)
+	}
+}
+
+enum class ConfigType {
+	SUPPORT,
+	MODERATION,
+	LOGGING,
+	ALL
 }

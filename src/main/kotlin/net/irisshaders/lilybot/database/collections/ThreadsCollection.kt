@@ -1,8 +1,10 @@
 package net.irisshaders.lilybot.database.collections
 
+import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
-import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.ThreadData
+import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
@@ -17,7 +19,12 @@ import org.litote.kmongo.eq
  * @see setThreadOwner
  * @see removeThread
  */
-class ThreadsCollection {
+class ThreadsCollection : KordExKoinComponent {
+	private val db: Database by inject()
+
+	@PublishedApi
+	internal val collection = db.mainDatabase.getCollection<ThreadData>()
+
 	/**
 	 * Using the provided [inputThreadId] the thread is returned.
 	 *
@@ -27,10 +34,8 @@ class ThreadsCollection {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend inline fun getThread(inputThreadId: Snowflake): ThreadData? {
-		val collection = database.getCollection<ThreadData>()
-		return collection.findOne(ThreadData::threadId eq inputThreadId)
-	}
+	suspend inline fun getThread(inputThreadId: Snowflake): ThreadData? =
+		collection.findOne(ThreadData::threadId eq inputThreadId)
 
 	/**
 	 * Gets all threads into a list and return them to the user.
@@ -38,10 +43,8 @@ class ThreadsCollection {
 	 * @author NoComment1105
 	 * @since 3.4.1
 	 */
-	suspend inline fun getAllThreads(): List<ThreadData> {
-		val collection = database.getCollection<ThreadData>()
-		return collection.find().toList()
-	}
+	suspend inline fun getAllThreads(): List<ThreadData> =
+		collection.find().toList()
 
 	/**
 	 * Using the provided [inputOwnerId] the list of threads that person owns is returned from the database.
@@ -52,10 +55,8 @@ class ThreadsCollection {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	suspend inline fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> {
-		val collection = database.getCollection<ThreadData>()
-		return collection.find(ThreadData::ownerId eq inputOwnerId).toList()
-	}
+	suspend inline fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> =
+		collection.find(ThreadData::ownerId eq inputOwnerId).toList()
 
 	/**
 	 * Add or update the ownership of the given [inputThreadId] to the given [newOwnerId].
@@ -73,7 +74,6 @@ class ThreadsCollection {
 		newOwnerId: Snowflake,
 		preventArchiving: Boolean = false
 	) {
-		val collection = database.getCollection<ThreadData>()
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
 		collection.insertOne(ThreadData(inputThreadId, newOwnerId, preventArchiving))
 	}
@@ -86,8 +86,6 @@ class ThreadsCollection {
 	 * @author henkelmax
 	 * @since 3.2.2
 	 */
-	suspend inline fun removeThread(inputThreadId: Snowflake) {
-		val collection = database.getCollection<ThreadData>()
+	suspend inline fun removeThread(inputThreadId: Snowflake) =
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
-	}
 }

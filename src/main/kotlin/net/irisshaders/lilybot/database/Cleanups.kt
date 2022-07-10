@@ -1,11 +1,11 @@
 package net.irisshaders.lilybot.database
 
+import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
-import net.irisshaders.lilybot.database
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.SupportConfigCollection
@@ -13,6 +13,7 @@ import net.irisshaders.lilybot.database.collections.TagsCollection
 import net.irisshaders.lilybot.database.collections.WarnCollection
 import net.irisshaders.lilybot.database.entities.GuildLeaveTimeData
 import net.irisshaders.lilybot.database.entities.ThreadData
+import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
@@ -23,7 +24,14 @@ import org.litote.kmongo.eq
  * @see cleanupGuildData
  * @see cleanupThreadData
  */
-object Cleanups {
+object Cleanups : KordExKoinComponent {
+	private val db: Database by inject()
+
+	@PublishedApi
+	internal val guildLeaveTimeCollection = db.mainDatabase.getCollection<GuildLeaveTimeData>()
+
+	@PublishedApi
+	internal val threadDataCollection = db.mainDatabase.getCollection<ThreadData>()
 
 	@PublishedApi
 	internal val cleanupsLogger = KotlinLogging.logger("Database Cleanups")
@@ -36,8 +44,7 @@ object Cleanups {
 	 */
 	suspend inline fun cleanupGuildData() {
 		cleanupsLogger.info("Starting guild cleanup...")
-		val collection = database.getCollection<GuildLeaveTimeData>()
-		val leaveTimeData = collection.find().toList()
+		val leaveTimeData = guildLeaveTimeCollection.find().toList()
 		var deletedGuildData = 0
 
 		leaveTimeData.forEach {
@@ -52,7 +59,7 @@ object Cleanups {
 				TagsCollection().removeTags(it.guildId)
 				WarnCollection().removeWarn(it.guildId)
 				// Once role menu is rewritten, component data should also be cleared here.
-				collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
+				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
 			}
 		}
@@ -68,8 +75,7 @@ object Cleanups {
 	 */
 	suspend inline fun cleanupThreadData(kordInstance: Kord) {
 		cleanupsLogger.info("Starting thread cleanup...")
-		val collection = database.getCollection<ThreadData>()
-		val threads = collection.find().toList()
+		val threads = threadDataCollection.find().toList()
 		var deletedThreads = 0
 		for (it in threads) {
 			try {
@@ -77,11 +83,11 @@ object Cleanups {
 				val latestMessage = thread.getLastMessage() ?: continue
 				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 				if (timeSinceLatestMessage.inWholeDays > 7) {
-					collection.deleteOne(ThreadData::threadId eq thread.id)
+					threadDataCollection.deleteOne(ThreadData::threadId eq thread.id)
 					deletedThreads++
 				}
 			} catch (e: KtorRequestException) {
-				collection.deleteOne(ThreadData::threadId eq it.threadId)
+				threadDataCollection.deleteOne(ThreadData::threadId eq it.threadId)
 				deletedThreads++
 				continue
 			}

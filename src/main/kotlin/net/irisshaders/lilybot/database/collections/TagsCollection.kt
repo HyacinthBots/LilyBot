@@ -1,8 +1,10 @@
 package net.irisshaders.lilybot.database.collections
 
+import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
-import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.TagsData
+import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
@@ -16,7 +18,12 @@ import org.litote.kmongo.eq
  * @see removeTag
  * @see removeTags
  */
-class TagsCollection {
+class TagsCollection : KordExKoinComponent {
+	private val db: Database by inject()
+
+	@PublishedApi
+	internal val collection = db.mainDatabase.getCollection<TagsData>()
+
 	/**
 	 * Gets the given tag using it's [name] and returns its [TagsData]. If the tag does not exist.
 	 * it will return null
@@ -27,10 +34,8 @@ class TagsCollection {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend inline fun getTag(inputGuildId: Snowflake, name: String): TagsData? {
-		val collection = database.getCollection<TagsData>()
-		return collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
-	}
+	suspend inline fun getTag(inputGuildId: Snowflake, name: String): TagsData? =
+		collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 
 	/**
 	 * Gets all tags in the given [inputGuildId].
@@ -40,10 +45,8 @@ class TagsCollection {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend inline fun getAllTags(inputGuildId: Snowflake): List<TagsData> {
-		val collection = database.getCollection<TagsData>()
-		return collection.find(TagsData::guildId eq inputGuildId).toList()
-	}
+	suspend inline fun getAllTags(inputGuildId: Snowflake): List<TagsData> =
+		collection.find(TagsData::guildId eq inputGuildId).toList()
 
 	/**
 	 * Adds a tag to the database, using the provided parameters.
@@ -55,23 +58,19 @@ class TagsCollection {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend inline fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
-		val collection = database.getCollection<TagsData>()
+	suspend inline fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) =
 		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue))
-	}
 
 	/**
-	 * Deletes the tag [name] from the [database].
+	 * Deletes the tag [name] from the [Database.mainDatabase].
 	 *
 	 * @param inputGuildId The guild the tag was created in.
 	 * @param name The named identifier of the tag being deleted.
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend inline fun removeTag(inputGuildId: Snowflake, name: String) {
-		val collection = database.getCollection<TagsData>()
+	suspend inline fun removeTag(inputGuildId: Snowflake, name: String) =
 		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
-	}
 
 	/**
 	 * Clears all tags for the provided [inputGuildId].
@@ -80,8 +79,6 @@ class TagsCollection {
 	 * @author tempest15
 	 * @since 3.1.0
 	 */
-	suspend inline fun removeTags(inputGuildId: Snowflake) {
-		val collection = database.getCollection<TagsData>()
+	suspend inline fun removeTags(inputGuildId: Snowflake) =
 		collection.deleteMany(TagsData::guildId eq inputGuildId)
-	}
 }

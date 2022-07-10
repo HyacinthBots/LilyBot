@@ -1,16 +1,19 @@
 package net.irisshaders.lilybot.database.collections
 
-import net.irisshaders.lilybot.database
+import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.MetaData
+import org.koin.core.component.inject
 
-class MetaCollection {
-	suspend fun get(): MetaData? {
-		val collection = database.getCollection<MetaData>()
-		return collection.findOne()
-	}
+class MetaCollection : KordExKoinComponent {
+	private val db: Database by inject()
 
-	suspend fun set(meta: MetaData) {
-		val collection = database.getCollection<MetaData>()
+	@PublishedApi
+	internal val collection = db.mainDatabase.getCollection<MetaData>()
+
+	suspend fun get(): MetaData? =
+		collection.findOne()
+
+	suspend fun set(meta: MetaData) =
 		collection.save(meta)
-	}
 }

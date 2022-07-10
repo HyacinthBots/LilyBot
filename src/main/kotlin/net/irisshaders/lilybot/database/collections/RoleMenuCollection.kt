@@ -1,8 +1,10 @@
 package net.irisshaders.lilybot.database.collections
 
+import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
-import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.RoleMenuData
+import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
@@ -14,7 +16,12 @@ import org.litote.kmongo.eq
  * @see setRoleMenu
  * @see removeRoleFromMenu
  */
-class RoleMenuCollection {
+class RoleMenuCollection : KordExKoinComponent {
+	private val db: Database by inject()
+
+	@PublishedApi
+	internal val collection = db.mainDatabase.getCollection<RoleMenuData>()
+
 	/**
 	 * Using the provided [inputMessageId] the associated [RoleMenuData] will be returned from the database.
 	 *
@@ -23,10 +30,8 @@ class RoleMenuCollection {
 	 * @author tempest15
 	 * @since 3.4.0
 	 */
-	suspend inline fun getRoleData(inputMessageId: Snowflake): RoleMenuData? {
-		val collection = database.getCollection<RoleMenuData>()
-		return collection.findOne(RoleMenuData::messageId eq inputMessageId)
-	}
+	suspend inline fun getRoleData(inputMessageId: Snowflake): RoleMenuData? =
+		collection.findOne(RoleMenuData::messageId eq inputMessageId)
 
 	/**
 	 * Add the given [inputRoles] to the database entry for the role menu for the provided [inputMessageId],
@@ -46,7 +51,6 @@ class RoleMenuCollection {
 		inputRoles: MutableList<Snowflake>
 	) {
 		val newRoleMenu = RoleMenuData(inputMessageId, inputChannelId, inputGuildId, inputRoles)
-		val collection = database.getCollection<RoleMenuData>()
 		collection.deleteOne(RoleMenuData::messageId eq inputMessageId)
 		collection.insertOne(newRoleMenu)
 	}
@@ -60,7 +64,6 @@ class RoleMenuCollection {
 	 * @since 3.4.0
 	 */
 	suspend inline fun removeRoleFromMenu(inputMessageId: Snowflake, inputRoleId: Snowflake) {
-		val collection = database.getCollection<RoleMenuData>()
 		val roleMenu = collection.findOne(RoleMenuData::messageId eq inputMessageId) ?: return
 
 		roleMenu.roles.remove(inputRoleId)

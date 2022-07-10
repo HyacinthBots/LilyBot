@@ -1,7 +1,9 @@
 package net.irisshaders.lilybot.database.collections
 
-import net.irisshaders.lilybot.database
+import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.StatusData
+import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
@@ -12,7 +14,12 @@ import org.litote.kmongo.eq
  * @see getStatus
  * @see setStatus
  */
-class StatusCollection {
+class StatusCollection : KordExKoinComponent {
+	private val db: Database by inject()
+
+	@PublishedApi
+	internal val collection = db.mainDatabase.getCollection<StatusData>()
+
 	/**
 	 * Gets Lily's status from the database.
 	 *
@@ -20,10 +27,8 @@ class StatusCollection {
 	 * @author NoComment1105
 	 * @since 3.0.0
 	 */
-	suspend inline fun getStatus(): String {
-		val collection = database.getCollection<StatusData>()
-		return collection.findOne(StatusData::key eq "LilyStatus")?.status ?: "default"
-	}
+	suspend inline fun getStatus(): String =
+		collection.findOne(StatusData::key eq "LilyStatus")?.status ?: "default"
 
 	/**
 	 * Add the given [newStatus] to the database.
@@ -33,7 +38,6 @@ class StatusCollection {
 	 * @since 3.0.0
 	 */
 	suspend inline fun setStatus(newStatus: String) {
-		val collection = database.getCollection<StatusData>()
 		collection.deleteOne(StatusData::key eq "LilyStatus")
 		collection.insertOne(StatusData("LilyStatus", newStatus))
 	}
