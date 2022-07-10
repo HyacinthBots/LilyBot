@@ -1,23 +1,10 @@
-package net.irisshaders.lilybot.database
+package net.irisshaders.lilybot.database.collections
 
 import dev.kord.common.entity.Snowflake
-import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.entities.GalleryChannelData
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.eq
-
-/**
- * The data for image channels in a guild.
- *
- * @param guildId The ID of the guild the image channel is for
- * @param channelId The ID of the image channel being set
- * @since 3.3.0
- */
-@Serializable
-data class GalleryChannelData(
-	val guildId: Snowflake,
-	val channelId: Snowflake
-)
 
 /**
  * This object contains the functions or interacting with the [Gallery Channel Database][GalleryChannelData]. This
@@ -28,7 +15,7 @@ data class GalleryChannelData(
  * @see setChannel
  * @see removeChannel
  */
-object GalleryChannelDatabase {
+class GalleryChannelCollection {
 	/**
 	 * Collects every gallery channel in the database into a [List].
 	 *

@@ -27,8 +27,8 @@ import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.ModerationConfig
-import net.irisshaders.lilybot.database.TagsDatabase
+import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
+import net.irisshaders.lilybot.database.collections.TagsCollection
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -58,7 +58,7 @@ class Tags : Extension() {
 			}
 
 			action {
-				val tagFromDatabase = TagsDatabase.getTag(guild!!.id, arguments.tagName) ?: run {
+				val tagFromDatabase = TagsCollection().getTag(guild!!.id, arguments.tagName) ?: run {
 					respond {
 						content = "Unable to find tag `${arguments.tagName}` for preview. " +
 								"Be sure it exists and you've typed it correctly."
@@ -105,7 +105,7 @@ class Tags : Extension() {
 			}
 
 			action {
-				val tagFromDatabase = TagsDatabase.getTag(guild!!.id, arguments.tagName) ?: run {
+				val tagFromDatabase = TagsCollection().getTag(guild!!.id, arguments.tagName) ?: run {
 					respond {
 						content = "Unable to find tag `${arguments.tagName}`. " +
 								"Be sure it exists and you've typed it correctly."
@@ -206,10 +206,10 @@ class Tags : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getConfig(guild!!.id)!!
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
-				if (TagsDatabase.getTag(guild!!.id, arguments.tagName) != null) {
+				if (TagsCollection().getTag(guild!!.id, arguments.tagName) != null) {
 					respond { content = "A tag with that name already exists in this guild." }
 					return@action
 				}
@@ -222,7 +222,7 @@ class Tags : Extension() {
 					return@action
 				}
 
-				TagsDatabase.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
+				TagsCollection().setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
 
 				actionLog.createEmbed {
 					title = "Tag created!"
@@ -271,17 +271,17 @@ class Tags : Extension() {
 
 			action {
 				// Check to make sure the tag exists in the database
-				if (TagsDatabase.getTag(guild!!.id, arguments.tagName)?.name == null) {
+				if (TagsCollection().getTag(guild!!.id, arguments.tagName)?.name == null) {
 					respond {
 						content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?"
 					}
 					return@action
 				}
 
-				val config = ModerationConfig.getConfig(guild!!.id)!!
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
-				TagsDatabase.removeTag(guild!!.id, arguments.tagName)
+				TagsCollection().removeTag(guild!!.id, arguments.tagName)
 
 				actionLog.createEmbed {
 					title = "Tag deleted!"
@@ -311,19 +311,19 @@ class Tags : Extension() {
 			}
 
 			action {
-				val config = ModerationConfig.getConfig(guild!!.id)!!
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
-				if (TagsDatabase.getTag(guild!!.id, arguments.tagName) == null) {
+				if (TagsCollection().getTag(guild!!.id, arguments.tagName) == null) {
 					respond { content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?" }
 					return@action
 				}
 
-				val originalName = TagsDatabase.getTag(guild!!.id, arguments.tagName)!!.name
-				val originalTitle = TagsDatabase.getTag(guild!!.id, arguments.tagName)!!.tagTitle
-				val originalValue = TagsDatabase.getTag(guild!!.id, arguments.tagName)!!.tagValue
+				val originalName = TagsCollection().getTag(guild!!.id, arguments.tagName)!!.name
+				val originalTitle = TagsCollection().getTag(guild!!.id, arguments.tagName)!!.tagTitle
+				val originalValue = TagsCollection().getTag(guild!!.id, arguments.tagName)!!.tagValue
 
-				TagsDatabase.removeTag(guild!!.id, arguments.tagName)
+				TagsCollection().removeTag(guild!!.id, arguments.tagName)
 
 				if (arguments.newValue != null && arguments.newValue!!.length > 1024) {
 					respond {
@@ -334,7 +334,7 @@ class Tags : Extension() {
 					return@action
 				}
 
-				TagsDatabase.setTag(
+				TagsCollection().setTag(
 					guild!!.id,
 					arguments.newName ?: originalName,
 					arguments.newTitle ?: originalTitle,
@@ -399,7 +399,7 @@ class Tags : Extension() {
 
 			action {
 				val pagesObj = Pages()
-				val tags = TagsDatabase.getAllTags(guild!!.id)
+				val tags = TagsCollection().getAllTags(guild!!.id)
 
 				tags.chunked(10).forEach { tag ->
 					var response = ""
@@ -438,7 +438,7 @@ class Tags : Extension() {
 			description = "The name of the tag you want to call"
 
 			autoComplete {
-				val tags = TagsDatabase.getAllTags(data.guildId.value!!)
+				val tags = TagsCollection().getAllTags(data.guildId.value!!)
 				val map = mutableMapOf<String, String>()
 
 				tags.forEach {
@@ -461,7 +461,7 @@ class Tags : Extension() {
 			description = "The name of the tag"
 
 			autoComplete {
-				val tags = TagsDatabase.getAllTags(data.guildId.value!!)
+				val tags = TagsCollection().getAllTags(data.guildId.value!!)
 				val map = mutableMapOf<String, String>()
 
 				// Add each tag in the database to the tag variable
@@ -508,7 +508,7 @@ class Tags : Extension() {
 			description = "The name of the tag you're editing"
 
 			autoComplete {
-				val tags = TagsDatabase.getAllTags(data.guildId.value!!)
+				val tags = TagsCollection().getAllTags(data.guildId.value!!)
 				val map = mutableMapOf<String, String>()
 
 				// Add each tag in the database to the tag variable

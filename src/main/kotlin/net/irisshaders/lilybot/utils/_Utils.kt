@@ -18,8 +18,8 @@ import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
-import net.irisshaders.lilybot.database.ModerationConfig
-import net.irisshaders.lilybot.database.StatusDatabase
+import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
+import net.irisshaders.lilybot.database.collections.StatusCollection
 
 val utilsLogger = KotlinLogging.logger("Checks Logger")
 
@@ -39,7 +39,7 @@ suspend inline fun CheckContext<*>.configPresent() {
 	if (guildFor(event) == null) fail("Must be in a server")
 
 	// Check all not-null values in the database are not null
-	if (ModerationConfig.getConfig(guildFor(event)!!.id) == null) {
+	if (ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null) {
 		fail("Unable to access config for this guild! Please inform a member of staff")
 	} else pass()
 }
@@ -115,8 +115,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  * @since 2.1.0
  */
 suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
-	val moderatorRoleId = ModerationConfig.getConfig(guild!!.id)?.team
-	if (ModerationConfig.getConfig(guild!!.id)!!.enabled) {
+	val moderatorRoleId = ModerationConfigCollection().getConfig(guild!!.id)?.team
+	if (ModerationConfigCollection().getConfig(guild!!.id)!!.enabled) {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
 		}
@@ -152,7 +152,7 @@ suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, 
  * @since 3.4.5
  */
 suspend inline fun Extension.updateDefaultPresence() {
-	if (StatusDatabase.getStatus() != "default") {
+	if (StatusCollection().getStatus() != "default") {
 		return
 	}
 

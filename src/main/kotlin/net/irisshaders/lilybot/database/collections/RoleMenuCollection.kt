@@ -1,26 +1,9 @@
-package net.irisshaders.lilybot.database
+package net.irisshaders.lilybot.database.collections
 
 import dev.kord.common.entity.Snowflake
-import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.entities.RoleMenuData
 import org.litote.kmongo.eq
-
-/**
- * The data for role menus.
- *
- * @param messageId The ID of the message of the role menu
- * @param channelId The ID of the channel the role menu is in
- * @param guildId The ID of the guild the role menu is in
- * @param roles A [MutableList] of the role IDs associated with this role menu.
- * @since 3.4.0
- */
-@Serializable
-data class RoleMenuData(
-	val messageId: Snowflake,
-	val channelId: Snowflake,
-	val guildId: Snowflake,
-	val roles: MutableList<Snowflake>
-)
 
 /**
  * This object contains the functions for interacting with the [Role Menu Database][RoleMenuData]. This object contains
@@ -31,7 +14,7 @@ data class RoleMenuData(
  * @see setRoleMenu
  * @see removeRoleFromMenu
  */
-object RoleMenuDatabase {
+class RoleMenuCollection {
 	/**
 	 * Using the provided [inputMessageId] the associated [RoleMenuData] will be returned from the database.
 	 *

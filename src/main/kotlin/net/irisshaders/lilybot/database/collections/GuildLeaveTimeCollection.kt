@@ -1,23 +1,10 @@
-package net.irisshaders.lilybot.database
+package net.irisshaders.lilybot.database.collections
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.Instant
-import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.entities.GuildLeaveTimeData
 import org.litote.kmongo.eq
-
-/**
- * The data for when Lily leaves a guild.
- *
- * @param guildId The ID of the guild Lily left
- * @param guildLeaveTime The [Instant] that Lily left the guild
- * @since 3.2.0
- */
-@Serializable
-data class GuildLeaveTimeData(
-	val guildId: Snowflake,
-	val guildLeaveTime: Instant
-)
 
 /**
  * This object contains the functions or interacting with the [Guild Leave Time Database][GuildLeaveTimeData]. This
@@ -27,7 +14,7 @@ data class GuildLeaveTimeData(
  * @see setLeaveTime
  * @see removeLeaveTime
  */
-object GuildLeaveTimeDatabase {
+class GuildLeaveTimeCollection {
 	/**
 	 * Adds the time Lily bot left a guild with a config.
 	 *

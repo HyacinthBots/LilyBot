@@ -1,67 +1,11 @@
-package net.irisshaders.lilybot.database
+package net.irisshaders.lilybot.database.collections
 
 import dev.kord.common.entity.Snowflake
-import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.configDatabase
-import net.irisshaders.lilybot.database.LoggingConfig.clearConfig
-import net.irisshaders.lilybot.database.LoggingConfig.getConfig
-import net.irisshaders.lilybot.database.LoggingConfig.setConfig
+import net.irisshaders.lilybot.database.entities.LoggingConfigData
+import net.irisshaders.lilybot.database.entities.ModerationConfigData
+import net.irisshaders.lilybot.database.entities.SupportConfigData
 import org.litote.kmongo.eq
-
-/**
- * The data for moderation configuration.
- *
- * @param guildId The ID of the guild the config is for
- * @param enableMessageLogs If edited and deleted messages should be logged
- * @param messageChannel The channel to send message logs to
- * @param enableJoinLogs If joining and leaving users should be logged
- * @param joinChannel The channel to send join logs to
- * @since 4.0.0
- */
-@Serializable
-data class LoggingConfigData(
-	val guildId: Snowflake,
-	val enableMessageLogs: Boolean,
-	val messageChannel: Snowflake,
-	val enableJoinLogs: Boolean,
-	val joinChannel: Snowflake,
-)
-
-/**
- * The data for moderation configuration.
- *
- * @param guildId The ID of the guild the config is for
- * @param enabled If the support module is enabled or not
- * @param channel The ID of the action log for the guild
- * @param team The ID of the moderation role for the guild
- * @since 4.0.0
- */
-@Serializable
-data class ModerationConfigData(
-	val guildId: Snowflake,
-	val enabled: Boolean,
-	val channel: Snowflake,
-	val team: Snowflake,
-)
-
-/**
- * The data for support configuration.
- *
- * @param guildId The ID of the guild the config is for
- * @param enabled If the support module is enabled or not
- * @param channel The ID of the support channel for the guild
- * @param team The ID of the support team for the guild
- * @param message The support message as a string, nullable
- * @since 4.0.0
- */
-@Serializable
-data class SupportConfigData(
-	val guildId: Snowflake,
-	val enabled: Boolean,
-	val channel: Snowflake,
-	val team: Snowflake,
-	val message: String?
-)
 
 /**
  * This object contains the functions or interacting with the [Logging Config Database][LoggingConfigData]. This object
@@ -72,7 +16,7 @@ data class SupportConfigData(
  * @see setConfig
  * @see clearConfig
  */
-object LoggingConfig {
+class LoggingConfigCollection {
 	suspend inline fun getConfig(inputGuildId: Snowflake): LoggingConfigData? {
 		val collection = configDatabase.getCollection<LoggingConfigData>()
 		return collection.findOne(LoggingConfigData::guildId eq inputGuildId)
@@ -99,7 +43,7 @@ object LoggingConfig {
  * @see setConfig
  * @see clearConfig
  */
-object ModerationConfig {
+class ModerationConfigCollection {
 	suspend inline fun getConfig(inputGuildId: Snowflake): ModerationConfigData? {
 		val collection = configDatabase.getCollection<ModerationConfigData>()
 		return collection.findOne(ModerationConfigData::guildId eq inputGuildId)
@@ -126,7 +70,7 @@ object ModerationConfig {
  * @see setConfig
  * @see clearConfig
  */
-object SupportConfig {
+class SupportConfigCollection {
 	suspend inline fun getConfig(inputGuildId: Snowflake): SupportConfigData? {
 		val collection = configDatabase.getCollection<SupportConfigData>()
 		return collection.findOne(SupportConfigData::guildId eq inputGuildId)

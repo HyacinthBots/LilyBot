@@ -13,7 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
-import net.irisshaders.lilybot.database.LoggingConfig
+import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -41,7 +41,7 @@ class MessageDelete : Extension() {
 				if (event.message?.author?.isBot == true) return@action
 				if (PluralKit.containsPkChatCommandPrefix(event.message!!)) return@action
 
-				val config = LoggingConfig.getConfig(guildFor(event)!!.id)!!
+				val config = LoggingConfigCollection().getConfig(guildFor(event)!!.id)!!
 
 				val guild = kord.getGuild(event.guildId!!)
 				val messageLog = guild?.getChannelOf<GuildMessageChannel>(config.messageChannel)

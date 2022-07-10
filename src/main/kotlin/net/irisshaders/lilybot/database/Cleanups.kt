@@ -2,9 +2,17 @@ package net.irisshaders.lilybot.database
 
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
+import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
+import net.irisshaders.lilybot.database.collections.SupportConfigCollection
+import net.irisshaders.lilybot.database.collections.TagsCollection
+import net.irisshaders.lilybot.database.collections.WarnCollection
+import net.irisshaders.lilybot.database.entities.GuildLeaveTimeData
+import net.irisshaders.lilybot.database.entities.ThreadData
 import org.litote.kmongo.eq
 
 /**
@@ -38,11 +46,11 @@ object Cleanups {
 
 			if (leaveDuration.inWholeDays > 30) {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
-				ModerationConfig.clearConfig(it.guildId)
-				SupportConfig.clearConfig(it.guildId)
-				LoggingConfig.clearConfig(it.guildId)
-				TagsDatabase.removeTags(it.guildId)
-				WarnDatabase.removeWarn(it.guildId)
+				ModerationConfigCollection().clearConfig(it.guildId)
+				SupportConfigCollection().clearConfig(it.guildId)
+				LoggingConfigCollection().clearConfig(it.guildId)
+				TagsCollection().removeTags(it.guildId)
+				WarnCollection().removeWarn(it.guildId)
 				// Once role menu is rewritten, component data should also be cleared here.
 				collection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
@@ -64,12 +72,18 @@ object Cleanups {
 		val threads = collection.find().toList()
 		var deletedThreads = 0
 		for (it in threads) {
-			val thread = kordInstance.getChannelOf<ThreadChannel>(it.threadId) ?: continue
-			val latestMessage = thread.getLastMessage() ?: continue
-			val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
-			if (timeSinceLatestMessage.inWholeDays > 7) {
-				collection.deleteOne(ThreadData::threadId eq thread.id)
+			try {
+				val thread = kordInstance.getChannelOf<ThreadChannel>(it.threadId) ?: continue
+				val latestMessage = thread.getLastMessage() ?: continue
+				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
+				if (timeSinceLatestMessage.inWholeDays > 7) {
+					collection.deleteOne(ThreadData::threadId eq thread.id)
+					deletedThreads++
+				}
+			} catch (e: KtorRequestException) {
+				collection.deleteOne(ThreadData::threadId eq it.threadId)
 				deletedThreads++
+				continue
 			}
 		}
 		cleanupsLogger.info("Deleted $deletedThreads old threads from the database")

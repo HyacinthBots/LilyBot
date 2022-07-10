@@ -1,24 +1,9 @@
-package net.irisshaders.lilybot.database
+package net.irisshaders.lilybot.database.collections
 
 import dev.kord.common.entity.Snowflake
-import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.entities.WarnData
 import org.litote.kmongo.eq
-
-/**
- * The data for warnings in guilds.
- *.
- * @param userId The ID of the user with warnings
- * @param guildId The ID of the guild they received the warning in
- * @param strikes The amount of strikes they have received
- * @since 3.0.0
- */
-@Serializable
-data class WarnData(
-	val userId: Snowflake,
-	val guildId: Snowflake,
-	val strikes: Int
-)
 
 /**
  * This object stores all the functions for interacting with the [Warn Database][WarnData]. The object contains the
@@ -29,7 +14,7 @@ data class WarnData(
  * @see removeWarn
  * @since 4.0.0
  */
-object WarnDatabase {
+class WarnCollection {
 	/**
 	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database.
 	 *

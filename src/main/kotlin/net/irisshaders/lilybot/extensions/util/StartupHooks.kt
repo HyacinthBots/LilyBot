@@ -9,7 +9,7 @@ import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import net.irisshaders.lilybot.database.Cleanups
-import net.irisshaders.lilybot.database.StatusDatabase
+import net.irisshaders.lilybot.database.collections.StatusCollection
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.updateDefaultPresence
@@ -61,12 +61,12 @@ class StartupHooks : Extension() {
 				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
 				 * else the database value.
 				 */
- 				if (StatusDatabase.getStatus() == "default") {
+ 				if (StatusCollection().getStatus() == "default") {
  					updateDefaultPresence()
  				} else {
  					this@event.kord.editPresence {
  						status = PresenceStatus.Online
- 						playing(StatusDatabase.getStatus())
+ 						playing(StatusCollection().getStatus())
  					}
  				}
 			}

@@ -1,25 +1,9 @@
-package net.irisshaders.lilybot.database
+package net.irisshaders.lilybot.database.collections
 
 import dev.kord.common.entity.Snowflake
-import kotlinx.serialization.Serializable
 import net.irisshaders.lilybot.database
+import net.irisshaders.lilybot.database.entities.ThreadData
 import org.litote.kmongo.eq
-
-@Suppress("DataClassShouldBeImmutable")
-/**
- * The data for threads.
- *
- * @param threadId The ID of the thread
- * @param ownerId The ID of the thread's owner
- * @param preventArchiving Whether to stop the thread from being archived or not
- * @since 3.2.0
- */
-@Serializable
-data class ThreadData(
-	val threadId: Snowflake,
-	val ownerId: Snowflake,
-	var preventArchiving: Boolean = false
-)
 
 /**
  * This object stores all the functions for interacting with the [Threads Database][ThreadData]. This object contains
@@ -33,7 +17,7 @@ data class ThreadData(
  * @see setThreadOwner
  * @see removeThread
  */
-object ThreadsDatabase {
+class ThreadsCollection {
 	/**
 	 * Using the provided [inputThreadId] the thread is returned.
 	 *

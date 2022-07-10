@@ -12,7 +12,7 @@ import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.LoggingConfig
+import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -28,7 +28,7 @@ class MemberJoinLeave : Extension() {
 		event<MemberJoinEvent> {
 			check { configPresent() }
 			action {
-				val config = LoggingConfig.getConfig(guildFor(event)!!.id)!!
+				val config = LoggingConfigCollection().getConfig(guildFor(event)!!.id)!!
 
 				// If it's Lily joining, don't try to log since a channel won't be set
 				if (event.member.id == kord.selfId) return@action
@@ -65,7 +65,7 @@ class MemberJoinLeave : Extension() {
 			action {
 				// If it's Lily leaving, return the action, otherwise the log will fill with errors
 				if (event.user.id == kord.selfId) return@action
-				val config = LoggingConfig.getConfig(guildFor(event)!!.id)!!
+				val config = LoggingConfigCollection().getConfig(guildFor(event)!!.id)!!
 
 				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel)
 

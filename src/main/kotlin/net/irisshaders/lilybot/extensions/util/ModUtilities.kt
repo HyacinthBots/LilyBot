@@ -41,8 +41,8 @@ import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.ModerationConfig
-import net.irisshaders.lilybot.database.StatusDatabase
+import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
+import net.irisshaders.lilybot.database.collections.StatusCollection
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -74,7 +74,7 @@ class ModUtilities : Extension() {
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 			action {
-				val config = ModerationConfig.getConfig(guild!!.id)!!
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 				val targetChannel: GuildMessageChannel =
 					if (arguments.channel != null) {
@@ -168,7 +168,7 @@ class ModUtilities : Extension() {
 					channel
 				}
 
-				val config = ModerationConfig.getConfig(guildFor(event)!!.id)!!
+				val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 				val message: Message
 
@@ -324,7 +324,7 @@ class ModUtilities : Extension() {
 						return@action
 					}
 
-				val config = ModerationConfig.getConfig(guildFor(event)!!.id)!!
+				val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
 				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					// Update the presence in the action
@@ -334,7 +334,7 @@ class ModUtilities : Extension() {
 					}
 
 				// Store the new presence in the database for if there is a restart
-				StatusDatabase.setStatus(arguments.presenceArgument)
+				StatusCollection().setStatus(arguments.presenceArgument)
 
 					respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
@@ -367,12 +367,12 @@ class ModUtilities : Extension() {
 					}
 
 					// Store the new presence in the database for if there is a restart
-					StatusDatabase.setStatus("default")
+					StatusCollection().setStatus("default")
 
 					updateDefaultPresence()
 					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size
 
-					val config = ModerationConfig.getConfig(guild!!.id)!!
+					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					respond { content = "Presence set to default" }

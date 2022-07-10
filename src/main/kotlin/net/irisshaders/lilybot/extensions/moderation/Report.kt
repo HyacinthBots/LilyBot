@@ -51,9 +51,9 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.LoggingConfig
-import net.irisshaders.lilybot.database.ModerationConfig
-import net.irisshaders.lilybot.database.ModerationConfigData
+import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
+import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
+import net.irisshaders.lilybot.database.entities.ModerationConfigData
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -90,8 +90,8 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 	}
 
 	action {
-		val loggingConfig = LoggingConfig.getConfig(guild!!.id)!!
-		val moderationConfig = ModerationConfig.getConfig(guild!!.id)!!
+		val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)!!
+		val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
 		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
 		val reportedMessage: Message
 		val messageAuthor: Member?
@@ -144,8 +144,8 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 	}
 
 	action {
-		val loggingConfig = LoggingConfig.getConfig(guild!!.id)!!
-		val moderationConfig = ModerationConfig.getConfig(guild!!.id)!!
+		val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)!!
+		val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
 		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
 		val channel: MessageChannel
 		val reportedMessage: Message

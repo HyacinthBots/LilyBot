@@ -35,7 +35,7 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import net.irisshaders.lilybot.database.RemindMeDatabase
+import net.irisshaders.lilybot.database.collections.RemindMeCollection
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import kotlin.time.Duration.Companion.days
 
@@ -118,14 +118,14 @@ class Reminders : Extension() {
 					}
 
 					var counter = 0
-					RemindMeDatabase.getReminders().forEach {
+					RemindMeCollection().getReminders().forEach {
 						if (it.userId == user.id) {
 							counter += 1
 						}
 					}
 					counter++ // Add one to the final counter, since we're adding a new one to the list of reminders
 
-					RemindMeDatabase.setReminder(
+					RemindMeCollection().setReminder(
 						setTime,
 						guild!!.id,
 						user.id,
@@ -179,7 +179,7 @@ class Reminders : Extension() {
 				}
 
 				action {
-					val reminders = RemindMeDatabase.getReminders()
+					val reminders = RemindMeCollection().getReminders()
 
 					var response = ""
 
@@ -199,7 +199,7 @@ class Reminders : Extension() {
 									}\n---\n"
 
 							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-							RemindMeDatabase.removeReminder(guild!!.id, user.id, arguments.reminder)
+							RemindMeCollection().removeReminder(guild!!.id, user.id, arguments.reminder)
 							@Suppress("DuplicatedCode")
 							val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 								.getChannelOf<GuildMessageChannel>(it.channelId)
@@ -238,7 +238,7 @@ class Reminders : Extension() {
 				}
 
 				action {
-					val reminders = RemindMeDatabase.getReminders()
+					val reminders = RemindMeCollection().getReminders()
 
 					// FIXME Duplicaten't the code
 					@Suppress("DuplicatedCode")
@@ -246,7 +246,7 @@ class Reminders : Extension() {
 						when (arguments.reminderType) {
 							"all" -> {
 								if (it.guildId == guild?.id && it.userId == user.id) {
-									RemindMeDatabase.removeReminder(guild!!.id, user.id, it.id)
+									RemindMeCollection().removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
@@ -264,7 +264,7 @@ class Reminders : Extension() {
 
 							"repeating" -> {
 								if (it.guildId == guild?.id && it.userId == user.id && it.repeating) {
-									RemindMeDatabase.removeReminder(guild!!.id, user.id, it.id)
+									RemindMeCollection().removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
@@ -282,7 +282,7 @@ class Reminders : Extension() {
 
 							"non-repeating" -> {
 								if (it.guildId == guild?.id && it.userId == user.id && !it.repeating) {
-									RemindMeDatabase.removeReminder(guild!!.id, user.id, it.id)
+									RemindMeCollection().removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
@@ -312,7 +312,7 @@ class Reminders : Extension() {
 	 * @author NoComment1105
 	 */
 	private suspend inline fun userReminders(event: ChatInputCommandInteractionCreateEvent): String {
-		val reminders = RemindMeDatabase.getReminders()
+		val reminders = RemindMeCollection().getReminders()
 		var response = ""
 		reminders.forEach {
 			if (it.userId == event.interaction.user.id && it.guildId == guildFor(event)!!.id) {
@@ -344,7 +344,7 @@ class Reminders : Extension() {
 	 * @author NoComment1105
 	 */
 	private suspend fun postReminders() {
-		val reminders = RemindMeDatabase.getReminders()
+		val reminders = RemindMeCollection().getReminders()
 
 		reminders.forEach {
 			if (it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0) {
@@ -485,7 +485,7 @@ class Reminders : Extension() {
 
 				// Remove the old reminder from the database
 				if (it.repeating) {
-					RemindMeDatabase.setReminder(
+					RemindMeCollection().setReminder(
 						Clock.System.now(),
 						it.guildId,
 						it.userId,
@@ -496,9 +496,9 @@ class Reminders : Extension() {
 						true,
 						it.id
 					)
-					RemindMeDatabase.removeReminder(it.guildId, it.userId, it.id)
+					RemindMeCollection().removeReminder(it.guildId, it.userId, it.id)
 				} else {
-					RemindMeDatabase.removeReminder(it.guildId, it.userId, it.id)
+					RemindMeCollection().removeReminder(it.guildId, it.userId, it.id)
 				}
 			}
 		}

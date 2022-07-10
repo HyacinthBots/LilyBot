@@ -19,12 +19,12 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
-import net.irisshaders.lilybot.database.LoggingConfig
-import net.irisshaders.lilybot.database.LoggingConfigData
-import net.irisshaders.lilybot.database.ModerationConfig
-import net.irisshaders.lilybot.database.ModerationConfigData
-import net.irisshaders.lilybot.database.SupportConfig
-import net.irisshaders.lilybot.database.SupportConfigData
+import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
+import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
+import net.irisshaders.lilybot.database.collections.SupportConfigCollection
+import net.irisshaders.lilybot.database.entities.LoggingConfigData
+import net.irisshaders.lilybot.database.entities.ModerationConfigData
+import net.irisshaders.lilybot.database.entities.SupportConfigData
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -99,7 +99,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				SupportConfig.setConfig(
+				SupportConfigCollection().setConfig(
 					SupportConfigData(
 						guild!!.id,
 						arguments.enable,
@@ -130,7 +130,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				SupportConfig.setConfig(
+				SupportConfigCollection().setConfig(
 					SupportConfigData(
 						guild!!.id,
 						arguments.enable,
@@ -172,7 +172,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			ModerationConfig.setConfig(
+			ModerationConfigCollection().setConfig(
 				ModerationConfigData(
 					guild!!.id,
 					arguments.enabled,
@@ -212,7 +212,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			LoggingConfig.setConfig(
+			LoggingConfigCollection().setConfig(
 				LoggingConfigData(
 					guild!!.id,
 					arguments.enableMessageLogs,
