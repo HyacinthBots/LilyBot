@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.StatusCollection
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -68,7 +69,7 @@ class ModUtilities : Extension() {
 
 			check {
 				anyGuild()
-				configPresent()
+				configPresent(ConfigType.MODERATION)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
@@ -154,7 +155,7 @@ class ModUtilities : Extension() {
 
 			check {
 				anyGuild()
-				configPresent()
+				configPresent(ConfigType.MODERATION)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
@@ -314,7 +315,7 @@ class ModUtilities : Extension() {
 
 				check {
 					hasPermission(Permission.Administrator)
-					configPresent()
+					configPresent(ConfigType.MODERATION)
 				}
 
 				action {
@@ -356,7 +357,7 @@ class ModUtilities : Extension() {
 
 				check {
 					hasPermission(Permission.Administrator)
-					configPresent()
+					configPresent(ConfigType.MODERATION)
 				}
 
 				action {

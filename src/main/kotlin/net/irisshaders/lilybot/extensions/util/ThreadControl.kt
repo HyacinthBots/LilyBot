@@ -7,7 +7,6 @@
 package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_FUCHSIA
-import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.isInThread
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
@@ -40,6 +39,7 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.ThreadsCollection
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -58,7 +58,6 @@ class ThreadControl : Extension() {
 
 				check {
 					isInThread()
-					configPresent()
 					requireBotPermissions(Permission.ManageThreads)
 					botHasChannelPerms(Permissions(Permission.ManageThreads))
 				}
@@ -85,7 +84,6 @@ class ThreadControl : Extension() {
 
 				check {
 					isInThread()
-					configPresent()
 					requireBotPermissions(Permission.ManageThreads)
 					botHasChannelPerms(Permissions(Permission.ManageThreads))
 				}
@@ -123,7 +121,6 @@ class ThreadControl : Extension() {
 
 				check {
 					isInThread()
-					configPresent()
 					requireBotPermissions(Permission.ManageThreads)
 					botHasChannelPerms(Permissions(Permission.ManageThreads))
 				}
@@ -165,9 +162,8 @@ class ThreadControl : Extension() {
 				description = "Stop a thread from being archived"
 
 				check {
-					anyGuild()
 					isInThread()
-					configPresent()
+					configPresent(ConfigType.MODERATION)
 					requireBotPermissions(Permission.ManageThreads)
 					botHasChannelPerms(Permissions(Permission.ManageThreads))
 				}

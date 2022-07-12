@@ -40,6 +40,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import net.irisshaders.lilybot.database.collections.SupportConfigCollection
 import net.irisshaders.lilybot.database.collections.ThreadsCollection
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import java.io.ByteArrayInputStream
@@ -73,7 +74,7 @@ class LogUploading : Extension() {
 					event.message.getChannelOrNull() !is MessageChannel
 				}
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
-				configPresent()
+				configPresent(ConfigType.SUPPORT)
 			}
 			action {
 				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)!!

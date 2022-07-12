@@ -46,8 +46,7 @@ val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 3.2.0
  */
-// TODO Test if this works lol
-suspend inline fun CheckContext<*>.configPresent(configType: ConfigType) {
+suspend inline fun CheckContext<*>.configPresent(vararg configType: ConfigType) {
 	if (!passed) {
 		return
 	}
@@ -55,38 +54,44 @@ suspend inline fun CheckContext<*>.configPresent(configType: ConfigType) {
 	// Prevent commands being run in DMs, although [anyGuild] should still be used in most commands.
 	if (guildFor(event) == null) fail("Must be in a server")
 
+	if (configType.isEmpty()) {
+		fail("There is no config type provided in the code. Please inform the developers immediately!")
+	}
+
 	// Look at the config type and check the presence of the config in the database.
-	when (configType) {
-		ConfigType.SUPPORT ->
-			if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null) {
-				fail("Unable to access support config")
-			} else {
-				pass()
-			}
+	configType.forEach {
+		when (it) {
+			ConfigType.SUPPORT ->
+				if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null) {
+					fail("Unable to access Support config for this guild! Please inform a member of staff.")
+				} else {
+					pass()
+				}
 
-		ConfigType.MODERATION ->
-			if (ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null) {
-				fail("Unable to access moderation config")
-			} else {
-				pass()
-			}
+			ConfigType.MODERATION ->
+				if (ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null) {
+					fail("Unable to access Moderation config for this guild! Please inform a member of staff.")
+				} else {
+					pass()
+				}
 
-		ConfigType.LOGGING ->
-			if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null) {
-				fail("Unable to access config for this guild! Please inform a member of staff")
-			} else {
-				pass()
-			}
+			ConfigType.LOGGING ->
+				if (LoggingConfigCollection().getConfig(guildFor(event)!!.id) == null) {
+					fail("Unable to access Logging config for this guild! Please inform a member of staff.")
+				} else {
+					pass()
+				}
 
-		ConfigType.ALL ->
-			if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null ||
-				ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null ||
-				LoggingConfigCollection().getConfig(guildFor(event)!!.id) == null
-			) {
-				fail("Unable to access config for this guild! Please inform a member of staff")
-			} else {
-				pass()
-			}
+			ConfigType.ALL ->
+				if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null ||
+					ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null ||
+					LoggingConfigCollection().getConfig(guildFor(event)!!.id) == null
+				) {
+					fail("Unable to access config for this guild! Please inform a member of staff.")
+				} else {
+					pass()
+				}
+		}
 	}
 }
 
@@ -162,7 +167,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  */
 suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
 	val moderatorRoleId = ModerationConfigCollection().getConfig(guild!!.id)?.team
-	if (ModerationConfigCollection().getConfig(guild!!.id)!!.enabled) {
+	if (ModerationConfigCollection().getConfig(guild!!.id) == null) {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
 		}

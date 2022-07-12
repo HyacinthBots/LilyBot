@@ -26,6 +26,7 @@ import kotlinx.coroutines.delay
 import net.irisshaders.lilybot.database.collections.GalleryChannelCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.entities.GalleryChannelData
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import org.litote.kmongo.eq
@@ -63,7 +64,7 @@ class GalleryChannel : Extension() {
 
 				check {
 					anyGuild()
-					configPresent()
+					configPresent(ConfigType.MODERATION)
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.ManageChannels)
 					botHasChannelPerms(Permissions(Permission.ManageChannels))
@@ -115,7 +116,7 @@ class GalleryChannel : Extension() {
 
 				check {
 					anyGuild()
-					configPresent()
+					configPresent(ConfigType.MODERATION)
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.ManageChannels)
 					botHasChannelPerms(Permissions(Permission.ManageChannels))

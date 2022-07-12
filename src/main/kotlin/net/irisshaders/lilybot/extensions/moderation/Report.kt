@@ -54,6 +54,7 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -140,7 +141,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 
 	check {
 		anyGuild()
-		configPresent()
+		configPresent(ConfigType.LOGGING, ConfigType.MODERATION)
 	}
 
 	action {

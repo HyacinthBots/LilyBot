@@ -35,6 +35,7 @@ import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.SupportConfigCollection
 import net.irisshaders.lilybot.database.collections.ThreadsCollection
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration.Companion.seconds
 
@@ -58,7 +59,7 @@ class ThreadInviter : Extension() {
 			 */
 			check {
 				anyGuild()
-				// configPresent()
+				configPresent(ConfigType.SUPPORT)
 				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
@@ -162,7 +163,7 @@ class ThreadInviter : Extension() {
 					event.channel.ownerId == kord.selfId ||
 							event.channel.member != null
 				}
-				configPresent()
+				configPresent(ConfigType.SUPPORT)
 			}
 
 			action {

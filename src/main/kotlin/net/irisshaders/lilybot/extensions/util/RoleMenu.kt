@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.RoleMenuCollection
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -71,7 +72,7 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent()
+					configPresent(ConfigType.MODERATION)
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -167,7 +168,7 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent()
+					configPresent(ConfigType.MODERATION)
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -239,7 +240,7 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent()
+					configPresent(ConfigType.MODERATION)
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -300,7 +301,7 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent()
+					configPresent(ConfigType.MODERATION)
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(

@@ -13,6 +13,7 @@ import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -26,7 +27,7 @@ class MemberJoinLeave : Extension() {
 	override suspend fun setup() {
 		/** Create an embed in the join channel on user join */
 		event<MemberJoinEvent> {
-			check { configPresent() }
+			check { configPresent(ConfigType.LOGGING) }
 			action {
 				val config = LoggingConfigCollection().getConfig(guildFor(event)!!.id)!!
 
@@ -61,7 +62,7 @@ class MemberJoinLeave : Extension() {
 
 		/** Create an embed in the join channel on user leave */
 		event<MemberLeaveEvent> {
-			check { configPresent() }
+			check { configPresent(ConfigType.LOGGING) }
 			action {
 				// If it's Lily leaving, return the action, otherwise the log will fill with errors
 				if (event.user.id == kord.selfId) return@action

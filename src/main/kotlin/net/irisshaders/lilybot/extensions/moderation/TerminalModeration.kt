@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
@@ -57,7 +58,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent()
+				configPresent(ConfigType.MODERATION)
 				hasPermission(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
@@ -135,7 +136,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent()
+				configPresent(ConfigType.MODERATION)
 				hasPermission(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers)
 			}
@@ -188,7 +189,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent()
+				configPresent(ConfigType.MODERATION)
 				hasPermission(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
@@ -269,7 +270,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent()
+				configPresent(ConfigType.MODERATION)
 				hasPermission(Permission.KickMembers)
 				requireBotPermissions(Permission.KickMembers)
 			}
