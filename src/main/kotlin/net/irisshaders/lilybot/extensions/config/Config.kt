@@ -40,11 +40,11 @@ class Config : Extension() {
 @OptIn(UnsafeAPI::class)
 suspend fun Config.configCommand() = unsafeSlashCommand {
 	name = "config"
-	description = "Configuring Lily's Modules"
+	description = "Configuring Lily's settings"
 
-	unsafeSubCommand(::SupportModuleArgs) {
+	unsafeSubCommand(::SupportArgs) {
 		name = "support"
-		description = "Configure the support module"
+		description = "Configure Lily's support system"
 
 		initialResponse = InitialSlashCommandResponse.None
 
@@ -82,7 +82,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 				modalResponse.respond {
 					embed {
-						title = "Module configured: Support"
+						title = "Configuration: Support"
 						field {
 							name = "Support Team"
 							value = arguments.role.mention
@@ -113,7 +113,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			} else {
 				event.interaction.respondEphemeral {
 					embed {
-						title = "Module configured: Support"
+						title = "Configuration: Support"
 						field {
 							name = "Support Team"
 							value = arguments.role.mention
@@ -145,9 +145,9 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 	}
 
-	unsafeSubCommand(::ModerationModuleArgs) {
+	unsafeSubCommand(::ModerationArgs) {
 		name = "moderation"
-		description = "Configure the moderation module"
+		description = "Configure Lily's moderation system"
 
 		initialResponse = InitialSlashCommandResponse.None
 
@@ -160,7 +160,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		action {
 			event.interaction.respondEphemeral {
 				embed {
-					title = "Module configured: Moderation"
+					title = "Configuration: Moderation"
 					field {
 						name = "Moderators"
 						value = arguments.moderatorRole.mention
@@ -186,9 +186,9 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 	}
 
-	unsafeSubCommand(::LoggingModuleArgs) {
+	unsafeSubCommand(::LoggingArgs) {
 		name = "logging"
-		description = "Configure Lily's logging modules"
+		description = "Configure Lily's logging system"
 
 		initialResponse = InitialSlashCommandResponse.None
 
@@ -201,7 +201,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		action {
 			event.interaction.respondEphemeral {
 				embed {
-					title = "Module Configured: Logging"
+					title = "Configuration: Logging"
 					field {
 						name = "Message Logs"
 						value = arguments.messageLogs.mention
@@ -241,7 +241,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					ModerationConfigCollection().clearConfig(guild!!.id)
 					event.interaction.respondEphemeral {
 						embed {
-							title = "Module Config cleared: Moderation"
+							title = "Config cleared: Moderation"
 							footer {
 								text = "Config cleared by ${user.asUser().tag}"
 							}
@@ -252,7 +252,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					LoggingConfigCollection().clearConfig(guild!!.id)
 					event.interaction.respondEphemeral {
 						embed {
-							title = "Module Config cleared: Logging"
+							title = "Config cleared: Logging"
 							footer {
 								text = "Config cleared by ${user.asUser().tag}"
 							}
@@ -263,7 +263,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					SupportConfigCollection().clearConfig(guild!!.id)
 					event.interaction.respondEphemeral {
 						embed {
-							title = "Module Config cleared: Support"
+							title = "Config cleared: Support"
 							footer {
 								text = "Config cleared by ${user.asUser().tag}"
 							}
@@ -288,7 +288,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 	}
 }
 
-class SupportModuleArgs : Arguments() {
+class SupportArgs : Arguments() {
 	val enable by boolean {
 		name = "enable"
 		description = "Whether to enable the support system"
@@ -310,10 +310,10 @@ class SupportModuleArgs : Arguments() {
 	}
 }
 
-class ModerationModuleArgs : Arguments() {
+class ModerationArgs : Arguments() {
 	val enabled by boolean {
 		name = "enable"
-		description = "Whether to enable the moderation module"
+		description = "Whether to enable the moderation system"
 	}
 
 	val moderatorRole by role {
@@ -327,7 +327,7 @@ class ModerationModuleArgs : Arguments() {
 	}
 }
 
-class LoggingModuleArgs : Arguments() {
+class LoggingArgs : Arguments() {
 	val enableMessageLogs by boolean {
 		name = "enablemesssgelogs"
 		description = "Enable logging of message deletions"
