@@ -34,6 +34,7 @@ import net.irisshaders.lilybot.database.collections.SupportConfigCollection
 import net.irisshaders.lilybot.database.collections.TagsCollection
 import net.irisshaders.lilybot.database.collections.ThreadsCollection
 import net.irisshaders.lilybot.database.collections.WarnCollection
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import org.koin.dsl.bind
 
 val utilsLogger = KotlinLogging.logger("Checks Logger")
@@ -45,21 +46,48 @@ val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 3.2.0
  */
-// FIXME Update this to the new system.
-// The probable best way is to use an argument to determine what we're checking for, and the process that, check it and
-// produce the expected response.
-suspend inline fun CheckContext<*>.configPresent() {
+// TODO Test if this works lol
+suspend inline fun CheckContext<*>.configPresent(configType: ConfigType) {
 	if (!passed) {
 		return
 	}
 
-	// Prevent commands being run in DMs, although [anyGuild] should still be used as backup
+	// Prevent commands being run in DMs, although [anyGuild] should still be used in most commands.
 	if (guildFor(event) == null) fail("Must be in a server")
 
-	// Check all not-null values in the database are not null
-	if (ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null) {
-		fail("Unable to access config for this guild! Please inform a member of staff")
-	} else pass()
+	// Look at the config type and check the presence of the config in the database.
+	when (configType) {
+		ConfigType.SUPPORT ->
+			if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null) {
+				fail("Unable to access support config")
+			} else {
+				pass()
+			}
+
+		ConfigType.MODERATION ->
+			if (ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null) {
+				fail("Unable to access moderation config")
+			} else {
+				pass()
+			}
+
+		ConfigType.LOGGING ->
+			if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null) {
+				fail("Unable to access config for this guild! Please inform a member of staff")
+			} else {
+				pass()
+			}
+
+		ConfigType.ALL ->
+			if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null ||
+				ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null ||
+				LoggingConfigCollection().getConfig(guildFor(event)!!.id) == null
+			) {
+				fail("Unable to access config for this guild! Please inform a member of staff")
+			} else {
+				pass()
+			}
+	}
 }
 
 /**

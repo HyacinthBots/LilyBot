@@ -361,10 +361,3 @@ class ClearArgs : Arguments() {
 		)
 	}
 }
-
-enum class ConfigType {
-	SUPPORT,
-	MODERATION,
-	LOGGING,
-	ALL
-}
