@@ -301,7 +301,7 @@ private suspend inline fun createReport(
 								field {
 									name = "Message Author:"
 									value =
-										reportedMessage.author?.tag ?: "Failed to get author of message"
+										reportedMessage.author?.mention ?: "Failed to get author of message"
 								}
 								field {
 									name = "Report reason:"

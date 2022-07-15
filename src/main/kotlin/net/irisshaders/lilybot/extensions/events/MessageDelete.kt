@@ -99,7 +99,7 @@ class MessageDelete : Extension() {
 					}
 					field {
 						name = "Message Author:"
-						value = eventMessage.author?.tag.toString()
+						value = eventMessage.author?.mention ?: "Failed to get author of message"
 						inline = true
 					}
 					field {
