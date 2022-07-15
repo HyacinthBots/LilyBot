@@ -19,7 +19,8 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
 
-val utilsLogger = KotlinLogging.logger("Checks Logger")
+@PublishedApi
+internal val utilsLogger = KotlinLogging.logger("Checks Logger")
 
 /**
  * This is a check to verify that no element of the guild config is null, since these are all non-nullable values, if
