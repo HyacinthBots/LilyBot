@@ -70,7 +70,10 @@ class MessageDelete : Extension() {
 
 				messageLog?.createEmbed {
 					color = DISCORD_PINK
-					title = "Message Deleted"
+					author {
+						name = "Message Deleted"
+						icon = eventMessage.author?.avatar?.url
+					}
 					description = "Location: <#$messageLocation>"
 					timestamp = Clock.System.now()
 

@@ -44,7 +44,10 @@ class MemberJoinLeave : Extension() {
 				}
 
 				joinChannel!!.createEmbed {
-					title = "User joined the server!"
+					author {
+						name = "User joined the server!"
+						icon = eventMember.avatar!!.url
+					}
 					field {
 						name = "Welcome:"
 						value = "${eventMember.mention} (${eventMember.tag})"
@@ -83,7 +86,10 @@ class MemberJoinLeave : Extension() {
 				val guildMemberCount = event.getGuild().members.count()
 
 				joinChannel!!.createEmbed {
-					title = "User left the server!"
+					author {
+						name = "User left the server!"
+						icon = eventUser.avatar!!.url
+					}
 					field {
 						name = "Goodbye:"
 						value = eventUser.tag
