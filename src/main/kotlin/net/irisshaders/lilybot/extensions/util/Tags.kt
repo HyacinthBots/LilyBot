@@ -494,7 +494,8 @@ class Tags : Extension() {
 
 			// Fix newline escape characters
 			mutate {
-				it.replace("\\n", "\n")
+				it.replace("\n", "\n")
+					.replace("\\n ", "\n")
 					.replace("\n ", "\n")
 			}
 		}
@@ -536,6 +537,12 @@ class Tags : Extension() {
 		val newValue by optionalString {
 			name = "newValue"
 			description = "The new value for the tag you're editing"
+
+			mutate {
+				it?.replace("\n", "\n")
+					?.replace("\\n ", "\n")
+					?.replace("\n ", "\n")
+			}
 		}
 	}
 }
