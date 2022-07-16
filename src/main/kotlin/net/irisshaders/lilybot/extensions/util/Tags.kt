@@ -7,6 +7,8 @@ import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.optionalStringChoice
+import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalUser
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
@@ -74,14 +76,18 @@ class Tags : Extension() {
 					return@action
 				}
 
-				respond {
-					embed {
-						title = tagFromDatabase.tagTitle
-						description = tagFromDatabase.tagValue
-						footer {
-							text = "Tag preview"
+				channel.createMessage {
+					if (tagFromDatabase.tagAppearance == "embed") {
+						embed {
+							title = tagFromDatabase.tagTitle
+							description = tagFromDatabase.tagValue
+							footer {
+								text = "Tag preview"
+							}
+							color = DISCORD_BLURPLE
 						}
-						color = DISCORD_BLURPLE
+					} else {
+						content = "**${tagFromDatabase.tagTitle}**\n${tagFromDatabase.tagValue}"
 					}
 				}
 			}
@@ -126,15 +132,20 @@ class Tags : Extension() {
 				// This is not the best way to do this. Ideally the ping would be in the same message as the embed in
 				// a `respond` builder. A Discord limitation makes this not possible.
 				channel.createMessage {
-					content = arguments.user?.mention
-					embed {
-						title = tagFromDatabase.tagTitle
-						description = tagFromDatabase.tagValue
-						footer {
-							text = "Tag requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar!!.url
+					if (tagFromDatabase.tagAppearance == "embed") {
+						content = arguments.user?.mention
+						embed {
+							title = tagFromDatabase.tagTitle
+							description = tagFromDatabase.tagValue
+							footer {
+								text = "Tag requested by ${user.asUser().tag}"
+								icon = user.asUser().avatar!!.url
+							}
+							color = DISCORD_BLURPLE
 						}
-						color = DISCORD_BLURPLE
+					} else {
+						content =
+							"${arguments.user?.mention ?: ""}\n**${tagFromDatabase.tagTitle}**\n${tagFromDatabase.tagValue}"
 					}
 				}
 			}
@@ -221,7 +232,13 @@ class Tags : Extension() {
 					return@action
 				}
 
-				DatabaseHelper.setTag(guild!!.id, arguments.tagName, arguments.tagTitle, arguments.tagValue)
+				DatabaseHelper.setTag(
+					guild!!.id,
+					arguments.tagName,
+					arguments.tagTitle,
+					arguments.tagValue,
+					arguments.tagAppearance
+				)
 
 				actionLog.createEmbed {
 					title = "Tag created!"
@@ -235,6 +252,10 @@ class Tags : Extension() {
 						name = "Tag value:"
 						value = "```${arguments.tagValue}```"
 						inline = false
+					}
+					field {
+						name = "Tag appearance"
+						value = arguments.tagAppearance
 					}
 					footer {
 						icon = user.asUser().avatar?.url
@@ -321,6 +342,7 @@ class Tags : Extension() {
 				val originalName = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.name
 				val originalTitle = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.tagTitle
 				val originalValue = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.tagValue
+				val originalAppearance = DatabaseHelper.getTag(guild!!.id, arguments.tagName)!!.tagAppearance
 
 				DatabaseHelper.deleteTag(guild!!.id, arguments.tagName)
 
@@ -337,7 +359,8 @@ class Tags : Extension() {
 					guild!!.id,
 					arguments.newName ?: originalName,
 					arguments.newTitle ?: originalTitle,
-					arguments.newValue ?: originalValue
+					arguments.newValue ?: originalValue,
+					arguments.newAppearance ?: originalAppearance
 				)
 
 				actionLog.createMessage {
@@ -346,30 +369,35 @@ class Tags : Extension() {
 						description = "The tag `${arguments.tagName}` was edited"
 						field {
 							name = "Name"
-							value =
-								if (arguments.newName.isNullOrEmpty()) {
-									originalName
-								} else {
-									"${arguments.tagName} -> ${arguments.newName!!}"
-								}
+							value = if (arguments.newName.isNullOrEmpty()) {
+								originalName
+							} else {
+								"$originalName -> ${arguments.newName!!}"
+							}
 						}
 						field {
 							name = "Title"
-							value =
-								if (arguments.newTitle.isNullOrEmpty()) {
-									originalTitle
-								} else {
-									"${arguments.newTitle} -> ${arguments.newTitle!!}"
-								}
+							value = if (arguments.newTitle.isNullOrEmpty()) {
+								originalTitle
+							} else {
+								"${arguments.newTitle} -> ${arguments.newTitle!!}"
+							}
 						}
 						field {
 							name = "Value"
-							value =
-								if (arguments.newValue.isNullOrEmpty()) {
-									originalValue
-								} else {
-									"${arguments.newValue} -> ${arguments.newValue!!}"
-								}
+							value = if (arguments.newValue.isNullOrEmpty()) {
+								originalValue
+							} else {
+								"$originalValue -> ${arguments.newValue!!}"
+							}
+						}
+						field {
+							name = "Tag appearance"
+							value = if (arguments.newAppearance.isNullOrEmpty()) {
+								originalAppearance
+							} else {
+								"$originalAppearance -> ${arguments.newAppearance}"
+							}
 						}
 						footer {
 							text = "Edited by ${user.asUser().tag}"
@@ -499,6 +527,12 @@ class Tags : Extension() {
 					.replace("\n ", "\n")
 			}
 		}
+
+		val tagAppearance by stringChoice {
+			name = "appearance"
+			description = "The appearance of the tag embed you're making"
+			choices = mutableMapOf("embed" to "embed", "message" to "message")
+		}
 	}
 
 	inner class EditTagArgs : Arguments() {
@@ -543,6 +577,13 @@ class Tags : Extension() {
 					?.replace("\\n ", "\n")
 					?.replace("\n ", "\n")
 			}
+		}
+
+		/** The new appearance for the tag being edited. */
+		val newAppearance by optionalStringChoice {
+			name = "newAppearance"
+			description = "The new appearance for the tag you're editing"
+			choices = mutableMapOf("embed" to "embed", "message" to "message")
 		}
 	}
 }
