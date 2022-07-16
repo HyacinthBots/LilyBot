@@ -56,8 +56,6 @@ class StartupHooks : Extension() {
 				 */
 				DatabaseHelper.cleanupGuildData()
 
-				DatabaseHelper.migrateTags()
-
 				/**
 				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
 				 * else the database value.

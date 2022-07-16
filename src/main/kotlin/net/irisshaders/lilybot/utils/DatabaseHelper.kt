@@ -11,7 +11,6 @@ import mu.KotlinLogging
 import net.irisshaders.lilybot.database
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.eq
-import org.litote.kmongo.exists
 
 /**
  * The object containing functions for interacting with the database.
@@ -535,16 +534,6 @@ object DatabaseHelper {
 		val collection = database.getCollection<RemindMeData>()
 		return collection.find().toList()
 	}
-
-	suspend fun migrateTags() {
-		val collection = database.getCollection<TagsData>()
-		collection.find().toList().forEach {
-			collection.findOneAndReplace(
-				TagsData::tagAppearance exists false,
-				TagsData(it.guildId, it.name, it.tagTitle, it.tagValue, "embed")
-			)
-		}
-	}
 }
 
 /**
@@ -631,7 +620,7 @@ data class TagsData(
 	val name: String,
 	val tagTitle: String,
 	val tagValue: String,
-	val tagAppearance: String?
+	val tagAppearance: String
 )
 
 /**

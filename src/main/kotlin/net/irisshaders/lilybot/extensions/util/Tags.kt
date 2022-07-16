@@ -360,7 +360,7 @@ class Tags : Extension() {
 					arguments.newName ?: originalName,
 					arguments.newTitle ?: originalTitle,
 					arguments.newValue ?: originalValue,
-					arguments.newAppearance ?: originalAppearance!!
+					arguments.newAppearance ?: originalAppearance
 				)
 
 				actionLog.createMessage {
@@ -394,7 +394,7 @@ class Tags : Extension() {
 						field {
 							name = "Tag appearance"
 							value = if (arguments.newAppearance.isNullOrEmpty()) {
-								originalAppearance!!
+								originalAppearance
 							} else {
 								"$originalAppearance -> ${arguments.newAppearance}"
 							}
