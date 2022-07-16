@@ -522,9 +522,9 @@ class Tags : Extension() {
 
 			// Fix newline escape characters
 			mutate {
-				it.replace("\n", "\n")
-					.replace("\\n ", "\n")
+				it.replace("\\n", "\n")
 					.replace("\n ", "\n")
+					.replace("\n", "\n")
 			}
 		}
 
@@ -573,9 +573,9 @@ class Tags : Extension() {
 			description = "The new value for the tag you're editing"
 
 			mutate {
-				it?.replace("\n", "\n")
-					?.replace("\\n ", "\n")
+				it?.replace("\\n", "\n")
 					?.replace("\n ", "\n")
+					?.replace("\n", "\n")
 			}
 		}
 

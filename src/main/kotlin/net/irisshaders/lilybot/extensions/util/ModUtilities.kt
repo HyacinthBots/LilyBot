@@ -430,9 +430,9 @@ class ModUtilities : Extension() {
 
 			// Fix newline escape characters
 			mutate {
-				it.replace("\n", "\n")
-					.replace("\\n ", "\n")
+				it.replace("\\n", "\n")
 					.replace("\n ", "\n")
+					.replace("\n", "\n")
 			}
 		}
 
@@ -478,9 +478,9 @@ class ModUtilities : Extension() {
 			description = "The new content of the message"
 
 			mutate {
-				it?.replace("\n", "\n")
-					?.replace("\\n ", "\n")
+				it?.replace("\\n", "\n")
 					?.replace("\n ", "\n")
+					?.replace("\n", "\n")
 			}
 		}
 
