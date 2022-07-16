@@ -64,8 +64,8 @@ class GalleryChannel : Extension() {
 					anyGuild()
 					configPresent()
 					hasPermission(Permission.ManageGuild)
-					requireBotPermissions(Permission.ManageChannels)
-					botHasChannelPerms(Permissions(Permission.ManageChannels))
+					requireBotPermissions(Permission.ManageChannels, Permission.ManageMessages)
+					botHasChannelPerms(Permissions(Permission.ManageChannels, Permission.ManageMessages))
 				}
 
 				action {
