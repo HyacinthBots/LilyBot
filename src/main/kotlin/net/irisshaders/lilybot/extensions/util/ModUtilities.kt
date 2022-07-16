@@ -429,6 +429,7 @@ class ModUtilities : Extension() {
 			mutate {
 				it.replace("\\n", "\n")
 					.replace("\n ", "\n")
+					.replace("\n", "\n")
 			}
 		}
 
@@ -475,6 +476,7 @@ class ModUtilities : Extension() {
 
 			mutate {
 				it?.replace("\\n", "\n")
+					?.replace("\n ", "\n")
 					?.replace("\n", "\n")
 			}
 		}

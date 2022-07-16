@@ -37,7 +37,8 @@ import net.irisshaders.lilybot.database.collections.WarnCollection
 import net.irisshaders.lilybot.extensions.config.ConfigType
 import org.koin.dsl.bind
 
-val utilsLogger = KotlinLogging.logger("Checks Logger")
+@PublishedApi
+internal val utilsLogger = KotlinLogging.logger("Checks Logger")
 
 /**
  * This is a check to verify that no element of the guild config is null, since these are all non-nullable values, if
@@ -51,8 +52,8 @@ suspend inline fun CheckContext<*>.configPresent(vararg configType: ConfigType) 
 		return
 	}
 
-	// Prevent commands being run in DMs, although [anyGuild] should still be used in most commands.
-	if (guildFor(event) == null) fail("Must be in a server")
+	// Prevent commands being run in DMs, although [anyGuild] should still be used as backup
+	guildFor(event) ?: fail("Must be in a server")
 
 	if (configType.isEmpty()) {
 		fail("There is no config type provided in the code. Please inform the developers immediately!")
@@ -167,12 +168,13 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  */
 suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
 	val moderatorRoleId = ModerationConfigCollection().getConfig(guild!!.id)?.team
-	if (ModerationConfigCollection().getConfig(guild!!.id) == null) {
+	ModerationConfigCollection().getConfig(guild!!.id) ?: run {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
 		}
 		return null
 	}
+
 	try {
 		// Get the users roles into a List of Snowflakes
 		val roles = user.asMember(guild!!.id).roles.toList().map { it.id }

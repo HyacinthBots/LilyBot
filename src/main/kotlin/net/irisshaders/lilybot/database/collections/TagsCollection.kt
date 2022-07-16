@@ -58,8 +58,14 @@ class TagsCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend inline fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) =
-		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue))
+	suspend inline fun setTag(
+        inputGuildId: Snowflake,
+        name: String,
+        tagTitle: String,
+        tagValue: String,
+        tagAppearance: String
+    ) =
+		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue, tagAppearance))
 
 	/**
 	 * Deletes the tag [name] from the [Database.mainDatabase].

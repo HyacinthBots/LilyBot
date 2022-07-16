@@ -57,3 +57,27 @@ data class SupportConfigData(
 	val team: Snowflake,
 	val message: String?
 )
+
+/**
+ * The data for guild configuration.
+ *
+ * @param guildId The ID of the guild the config is for
+ * @param moderatorsPing The ID of the moderator ping role
+ * @param modActionLog The ID of the guild's action/audit log channel
+ * @param messageLogs The ID of the guild's message logging channel
+ * @param joinChannel The ID of the guild's member flow channel
+ * @param supportChannel The ID of the support channel for the guild, nullable
+ * @param supportTeam The ID of the support team for the guild, nullable
+ * @since 3.0.0
+ */
+@Deprecated("Use the new config system", level = DeprecationLevel.ERROR)
+@Serializable
+data class ConfigData(
+	val guildId: Snowflake,
+	val moderatorsPing: Snowflake,
+	val modActionLog: Snowflake,
+	val messageLogs: Snowflake,
+	val joinChannel: Snowflake,
+	val supportChannel: Snowflake?,
+	val supportTeam: Snowflake?,
+)

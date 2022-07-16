@@ -16,6 +16,10 @@ class Database {
 		.build()
 
 	private val client = KMongo.createClient(settings).coroutine
+
+	/** The main database for storing data. */
 	val mainDatabase get() = client.getDatabase("LilyBot")
+
+	/** The database for storing per guild configuration data. */
 	val configDatabase get() = client.getDatabase("LilyBotConfig")
 }

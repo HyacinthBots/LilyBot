@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
  * @param name The named identifier of the tag
  * @param tagTitle The title of the created tag
  * @param tagValue The value of the created tag
+ * @param tagAppearance The appearance of the created tag
  * @since 3.1.0
  */
 @Serializable
@@ -17,5 +18,6 @@ data class TagsData(
 	val guildId: Snowflake,
 	val name: String,
 	val tagTitle: String,
-	val tagValue: String
+	val tagValue: String,
+	val tagAppearance: String
 )

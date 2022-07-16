@@ -1,8 +1,11 @@
+@file:Suppress("DEPRECATION_ERROR")
+
 package net.irisshaders.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
 import net.irisshaders.lilybot.database.Database
+import net.irisshaders.lilybot.database.entities.ConfigData
 import net.irisshaders.lilybot.database.entities.LoggingConfigData
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
 import net.irisshaders.lilybot.database.entities.SupportConfigData
@@ -94,4 +97,44 @@ class SupportConfigCollection : KordExKoinComponent {
 
 	suspend inline fun clearConfig(inputGuildId: Snowflake) =
 		collection.deleteOne(SupportConfigData::guildId eq inputGuildId)
+}
+
+class OldConfigCollection : KordExKoinComponent {
+	private val configDb: Database by inject()
+
+	@PublishedApi
+	internal val collection = configDb.mainDatabase.getCollection<ConfigData>()
+
+	/**
+	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database.
+	 *
+	 * @param inputGuildId The ID of the guild the command was run in.
+	 * @return The config for [inputGuildId]
+	 * @author NoComment1105, tempest15
+	 * @since 3.0.0
+	 */
+	suspend inline fun getConfig(inputGuildId: Snowflake) =
+		collection.findOne(ConfigData::guildId eq inputGuildId)
+
+	/**
+	 * Adds the given [newConfig] to the database.
+	 *
+	 * @param newConfig The new config values you want to set.
+	 * @author tempest15
+	 * @since 3.0.0
+	 */
+	suspend inline fun setConfig(newConfig: ConfigData) {
+		collection.deleteOne(ConfigData::guildId eq newConfig.guildId)
+		collection.insertOne(newConfig)
+	}
+
+	/**
+	 * Clears the config for the provided [inputGuildId].
+	 *
+	 * @param inputGuildId The ID of the guild the command was run in
+	 * @author tempest15
+	 * @since 3.0.0
+	 */
+	suspend inline fun clearConfig(inputGuildId: Snowflake) =
+		collection.deleteOne(ConfigData::guildId eq inputGuildId)
 }
