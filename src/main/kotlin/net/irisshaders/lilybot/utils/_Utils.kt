@@ -19,7 +19,8 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
 
-val utilsLogger = KotlinLogging.logger("Checks Logger")
+@PublishedApi
+internal val utilsLogger = KotlinLogging.logger("Checks Logger")
 
 /**
  * This is a check to verify that no element of the guild config is null, since these are all non-nullable values, if
@@ -34,7 +35,7 @@ suspend inline fun CheckContext<*>.configPresent() {
 	}
 
 	// Prevent commands being run in DMs, although [anyGuild] should still be used as backup
-	if (guildFor(event) == null) fail("Must be in a server")
+	guildFor(event) ?: fail("Must be in a server")
 
 	// Check all not-null values in the database are not null
 	if (DatabaseHelper.getConfig(guildFor(event)!!.id)?.modActionLog == null ||
@@ -118,12 +119,13 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  */
 suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
 	val moderatorRoleId = DatabaseHelper.getConfig(guild!!.id)?.moderatorsPing
-	if (moderatorRoleId == null) {
+	moderatorRoleId ?: run {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
 		}
 		return null
 	}
+
 	try {
 		// Get the users roles into a List of Snowflakes
 		val roles = user.asMember(guild!!.id).roles.toList().map { it.id }

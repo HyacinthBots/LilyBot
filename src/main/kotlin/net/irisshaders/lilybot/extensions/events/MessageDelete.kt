@@ -70,7 +70,10 @@ class MessageDelete : Extension() {
 
 				messageLog?.createEmbed {
 					color = DISCORD_PINK
-					title = "Message Deleted"
+					author {
+						name = "Message Deleted"
+						icon = eventMessage.author?.avatar?.url
+					}
 					description = "Location: <#$messageLocation>"
 					timestamp = Clock.System.now()
 
@@ -99,7 +102,7 @@ class MessageDelete : Extension() {
 					}
 					field {
 						name = "Message Author:"
-						value = eventMessage.author?.tag.toString()
+						value = eventMessage.author?.mention ?: "Failed to get author of message"
 						inline = true
 					}
 					field {

@@ -222,12 +222,19 @@ object DatabaseHelper {
 	 * @param name The named identifier of the tag being created.
 	 * @param tagTitle The title of the tag being created.
 	 * @param tagValue The contents of the tag being created.
+	 * @param tagAppearance The appearance of the tag being created.
 	 * @author NoComment1105
 	 * @since 3.1.0
 	 */
-	suspend inline fun setTag(inputGuildId: Snowflake, name: String, tagTitle: String, tagValue: String) {
+	suspend inline fun setTag(
+		inputGuildId: Snowflake,
+		name: String,
+		tagTitle: String,
+		tagValue: String,
+		tagAppearance: String
+	) {
 		val collection = database.getCollection<TagsData>()
-		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue))
+		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue, tagAppearance))
 	}
 
 	/**
@@ -604,6 +611,7 @@ data class StatusData(
  * @param name The named identifier of the tag
  * @param tagTitle The title of the created tag
  * @param tagValue The value of the created tag
+ * @param tagAppearance The appearance of the tag, either "embed" or "message"
  * @since 3.1.0
  */
 @Serializable
@@ -611,7 +619,8 @@ data class TagsData(
 	val guildId: Snowflake,
 	val name: String,
 	val tagTitle: String,
-	val tagValue: String
+	val tagValue: String,
+	val tagAppearance: String
 )
 
 /**
