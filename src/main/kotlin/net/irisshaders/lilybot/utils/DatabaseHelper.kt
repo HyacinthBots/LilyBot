@@ -9,7 +9,6 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database
-import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.eq
 
 /**
@@ -451,13 +450,17 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Collects every gallery channel in the database into a [List].
+	 * Collects every image channel for the [inputGuildId] into a [List].
 	 *
-	 * @return The [CoroutineCollection] of [GalleryChannelData] for all the gallery channels in the database
+	 * @param inputGuildId The guild that image channels are being gotten for
+	 * @return A [List] of all the image channels in the guild
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	fun getGalleryChannels(): CoroutineCollection<GalleryChannelData> = database.getCollection()
+	suspend inline fun getGalleryChannels(inputGuildId: Snowflake): List<GalleryChannelData> {
+		val collection = database.getCollection<GalleryChannelData>()
+		return collection.find(GalleryChannelData::guildId eq inputGuildId).toList()
+	}
 
 	/**
 	 * Stores a reminder in the database.
