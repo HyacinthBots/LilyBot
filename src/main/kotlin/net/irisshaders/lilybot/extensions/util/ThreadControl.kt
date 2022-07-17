@@ -26,6 +26,7 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.behavior.getChannelOf
@@ -92,6 +93,30 @@ class ThreadControl : Extension() {
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
+
+					ThreadsCollection().getAllThreads().forEach {
+						if (it.threadId == threadChannel.id) {
+							ThreadsCollection().removeThread(it.threadId)
+							ThreadsCollection().setThreadOwner(it.threadId, it.ownerId, false)
+							guild!!.getChannelOf<GuildMessageChannel>(
+								ModerationConfigCollection().getConfig(guild!!.id)!!.channel
+							).createEmbed {
+									title = "Thread archive prevention disabled"
+									description = "Archive prevention has been disabled, as `/thread archive` was" +
+											" used by ${member.tag}"
+									color = DISCORD_FUCHSIA
+
+									field {
+										name = "User"
+										value = user.asUser().tag
+									}
+									field {
+										name = "Thread"
+										value = threadChannel.mention
+									}
+								}
+						}
+					}
 
 					if (threadChannel.isArchived) {
 						edit { content = "**Error:** This channel is already archived!" }
@@ -199,7 +224,7 @@ class ThreadControl : Extension() {
 											guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 												.createMessage {
 													embed {
-														title = "Thread archiving enabled"
+														title = "Thread archive prevention disabled"
 														color = DISCORD_FUCHSIA
 
 														field {
@@ -232,7 +257,7 @@ class ThreadControl : Extension() {
 							try {
 								guild!!.getChannelOf<GuildMessageChannel>(config.channel).createMessage {
 									embed {
-										title = "Thread archiving disabled"
+										title = "Thread archive prevention enabled"
 										color = DISCORD_FUCHSIA
 
 										field {

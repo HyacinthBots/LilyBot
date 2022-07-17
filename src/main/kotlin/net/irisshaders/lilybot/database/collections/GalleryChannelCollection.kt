@@ -30,7 +30,8 @@ class GalleryChannelCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	fun getChannels(): CoroutineCollection<GalleryChannelData> = collection
+	suspend inline fun getChannels(inputGuildId: Snowflake): List<GalleryChannelData> =
+		collection.find(GalleryChannelData::guildId eq inputGuildId).toList()
 
 	/**
 	 * Stores a channel ID as input by the user, in the database, with it's corresponding guild, allowing us to find
@@ -41,10 +42,8 @@ class GalleryChannelCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend inline fun setChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
-		val collection = getChannels()
+	suspend inline fun setChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) =
 		collection.insertOne(GalleryChannelData(inputGuildId, inputChannelId))
-	}
 
 	/**
 	 * Removes a channel ID from the gallery channel database.
@@ -54,11 +53,9 @@ class GalleryChannelCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 3.3.0
 	 */
-	suspend inline fun removeChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) {
-		val collection = getChannels()
+	suspend inline fun removeChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) =
 		collection.deleteOne(
 			GalleryChannelData::channelId eq inputChannelId,
 			GalleryChannelData::guildId eq inputGuildId
 		)
-	}
 }

@@ -25,11 +25,9 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import net.irisshaders.lilybot.database.collections.GalleryChannelCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
-import net.irisshaders.lilybot.database.entities.GalleryChannelData
 import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
-import org.litote.kmongo.eq
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -41,13 +39,7 @@ class GalleryChannel : Extension() {
 
 	override suspend fun setup() {
 		/**
-		 * This variable is a cached variable for gallery channels, present to avoid polling the database every message
-		 * sent.
-		 */
-		var galleryChannels = GalleryChannelCollection().getChannels()
-
-		/**
-		 * gallery channel commands.
+		 * Gallery channel commands.
 		 * @author NoComment1105
 		 * @since 3.3.0
 		 */
@@ -66,18 +58,15 @@ class GalleryChannel : Extension() {
 					anyGuild()
 					configPresent(ConfigType.MODERATION)
 					hasPermission(Permission.ManageGuild)
-					requireBotPermissions(Permission.ManageChannels)
-					botHasChannelPerms(Permissions(Permission.ManageChannels))
+					requireBotPermissions(Permission.ManageChannels, Permission.ManageMessages)
+					botHasChannelPerms(Permissions(Permission.ManageChannels, Permission.ManageMessages))
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
+					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
-					// Using the global var, find guild channels for the given guildId and iterate through them to
-					// check for the presence of the channel and return if it is present
-					val guildGalleryChannels =
-						galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
-					guildGalleryChannels.forEach {
+
+					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
 						if (channel.asChannel().id == it.channelId) {
 							respond {
 								content = "This channel is already a gallery channel!"
@@ -87,9 +76,6 @@ class GalleryChannel : Extension() {
 					}
 
 					GalleryChannelCollection().setChannel(guild!!.id, channel.asChannel().id)
-
-					// Update the global var
-					galleryChannels = GalleryChannelCollection().getChannels()
 
 					respond {
 						content = "Set channel as gallery channel."
@@ -127,13 +113,9 @@ class GalleryChannel : Extension() {
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 					var channelFound = false
 
-					val guildGalleryChannels =
-						galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
-					guildGalleryChannels.forEach {
+					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
 						if (channel.asChannel().id == it.channelId) {
 							GalleryChannelCollection().removeChannel(guild!!.id, channel.asChannel().id)
-							// Update the global var
-							galleryChannels = GalleryChannelCollection().getChannels()
 							channelFound = true
 						}
 					}
@@ -178,9 +160,7 @@ class GalleryChannel : Extension() {
 				action {
 					var channels = ""
 
-					val guildGalleryChannels =
-						galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
-					guildGalleryChannels.forEach {
+					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
 						channels += "<#${it.channelId}> "
 					}
 
@@ -209,12 +189,9 @@ class GalleryChannel : Extension() {
 			}
 
 			action {
-				val guildGalleryChannels =
-					galleryChannels.find(GalleryChannelData::guildId eq guildFor(event)!!.id).toList()
-
-				for (i in guildGalleryChannels) {
+				GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
 					// If there are no attachments to the message and the channel we're in is an image channel
-					if (event.message.channelId == i.channelId && event.message.attachments.isEmpty()) {
+					if (event.message.channelId == it.channelId && event.message.attachments.isEmpty()) {
 						// We delay to give the message a chance to populate with an embed, if it is a link to imgur etc.
 						delay(0.25.seconds.millisecondsLong)
 						if (event.message.embeds.isEmpty()) { // If there is still no embed, we delete the message
@@ -228,7 +205,7 @@ class GalleryChannel : Extension() {
 							try {
 								// Delete the explanation after 3 seconds. If an exception is thrown, the
 								// message has already been deleted
-								response.delete(3.seconds.millisecondsLong)
+								response.delete(2.5.seconds.millisecondsLong)
 							} catch (e: EntityNotFoundException) {
 								// The message that we're attempting to delete has already been deleted.
 							}
