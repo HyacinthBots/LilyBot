@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.database
 
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
+import net.irisshaders.lilybot.database.migrations.Migrator
 import net.irisshaders.lilybot.utils.MONGO_URI
 import org.bson.UuidRepresentation
 import org.litote.kmongo.coroutine.coroutine
@@ -22,4 +23,8 @@ class Database {
 
 	/** The database for storing per guild configuration data. */
 	val configDatabase get() = client.getDatabase("LilyBotConfig")
+
+	suspend fun migrate() {
+		Migrator.migrate()
+	}
 }

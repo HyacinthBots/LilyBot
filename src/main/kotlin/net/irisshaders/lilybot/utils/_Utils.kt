@@ -256,7 +256,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean = false) {
 
 			if (migrate) {
 				runBlocking {
-					// db.migrate() Soon:tm:
+					db.migrate()
 				}
 			}
 		}
