@@ -97,13 +97,13 @@ class ThreadControl : Extension() {
 
 					DatabaseHelper.getAllThreads().forEach {
 						if (it.threadId == threadChannel.id) {
-							val threadData = DatabaseHelper.getThread(it.threadId)?.preventArchiving
+							val preventingArchiving = DatabaseHelper.getThread(it.threadId)?.preventArchiving
 							DatabaseHelper.deleteThread(it.threadId)
 							DatabaseHelper.setThreadOwner(it.threadId, it.ownerId, false)
 							guild!!.getChannelOf<GuildMessageChannel>(DatabaseHelper.getConfig(guild!!.id)!!.modActionLog)
 								.createEmbed {
 									title = "Thread archive prevention disabled"
-									if (threadData == true) {
+									if (preventingArchiving == true) {
 										description =
 											"Archive prevention has been disabled, as `/thread archive` was used."
 									}
