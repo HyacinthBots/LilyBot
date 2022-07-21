@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
+import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.Instant
 import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.RemindMeData
@@ -56,6 +57,7 @@ class RemindMeCollection : KordExKoinComponent {
 		originalMessageUrl: String,
 		customMessage: String?,
 		repeating: Boolean,
+		repeatingInterval: DateTimePeriod?,
 		id: Int
 	) =
 		collection.insertOne(
@@ -68,6 +70,7 @@ class RemindMeCollection : KordExKoinComponent {
 				originalMessageUrl,
 				customMessage,
 				repeating,
+				repeatingInterval,
 				id
 			)
 		)

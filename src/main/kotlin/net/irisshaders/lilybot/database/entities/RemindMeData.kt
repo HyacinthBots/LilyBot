@@ -1,6 +1,7 @@
 package net.irisshaders.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
+import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
@@ -29,5 +30,6 @@ data class RemindMeData(
 	val originalMessageUrl: String,
 	val customMessage: String?,
 	val repeating: Boolean,
+	val repeatingInterval: DateTimePeriod?,
 	val id: Int
 )
