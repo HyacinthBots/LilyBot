@@ -24,8 +24,8 @@ object Migrator : KordExKoinComponent {
 	private val logger = KotlinLogging.logger("Migrator Logger")
 
 	val db: Database by inject()
-	val mainMetaCollection: MainMetaCollection by inject()
-	val configMetaCollection: ConfigMetaCollection by inject()
+	private val mainMetaCollection: MainMetaCollection by inject()
+	private val configMetaCollection: ConfigMetaCollection by inject()
 
 	suspend fun migrateMain() {
 		var meta = mainMetaCollection.get()
@@ -88,7 +88,7 @@ object Migrator : KordExKoinComponent {
 				when (nextVersion) {
 					1 -> ::configV1
 					else -> break
-				}(db.configDatabase)
+				}(db.mainDatabase, db.configDatabase) // TODO Remove the first param, comment knows whats needed
 
 				logger.info { "Migrated config database to version $nextVersion" }
 			} catch (t: Throwable) {
