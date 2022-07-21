@@ -100,7 +100,9 @@ class Reminders : Extension() {
 									remindTime.toDiscord(TimestampType.RelativeTime)
 								} at ${remindTime.toDiscord(TimestampType.ShortTime)} " +
 										"everyday unless cancelled. This reminder will repeat every `${
-											arguments.repeatingInterval.toString().lowercase().replace("pt", "")
+											arguments.repeatingInterval.toString().lowercase()
+												.replace("pt", "")
+												.replace("p", "")
 										}`. Use `/remove remove` to cancel"
 							} else {
 								"Reminder set!\nI will remind you ${
@@ -112,7 +114,9 @@ class Reminders : Extension() {
 								"Repeating reminder set with message ${arguments.customMessage}!\nI will remind you ${
 									remindTime.toDiscord(TimestampType.RelativeTime)
 								} at ${remindTime.toDiscord(TimestampType.ShortTime)}. This reminder will repeat every `${
-									arguments.repeatingInterval.toString().lowercase().replace("pt", "")
+									arguments.repeatingInterval.toString().lowercase()
+										.replace("pt", "")
+										.replace("p", "")
 								}`. Use `/reminder remove` to cancel"
 							} else {
 								"Reminder set with message ${arguments.customMessage}!\nI will remind you ${
@@ -339,7 +343,9 @@ class Reminders : Extension() {
 							}\n${
 								if (it.repeating) {
 									"This reminder will repeat every `${
-										it.repeatingInterval.toString().lowercase().replace("pt", "")
+										it.repeatingInterval.toString().lowercase()
+											.replace("pt", "")
+											.replace("p", "")
 									}`"
 								} else ""
 							}" +
@@ -380,7 +386,9 @@ class Reminders : Extension() {
 							}${
 								if (it.repeating) {
 									"This reminder will repeat every `${
-										it.repeatingInterval.toString().lowercase().replace("pt", "")
+										it.repeatingInterval.toString().lowercase()
+											.replace("pt", "")
+											.replace("p", "")
 									}`"
 								} else ""
 							}"
@@ -398,7 +406,9 @@ class Reminders : Extension() {
 							}.\n\n${
 								if (it.repeating) {
 									"Repeating reminder for <@${it.userId}>. This reminder will repeat every `${
-										it.repeatingInterval.toString().lowercase().replace("pt", "")
+										it.repeatingInterval.toString().lowercase()
+											.replace("pt", "")
+											.replace("p", "")
 									}`. Use `/reminder remove` to cancel."
 								} else {
 									"Reminder for <@${it.userId}> set ${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} at ${
@@ -438,7 +448,9 @@ class Reminders : Extension() {
 										it.customMessage
 									}
 								}.\nThis reminder will repeat every `${
-									it.repeatingInterval.toString().lowercase().replace("pt", "")
+									it.repeatingInterval.toString().lowercase()
+										.replace("pt", "")
+										.replace("p", "")
 								}`. Use `/reminder remove` to cancel."
 							} else {
 								"Reminder for <@${it.userId}> set ${
@@ -473,7 +485,9 @@ class Reminders : Extension() {
 											it.customMessage
 										}
 									}.\nThis reminder will repeat every `${
-										it.repeatingInterval.toString().lowercase().replace("pt", "")
+										it.repeatingInterval.toString().lowercase()
+											.replace("pt", "")
+											.replace("p", "")
 									}`. Use `/reminder remove` to cancel"
 								} else {
 									"Reminder for <@${it.userId}> set ${

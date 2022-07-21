@@ -22,10 +22,11 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.Database
+import net.irisshaders.lilybot.database.collections.ConfigMetaCollection
 import net.irisshaders.lilybot.database.collections.GalleryChannelCollection
 import net.irisshaders.lilybot.database.collections.GuildLeaveTimeCollection
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
-import net.irisshaders.lilybot.database.collections.MetaCollection
+import net.irisshaders.lilybot.database.collections.MainMetaCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.RemindMeCollection
 import net.irisshaders.lilybot.database.collections.RoleMenuCollection
@@ -230,7 +231,7 @@ suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.ca
  *
  * @since 4.0.0
  */
-suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean = false) {
+suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 	val db = Database()
 
 	hooks {
@@ -245,7 +246,8 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean = false) {
 				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
 				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
-				single { MetaCollection() } bind MetaCollection::class
+				single { MainMetaCollection() } bind MainMetaCollection::class
+				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
 				single { RemindMeCollection() } bind RemindMeCollection::class
 				single { RoleMenuCollection() } bind RoleMenuCollection::class
 				single { StatusCollection() } bind StatusCollection::class

@@ -25,6 +25,7 @@ class Database {
 	val configDatabase get() = client.getDatabase("LilyBotConfig")
 
 	suspend fun migrate() {
-		Migrator.migrate()
+		Migrator.migrateMain()
+		Migrator.migrateConfig()
 	}
 }

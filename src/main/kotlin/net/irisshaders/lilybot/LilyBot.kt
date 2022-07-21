@@ -55,7 +55,7 @@ suspend fun main() {
 	commandDocs = mapper.decode<CommandDocs>(stream)
 
 	val bot = ExtensibleBot(BOT_TOKEN) {
-		database()
+		database(true)
 
 		members {
 			lockMemberRequests = true // Collect members one at a time to avoid hitting rate limits
