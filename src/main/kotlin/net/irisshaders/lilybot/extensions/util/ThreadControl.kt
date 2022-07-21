@@ -96,14 +96,17 @@ class ThreadControl : Extension() {
 
 					ThreadsCollection().getAllThreads().forEach {
 						if (it.threadId == threadChannel.id) {
+							val preventingArchiving = ThreadsCollection().getThread(it.threadId)?.preventArchiving
 							ThreadsCollection().removeThread(it.threadId)
 							ThreadsCollection().setThreadOwner(it.threadId, it.ownerId, false)
 							guild!!.getChannelOf<GuildMessageChannel>(
 								ModerationConfigCollection().getConfig(guild!!.id)!!.channel
 							).createEmbed {
 									title = "Thread archive prevention disabled"
-									description = "Archive prevention has been disabled, as `/thread archive` was" +
-											" used by ${member.tag}"
+									if (preventingArchiving == true) {
+										description =
+											"Archive prevention has been disabled, as `/thread archive` was used."
+									}
 									color = DISCORD_FUCHSIA
 
 									field {
