@@ -13,7 +13,7 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This object contains the functions or interacting with the [Logging Config Database][LoggingConfigData]. This object
+ * This class contains the functions for interacting with the [Logging Config Database][LoggingConfigData]. This object
  * contains functions for getting, setting and removing logging config.
  *
  * @since 4.0.0
@@ -40,7 +40,7 @@ class LoggingConfigCollection : KordExKoinComponent {
 }
 
 /**
- * This object contains the functions or interacting with the [Moderation Config Database][ModerationConfigData]. This
+ * This class contains the functions for interacting with the [Moderation Config Database][ModerationConfigData]. This
  * object contains functions for getting, setting and removing logging config.
  *
  * @since 4.0.0
@@ -67,7 +67,7 @@ class ModerationConfigCollection : KordExKoinComponent {
 }
 
 /**
- * This object contains the functions or interacting with the [Support Config Database][SupportConfigData]. This object
+ * This class contains the functions for interacting with the [Support Config Database][SupportConfigData]. This object
  * contains functions for getting, setting and removing support config.
  *
  * @since 4.0.0

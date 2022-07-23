@@ -76,77 +76,79 @@ class ThreadInviter : Extension() {
 				delay(PK_API_DELAY) // Allow the PK API to catch up
 				val config = SupportConfigCollection().getConfig(event.guildId!!)!!
 
-				if (config.enabled) {
-					var userThreadExists = false
-					var existingUserThread: TextChannelThread? = null
-					val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
-					val guild = event.getGuild()
-					val supportChannel = guild?.getChannelOf<TextChannel>(config.channel)
+				if (!config.enabled) {
+					return@action
+				}
 
-					if (textChannel != supportChannel) return@action
+				var userThreadExists = false
+				var existingUserThread: TextChannelThread? = null
+				val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
+				val guild = event.getGuild()
+				val supportChannel = guild?.getChannelOf<TextChannel>(config.channel)
 
-					if (event.message.author?.isNullOrBot() == false &&
-						PluralKit.isProxied(event.message.id)
-					) return@action
+				if (textChannel != supportChannel) return@action
 
-					val userId = PluralKit.getProxiedMessageAuthorId(event.message.id) ?: event.member!!.id
-					val user = UserBehavior(userId, kord)
+				if (event.message.author?.isNullOrBot() == false &&
+					PluralKit.isProxied(event.message.id)
+				) return@action
 
-					ThreadsCollection().getOwnerThreads(userId).forEach {
-						try {
-							val thread = guild.getChannel(it.threadId) as TextChannelThread
-							if (thread.parent == supportChannel && !thread.isArchived) {
-								userThreadExists = true
-								existingUserThread = thread
-							}
-						} catch (e: EntityNotFoundException) {
-							ThreadsCollection().removeThread(it.threadId)
-						} catch (e: IllegalArgumentException) {
-							ThreadsCollection().removeThread(it.threadId)
+				val userId = PluralKit.getProxiedMessageAuthorId(event.message.id) ?: event.member!!.id
+				val user = UserBehavior(userId, kord)
+
+				ThreadsCollection().getOwnerThreads(userId).forEach {
+					try {
+						val thread = guild.getChannel(it.threadId) as TextChannelThread
+						if (thread.parent == supportChannel && !thread.isArchived) {
+							userThreadExists = true
+							existingUserThread = thread
 						}
+					} catch (e: EntityNotFoundException) {
+						ThreadsCollection().removeThread(it.threadId)
+					} catch (e: IllegalArgumentException) {
+						ThreadsCollection().removeThread(it.threadId)
+					}
+				}
+
+				if (userThreadExists) {
+					val response = event.message.respond {
+						content =
+							"You already have a thread, please talk about your issue in it. " +
+									existingUserThread!!.mention
+					}
+					event.message.delete("User already has a thread")
+					response.delete(10000L, false)
+				} else {
+					val thread =
+					// Create a thread with the message sent, title it with the users tag and set the archive
+						// duration to the channels settings. If they're null, set it to one day
+						textChannel.startPublicThreadWithMessage(
+							event.message.id,
+							"Support thread for " + user.asUser().username,
+							event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
+						)
+
+					ThreadsCollection().setThreadOwner(thread.id, userId)
+
+					val editMessage = thread.createMessage("edit message")
+
+					editMessage.edit {
+						this.content =
+							user.asUser().mention + ", the " + event.getGuild()
+								?.getRole(config.team)?.mention + " will be with you shortly!"
 					}
 
-					if (userThreadExists) {
-						val response = event.message.respond {
-							content =
-								"You already have a thread, please talk about your issue in it. " +
-										existingUserThread!!.mention
-						}
-						event.message.delete("User already has a thread")
-						response.delete(10000L, false)
-					} else {
-						val thread =
-						// Create a thread with the message sent, title it with the users tag and set the archive
-							// duration to the channels settings. If they're null, set it to one day
-							textChannel.startPublicThreadWithMessage(
-								event.message.id,
-								"Support thread for " + user.asUser().username,
-								event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
-							)
-
-						ThreadsCollection().setThreadOwner(thread.id, userId)
-
-						val editMessage = thread.createMessage("edit message")
-
-						editMessage.edit {
-							this.content =
-								user.asUser().mention + ", the " + event.getGuild()
-									?.getRole(config.team)?.mention + " will be with you shortly!"
-						}
-
-						if (textChannel.messages.last().author?.id == kord.selfId) {
-							textChannel.deleteMessage(
-								textChannel.messages.last().id,
-								"Automatic deletion of thread creation message"
-							)
-						}
-
-						val response = event.message.reply {
-							content = "A thread has been created for you: " + thread.mention
-						}
-						response.delete(10000L, false)
+					if (textChannel.messages.last().author?.id == kord.selfId) {
+						textChannel.deleteMessage(
+							textChannel.messages.last().id,
+							"Automatic deletion of thread creation message"
+						)
 					}
-				} else { return@action }
+
+					val response = event.message.reply {
+						content = "A thread has been created for you: " + thread.mention
+					}
+					response.delete(10000L, false)
+				}
 			}
 		}
 

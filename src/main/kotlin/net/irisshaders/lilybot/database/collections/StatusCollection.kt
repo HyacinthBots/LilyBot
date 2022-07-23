@@ -7,7 +7,7 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This object contains the functions for interacting with the [Status Database][StatusData]. This object contains the
+ * This class contains the functions for interacting with the [Status Database][StatusData]. This object contains the
  * function for getting and setting the status.
  *
  * @since 4.0.0

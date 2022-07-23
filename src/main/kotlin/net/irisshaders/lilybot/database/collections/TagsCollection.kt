@@ -8,7 +8,7 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This object contains the functions for interacting with the [Tags Database][TagsData]. This object has functions for
+ * This class contains the functions for interacting with the [Tags Database][TagsData]. This object has functions for
  * getting tags, getting all tags, adding tags, and removing a tag or tags.
  *
  * @since 4.0.0
@@ -16,7 +16,7 @@ import org.litote.kmongo.eq
  * @see getAllTags
  * @see setTag
  * @see removeTag
- * @see removeTags
+ * @see clearTags
  */
 class TagsCollection : KordExKoinComponent {
 	private val db: Database by inject()
@@ -85,6 +85,6 @@ class TagsCollection : KordExKoinComponent {
 	 * @author tempest15
 	 * @since 3.1.0
 	 */
-	suspend inline fun removeTags(inputGuildId: Snowflake) =
+	suspend inline fun clearTags(inputGuildId: Snowflake) =
 		collection.deleteMany(TagsData::guildId eq inputGuildId)
 }

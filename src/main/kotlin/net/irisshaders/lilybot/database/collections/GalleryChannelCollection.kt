@@ -9,7 +9,7 @@ import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.eq
 
 /**
- * This object contains the functions or interacting with the [Gallery Channel Database][GalleryChannelData]. This
+ * This class contains the functions for interacting with the [Gallery Channel Database][GalleryChannelData]. This
  * object contains functions for getting, setting and removing gallery channels.
  *
  * @since 4.0.0

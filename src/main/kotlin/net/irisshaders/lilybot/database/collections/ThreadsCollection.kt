@@ -8,7 +8,7 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This object stores all the functions for interacting with the [Threads Database][ThreadData]. This object contains
+ * This class stores all the functions for interacting with the [Threads Database][ThreadData]. This object contains
  * the functions for getting threads, based on different criteria such as owner, thread ID, or all of them. It also has
  * functions for setting and removing threads.
  *

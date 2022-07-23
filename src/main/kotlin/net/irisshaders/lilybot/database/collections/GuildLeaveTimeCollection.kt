@@ -9,7 +9,7 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This object contains the functions or interacting with the [Guild Leave Time Database][GuildLeaveTimeData]. This
+ * This class contains the functions for interacting with the [Guild Leave Time Database][GuildLeaveTimeData]. This
  * object contains functions for setting and removing leave time.
  *
  * @since 4.0.0

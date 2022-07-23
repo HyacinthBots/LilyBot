@@ -1,6 +1,7 @@
 package net.irisshaders.lilybot.extensions.config
 
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
 import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
@@ -12,6 +13,7 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCo
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
 import com.kotlindiscord.kord.extensions.utils.waitFor
+import dev.kord.common.entity.Permission
 import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.respondEphemeral
@@ -50,7 +52,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		check {
 			anyGuild()
-			// hasPermission(Permission.ManageGuild)
+			hasPermission(Permission.ManageGuild)
 		}
 
 		// TODO Audit Log logging
@@ -153,7 +155,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		check {
 			anyGuild()
-			// hasPermission(Permission.ManageGuild)
+			hasPermission(Permission.ManageGuild)
 		}
 
 		// TODO Audit Log logging
@@ -194,7 +196,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		check {
 			anyGuild()
-			// hasPermission(Permission.ManageGuild)
+			hasPermission(Permission.ManageGuild)
 		}
 
 		// TODO Audit Log logging

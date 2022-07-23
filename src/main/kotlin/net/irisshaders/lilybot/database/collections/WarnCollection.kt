@@ -8,12 +8,12 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This object stores all the functions for interacting with the [Warn Database][WarnData]. The object contains the
+ * This class stores all the functions for interacting with the [Warn Database][WarnData]. The object contains the
  * functions for querying, adding and removal of warnings for a user.
  *
  * @see getWarn
  * @see setWarn
- * @see removeWarn
+ * @see clearWarns
  * @since 4.0.0
  */
 class WarnCollection : KordExKoinComponent {
@@ -65,6 +65,6 @@ class WarnCollection : KordExKoinComponent {
 	 * @author tempest15
 	 * @since 3.0.0
 	 */
-	suspend inline fun removeWarn(inputGuildId: Snowflake) =
+	suspend inline fun clearWarns(inputGuildId: Snowflake) =
 		collection.deleteMany(WarnData::guildId eq inputGuildId)
 }

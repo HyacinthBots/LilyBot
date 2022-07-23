@@ -8,6 +8,7 @@ import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
+import net.irisshaders.lilybot.database.collections.RoleMenuCollection
 import net.irisshaders.lilybot.database.collections.SupportConfigCollection
 import net.irisshaders.lilybot.database.collections.TagsCollection
 import net.irisshaders.lilybot.database.collections.WarnCollection
@@ -56,9 +57,9 @@ object Cleanups : KordExKoinComponent {
 				ModerationConfigCollection().clearConfig(it.guildId)
 				SupportConfigCollection().clearConfig(it.guildId)
 				LoggingConfigCollection().clearConfig(it.guildId)
-				TagsCollection().removeTags(it.guildId)
-				WarnCollection().removeWarn(it.guildId)
-				// Once role menu is rewritten, component data should also be cleared here.
+				TagsCollection().clearTags(it.guildId)
+				WarnCollection().clearWarns(it.guildId)
+				RoleMenuCollection().removeAllRoleMenus(it.guildId)
 				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
 			}

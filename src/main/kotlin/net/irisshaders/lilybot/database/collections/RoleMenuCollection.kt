@@ -8,7 +8,7 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This object contains the functions for interacting with the [Role Menu Database][RoleMenuData]. This object contains
+ * This class contains the functions for interacting with the [Role Menu Database][RoleMenuData]. This object contains
  * the functions for getting a menu, setting a menu and removing a role from a menu.
  *
  * @since 4.0.0
@@ -71,4 +71,14 @@ class RoleMenuCollection : KordExKoinComponent {
 		collection.deleteOne(RoleMenuData::messageId eq inputMessageId)
 		collection.insertOne(roleMenu)
 	}
+
+	/**
+	 * Deletes all role menus from the database.
+	 *
+	 * @param inputGuildId The ID of the guild to delete all role menus from.
+	 * @author NoComment1105
+	 * @since 4.0.0
+	 */
+	suspend inline fun removeAllRoleMenus(inputGuildId: Snowflake) =
+		collection.deleteMany(RoleMenuData::guildId eq inputGuildId)
 }
