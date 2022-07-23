@@ -5,6 +5,9 @@ import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.ConfigMetaData
 import net.irisshaders.lilybot.database.entities.MainMetaData
 import org.koin.core.component.inject
+import org.litote.kmongo.eq
+
+// TODO Kdoc
 
 class MainMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()
@@ -16,7 +19,13 @@ class MainMetaCollection : KordExKoinComponent {
 		collection.findOne()
 
 	suspend fun set(meta: MainMetaData) =
-		collection.save(meta)
+		collection.insertOne(meta)
+
+	suspend fun update(meta: MainMetaData) =
+		collection.findOneAndReplace(
+			MainMetaData::id eq "mainMeta",
+			meta
+		)
 }
 
 class ConfigMetaCollection : KordExKoinComponent {
@@ -29,5 +38,11 @@ class ConfigMetaCollection : KordExKoinComponent {
 		collection.findOne()
 
 	suspend fun set(meta: ConfigMetaData) =
-		collection.save(meta)
+		collection.insertOne(meta)
+
+	suspend fun update(meta: ConfigMetaData) =
+		collection.findOneAndReplace(
+			ConfigMetaData::id eq "configMeta",
+			meta
+		)
 }

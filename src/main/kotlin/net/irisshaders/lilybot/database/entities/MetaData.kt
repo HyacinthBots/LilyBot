@@ -2,6 +2,8 @@ package net.irisshaders.lilybot.database.entities
 
 import kotlinx.serialization.Serializable
 
+// TODO Kdoc
+
 @Serializable
 data class MainMetaData(
 	val version: Int,

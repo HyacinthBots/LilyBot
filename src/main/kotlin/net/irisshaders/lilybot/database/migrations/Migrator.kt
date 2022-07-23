@@ -28,6 +28,8 @@ object Migrator : KordExKoinComponent {
 	private val configMetaCollection: ConfigMetaCollection by inject()
 
 	suspend fun migrateMain() {
+		logger.info { "Starting main database migration" }
+
 		var meta = mainMetaCollection.get()
 
 		if (meta == null) {
@@ -38,10 +40,12 @@ object Migrator : KordExKoinComponent {
 
 		var currentVersion = meta.version
 
-		@Suppress("TooGenericExceptionCaught")
+		logger.info { "Current main database version: v$currentVersion" }
+
 		while (true) {
 			val nextVersion = currentVersion + 1
 
+			@Suppress("TooGenericExceptionCaught")
 			try {
 				@Suppress("UseIfInsteadOfWhen")
 				when (nextVersion) {
@@ -62,13 +66,15 @@ object Migrator : KordExKoinComponent {
 		if (currentVersion != meta.version) {
 			meta = meta.copy(version = currentVersion)
 
-			mainMetaCollection.set(meta)
+			mainMetaCollection.update(meta)
 
-			logger.info { "Finished database migrations." }
+			logger.info { "Finished main database migrations." }
 		}
 	}
 
 	suspend fun migrateConfig() {
+		logger.info { "Starting config database migration" }
+
 		var meta = configMetaCollection.get()
 
 		if (meta == null) {
@@ -79,10 +85,12 @@ object Migrator : KordExKoinComponent {
 
 		var currentVersion = meta.version
 
-		@Suppress("TooGenericExceptionCaught")
+		logger.info { "Current config database version: v$currentVersion" }
+
 		while (true) {
 			val nextVersion = currentVersion + 1
 
+			@Suppress("TooGenericExceptionCaught")
 			try {
 				@Suppress("UseIfInsteadOfWhen")
 				when (nextVersion) {
@@ -98,6 +106,14 @@ object Migrator : KordExKoinComponent {
 			}
 
 			currentVersion = nextVersion
+		}
+
+		if (currentVersion != meta.version) {
+			meta = meta.copy(version = currentVersion)
+
+			configMetaCollection.update(meta)
+
+			logger.info { "Finished config database migrations." }
 		}
 	}
 }
