@@ -61,7 +61,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				val response = event.interaction.modal("Support Module", "supportModuleModal") {
 					actionRow {
 						textInput(TextInputStyle.Paragraph, "msgInput", "Support Message") {
-							placeholder = "This is where your ad could be!"
+							placeholder = "Input the contnet of the message you would like sent when a support thread" +
+									"is created"
 						}
 					}
 				}
