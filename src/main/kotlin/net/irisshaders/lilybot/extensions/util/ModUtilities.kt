@@ -325,8 +325,8 @@ class ModUtilities : Extension() {
 						return@action
 					}
 
-				val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
 
 					// Update the presence in the action
 					this@ephemeralSlashCommand.kord.editPresence {
@@ -334,8 +334,8 @@ class ModUtilities : Extension() {
 						playing(arguments.presenceArgument)
 					}
 
-				// Store the new presence in the database for if there is a restart
-				StatusCollection().setStatus(arguments.presenceArgument)
+					// Store the new presence in the database for if there is a restart
+					StatusCollection().setStatus(arguments.presenceArgument)
 
 					respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
@@ -368,7 +368,7 @@ class ModUtilities : Extension() {
 					}
 
 					// Store the new presence in the database for if there is a restart
-					StatusCollection().setStatus("default")
+					StatusCollection().setStatus(null)
 
 					updateDefaultPresence()
 					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size

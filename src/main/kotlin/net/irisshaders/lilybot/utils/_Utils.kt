@@ -206,7 +206,7 @@ suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, 
  * @since 3.4.5
  */
 suspend inline fun Extension.updateDefaultPresence() {
-	if (StatusCollection().getStatus() != "default") {
+	if (StatusCollection().getStatus() != null) {
 		return
 	}
 

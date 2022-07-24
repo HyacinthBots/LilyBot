@@ -4,6 +4,7 @@ import com.mongodb.client.model.BulkWriteOptions
 import com.mongodb.client.model.ReplaceOneModel
 import kotlinx.datetime.DateTimePeriod
 import net.irisshaders.lilybot.database.entities.RemindMeData
+import net.irisshaders.lilybot.database.entities.StatusData
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
 import org.litote.kmongo.replaceOne
@@ -67,4 +68,8 @@ suspend fun mainV1(db: CoroutineDatabase) {
 	if (nonRepeating.isNotEmpty()) {
 		reminders.bulkWrite(requests = nonRepeating, BulkWriteOptions().ordered(true))
 	}
+
+	db.dropCollection("statusData")
+	db.createCollection("statusData")
+	db.getCollection<StatusData>("statusData").insertOne(StatusData(null))
 }

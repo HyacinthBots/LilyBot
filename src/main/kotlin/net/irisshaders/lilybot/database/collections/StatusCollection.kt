@@ -4,7 +4,6 @@ import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.StatusData
 import org.koin.core.component.inject
-import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with the [Status Database][StatusData]. This object contains the
@@ -12,7 +11,7 @@ import org.litote.kmongo.eq
  *
  * @since 4.0.0
  * @see getStatus
- * @see setStatus
+ * @see setStatus(String?)
  */
 class StatusCollection : KordExKoinComponent {
 	private val db: Database by inject()
@@ -27,8 +26,8 @@ class StatusCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 3.0.0
 	 */
-	suspend inline fun getStatus(): String =
-		collection.findOne(StatusData::key eq "LilyStatus")?.status ?: "default"
+	suspend inline fun getStatus(): String? =
+		collection.findOne()?.status
 
 	/**
 	 * Add the given [newStatus] to the database.
@@ -37,8 +36,8 @@ class StatusCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 3.0.0
 	 */
-	suspend inline fun setStatus(newStatus: String) {
-		collection.deleteOne(StatusData::key eq "LilyStatus")
-		collection.insertOne(StatusData("LilyStatus", newStatus))
+	suspend inline fun setStatus(newStatus: String?) {
+		collection.deleteOne()
+		collection.insertOne(StatusData(newStatus))
 	}
 }
