@@ -215,9 +215,6 @@ class ThreadInviter : Extension() {
 								" `/thread archive` to close it. If you want to change the thread name, use" +
 								" `/thread rename` to do so."
 					}
-
-					delay(20.seconds)
-					message.delete("Mods have been invited, message can go now!")
 				}
 			}
 		}
