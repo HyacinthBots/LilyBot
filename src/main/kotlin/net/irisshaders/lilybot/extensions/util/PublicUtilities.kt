@@ -58,7 +58,7 @@ class PublicUtilities : Extension() {
 						timestamp = Clock.System.now()
 
 						field {
-							name = "Your Ping with Lily is:"
+							name = "Lily's Ping to Discord is:"
 							value = "**$averagePing**"
 							inline = true
 						}
