@@ -76,7 +76,7 @@ class Tags : Extension() {
 					return@action
 				}
 
-				channel.createMessage {
+				respond {
 					if (tagFromDatabase.tagAppearance == "embed") {
 						embed {
 							title = tagFromDatabase.tagTitle
