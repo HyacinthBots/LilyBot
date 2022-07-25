@@ -46,7 +46,7 @@ class MemberJoinLeave : Extension() {
 				joinChannel!!.createEmbed {
 					author {
 						name = "User joined the server!"
-						icon = eventMember.avatar!!.url
+						icon = eventMember.avatar?.url
 					}
 					field {
 						name = "Welcome:"
@@ -88,7 +88,7 @@ class MemberJoinLeave : Extension() {
 				joinChannel!!.createEmbed {
 					author {
 						name = "User left the server!"
-						icon = eventUser.avatar!!.url
+						icon = eventUser.avatar?.url
 					}
 					field {
 						name = "Goodbye:"

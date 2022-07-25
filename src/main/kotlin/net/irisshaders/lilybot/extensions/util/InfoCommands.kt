@@ -141,7 +141,7 @@ class InfoCommands : Extension() {
 
 						footer {
 							text = "Brought to you by NoComment#6411, tempest#4510 and all the awesome contributors!"
-							icon = this@publicSlashCommand.kord.getSelf().avatar!!.url
+							icon = this@publicSlashCommand.kord.getSelf().avatar?.url
 						}
 
 						color = DISCORD_BLURPLE
