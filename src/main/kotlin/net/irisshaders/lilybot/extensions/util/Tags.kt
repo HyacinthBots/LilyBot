@@ -77,7 +77,7 @@ class Tags : Extension() {
 					return@action
 				}
 
-				channel.createMessage {
+				respond {
 					if (tagFromDatabase.tagAppearance == "embed") {
 						embed {
 							title = tagFromDatabase.tagTitle
@@ -140,7 +140,7 @@ class Tags : Extension() {
 							description = tagFromDatabase.tagValue
 							footer {
 								text = "Tag requested by ${user.asUser().tag}"
-								icon = user.asUser().avatar!!.url
+								icon = user.asUser().avatar?.url
 							}
 							color = DISCORD_BLURPLE
 						}
