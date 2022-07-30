@@ -11,9 +11,9 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.delete
-import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import com.kotlindiscord.kord.extensions.utils.respond
 import com.soywiz.klock.seconds
+import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
@@ -185,7 +185,7 @@ class GalleryChannel : Extension() {
 		event<MessageCreateEvent> {
 			check {
 				anyGuild()
-				failIf { event.message.author.isNullOrBot() } // Fail if null in case an ephemeral message is created
+				failIf { event.message.author?.id == kord.selfId }
 			}
 
 			action {
@@ -196,6 +196,11 @@ class GalleryChannel : Extension() {
 						delay(0.25.seconds.millisecondsLong)
 						if (event.message.embeds.isEmpty()) { // If there is still no embed, we delete the message
 							// and explain why
+							if (event.message.type != MessageType.Default || event.message.type != MessageType.Reply) {
+								event.message.delete()
+								return@action
+							}
+
 							val response = event.message.respond {
 								content = "This channel is for images only!"
 							}
