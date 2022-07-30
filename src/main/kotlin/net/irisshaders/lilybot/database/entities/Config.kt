@@ -4,7 +4,8 @@ import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
 
 /**
- * The data for moderation configuration.
+ * The data for moderation configuration. The logging config stores where logs are sent to, and whether to enable or
+ * disable certain configurations.
  *
  * @param guildId The ID of the guild the config is for
  * @param enableMessageLogs If edited and deleted messages should be logged
@@ -23,7 +24,8 @@ data class LoggingConfigData(
 )
 
 /**
- * The data for moderation configuration.
+ * The data for moderation configuration. The moderation config is what stores the data for moderation actions. The
+ * channel for logging and the team for pinging.
  *
  * @param guildId The ID of the guild the config is for
  * @param enabled If the support module is enabled or not
@@ -40,7 +42,8 @@ data class ModerationConfigData(
 )
 
 /**
- * The data for support configuration.
+ * The data for support configuration. The support config stores the data for support functionality. Channel for the
+ * place to create threads to and team for pinging into support threads.
  *
  * @param guildId The ID of the guild the config is for
  * @param enabled If the support module is enabled or not
