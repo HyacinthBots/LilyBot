@@ -15,10 +15,13 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashComman
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.TextInputStyle
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.behavior.interaction.response.respond
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
@@ -39,6 +42,7 @@ class Config : Extension() {
 	}
 }
 
+// TODO Do some wizard magic and duplicaten't?
 @OptIn(UnsafeAPI::class)
 suspend fun Config.configCommand() = unsafeSlashCommand {
 	name = "config"
@@ -55,7 +59,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			hasPermission(Permission.ManageGuild)
 		}
 
-		// TODO Audit Log logging
+		@Suppress("DuplicatedCode")
 		action {
 			if (arguments.customMessage) {
 				val response = event.interaction.modal("Support Module", "supportModuleModal") {
@@ -145,6 +149,35 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					)
 				)
 			}
+
+			if (ModerationConfigCollection().getConfig(guild!!.id) == null) {
+				guild!!.asGuild().getSystemChannel()
+			} else {
+				guild!!.getChannelOf<GuildMessageChannel>(ModerationConfigCollection().getConfig(guild!!.id)!!.channel)
+			}?.createMessage {
+				embed {
+					title = "Configuration: Support"
+					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
+						description = "Consider setting the moderation configuration to receive configuration updates" +
+								"where you want them!"
+					}
+					field {
+						name = "Support Team"
+						value = arguments.role.mention
+					}
+					field {
+						name = "Support Channel"
+						value = arguments.channel.mention
+					}
+					field {
+						name = "Message"
+						value = "default"
+					}
+					footer {
+						text = "Configured by: ${user.asUser().tag}"
+					}
+				}
+			}
 		}
 	}
 
@@ -159,7 +192,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			hasPermission(Permission.ManageGuild)
 		}
 
-		// TODO Audit Log logging
+		@Suppress("DuplicatedCode")
 		action {
 			event.interaction.respondEphemeral {
 				embed {
@@ -186,6 +219,23 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					arguments.moderatorRole.id
 				)
 			)
+
+			guild!!.getChannelOf<GuildMessageChannel>(arguments.modActionLog.id).createMessage {
+				embed {
+					title = "Configuration: Moderation"
+					field {
+						name = "Moderators"
+						value = arguments.moderatorRole.mention
+					}
+					field {
+						name = "Action log"
+						value = arguments.modActionLog.mention
+					}
+					footer {
+						text = "Configured by ${user.asUser().tag}"
+					}
+				}
+			}
 		}
 	}
 
@@ -200,7 +250,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			hasPermission(Permission.ManageGuild)
 		}
 
-		// TODO Audit Log logging
+		@Suppress("DuplicatedCode")
 		action {
 			event.interaction.respondEphemeral {
 				embed {
@@ -228,6 +278,31 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					arguments.joinChannel.id
 				)
 			)
+
+			if (ModerationConfigCollection().getConfig(guild!!.id) == null) {
+				guild!!.asGuild().getSystemChannel()
+			} else {
+				guild!!.getChannelOf<GuildMessageChannel>(ModerationConfigCollection().getConfig(guild!!.id)!!.channel)
+			}?.createMessage {
+				embed {
+					title = "Configuration: Logging"
+					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
+						description = "Consider setting the moderation configuration to receive configuration updates" +
+								"where you want them!"
+					}
+					field {
+						name = "Message Logs"
+						value = arguments.messageLogs.mention
+					}
+					field {
+						name = "Join/Leave Logs"
+						value = arguments.joinChannel.mention
+					}
+					footer {
+						text = "Configured by ${user.asUser().tag}"
+					}
+				}
+			}
 		}
 	}
 
