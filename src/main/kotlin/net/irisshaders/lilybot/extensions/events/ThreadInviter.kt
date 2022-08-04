@@ -84,7 +84,7 @@ class ThreadInviter : Extension() {
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
 				val guild = event.getGuild()
-				val supportChannel = guild?.getChannelOf<TextChannel>(config.channel)
+				val supportChannel = guild?.getChannelOf<TextChannel>(config.channel!!)
 
 				if (textChannel != supportChannel) return@action
 
@@ -134,7 +134,7 @@ class ThreadInviter : Extension() {
 					editMessage.edit {
 						this.content =
 							user.asUser().mention + ", the " + event.getGuild()
-								?.getRole(config.team)?.mention + " will be with you shortly!"
+								?.getRole(config.team!!)?.mention + " will be with you shortly!"
 					}
 
 					if (textChannel.messages.last().author?.id == kord.selfId) {
@@ -165,19 +165,19 @@ class ThreadInviter : Extension() {
 					event.channel.ownerId == kord.selfId ||
 							event.channel.member != null
 				}
-				configPresent(ConfigType.SUPPORT)
+				configPresent(ConfigType.SUPPORT, ConfigType.MODERATION)
 			}
 
 			action {
 				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)!!
 				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-				val modRole = event.channel.guild.getRole(moderationConfig.team)
+				val modRole = event.channel.guild.getRole(moderationConfig.team!!)
 				val threadOwner = event.channel.owner.asUser()
 
 				ThreadsCollection().setThreadOwner(event.channel.id, threadOwner.id)
 
 				if (supportConfig.enabled && event.channel.parentId == supportConfig.channel) {
-					val supportRole = event.channel.guild.getRole(supportConfig.team)
+					val supportRole = event.channel.guild.getRole(supportConfig.team!!)
 
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(

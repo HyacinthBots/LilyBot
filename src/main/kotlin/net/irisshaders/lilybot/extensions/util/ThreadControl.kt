@@ -100,7 +100,7 @@ class ThreadControl : Extension() {
 							ThreadsCollection().removeThread(it.threadId)
 							ThreadsCollection().setThreadOwner(it.threadId, it.ownerId, false)
 							guild!!.getChannelOf<GuildMessageChannel>(
-								ModerationConfigCollection().getConfig(guild!!.id)!!.channel
+								ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!
 							).createEmbed {
 									title = "Thread archive prevention disabled"
 									if (preventingArchiving == true) {
@@ -224,7 +224,7 @@ class ThreadControl : Extension() {
 										action {
 											ThreadsCollection().setThreadOwner(it.threadId, it.ownerId, false)
 											edit { content = "Thread archiving will no longer be prevented" }
-											guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+											guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 												.createMessage {
 													embed {
 														title = "Thread archive prevention disabled"
@@ -258,7 +258,7 @@ class ThreadControl : Extension() {
 						} else if (it.threadId == threadChannel.id && !it.preventArchiving) {
 							ThreadsCollection().setThreadOwner(it.threadId, it.ownerId, true)
 							try {
-								guild!!.getChannelOf<GuildMessageChannel>(config.channel).createMessage {
+								guild!!.getChannelOf<GuildMessageChannel>(config.channel!!).createMessage {
 									embed {
 										title = "Thread archive prevention enabled"
 										color = DISCORD_FUCHSIA

@@ -218,7 +218,7 @@ class Tags : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 				if (TagsCollection().getTag(guild!!.id, arguments.tagName) != null) {
 					respond { content = "A tag with that name already exists in this guild." }
@@ -300,7 +300,7 @@ class Tags : Extension() {
 				}
 
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 				TagsCollection().removeTag(guild!!.id, arguments.tagName)
 
@@ -333,7 +333,7 @@ class Tags : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 				if (TagsCollection().getTag(guild!!.id, arguments.tagName) == null) {
 					respond { content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?" }

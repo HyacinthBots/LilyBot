@@ -5,13 +5,14 @@ import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
 import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
-import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
-import com.kotlindiscord.kord.extensions.commands.converters.impl.role
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.TextInputStyle
@@ -92,11 +93,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						title = "Configuration: Support"
 						field {
 							name = "Support Team"
-							value = arguments.role.mention
+							value = arguments.role?.mention ?: "Disabled"
 						}
 						field {
 							name = "Support Channel"
-							value = arguments.channel.mention
+							value = arguments.channel?.mention ?: "Disabled"
 						}
 						field {
 							name = "Message"
@@ -112,8 +113,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					SupportConfigData(
 						guild!!.id,
 						arguments.enable,
-						arguments.channel.id,
-						arguments.role.id,
+						arguments.channel?.id,
+						arguments.role?.id,
 						supportMsg
 					)
 				)
@@ -123,11 +124,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						title = "Configuration: Support"
 						field {
 							name = "Support Team"
-							value = arguments.role.mention
+							value = arguments.role?.mention ?: "Disabled"
 						}
 						field {
 							name = "Support Channel"
-							value = arguments.channel.mention
+							value = arguments.channel?.mention ?: "Disabled"
 						}
 						field {
 							name = "Message"
@@ -143,8 +144,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					SupportConfigData(
 						guild!!.id,
 						arguments.enable,
-						arguments.channel.id,
-						arguments.role.id,
+						arguments.channel?.id,
+						arguments.role?.id,
 						null
 					)
 				)
@@ -153,7 +154,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			if (ModerationConfigCollection().getConfig(guild!!.id) == null) {
 				guild!!.asGuild().getSystemChannel()
 			} else {
-				guild!!.getChannelOf<GuildMessageChannel>(ModerationConfigCollection().getConfig(guild!!.id)!!.channel)
+				guild!!.getChannelOf<GuildMessageChannel>(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
 			}?.createMessage {
 				embed {
 					title = "Configuration: Support"
@@ -163,11 +164,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 					field {
 						name = "Support Team"
-						value = arguments.role.mention
+						value = arguments.role?.mention ?: "Disable"
 					}
 					field {
 						name = "Support Channel"
-						value = arguments.channel.mention
+						value = arguments.channel?.mention ?: "Disable"
 					}
 					field {
 						name = "Message"
@@ -199,11 +200,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					title = "Configuration: Moderation"
 					field {
 						name = "Moderators"
-						value = arguments.moderatorRole.mention
+						value = arguments.moderatorRole?.mention ?: "Disabled"
 					}
 					field {
 						name = "Action log"
-						value = arguments.modActionLog.mention
+						value = arguments.modActionLog?.mention ?: "Disabled"
 					}
 					footer {
 						text = "Configured by ${user.asUser().tag}"
@@ -215,21 +216,25 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				ModerationConfigData(
 					guild!!.id,
 					arguments.enabled,
-					arguments.modActionLog.id,
-					arguments.moderatorRole.id
+					arguments.modActionLog?.id,
+					arguments.moderatorRole?.id
 				)
 			)
 
-			guild!!.getChannelOf<GuildMessageChannel>(arguments.modActionLog.id).createMessage {
+			if (arguments.modActionLog == null) {
+				guild!!.asGuild().getSystemChannel()
+			} else {
+				guild!!.getChannelOf<GuildMessageChannel>(arguments.modActionLog!!.id)
+			}?.createMessage {
 				embed {
 					title = "Configuration: Moderation"
 					field {
 						name = "Moderators"
-						value = arguments.moderatorRole.mention
+						value = arguments.moderatorRole?.mention ?: "Disabled"
 					}
 					field {
 						name = "Action log"
-						value = arguments.modActionLog.mention
+						value = arguments.modActionLog?.mention ?: "Disabled"
 					}
 					footer {
 						text = "Configured by ${user.asUser().tag}"
@@ -252,16 +257,24 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		@Suppress("DuplicatedCode")
 		action {
+			if (arguments.enableJoinChannel && arguments.joinChannel == null) {
+				respondEphemeral { content = "You must specify a channel to log joins to!" }
+				return@action
+			} else if (arguments.enableMessageLogs && arguments.messageLogs == null) {
+				respondEphemeral { content = "You must specify a channel to message deletes joins to!" }
+				return@action
+			}
+
 			event.interaction.respondEphemeral {
 				embed {
 					title = "Configuration: Logging"
 					field {
 						name = "Message Logs"
-						value = arguments.messageLogs.mention
+						value = arguments.messageLogs?.mention ?: "Disabled"
 					}
 					field {
 						name = "Join/Leave Logs"
-						value = arguments.joinChannel.mention
+						value = arguments.joinChannel?.mention ?: "Disabled"
 					}
 					footer {
 						text = "Configured by ${user.asUser().tag}"
@@ -273,16 +286,18 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				LoggingConfigData(
 					guild!!.id,
 					arguments.enableMessageLogs,
-					arguments.messageLogs.id,
+					arguments.messageLogs?.id,
 					arguments.enableJoinChannel,
-					arguments.joinChannel.id
+					arguments.joinChannel?.id
 				)
 			)
 
-			if (ModerationConfigCollection().getConfig(guild!!.id) == null) {
+			if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
+				!ModerationConfigCollection().getConfig(guild!!.id)!!.enabled
+			) {
 				guild!!.asGuild().getSystemChannel()
 			} else {
-				guild!!.getChannelOf<GuildMessageChannel>(ModerationConfigCollection().getConfig(guild!!.id)!!.channel)
+				guild!!.getChannelOf<GuildMessageChannel>(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
 			}?.createMessage {
 				embed {
 					title = "Configuration: Logging"
@@ -292,11 +307,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 					field {
 						name = "Message Logs"
-						value = arguments.messageLogs.mention
+						value = arguments.messageLogs?.mention ?: "Disabled"
 					}
 					field {
 						name = "Join/Leave Logs"
-						value = arguments.joinChannel.mention
+						value = arguments.joinChannel?.mention ?: "Disabled"
 					}
 					footer {
 						text = "Configured by ${user.asUser().tag}"
@@ -372,19 +387,19 @@ class SupportArgs : Arguments() {
 		description = "Whether to enable the support system"
 	}
 
-	val channel by channel {
+	val customMessage by boolean {
+		name = "custommessage"
+		description = "True if you'd like to add a custom message, false if you'd like the default."
+	}
+
+	val channel by optionalChannel {
 		name = "channel"
 		description = "The channel to be used for creating support threads in."
 	}
 
-	val role by role {
+	val role by optionalRole {
 		name = "role"
 		description = "The role to add to support threads, when one is created."
-	}
-
-	val customMessage by boolean {
-		name = "custommessage"
-		description = "True if you'd like to add a custom message, false if you'd like the default."
 	}
 }
 
@@ -394,12 +409,12 @@ class ModerationArgs : Arguments() {
 		description = "Whether to enable the moderation system"
 	}
 
-	val moderatorRole by role {
+	val moderatorRole by optionalRole {
 		name = "moderatorrole"
 		description = "The role of your moderators, used for pinging in message logs."
 	}
 
-	val modActionLog by channel {
+	val modActionLog by optionalChannel {
 		name = "actionlog"
 		description = "The channel used to store moderator actions."
 	}
@@ -416,12 +431,12 @@ class LoggingArgs : Arguments() {
 		description = "Enable logging of joins and leaves"
 	}
 
-	val messageLogs by channel {
+	val messageLogs by optionalChannel {
 		name = "messagelogs"
 		description = "The channel for logging message deletions"
 	}
 
-	val joinChannel by channel {
+	val joinChannel by optionalChannel {
 		name = "joinchannel"
 		description = "The channel for logging member joins/leaves"
 	}

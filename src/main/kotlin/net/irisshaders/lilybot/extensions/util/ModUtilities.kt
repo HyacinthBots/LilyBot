@@ -76,7 +76,7 @@ class ModUtilities : Extension() {
 			}
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 				val targetChannel: GuildMessageChannel =
 					if (arguments.channel != null) {
 						guild!!.getChannelOf(arguments.channel!!.id)
@@ -170,7 +170,7 @@ class ModUtilities : Extension() {
 				}
 
 				val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 				val message: Message
 
 				try {
@@ -312,6 +312,7 @@ class ModUtilities : Extension() {
 			ephemeralSubCommand(::PresenceArgs) {
 				name = "set"
 				description = "Set a custom status for Lily."
+				guild(TEST_GUILD_ID)
 
 				check {
 					hasPermission(Permission.Administrator)
@@ -319,14 +320,14 @@ class ModUtilities : Extension() {
 				}
 
 				action {
-					// Lock this command to the testing guild
-					if (guild?.id != TEST_GUILD_ID) {
-						respond { content = "**Error:** This command can only be run in Lily's testing guild." }
-						return@action
-					}
+// 					// Lock this command to the testing guild
+// 					if (guild?.id != TEST_GUILD_ID) {
+// 						respond { content = "**Error:** This command can only be run in Lily's testing guild." }
+// 						return@action
+// 					}
 
 					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 					// Update the presence in the action
 					this@ephemeralSlashCommand.kord.editPresence {
@@ -354,6 +355,7 @@ class ModUtilities : Extension() {
 			ephemeralSubCommand {
 				name = "reset"
 				description = "Reset Lily's presence to the default status."
+				guild(TEST_GUILD_ID)
 
 				check {
 					hasPermission(Permission.Administrator)
@@ -361,11 +363,11 @@ class ModUtilities : Extension() {
 				}
 
 				action {
-					// Lock this command to the testing guild
-					if (guild?.id != TEST_GUILD_ID) {
-						respond { content = "**Error:** This command can only be run in Lily's testing guild." }
-						return@action
-					}
+// 					// Lock this command to the testing guild
+// 					if (guild?.id != TEST_GUILD_ID) {
+// 						respond { content = "**Error:** This command can only be run in Lily's testing guild." }
+// 						return@action
+// 					}
 
 					// Store the new presence in the database for if there is a restart
 					StatusCollection().setStatus(null)
@@ -374,7 +376,7 @@ class ModUtilities : Extension() {
 					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size
 
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 					respond { content = "Presence set to default" }
 

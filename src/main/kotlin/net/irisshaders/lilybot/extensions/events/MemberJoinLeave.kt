@@ -37,7 +37,7 @@ class MemberJoinLeave : Extension() {
 				val eventMember = event.member
 				val guildMemberCount = event.getGuild().members.count()
 
-				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel)
+				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel!!)
 
 				joinChannel.createEmbed {
 					author {
@@ -71,7 +71,7 @@ class MemberJoinLeave : Extension() {
 				if (event.user.id == kord.selfId) return@action
 				val config = LoggingConfigCollection().getConfig(guildFor(event)!!.id)!!
 
-				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel)
+				val joinChannel = event.getGuild().getChannelOf<GuildMessageChannel>(config.joinChannel!!)
 
 				val eventUser = event.user
 				val guildMemberCount = event.getGuild().members.count()

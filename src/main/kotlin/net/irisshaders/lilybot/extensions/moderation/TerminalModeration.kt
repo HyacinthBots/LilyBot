@@ -65,7 +65,7 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
 				val userArg = arguments.userArgument
 
 				// Clarify the user is not a bot or moderator
@@ -143,7 +143,7 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
 				val userArg = arguments.userArgument
 				// Get all the bans into a list
 				val bans = guild!!.bans.toList().map { it.userId }
@@ -196,7 +196,7 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
@@ -277,7 +277,7 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
+				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
 				val userArg = arguments.userArgument
 
 				// Clarify the user isn't a bot or a moderator

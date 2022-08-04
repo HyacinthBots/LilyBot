@@ -18,9 +18,9 @@ import kotlinx.serialization.Serializable
 data class LoggingConfigData(
 	val guildId: Snowflake,
 	val enableMessageLogs: Boolean,
-	val messageChannel: Snowflake,
+	val messageChannel: Snowflake?,
 	val enableJoinLogs: Boolean,
-	val joinChannel: Snowflake,
+	val joinChannel: Snowflake?,
 )
 
 /**
@@ -37,8 +37,8 @@ data class LoggingConfigData(
 data class ModerationConfigData(
 	val guildId: Snowflake,
 	val enabled: Boolean,
-	val channel: Snowflake,
-	val team: Snowflake,
+	val channel: Snowflake?,
+	val team: Snowflake?,
 )
 
 /**
@@ -56,8 +56,8 @@ data class ModerationConfigData(
 data class SupportConfigData(
 	val guildId: Snowflake,
 	val enabled: Boolean,
-	val channel: Snowflake,
-	val team: Snowflake,
+	val channel: Snowflake?,
+	val team: Snowflake?,
 	val message: String?
 )
 

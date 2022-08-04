@@ -121,7 +121,7 @@ class RoleMenu : Extension() {
 					)
 
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 					actionLog.createMessage {
 						embed {
@@ -209,7 +209,7 @@ class RoleMenu : Extension() {
 					)
 
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 					actionLog.createMessage {
 						embed {
@@ -270,7 +270,7 @@ class RoleMenu : Extension() {
 
 					RoleMenuCollection().removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 					actionLog.createMessage {
 						embed {
@@ -368,7 +368,7 @@ class RoleMenu : Extension() {
 					)
 
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel)
+					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 					actionLog.createMessage {
 						embed {

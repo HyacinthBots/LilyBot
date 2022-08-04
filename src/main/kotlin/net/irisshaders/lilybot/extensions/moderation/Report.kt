@@ -87,13 +87,13 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 
 	check {
 		anyGuild()
-		configPresent()
+		configPresent(ConfigType.MODERATION, ConfigType.LOGGING)
 	}
 
 	action {
 		val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)!!
 		val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
-		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
+		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel!!)
 		val reportedMessage: Message
 		val messageAuthor: Member?
 
@@ -147,7 +147,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 	action {
 		val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)!!
 		val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
-		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel)
+		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel!!)
 		val channel: MessageChannel
 		val reportedMessage: Message
 		val messageAuthor: Member?
@@ -241,8 +241,8 @@ suspend fun createReportModal(
 		messageLog,
 		messageAuthor,
 		reportedMessage,
-		config.team,
-		config.channel,
+		config.team!!,
+		config.channel!!,
 		reason,
 		modalResponse
 	)

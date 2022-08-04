@@ -45,7 +45,7 @@ class MessageDelete : Extension() {
 				val config = LoggingConfigCollection().getConfig(guildFor(event)!!.id)!!
 
 				val guild = kord.getGuild(event.guildId!!)
-				val messageLog = guild?.getChannelOf<GuildMessageChannel>(config.messageChannel)
+				val messageLog = guild?.getChannelOf<GuildMessageChannel>(config.messageChannel!!)
 				val eventMessage = event.message
 				val messageContent = if (eventMessage?.asMessageOrNull() != null) {
 					if (eventMessage.asMessageOrNull().content.length > 1024) {

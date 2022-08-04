@@ -89,7 +89,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
+					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
@@ -282,7 +282,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel)
+					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {
