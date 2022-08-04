@@ -157,6 +157,10 @@ class InfoCommands : Extension() {
 							url = "https://discord.com/api/oauth2/authorize?client_id=876278900836139008&" +
 									"permissions=1428479371270&scope=bot%20applications.commands"
 						}
+						linkButton(0) {
+							label = "Privacy Policy"
+							url = "https://github.com/IrisShaders/LilyBot/blob/main/docs/privacy-policy.md"
+						}
 					}
 				}
 			}

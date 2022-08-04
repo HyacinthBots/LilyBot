@@ -32,3 +32,4 @@ bin/
 .linkie-cache/
 data/
 .env
+.config/ext-pluralkit/
