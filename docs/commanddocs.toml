@@ -200,7 +200,7 @@ result = "Clears the nickname of the user that ran the command"
 [[command]]
 category = "Utility commands"
 name = "reminder set"
-args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `customMessage` - A custom message to attach to the reminder - Optional String"
+args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `customMessage` - A custom message to attach to the reminder - Optional String\n* `repeat` - Whether you'd like the reminder to repeat or not. Defaults to false - Optional Boolean\n* `repeatingInterval - The interval at which the reminder should be repeated - Optional Coalescing Duration"
 result = "Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed"
 
 [[command]]

@@ -560,7 +560,7 @@ class Reminders : Extension() {
 		/** Whether the reminder should repeat daily or not. */
 		val repeating by defaultingBoolean {
 			name = "repeating"
-			description = "Would you like this reminder to repeat daily?"
+			description = "Would you like this reminder to repeat?"
 			defaultValue = false
 		}
 
