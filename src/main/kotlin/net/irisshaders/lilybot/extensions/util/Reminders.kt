@@ -564,6 +564,7 @@ class Reminders : Extension() {
 			defaultValue = false
 		}
 
+		/** The interval at which you want the reminder to repeat. */
 		val repeatingInterval by coalescingOptionalDuration {
 			name = "repeatingInterval"
 			description = "How often should the reminder repeat?"
@@ -571,6 +572,7 @@ class Reminders : Extension() {
 	}
 
 	inner class RemoveRemindArgs : Arguments() {
+		/** The numeric ID of the reminder you want to delete. */
 		val reminder by int {
 			name = "reminderNumber"
 			description = "The number of the reminder to remove. Use `/reminders list` to find out the reminder."
@@ -578,6 +580,7 @@ class Reminders : Extension() {
 	}
 
 	inner class RemoveAllArgs : Arguments() {
+		/** The type of the reminder to delete all of. */
 		val reminderType by stringChoice {
 			name = "type"
 			description = "Choose which reminder type to remove all of"

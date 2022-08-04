@@ -24,6 +24,11 @@ class Database {
 	/** The database for storing per guild configuration data. */
 	val configDatabase get() = client.getDatabase("LilyBotConfig")
 
+	/**
+	 * Runs the migrations for both databases.
+	 *
+	 * @since 4.0.0
+	 */
 	suspend fun migrate() {
 		Migrator.migrateMain()
 		Migrator.migrateConfig()
