@@ -376,7 +376,6 @@ class Reminders : Extension() {
 						reminder.customMessage ?: "none"
 					}
 				}\n---\n"
-	}
 
 	/**
 	 * Collect a String of reminders that a user has for this guild and return it.
