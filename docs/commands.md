@@ -8,16 +8,43 @@ The following is a list of commands, their arguments, and what they do.
 ## Administration commands
 These are commands for the maintenance of LilyBot. The can only be run by Server Managers or Admins
 
-### Name: `config set`
+### Name: `config support`
 **Arguments**:
-* `moderatorRole` - Moderator role that will be pinged for reports - Role
-* `modActionLog` - Channel for embeds created by mod actions to be sent - Channel
-* `messageLogs` - Channel for deleted messages to be logged - Channel
-* `joinChannel` - Channel for members joining or leaving to be logged - Channel
-* `supportChannel` - Channel for the support auto-threading system to be used in - Optional Channel
-* `supportTeamRole` - The role to be added to any threads created in the `supportchannel` - Optional Role
+* `enable` - Whether to enable the support system or not - Boolean
+* `channel` - The channel to create the support threads in - Channel
+* `role` - The role to add to support threads, when one is created - Role
+* `customMessage` - True if you'd like to add a custom message, false if you'd like the default - Boolean
 
-**Result**: Sets a configuration for the guild executed in.
+**Result**: If `customMessage` is true, a modal will appear where you can provide your custom support message, then the config is set. If it is false, the config is set immediately.
+
+**Required Permissions**: `Manage Guild`
+
+**Command category**: `Administration commands`
+
+---
+
+### Name: `config moderation`
+**Arguments**:
+* `enable` - Whether to enable the moderation system or not - Boolean
+* `moderatorRole` - The role of the guild moderators, used for pinging in message logs and adding to threads
+* `modActionLog` - The channel to store the moderation actions in - Channel
+
+**Result**: The config is set for moderation.
+
+**Required Permissions**: `Manage Guild`
+
+**Command category**: `Administration commands`
+
+---
+
+### Name: `config logging`
+**Arguments**:
+* `enableMessageLogs` - Whether to enable message delete logging or not - Boolean
+* `enableJoinChannel` - Whether to enable logging of join and leaves - Boolean
+* `messageLogs` - The channel for logging message deletion - Optional Channel
+* `joinChannel` - The channel for logging member join/leaves to -  Optional Channel
+
+**Result**: The config is set for logging.
 
 **Required Permissions**: `Manage Guild`
 
@@ -27,24 +54,11 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 
 ### Name: `config clear`
 **Arguments**:
-None
+* `configType` - The type of config to clean, 'support', 'moderation', 'logging', 'all' - String Choice
 
-**Result**: Clears the configuration for the guild executed in.
+**Result**: Clears the config of the specified type.
 
 **Required Permissions**: `Manage Guild`
-
-**Command category**: `Administration commands`
-
----
-
-### Name: `set-status`
-**Arguments**:
-* `presence` - Value for Lily's status - String
-
-**Result**: Lily's 'Now Playing:' status is set to `presence`.
-This command can only be executed in the test guild specified in your `.env` file
-
-**Required Permissions**: `Administrator`
 
 **Command category**: `Administration commands`
 
@@ -372,6 +386,8 @@ None
 **Arguments**:
 * `time` - The time until the bot should send the reminder - Coalescing Duration
 * `customMessage` - A custom message to attach to the reminder - Optional String
+* `repeat` - Whether you'd like the reminder to repeat or not. Defaults to false - Optional Boolean
+* `repeatingInterval - The interval at which the reminder should be repeated - Optional Coalescing Duration
 
 **Result**: Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed
 

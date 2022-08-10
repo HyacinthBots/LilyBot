@@ -24,6 +24,7 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
@@ -89,11 +90,14 @@ class LogUploading : Extension() {
 				if (deferUploadUntilThread) {
 					delay(1500) // Delay to allow for thread creation
 					ThreadsCollection().getOwnerThreads(event.member!!.id).forEach {
-						if (event.getGuild()!!.getChannelOf<TextChannelThread>(it.threadId).parentId ==
-							supportConfig.channel
-						) {
-							uploadChannel = event.getGuild()!!.getChannelOf<GuildMessageChannel>(it.threadId)
-						}
+						try {
+							if (event.getGuild()!!.getChannelOf<TextChannelThread>(it.threadId).parentId ==
+								supportConfig.channel
+							) {
+								uploadChannel = event.getGuild()!!.getChannelOf<GuildMessageChannel>(it.threadId)
+								return@forEach
+							}
+						} catch (_: EntityNotFoundException) {}
 					}
 				}
 

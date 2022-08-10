@@ -66,7 +66,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				val response = event.interaction.modal("Support Module", "supportModuleModal") {
 					actionRow {
 						textInput(TextInputStyle.Paragraph, "msgInput", "Support Message") {
-							placeholder = "Input the contnet of the message you would like sent when a support thread" +
+							placeholder = "Input the content of the message you would like sent when a support thread" +
 									"is created"
 						}
 					}
@@ -374,6 +374,24 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								text = "Config cleared by ${user.asUser().tag}"
 							}
 						}
+					}
+				}
+			}
+			if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
+				!ModerationConfigCollection().getConfig(guild!!.id)!!.enabled
+			) {
+				guild!!.asGuild().getSystemChannel()
+			} else {
+				guild!!.getChannelOf<GuildMessageChannel>(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
+			}?.createMessage {
+				embed {
+					title = "Configuration Cleared: ${arguments.config}"
+					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
+						description = "Consider setting the moderation configuration to receive configuration updates" +
+								"where you want them!"
+					}
+					footer {
+						text = "Config cleared by ${user.asUser().tag}"
 					}
 				}
 			}
