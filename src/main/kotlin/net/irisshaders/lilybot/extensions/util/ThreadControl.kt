@@ -216,9 +216,9 @@ class ThreadControl : Extension() {
 					var thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					if (thread == null) {
 						DatabaseHelper.setThreadOwner(threadChannel.id, threadChannel.ownerId, false)
-						thread = threads.first { it.threadId == threadChannel.id }
+						thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					}
-					if (thread.preventArchiving) {
+					if (thread?.preventArchiving == true) {
 						message = edit {
 							content = "Thread archiving is already being prevented, would you like to remove this?"
 						}.edit {
@@ -261,7 +261,7 @@ class ThreadControl : Extension() {
 							}
 						}
 						return@action
-					} else if (thread.preventArchiving == false) {
+					} else if (thread?.preventArchiving == false) {
 						DatabaseHelper.setThreadOwner(thread.threadId, thread.ownerId, true)
 						try {
 							guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
