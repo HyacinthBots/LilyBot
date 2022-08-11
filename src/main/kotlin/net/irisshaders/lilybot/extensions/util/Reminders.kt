@@ -484,7 +484,7 @@ class Reminders : Extension() {
 					if (!it.repeating) {
 						message?.edit {
 								content = "Reminder completed!"
-							} ?: utilsLogger.info { "Unable to find original message" }
+							} ?: utilsLogger.debug { "Unable to find original message" }
 					}
 				} else {
 					// FIXME Maybe duplicaten't?
@@ -566,7 +566,7 @@ class Reminders : Extension() {
 					if (!it.repeating) {
 						message?.edit {
 							content = "Reminder completed!"
-						} ?: utilsLogger.info { "Unable to find original message" }
+						} ?: utilsLogger.debug { "Unable to find original message" }
 					}
 				}
 
