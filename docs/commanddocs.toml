@@ -201,9 +201,21 @@ name = "remind list"
 result = "Sends an embed containing all the reminders you have set in that guild. If there are none, it returns a messages saying so."
 
 [[command]]
+category = "Mod/Utility commands"
+name = "remind mod-list"
+args = "* `userId` - The ID of the user to get the reminders for - Snowflake"
+result = "Displays an embed containing all the reminders for the target user. If there are none, it returns a messages saying so."
+
+[[command]]
 category = "Utility commands"
 name = "reminder remove"
 result = "Allows the user to input the number ID of the reminder they would like to delete. It is advised to use `/reminder list` to find out what reminder id is."
+
+[[command]]
+category = "Mod/Utility commands"
+name = "remind mod-remove"
+args = "* `userId` - The ID of the user to get the reminders for - Snowflake\n* `reminderId` - The ID of the reminder to remove - Snowflake"
+result = "Deletes the reminder from the user"
 
 [[command]]
 category = "Utility commands"
