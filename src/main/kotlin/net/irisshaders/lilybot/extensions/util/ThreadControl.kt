@@ -100,24 +100,24 @@ class ThreadControl : Extension() {
 							val preventingArchiving = DatabaseHelper.getThread(it.threadId)?.preventArchiving
 							DatabaseHelper.deleteThread(it.threadId)
 							DatabaseHelper.setThreadOwner(it.threadId, it.ownerId, false)
-							guild!!.getChannelOf<GuildMessageChannel>(DatabaseHelper.getConfig(guild!!.id)!!.modActionLog)
-								.createEmbed {
-									title = "Thread archive prevention disabled"
-									if (preventingArchiving == true) {
+							if (preventingArchiving == true) {
+								guild!!.getChannelOf<GuildMessageChannel>(DatabaseHelper.getConfig(guild!!.id)!!.modActionLog)
+									.createEmbed {
+										title = "Thread archive prevention disabled"
 										description =
 											"Archive prevention has been disabled, as `/thread archive` was used."
-									}
-									color = DISCORD_FUCHSIA
+										color = DISCORD_FUCHSIA
 
-									field {
-										name = "User"
-										value = user.asUser().tag
+										field {
+											name = "User"
+											value = user.asUser().tag
+										}
+										field {
+											name = "Thread"
+											value = "${threadChannel.mention} ${threadChannel.name}"
+										}
 									}
-									field {
-										name = "Thread"
-										value = threadChannel.mention
-									}
-								}
+							}
 						}
 					}
 
@@ -213,75 +213,78 @@ class ThreadControl : Extension() {
 
 					val threads = DatabaseHelper.getAllThreads()
 					var message: EphemeralMessageInteractionResponse? = null
-					threads.forEach {
-						if (it.threadId == threadChannel.id && it.preventArchiving) {
-							message = edit {
-								content = "Thread archiving is already being prevented, would you like to remove this?"
-							}.edit {
-								components {
-									ephemeralButton {
-										label = "Yes"
-										style = ButtonStyle.Primary
+					var thread = threads.firstOrNull { it.threadId == threadChannel.id }
+					if (thread == null) {
+						DatabaseHelper.setThreadOwner(threadChannel.id, threadChannel.ownerId, false)
+						thread = threads.first { it.threadId == threadChannel.id }
+					}
+					if (thread.preventArchiving) {
+						message = edit {
+							content = "Thread archiving is already being prevented, would you like to remove this?"
+						}.edit {
+							components {
+								ephemeralButton {
+									label = "Yes"
+									style = ButtonStyle.Primary
 
-										action {
-											DatabaseHelper.setThreadOwner(it.threadId, it.ownerId, false)
-											edit { content = "Thread archiving will no longer be prevented" }
-											guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
-												.createMessage {
-													embed {
-														title = "Thread archive prevention disabled"
-														color = DISCORD_FUCHSIA
+									action {
+										DatabaseHelper.setThreadOwner(thread.threadId, thread.ownerId, false)
+										edit { content = "Thread archiving will no longer be prevented" }
+										guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+											.createMessage {
+												embed {
+													title = "Thread archive prevention disabled"
+													color = DISCORD_FUCHSIA
 
-														field {
-															name = "User"
-															value = user.asUser().tag
-														}
-														field {
-															name = "Thread"
-															value = threadChannel.mention
-														}
+													field {
+														name = "User"
+														value = user.asUser().tag
+													}
+													field {
+														name = "Thread"
+														value = threadChannel.mention
 													}
 												}
-											message!!.edit { components { removeAll() } }
-										}
+											}
+										message!!.edit { components { removeAll() } }
 									}
-									ephemeralButton {
-										label = "No"
-										style = ButtonStyle.Secondary
+								}
+								ephemeralButton {
+									label = "No"
+									style = ButtonStyle.Secondary
 
-										action {
-											edit { content = "Thread archiving will remain prevented" }
-											message!!.edit { components { removeAll() } }
-										}
+									action {
+										edit { content = "Thread archiving will remain prevented" }
+										message!!.edit { components { removeAll() } }
 									}
 								}
 							}
-							return@action
-						} else if (it.threadId == threadChannel.id && !it.preventArchiving) {
-							DatabaseHelper.setThreadOwner(it.threadId, it.ownerId, true)
-							try {
-								guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
-									embed {
-										title = "Thread archive prevention enabled"
-										color = DISCORD_FUCHSIA
+						}
+						return@action
+					} else if (thread.preventArchiving == false) {
+						DatabaseHelper.setThreadOwner(thread.threadId, thread.ownerId, true)
+						try {
+							guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
+								embed {
+									title = "Thread archive prevention enabled"
+									color = DISCORD_FUCHSIA
 
-										field {
-											name = "User"
-											value = user.asUser().tag
-										}
-										field {
-											name = "Thread"
-											value = threadChannel.mention
-										}
+									field {
+										name = "User"
+										value = user.asUser().tag
+									}
+									field {
+										name = "Thread"
+										value = threadChannel.mention
 									}
 								}
-								edit { content = "Thread archiving will now be prevented" }
-							} catch (e: EntityNotFoundException) {
-								edit {
-									content = "Thread archiving will now be prevented\nNote: Failed to send a log" +
-											"to your specified mod action log. Please check the channel exists and " +
-											"permissions are right"
-								}
+							}
+							edit { content = "Thread archiving will now be prevented" }
+						} catch (e: EntityNotFoundException) {
+							edit {
+								content = "Thread archiving will now be prevented\nNote: Failed to send a log" +
+										"to your specified mod action log. Please check the channel exists and " +
+										"permissions are right"
 							}
 						}
 					}
