@@ -40,6 +40,7 @@ import kotlinx.datetime.plus
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.RemindMeData
 import net.irisshaders.lilybot.utils.botHasChannelPerms
+import net.irisshaders.lilybot.utils.utilsLogger
 import kotlin.time.Duration.Companion.days
 
 /**
@@ -427,6 +428,8 @@ class Reminders : Extension() {
 		reminders.forEach {
 			if (it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0) {
 				val channel = kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
+				val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+				val message = channel.getMessageOrNull(messageId)
 				if (it.customMessage.isNullOrEmpty()) {
 					try {
 						channel.createMessage {
@@ -443,11 +446,15 @@ class Reminders : Extension() {
 									)
 								}"
 							}
-							components {
-								linkButton {
-									label = "Jump to message"
-									url = it.originalMessageUrl
+							if (message != null) {
+								components {
+									linkButton {
+										label = "Jump to message"
+										url = it.originalMessageUrl
+									}
 								}
+							} else {
+								content += "\nOriginal message not found."
 							}
 						}
 					} catch (e: KtorRequestException) {
@@ -475,12 +482,9 @@ class Reminders : Extension() {
 					}
 
 					if (!it.repeating) {
-						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-						kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
-							.getMessage(messageId)
-							.edit {
+						message?.edit {
 								content = "Reminder completed!"
-							}
+							} ?: utilsLogger.info { "Unable to find original message" }
 					}
 				} else {
 					// FIXME Maybe duplicaten't?
@@ -508,11 +512,15 @@ class Reminders : Extension() {
 									}
 								}"
 							}
-							components {
-								linkButton {
-									label = "Jump to message"
-									url = it.originalMessageUrl
+							if (message != null) {
+								components {
+									linkButton {
+										label = "Jump to message"
+										url = it.originalMessageUrl
+									}
 								}
+							} else {
+								content += "\nOriginal message not found."
 							}
 						}
 					} catch (e: KtorRequestException) {
@@ -542,22 +550,23 @@ class Reminders : Extension() {
 									}"
 								}
 							}"
-							components {
-								linkButton {
-									label = "Jump to message"
-									url = it.originalMessageUrl
+							if (message != null) {
+								components {
+									linkButton {
+										label = "Jump to message"
+										url = it.originalMessageUrl
+									}
 								}
+							} else {
+								content += "\nOriginal message not found."
 							}
 						}
 					}
 
 					if (!it.repeating) {
-						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-						kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
-							.getMessage(messageId)
-							.edit {
-								content = "Reminder completed!"
-							}
+						message?.edit {
+							content = "Reminder completed!"
+						} ?: utilsLogger.info { "Unable to find original message" }
 					}
 				}
 
