@@ -151,37 +151,37 @@ class Config : Extension() {
 	inner class Config : Arguments() {
 		/** The role for pinging moderators. */
 		val moderatorPing by role {
-			name = "moderatorRole"
+			name = "moderator-role"
 			description = "Your Moderator role"
 		}
 
 		/** The channel for sending action logging to. */
 		val modActionLog by channel {
-			name = "modActionLog"
+			name = "mod-action-log"
 			description = "Your Mod Action Log channel"
 		}
 
 		/** The channel for sending message logs to. */
 		val messageLogs by channel {
-			name = "messageLogs"
+			name = "message-logs"
 			description = "Your Message Logs Channel"
 		}
 
 		/** The channel for sending join logs to. */
 		val joinChannel by channel {
-			name = "joinChannel"
+			name = "join-channel"
 			description = "Your Join Logs Channel"
 		}
 
 		/** The role for the support team. */
 		val supportTeam by optionalRole {
-			name = "supportTeamRole"
+			name = "support-team-role"
 			description = "Your Support Team role"
 		}
 
 		/** The channel for creating support threads in. */
 		val supportChannel by optionalChannel {
-			name = "supportChannel"
+			name = "support-channel"
 			description = "Your Support Channel"
 		}
 	}
