@@ -325,7 +325,7 @@ class TerminalModeration : Extension() {
 	inner class KickArgs : Arguments() {
 		/** The user to kick. */
 		val userArgument by user {
-			name = "kickUser"
+			name = "user"
 			description = "Person to kick"
 		}
 
@@ -346,7 +346,7 @@ class TerminalModeration : Extension() {
 	inner class BanArgs : Arguments() {
 		/** The user to ban. */
 		val userArgument by user {
-			name = "banUser"
+			name = "user"
 			description = "Person to ban"
 		}
 
@@ -373,7 +373,7 @@ class TerminalModeration : Extension() {
 	inner class UnbanArgs : Arguments() {
 		/** The ID of the user to unban. */
 		val userArgument by user {
-			name = "unbanUserId"
+			name = "user"
 			description = "Person to un-ban"
 		}
 
@@ -388,7 +388,7 @@ class TerminalModeration : Extension() {
 	inner class SoftBanArgs : Arguments() {
 		/** The user to soft-ban. */
 		val userArgument by user {
-			name = "softBanUser"
+			name = "user"
 			description = "Person to Soft ban"
 		}
 

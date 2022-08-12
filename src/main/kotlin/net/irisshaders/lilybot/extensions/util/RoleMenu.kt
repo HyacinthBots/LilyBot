@@ -596,7 +596,7 @@ class RoleMenu : Extension() {
 	inner class RoleMenuAddArgs : Arguments() {
 		/** The message ID of the role menu being edited. */
 		val messageId by snowflake {
-			name = "menuId"
+			name = "menu-id"
 			description = "The message ID of the role menu you'd like to edit."
 		}
 
@@ -610,7 +610,7 @@ class RoleMenu : Extension() {
 	inner class RoleMenuRemoveArgs : Arguments() {
 		/** The message ID of the role menu being edited. */
 		val messageId by snowflake {
-			name = "menuId"
+			name = "menu-id"
 			description = "The message ID of the menu you'd like to edit."
 		}
 

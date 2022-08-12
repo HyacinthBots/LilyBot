@@ -52,11 +52,10 @@ dependencies {
     detektPlugins(libs.detekt)
 
     implementation(libs.kord.extensions)
-    implementation(libs.kord.phishing)
-    implementation(libs.kord.mappings)
-
-    // UnsafeAPI KordEx
-    implementation(libs.kord.unsafe)
+    implementation(libs.kord.extensions.phishing)
+    implementation(libs.kord.extensions.mappings)
+    implementation(libs.kord.extensions.pluralkit)
+    implementation(libs.kord.extensions.unsafe)
 
     implementation(libs.kotlin.stdlib)
 

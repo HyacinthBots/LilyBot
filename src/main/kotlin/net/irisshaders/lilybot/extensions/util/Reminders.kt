@@ -600,7 +600,7 @@ class Reminders : Extension() {
 
 		/** A custom message the user may want to provide. */
 		val customMessage by optionalString {
-			name = "customMessage"
+			name = "custom-message"
 			description = "Add a custom message to your reminder"
 		}
 
@@ -614,7 +614,7 @@ class Reminders : Extension() {
 
 	inner class RemoveRemindArgs : Arguments() {
 		val reminder by int {
-			name = "reminderNumber"
+			name = "reminder-number"
 			description = "The number of the reminder to remove. Use `/reminders list` to find out the reminder."
 		}
 	}
@@ -626,14 +626,14 @@ class Reminders : Extension() {
 		}
 
 		val reminder by int {
-			name = "reminderNumber"
+			name = "reminder-number"
 			description = "The number of the reminder to remove. Use `/reminders list` to find out the reminder."
 		}
 	}
 
 	inner class ModReminderListArgs : Arguments() {
 		val userID by snowflake {
-			name = "userid"
+			name = "user-id"
 			description = "The user id of the user to list the reminders of"
 		}
 	}

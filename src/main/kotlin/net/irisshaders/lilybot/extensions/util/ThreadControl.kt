@@ -310,7 +310,7 @@ class ThreadControl : Extension() {
 	inner class ThreadRenameArgs : Arguments() {
 		/** The new name for the thread. */
 		val newThreadName by string {
-			name = "newName"
+			name = "new-name"
 			description = "The new name to give to the thread"
 		}
 	}
@@ -327,7 +327,7 @@ class ThreadControl : Extension() {
 	inner class ThreadTransferArgs : Arguments() {
 		/** The new thread owner. */
 		val newOwner by member {
-			name = "newOwner"
+			name = "new-owner"
 			description = "The user you want to transfer ownership of the thread to"
 		}
 	}
