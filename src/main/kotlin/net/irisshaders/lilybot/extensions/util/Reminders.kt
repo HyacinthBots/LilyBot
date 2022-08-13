@@ -2,6 +2,7 @@ package net.irisshaders.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.guildFor
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
@@ -11,6 +12,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOpti
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
+import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -37,7 +39,9 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.database.collections.RemindMeCollection
+import net.irisshaders.lilybot.database.entities.RemindMeData
 import net.irisshaders.lilybot.utils.botHasChannelPerms
+import net.irisshaders.lilybot.utils.utilsLogger
 
 /**
  * The class that contains the reminding functions in the bot.
@@ -177,6 +181,28 @@ class Reminders : Extension() {
 				}
 			}
 
+			ephemeralSubCommand(::ModReminderListArgs) {
+				name = "mod-list"
+				description = "List the reminders of a user in this guild."
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
+
+				action {
+					respond {
+						embed {
+							title = "Reminders of ${guild!!.getMember(arguments.userID).tag}"
+							field {
+								value = userReminders(event, arguments.userID)
+							}
+						}
+					}
+				}
+			}
+
 			/**
 			 * Remove reminder command. Brings up a modal to allow the user to specify the reminder to delete.
 			 * @author NoComment1105
@@ -197,25 +223,12 @@ class Reminders : Extension() {
 
 					reminders.forEach {
 						if (it.guildId == guild?.id && it.userId == user.id && it.id == arguments.reminder) {
-							response = "Reminder ${it.id}\nTime set: ${
-								it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
-							},\nTime until " +
-									"reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
-										it.remindTime.toDiscord(TimestampType.ShortDateTime)
-									}),\nCustom Message: ${
-										if (it.customMessage != null && it.customMessage.length >= 1024) {
-											it.customMessage.substring(0..1000)
-										} else {
-											it.customMessage ?: "none"
-										}
-									}\n---\n"
-
-							val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-							RemindMeCollection().removeReminder(guild!!.id, user.id, arguments.reminder)
 							@Suppress("DuplicatedCode")
+							response = reminderContent(it)
+							RemindMeCollection().removeReminder(guild!!.id, user.id, arguments.reminder)
 							val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
 								.getChannelOf<GuildMessageChannel>(it.channelId)
-								.getMessage(messageId)
+								.getMessage(Snowflake(it.originalMessageUrl.split("/")[6]))
 							message.edit {
 								content = "${message.content} ${
 									if (it.repeating) "**Repeating" else "**"
@@ -232,6 +245,53 @@ class Reminders : Extension() {
 					respond {
 						embed {
 							title = "Reminder cancelled"
+							field {
+								name = "Reminder"
+								value = response
+							}
+						}
+					}
+				}
+			}
+
+			ephemeralSubCommand(::ModRemoveRemindArgs) {
+				name = "mod-remove"
+				description = "A command for moderators to remove reminders to prevent spam"
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
+
+				action {
+					val reminders = RemindMeCollection().getReminders()
+
+					var response = ""
+
+					reminders.forEach {
+						if (it.guildId == guild?.id && it.userId == arguments.userID && it.id == arguments.reminder) {
+							response = reminderContent(it)
+							RemindMeCollection().removeReminder(guild!!.id, arguments.userID, arguments.reminder)
+							val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+								.getChannelOf<GuildMessageChannel>(it.channelId)
+								.getMessage(Snowflake(it.originalMessageUrl.split("/")[6]))
+							message.edit {
+								content = "${message.content} ${
+									if (it.repeating) "**Repeating" else "**"
+								} Reminder cancelled by a moderator.**"
+							}
+						}
+					}
+
+					if (response.isEmpty()) {
+						response += "Reminder not found. Please use `/reminder mod-list` to find out the correct " +
+								"reminder number"
+					}
+
+					respond {
+						embed {
+							title = "Reminder cancelled by moderator"
 							field {
 								name = "Reminder"
 								value = response
@@ -318,18 +378,36 @@ class Reminders : Extension() {
 		}
 	}
 
+	private fun reminderContent(reminder: RemindMeData) = "Reminder ${reminder.id}\nTime set: ${
+			reminder.initialSetTime.toDiscord(TimestampType.ShortDateTime)
+		},\nTime until " +
+				"reminder: ${reminder.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+					reminder.remindTime.toDiscord(TimestampType.ShortDateTime)
+				}),\nCustom Message: ${
+					if (reminder.customMessage != null && reminder.customMessage.length >= 1024) {
+						reminder.customMessage.substring(0..1000)
+					} else {
+						reminder.customMessage ?: "none"
+					}
+				}\n---\n"
+
 	/**
 	 * Collect a String of reminders that a user has for this guild and return it.
 	 *
 	 * @param event The event of from the slash command
+	 * @param userId If you'd like to get the reminders for a specific user, other than the interaction user.
 	 * @since 3.3.4
 	 * @author NoComment1105
 	 */
-	private suspend inline fun userReminders(event: ChatInputCommandInteractionCreateEvent): String {
+	private suspend inline fun userReminders(
+		event: ChatInputCommandInteractionCreateEvent,
+		userId: Snowflake? = null
+	): String {
 		val reminders = RemindMeCollection().getReminders()
 		var response = ""
+		val user = userId ?: event.interaction.user.id
 		reminders.forEach {
-			if (it.userId == event.interaction.user.id && it.guildId == guildFor(event)!!.id) {
+			if (it.userId == user && it.guildId == guildFor(event)!!.id) {
 				response +=
 					"Reminder ID: ${it.id}\nTime set: ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)},\n" +
 							"Time until reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
@@ -372,31 +450,38 @@ class Reminders : Extension() {
 		reminders.forEach {
 			if (it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0) {
 				val channel = kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
+				val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+				val message = channel.getMessageOrNull(messageId)
 				if (it.customMessage.isNullOrEmpty()) {
 					try {
 						channel.createMessage {
-							content = "${if (it.repeating) "Repeating" else ""} Reminder for <@${it.userId}> set ${
+							content = "${if (it.repeating) "Repeating" else ""} Repeating reminder for <@${it.userId}> set ${
 								it.initialSetTime.toDiscord(
 									TimestampType.RelativeTime
 								)
 							} at ${
 								it.initialSetTime.toDiscord(
-									TimestampType.ShortDateTime
-								)
-							}${
-								if (it.repeating) {
-									"This reminder will repeat every `${
-										it.repeatingInterval.toString().lowercase()
-											.replace("pt", "")
-											.replace("p", "")
-									}`"
-								} else ""
+										TimestampType.ShortDateTime
+									)
+								}${
+									if (it.repeating) {
+										"This reminder will repeat every `${
+											it.repeatingInterval.toString().lowercase()
+												.replace("pt", "")
+												.replace("p", "")
+										}`"
+									} else ""
 							}"
-							components {
-								linkButton {
-									label = "Jump to message"
-									url = it.originalMessageUrl
+
+							if (message != null) {
+								components {
+									linkButton {
+										label = "Jump to message"
+										url = it.originalMessageUrl
+									}
 								}
+							} else {
+								content += "\nOriginal message not found."
 							}
 						}
 					} catch (e: KtorRequestException) {
@@ -428,12 +513,9 @@ class Reminders : Extension() {
 					}
 
 					if (!it.repeating) {
-						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-						kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
-							.getMessage(messageId)
-							.edit {
+						message?.edit {
 								content = "Reminder completed!"
-							}
+							} ?: utilsLogger.debug { "Unable to find original message" }
 					}
 				} else {
 					// FIXME Maybe duplicaten't?
@@ -465,11 +547,15 @@ class Reminders : Extension() {
 									}
 								}"
 							}
-							components {
-								linkButton {
-									label = "Jump to message"
-									url = it.originalMessageUrl
+							if (message != null) {
+								components {
+									linkButton {
+										label = "Jump to message"
+										url = it.originalMessageUrl
+									}
 								}
+							} else {
+								content += "\nOriginal message not found."
 							}
 						}
 					} catch (e: KtorRequestException) {
@@ -503,22 +589,23 @@ class Reminders : Extension() {
 									}"
 								}
 							}"
-							components {
-								linkButton {
-									label = "Jump to message"
-									url = it.originalMessageUrl
+							if (message != null) {
+								components {
+									linkButton {
+										label = "Jump to message"
+										url = it.originalMessageUrl
+									}
 								}
+							} else {
+								content += "\nOriginal message not found."
 							}
 						}
 					}
 
 					if (!it.repeating) {
-						val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-						kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
-							.getMessage(messageId)
-							.edit {
-								content = "Reminder completed!"
-							}
+						message?.edit {
+							content = "Reminder completed!"
+						} ?: utilsLogger.debug { "Unable to find original message" }
 					}
 				}
 
@@ -553,7 +640,7 @@ class Reminders : Extension() {
 
 		/** A custom message the user may want to provide. */
 		val customMessage by optionalString {
-			name = "customMessage"
+			name = "custom-message"
 			description = "Add a custom message to your reminder"
 		}
 
@@ -574,8 +661,27 @@ class Reminders : Extension() {
 	inner class RemoveRemindArgs : Arguments() {
 		/** The numeric ID of the reminder you want to delete. */
 		val reminder by int {
-			name = "reminderNumber"
+			name = "reminder-number"
 			description = "The number of the reminder to remove. Use `/reminders list` to find out the reminder."
+		}
+	}
+
+	inner class ModRemoveRemindArgs : Arguments() {
+		val userID by snowflake {
+			name = "userid"
+			description = "The user id of the user to remove the reminder from"
+		}
+
+		val reminder by int {
+			name = "reminder-number"
+			description = "The number of the reminder to remove. Use `/reminders list` to find out the reminder."
+		}
+	}
+
+	inner class ModReminderListArgs : Arguments() {
+		val userID by snowflake {
+			name = "user-id"
+			description = "The user id of the user to list the reminders of"
 		}
 	}
 

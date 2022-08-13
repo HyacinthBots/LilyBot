@@ -44,6 +44,7 @@ import net.irisshaders.lilybot.database.collections.RoleMenuCollection
 import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.utilsLogger
 
 /**
  * The class the holds the systems allowing for role menus to function.
@@ -144,6 +145,9 @@ class RoleMenu : Extension() {
 								value = arguments.embed.toString()
 								inline = true
 							}
+							footer {
+								text = "Created by ${user.asUser().tag}"
+							}
 						}
 						components {
 							linkButton {
@@ -216,6 +220,9 @@ class RoleMenu : Extension() {
 							title = "Role Added to Role Menu"
 							description = "The ${arguments.role.mention} role was added to a role menu in " +
 									"${channel.mention}."
+							footer {
+								text = "Added by ${user.asUser().tag}"
+							}
 						}
 						components {
 							linkButton {
@@ -277,6 +284,9 @@ class RoleMenu : Extension() {
 							title = "Role Removed from Role Menu"
 							description = "The ${arguments.role.mention} role was removed from a role menu in " +
 									"${channel.mention}."
+							footer {
+								text = "Removed by ${user.asUser().tag}"
+							}
 						}
 						components {
 							linkButton {
@@ -355,7 +365,7 @@ class RoleMenu : Extension() {
 
 							roles.add(newRole.id)
 						} else {
-							println("skipped creating new roles")
+							utilsLogger.debug("skipped creating new roles")
 							roles.add(existingRole.id)
 						}
 					}
@@ -374,6 +384,9 @@ class RoleMenu : Extension() {
 						embed {
 							title = "Pronoun Role Menu Created"
 							description = "A pronoun role menu was created in ${channel.mention}."
+							footer {
+								text = "Created by ${user.asUser().tag}"
+							}
 						}
 						components {
 							linkButton {
@@ -584,7 +597,7 @@ class RoleMenu : Extension() {
 	inner class RoleMenuAddArgs : Arguments() {
 		/** The message ID of the role menu being edited. */
 		val messageId by snowflake {
-			name = "menuId"
+			name = "menu-id"
 			description = "The message ID of the role menu you'd like to edit."
 		}
 
@@ -598,7 +611,7 @@ class RoleMenu : Extension() {
 	inner class RoleMenuRemoveArgs : Arguments() {
 		/** The message ID of the role menu being edited. */
 		val messageId by snowflake {
-			name = "menuId"
+			name = "menu-id"
 			description = "The message ID of the menu you'd like to edit."
 		}
 

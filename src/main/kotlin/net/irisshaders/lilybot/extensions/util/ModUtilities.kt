@@ -467,13 +467,13 @@ class ModUtilities : Extension() {
 	inner class SayEditArgs : Arguments() {
 		/** The ID of the embed to edit. */
 		val messageToEdit by snowflake {
-			name = "messageToEdit"
+			name = "message-to-edit"
 			description = "The ID of the message you'd like to edit"
 		}
 
 		/** The new content of the embed. */
 		val newContent by optionalString {
-			name = "newContent"
+			name = "new-content"
 			description = "The new content of the message"
 
 			mutate {
@@ -485,13 +485,13 @@ class ModUtilities : Extension() {
 
 		/** The new color for the embed. */
 		val newColor by optionalColour {
-			name = "newColor"
+			name = "new-color"
 			description = "The new color of the embed. Embeds only"
 		}
 
 		/** The channel the embed was originally sent in. */
 		val channelOfMessage by optionalChannel {
-			name = "channelOfMessage"
+			name = "channel-of-message"
 			description = "The channel of the message"
 		}
 

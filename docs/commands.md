@@ -409,6 +409,18 @@ None
 
 ---
 
+### Name: `remind mod-list`
+**Arguments**:
+* `userId` - The ID of the user to get the reminders for - Snowflake
+
+**Result**: Displays an embed containing all the reminders for the target user. If there are none, it returns a messages saying so.
+
+**Required Permissions**: `None`
+
+**Command category**: `Mod/Utility commands`
+
+---
+
 ### Name: `reminder remove`
 **Arguments**:
 None
@@ -418,6 +430,19 @@ None
 **Required Permissions**: `None`
 
 **Command category**: `Utility commands`
+
+---
+
+### Name: `remind mod-remove`
+**Arguments**:
+* `userId` - The ID of the user to get the reminders for - Snowflake
+* `reminderId` - The ID of the reminder to remove - Snowflake
+
+**Result**: Deletes the reminder from the user
+
+**Required Permissions**: `None`
+
+**Command category**: `Mod/Utility commands`
 
 ---
 

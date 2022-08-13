@@ -558,19 +558,19 @@ class Tags : Extension() {
 
 		/** The new name for the tag being edited. */
 		val newName by optionalString {
-			name = "newName"
+			name = "new-name"
 			description = "The new name for the tag you're editing"
 		}
 
 		/** The new title for the tag being edited. */
 		val newTitle by optionalString {
-			name = "newTitle"
+			name = "new-title"
 			description = "The new title for the tag you're editing"
 		}
 
 		/** The new value for the tag being edited. */
 		val newValue by optionalString {
-			name = "newValue"
+			name = "new-value"
 			description = "The new value for the tag you're editing"
 
 			mutate {
@@ -582,7 +582,7 @@ class Tags : Extension() {
 
 		/** The new appearance for the tag being edited. */
 		val newAppearance by optionalStringChoice {
-			name = "newAppearance"
+			name = "new-appearance"
 			description = "The new appearance for the tag you're editing"
 			choices = mutableMapOf("embed" to "embed", "message" to "message")
 		}

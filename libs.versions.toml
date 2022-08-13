@@ -1,21 +1,22 @@
 [versions]
 kotlin = "1.7.10"  # Note: Plugin versions must be updated in the settings.gradle.kts too
 
-groovy = "3.0.11"
-kord-extensions = "1.5.5-20220708.114206-2"
+groovy = "3.0.12"
+kord-extensions = "1.5.5-20220807.195423-18"
 logging = "2.1.23"
 logback = "1.2.8"
 github-api = "1.307"
-kmongo = "4.6.1"
-detekt = "1.21.0-RC2"
-koma = "1.0.2"
+kmongo = "4.7.0"
+detekt = "1.21.0"
+koma = "1.1.0"
 
 [libraries]
 groovy = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 kord-extensions = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
-kord-phishing = { module = "com.kotlindiscord.kord.extensions:extra-phishing", version.ref = "kord-extensions" }
-kord-mappings = { module = "com.kotlindiscord.kord.extensions:extra-mappings", version.ref = "kord-extensions"}
-kord-unsafe = { module = "com.kotlindiscord.kord.extensions:unsafe", version.ref = "kord-extensions"}
+kord-extensions-phishing = { module = "com.kotlindiscord.kord.extensions:extra-phishing", version.ref = "kord-extensions" }
+kord-extensions-mappings = { module = "com.kotlindiscord.kord.extensions:extra-mappings", version.ref = "kord-extensions"}
+kord-extensions-pluralkit = { module = "com.kotlindiscord.kord.extensions:extra-pluralkit", version.ref = "kord-extensions"}
+kord-extensions-unsafe = { module = "com.kotlindiscord.kord.extensions:unsafe", version.ref = "kord-extensions"}
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logging = { module = "io.github.microutils:kotlin-logging", version.ref = "logging" }

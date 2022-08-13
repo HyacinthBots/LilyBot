@@ -560,7 +560,7 @@ private suspend inline fun quickLogEmbed(
 class ManualReportArgs : Arguments() {
 	/** The link to the message being reported. */
 	val message by string {
-		name = "messageLink"
+		name = "message-link"
 		description = "Link to the message to report"
 	}
 }
