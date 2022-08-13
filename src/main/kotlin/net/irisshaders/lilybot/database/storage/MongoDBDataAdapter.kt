@@ -55,7 +55,10 @@ class MongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
 
 		query = and(query, AdaptedData::type eq unit.storageType)
 
+		query = and(query, AdaptedData::channel eq unit.channel)
 		query = and(query, AdaptedData::guild eq unit.guild)
+		query = and(query, AdaptedData::message eq unit.message)
+		query = and(query, AdaptedData::user eq unit.user)
 
 		return query
 	}
@@ -105,7 +108,10 @@ class MongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
 
 				type = unit.storageType,
 
+				channel = unit.channel,
 				guild = unit.guild,
+				message = unit.message,
+				user = unit.user,
 
 				data = Json.encodeToString(unit.dataType.serializer(), data)
 			)
@@ -126,7 +132,10 @@ class MongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
 
 				type = unit.storageType,
 
+				channel = unit.channel,
 				guild = unit.guild,
+				message = unit.message,
+				user = unit.user,
 
 				data = Json.encodeToString(unit.dataType.serializer(), data)
 			)
