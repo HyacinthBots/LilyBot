@@ -6,7 +6,7 @@ pluginManagement {
 
         id("com.github.johnrengelman.shadow") version "7.1.2"
 
-        id("io.gitlab.arturbosch.detekt") version "1.21.0-RC2"
+        id("io.gitlab.arturbosch.detekt") version "1.21.0"
 
         id("com.github.jakemarsden.git-hooks") version "0.0.2"
     }
