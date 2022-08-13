@@ -12,6 +12,7 @@ import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
+import net.irisshaders.lilybot.database.storage.MongoDBDataAdapter
 import net.irisshaders.lilybot.extensions.config.Config
 import net.irisshaders.lilybot.extensions.config.JoinLeaveDetection
 import net.irisshaders.lilybot.extensions.events.LogUploading
@@ -57,6 +58,7 @@ suspend fun main() {
 
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		database(true)
+		dataAdapter(::MongoDBDataAdapter)
 
 		members {
 			lockMemberRequests = true // Collect members one at a time to avoid hitting rate limits
