@@ -5,14 +5,11 @@ import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageDeleteEvent
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageDeleteEvent
-import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Attachment
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.exception.EntityNotFoundException
-import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
@@ -37,7 +34,8 @@ class MessageDelete : Extension() {
 				anyGuild()
 				configPresent()
 				failIf {
-					event.message?.author?.id == kord.selfId
+					event.message?.author?.id == kord.selfId ||
+					!event.message?.author?.isBot!!
 				}
 			}
 
@@ -75,17 +73,43 @@ class MessageDelete : Extension() {
 							icon = proxiedMessage.member.avatarUrl
 						}
 						description =
-							"Location: ${event.getGuild().getChannelOf<GuildMessageChannel>(messageLocation).mention}" +
-									"\n${event.getGuild().getChannelOf<GuildMessageChannel>(messageLocation).name}"
+							"Location: <#${event.getGuild().getChannelOf<GuildMessageChannel>(messageLocation)}"
 						timestamp = Clock.System.now()
 
-						fields(messageContent, attachments)
+						field {
+							name = "Message contents"
+							value =
+								if (messageContent.isNullOrEmpty()) {
+									"Failed to retrieve message contents"
+								} else {
+									messageContent
+								}
+							inline = false
+						}
+						if (!attachments.isNullOrEmpty()) {
+							val attachmentUrls = StringBuilder()
+							attachments.forEach {
+								attachmentUrls.append(
+									"https://media.discordapp.net/attachments/$messageLocation/" +
+											"${proxiedMessage.id}/${it.filename}\n"
+								)
+							}
+							field {
+								name = "Attachments"
+								value = attachmentUrls.trim().toString()
+								inline = false
+							}
+						}
+
+						if (images.isNotEmpty()) {
+							image = images.first().url
+						}
 
 						field {
 							name = "Message Author:"
-							value = "System Member: ${proxiedMessage.member.name}\n" +
-									"Account: ${event.getGuild().getMember(proxiedMessage.sender).tag}" +
-									event.getGuild().getMember(proxiedMessage.sender).mention
+							value = "${proxiedMessage.member.name}\n" +
+									"(${event.getGuild().getMember(proxiedMessage.sender).tag}\n" +
+									"${event.getGuild().getMember(proxiedMessage.sender).mention})"
 							inline = true
 						}
 
@@ -96,110 +120,6 @@ class MessageDelete : Extension() {
 					}
 				}
 			}
-		}
-
-		event<UnProxiedMessageDeleteEvent> {
-			check {
-				anyGuild()
-				configPresent()
-				failIf {
-					event.message?.author?.id == kord.selfId ||
-					event.message?.author?.isBot == true
-				}
-			}
-
-			action {
-				val config = DatabaseHelper.getConfig(event.getGuild().id) ?: return@action
-
-				val message = event.message
-
-				val guild = kord.getGuild(event.guildId!!)!!
-				var messageLog: GuildMessageChannel? = null
-				try {
-					messageLog = guild.getChannelOf(config.messageLogs)
-				} catch (e: EntityNotFoundException) {
-					DatabaseHelper.clearConfig(guild.id) // Clear the config to make the user fix it
-				}
-
-				val messageContent = if (message?.asMessageOrNull() != null) {
-					if (message.asMessageOrNull().content.length > 1024) {
-						message.asMessageOrNull().content.substring(0, 1024) + "..."
-					} else {
-						message.asMessageOrNull().content
-					}
-				} else {
-					null
-				}
-
-				message ?: return@action
-
-				val messageLocation = event.channel.asChannelOf<GuildMessageChannel>()
-				val attachments = event.message?.attachments
-				val images: MutableSet<Attachment> = mutableSetOf()
-				attachments?.forEach { if (it.isImage) images += it }
-
-				messageLog?.createMessage {
-					embed {
-						color = DISCORD_PINK
-						author {
-							name = "Message deleted"
-							icon = message.author?.avatar?.url
-						}
-						description =
-							"Location: ${messageLocation.mention}" +
-									"\n${messageLocation.name}"
-						timestamp = Clock.System.now()
-
-						fields(messageContent, attachments)
-
-						field {
-							name = "Message Author:"
-							value = "${message.author?.id ?: "Failed to get author of message"} ${message.author?.mention ?: ""}"
-							inline = true
-						}
-
-						field {
-							name = "Author ID:"
-							value = message.author?.id.toString()
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-/**
- * Adds the common fields to a deleted message embed.
- *
- * @param messageContent The content of the message.
- * @param attachments The attachments of the message.
- *
- * @author NoComment1105
- * @since 3.6.0
- */
-private fun EmbedBuilder.fields(messageContent: String?, attachments: Set<Attachment>?) {
-	field {
-		name = "Message contents"
-		value =
-			if (messageContent.isNullOrEmpty()) {
-				"Failed to retrieve message contents"
-			} else {
-				messageContent
-			}
-		inline = false
-	}
-	if (!attachments.isNullOrEmpty()) {
-		val attachmentUrls = StringBuilder()
-		attachments.forEach {
-			attachmentUrls.append(
-				it.url + "\n"
-			)
-		}
-		field {
-			name = "Attachments"
-			value = attachmentUrls.trim().toString()
-			inline = false
 		}
 	}
 }
