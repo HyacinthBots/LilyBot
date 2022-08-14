@@ -92,7 +92,7 @@ class Reminders : Extension() {
 						if (arguments.customMessage!!.contains("@everyone") ||
 							arguments.customMessage!!.contains("@here")
 						) {
-							respond { content = "You can't use @everyone or @here in your message" }
+							respond { content = "You can't use `@everyone` or `@here` in your message" }
 							return@action
 						}
 					}
