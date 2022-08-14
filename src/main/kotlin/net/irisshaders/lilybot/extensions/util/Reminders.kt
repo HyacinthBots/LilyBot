@@ -88,6 +88,13 @@ class Reminders : Extension() {
 					if (arguments.customMessage != null && arguments.customMessage!!.length >= 1024) {
 						respond { content = "Message is too long. Message must be 1024 characters or fewer" }
 						return@action
+					} else if (arguments.customMessage != null) {
+						if (arguments.customMessage!!.contains("@everyone") ||
+							arguments.customMessage!!.contains("@here")
+						) {
+							respond { content = "You can't use @everyone or @here in your message" }
+							return@action
+						}
 					}
 
 					val response = respond {
@@ -366,17 +373,17 @@ class Reminders : Extension() {
 	}
 
 	private fun reminderContent(reminder: RemindMeData) = "Reminder ${reminder.id}\nTime set: ${
-			reminder.initialSetTime.toDiscord(TimestampType.ShortDateTime)
-		},\nTime until " +
-				"reminder: ${reminder.remindTime.toDiscord(TimestampType.RelativeTime)} (${
-					reminder.remindTime.toDiscord(TimestampType.ShortDateTime)
-				}),\nCustom Message: ${
-					if (reminder.customMessage != null && reminder.customMessage.length >= 1024) {
-						reminder.customMessage.substring(0..1000)
-					} else {
-						reminder.customMessage ?: "none"
-					}
-				}\n---\n"
+		reminder.initialSetTime.toDiscord(TimestampType.ShortDateTime)
+	},\nTime until " +
+			"reminder: ${reminder.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+				reminder.remindTime.toDiscord(TimestampType.ShortDateTime)
+			}),\nCustom Message: ${
+				if (reminder.customMessage != null && reminder.customMessage.length >= 1024) {
+					reminder.customMessage.substring(0..1000)
+				} else {
+					reminder.customMessage ?: "none"
+				}
+			}\n---\n"
 
 	/**
 	 * Collect a String of reminders that a user has for this guild and return it.
@@ -483,8 +490,8 @@ class Reminders : Extension() {
 
 					if (!it.repeating) {
 						message?.edit {
-								content = "Reminder completed!"
-							} ?: utilsLogger.debug { "Unable to find original message" }
+							content = "Reminder completed!"
+						} ?: utilsLogger.debug { "Unable to find original message" }
 					}
 				} else {
 					// FIXME Maybe duplicaten't?
