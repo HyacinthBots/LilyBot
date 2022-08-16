@@ -3,13 +3,11 @@ package net.irisshaders.lilybot.extensions.events
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.PKMessageCreateEvent
 import com.kotlindiscord.kord.extensions.sentry.tag
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.download
@@ -25,6 +23,7 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
+import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
@@ -68,18 +67,15 @@ class LogUploading : Extension() {
 		 * @author Caio_MGT, maximumpower55
 		 * @since 2.0
 		 */
-		event<PKMessageCreateEvent> {
+		event<MessageCreateEvent> {
 			check {
 				anyGuild()
 				failIf {
 					event.message.author.isNullOrBot()
 					event.message.getChannelOrNull() !is MessageChannel
 				}
-				configPresent(ConfigType.SUPPORT)
-
-				// I hate NullPointerExceptions. This is to prevent a null pointer exception if the message is a Pk one.
-				if (channelFor(event) == null) return@check
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				configPresent(ConfigType.SUPPORT)
 			}
 			action {
 				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)!!
@@ -90,15 +86,14 @@ class LogUploading : Extension() {
 
 				val eventMessage = event.message.asMessageOrNull() // Get the message
 				var uploadChannel = eventMessage.channel.asChannel()
-				val eventMember = event.member ?: event.author
 
 				if (deferUploadUntilThread) {
 					delay(4.seconds) // Delay to allow for thread creation
-					ThreadsCollection().getOwnerThreads(eventMember!!.id).forEach {
-						if (event.getGuild().getChannelOf<TextChannelThread>(it.threadId).parentId ==
+					ThreadsCollection().getOwnerThreads(event.member!!.id).forEach {
+						if (event.getGuild()!!.getChannelOf<TextChannelThread>(it.threadId).parentId ==
 							supportConfig.channel
 						) {
-							uploadChannel = event.getGuild().getChannelOf<GuildMessageChannel>(it.threadId)
+							uploadChannel = event.getGuild()!!.getChannelOf<GuildMessageChannel>(it.threadId)
 							return@forEach
 						}
 					}
@@ -155,8 +150,8 @@ class LogUploading : Extension() {
 												"through public posts.\nIt's easier for the support team to view " +
 												"the file on mclo.gs, do you want it to be uploaded?"
 									footer {
-										text = "Uploaded by ${eventMessage.author?.tag ?: eventMember?.asUser()?.tag}"
-										icon = eventMessage.author?.avatar?.url ?: eventMember?.asUser()?.avatar?.url
+										text = eventMessage.author?.tag ?: ""
+										icon = eventMessage.author?.avatar?.url
 									}
 									color = DISCORD_PINK
 								}
@@ -168,15 +163,15 @@ class LogUploading : Extension() {
 
 										action {
 											// Make sure only the log uploader can confirm this
-											if (event.interaction.user.id == eventMember!!.id) {
+											if (event.interaction.user.id == eventMessage.author?.id) {
 												// Delete the confirmation and proceed to upload
 												confirmationMessage!!.delete()
 
 												val uploadMessage = uploadChannel.createEmbed {
 													title = "Uploading `$attachmentFileName` to mclo.gs..."
 													footer {
-														text = "Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
-														icon = eventMessage.author?.avatar?.url ?: eventMember.asUser().avatar?.url
+														text = "Uploaded by ${eventMessage.author?.tag}"
+														icon = eventMessage.author?.avatar?.url
 													}
 													timestamp = Clock.System.now()
 													color = DISCORD_PINK
@@ -189,8 +184,8 @@ class LogUploading : Extension() {
 														embed {
 															title = "`$attachmentFileName` uploaded to mclo.gs"
 															footer {
-																text = "Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
-																icon = eventMessage.author?.avatar?.url ?: eventMember.asUser().avatar?.url
+																text = "Uploaded by ${eventMessage.author?.tag}"
+																icon = eventMessage.author?.avatar?.url
 															}
 															timestamp = Clock.System.now()
 															color = DISCORD_PINK
@@ -210,15 +205,15 @@ class LogUploading : Extension() {
 																"Failed to upload `$attachmentFileName` to mclo.gs"
 															description = "Error: $e"
 															footer {
-																text = "Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
-																icon = eventMessage.author?.avatar?.url ?: eventMember.asUser().avatar?.url
+																text = "Uploaded by ${eventMessage.author?.tag}"
+																icon = eventMessage.author?.avatar?.url
 															}
 															timestamp = Clock.System.now()
 															color = DISCORD_RED
 														}
 													}
 													// Capture Exception to Sentry
-													sentry.captureException(e) {
+													this.sentry.captureException(e) {
 														tag("log_file_name", attachmentFileName)
 														tag("extension", extension.name)
 														tag("id", eventMessage.id.toString())
@@ -236,7 +231,7 @@ class LogUploading : Extension() {
 										style = ButtonStyle.Danger
 
 										action {
-											if (event.interaction.user.id == eventMember!!.id) {
+											if (event.interaction.user.id == eventMessage.author?.id) {
 												confirmationMessage!!.delete()
 											} else {
 												respond { content = "Only the uploader can use this menu." }
