@@ -15,10 +15,10 @@ import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
 import net.irisshaders.lilybot.extensions.config.Config
 import net.irisshaders.lilybot.extensions.config.JoinLeaveDetection
+import net.irisshaders.lilybot.extensions.events.AutoThreading
 import net.irisshaders.lilybot.extensions.events.LogUploading
 import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
 import net.irisshaders.lilybot.extensions.events.MessageDelete
-import net.irisshaders.lilybot.extensions.events.ThreadInviter
 import net.irisshaders.lilybot.extensions.moderation.Report
 import net.irisshaders.lilybot.extensions.moderation.TemporaryModeration
 import net.irisshaders.lilybot.extensions.moderation.TerminalModeration
@@ -100,7 +100,8 @@ suspend fun main() {
 			add(::TemporaryModeration)
 			add(::TerminalModeration)
 			add(::ThreadControl)
-			add(::ThreadInviter)
+			// add(::ThreadInviter)
+			add(::AutoThreading)
 
 			/*
 			The anti-phishing extension automatically deletes and logs scam links. It also allows users to check links
