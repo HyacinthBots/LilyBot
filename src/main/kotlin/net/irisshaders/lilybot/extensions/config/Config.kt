@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
@@ -12,7 +13,7 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
+import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.TextInputStyle
@@ -176,17 +177,16 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 					footer {
 						text = "Configured by: ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
 					}
 				}
 			}
 		}
 	}
 
-	unsafeSubCommand(::ModerationArgs) {
+	ephemeralSubCommand(::ModerationArgs) {
 		name = "moderation"
 		description = "Configure Lily's moderation system"
-
-		initialResponse = InitialSlashCommandResponse.None
 
 		check {
 			anyGuild()
@@ -195,7 +195,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		@Suppress("DuplicatedCode")
 		action {
-			event.interaction.respondEphemeral {
+			respond {
 				embed {
 					title = "Configuration: Moderation"
 					field {
@@ -238,17 +238,16 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 					footer {
 						text = "Configured by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
 					}
 				}
 			}
 		}
 	}
 
-	unsafeSubCommand(::LoggingArgs) {
+	ephemeralSubCommand(::LoggingArgs) {
 		name = "logging"
 		description = "Configure Lily's logging system"
-
-		initialResponse = InitialSlashCommandResponse.None
 
 		check {
 			anyGuild()
@@ -258,26 +257,31 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		@Suppress("DuplicatedCode")
 		action {
 			if (arguments.enableJoinChannel && arguments.joinChannel == null) {
-				respondEphemeral { content = "You must specify a channel to log joins to!" }
+				respond { content = "You must specify a channel to log joins to!" }
 				return@action
 			} else if (arguments.enableMessageLogs && arguments.messageLogs == null) {
-				respondEphemeral { content = "You must specify a channel to message deletes joins to!" }
+				respond { content = "You must specify a channel to message deletes joins to!" }
 				return@action
 			}
 
-			event.interaction.respondEphemeral {
+			respond {
 				embed {
 					title = "Configuration: Logging"
 					field {
 						name = "Message Logs"
-						value = arguments.messageLogs?.mention ?: "Disabled"
+						value = if (!arguments.enableMessageLogs || arguments.messageLogs?.mention == null) {
+							arguments.messageLogs!!.mention
+						} else {
+							"Disabled"
+						}
 					}
 					field {
 						name = "Join/Leave Logs"
-						value = arguments.joinChannel?.mention ?: "Disabled"
-					}
-					footer {
-						text = "Configured by ${user.asUser().tag}"
+						value = if (!arguments.enableJoinChannel || arguments.joinChannel?.mention == null) {
+							arguments.joinChannel!!.mention
+						} else {
+							"Disabled"
+						}
 					}
 				}
 			}
@@ -307,14 +311,23 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 					field {
 						name = "Message Logs"
-						value = arguments.messageLogs?.mention ?: "Disabled"
+						value = if (!arguments.enableMessageLogs || arguments.messageLogs?.mention == null) {
+							arguments.messageLogs!!.mention
+						} else {
+							"Disabled"
+						}
 					}
 					field {
 						name = "Join/Leave Logs"
-						value = arguments.joinChannel?.mention ?: "Disabled"
+						value = if (!arguments.enableJoinChannel || arguments.joinChannel?.mention == null) {
+							arguments.joinChannel!!.mention
+						} else {
+							"Disabled"
+						}
 					}
 					footer {
 						text = "Configured by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
 					}
 				}
 			}
@@ -322,11 +335,9 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 	}
 
 	// TODO Validate the presence of database values
-	unsafeSubCommand(::ClearArgs) {
+	ephemeralSubCommand(::ClearArgs) {
 		name = "clear"
 		description = "Clear a config type"
-
-		initialResponse = InitialSlashCommandResponse.None
 
 		action {
 			when (arguments.config) {
@@ -337,41 +348,48 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							title = "Config cleared: Moderation"
 							footer {
 								text = "Config cleared by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
 							}
 						}
 					}
 				}
+
 				ConfigType.LOGGING.name -> {
 					LoggingConfigCollection().clearConfig(guild!!.id)
-					event.interaction.respondEphemeral {
+					respond {
 						embed {
 							title = "Config cleared: Logging"
 							footer {
 								text = "Config cleared by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
 							}
 						}
 					}
 				}
+
 				ConfigType.SUPPORT.name -> {
 					SupportConfigCollection().clearConfig(guild!!.id)
-					event.interaction.respondEphemeral {
+					respond {
 						embed {
 							title = "Config cleared: Support"
 							footer {
 								text = "Config cleared by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
 							}
 						}
 					}
 				}
+				// FIXME Apparently this is broken. Do something idk
 				ConfigType.ALL.name -> {
 					ModerationConfigCollection().clearConfig(guild!!.id)
 					LoggingConfigCollection().clearConfig(guild!!.id)
 					SupportConfigCollection().clearConfig(guild!!.id)
-					event.interaction.respondEphemeral {
+					respond {
 						embed {
 							title = "Config cleared"
 							footer {
 								text = "Config cleared by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
 							}
 						}
 					}
@@ -387,11 +405,13 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				embed {
 					title = "Configuration Cleared: ${arguments.config}"
 					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
-						description = "Consider setting the moderation configuration to receive configuration updates" +
-								"where you want them!"
+						description =
+							"Consider setting the moderation configuration to receive configuration updates" +
+									"where you want them!"
 					}
 					footer {
 						text = "Config cleared by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
 					}
 				}
 			}
