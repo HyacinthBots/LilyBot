@@ -10,10 +10,11 @@ import org.litote.kmongo.eq
 data class AutoThreadingData(
 	val channelId: Snowflake,
 	val roleId: Snowflake?,
-	val creationMessage: String?,
 	val allowDuplicates: Boolean,
 	val archive: Boolean,
-	val namingScheme: AutoThreading.ThreadNamingSchemes
+	val namingScheme: AutoThreading.ThreadNamingSchemes,
+	val mention: Boolean,
+	val creationMessage: String?
 )
 
 suspend inline fun getAutoThread(inputChannelId: Snowflake): AutoThreadingData? {

@@ -27,6 +27,7 @@ import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
@@ -77,10 +78,11 @@ class AutoThreading : Extension() {
 						AutoThreadingData(
 							channelId = channel.id,
 							roleId = arguments.role?.id,
-							creationMessage = arguments.message,
 							allowDuplicates = arguments.allowDuplicates,
 							archive = arguments.archive,
-							namingScheme = arguments.namingScheme
+							namingScheme = arguments.namingScheme,
+							mention = arguments.mention,
+							creationMessage = arguments.message
 						)
 					)
 
@@ -119,6 +121,11 @@ class AutoThreading : Extension() {
 						field {
 							name = "Naming Scheme:"
 							value = arguments.namingScheme.toString()
+							inline = true
+						}
+						field {
+							name = "Mention:"
+							value = arguments.mention.toString()
 							inline = true
 						}
 						field {
@@ -256,19 +263,24 @@ class AutoThreading : Extension() {
 
 				DatabaseHelper.setThreadOwner(thread.id, authorId)
 
-				val threadMessage = thread.createMessage("message")
+				val threadMessage = thread.createMessage(
+					if (options.mention) {
+						eventMessage.author!!.mention
+					} else "message"
+				)
 
 				if (options.roleId != null) {
 					val role = event.getGuild()?.getRole(options.roleId)
 					threadMessage.edit {
-						this.content = role?.mention ?: "role"
+						this.content += role?.mention
 					}
 				}
 
 				messageAndArchive(
 					options,
 					thread,
-					threadMessage
+					threadMessage,
+					eventMessage.author!!
 				)
 			}
 		}
@@ -285,7 +297,12 @@ class AutoThreading : Extension() {
 				val thread = event.channel.asChannelOfOrNull<TextChannelThread>() ?: return@action
 				val options = getAutoThread(thread.parentId) ?: return@action
 
-				val threadMessage = event.channel.createMessage("message")
+				// fixme this is being done twice for some reason
+				val threadMessage = thread.createMessage(
+					if (options.mention) {
+						event.channel.owner.mention
+					} else "message"
+				)
 
 				if (options.roleId != null) {
 					val role = event.channel.guild.getRole(options.roleId)
@@ -297,7 +314,8 @@ class AutoThreading : Extension() {
 				messageAndArchive(
 					options,
 					thread,
-					threadMessage
+					threadMessage,
+					event.channel.owner.asUser()
 				)
 			}
 		}
@@ -331,6 +349,12 @@ class AutoThreading : Extension() {
 			typeName = "foo" // todo what does this do?
 		}
 
+		val mention by defaultingBoolean {
+			name = "mention"
+			description = "If the user should be mentioned at the beginning of new threads in this channel."
+			defaultValue = false
+		}
+
 		val message by optionalString {
 			name = "message"
 			description = "The message, if any, to send at the beginning of new threads in this channel."
@@ -344,11 +368,17 @@ class AutoThreading : Extension() {
 	private suspend inline fun messageAndArchive(
 		inputOptions: AutoThreadingData,
 		inputThread: TextChannelThread,
-		inputThreadMessage: Message
+		inputThreadMessage: Message,
+		inputUser: User
 	) {
 		if (inputOptions.creationMessage != null) {
 			inputThreadMessage.edit {
-				content = inputOptions.creationMessage
+				content =
+					if (inputOptions.mention) {
+						inputUser.mention + " " + inputOptions.creationMessage
+					} else {
+						inputOptions.creationMessage
+					}
 			}
 		} else {
 			inputThreadMessage.delete("Initial thread creation")
