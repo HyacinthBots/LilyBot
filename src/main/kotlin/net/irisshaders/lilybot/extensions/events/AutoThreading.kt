@@ -1,5 +1,6 @@
 package net.irisshaders.lilybot.extensions.events
 
+import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
@@ -20,6 +21,8 @@ import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
+import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOfOrNull
@@ -28,6 +31,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
+import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -85,7 +89,50 @@ class AutoThreading : Extension() {
 						content = "Auto-threading has been **enabled** in this channel."
 					}
 
-					// todo logging
+					// Log the change
+					val config = DatabaseHelper.getConfig(guild!!.id) ?: return@action
+					val modActionLog = guild!!.getChannelOfOrNull<TextChannel>(config.modActionLog)
+
+					modActionLog?.createEmbed {
+						title = "Auto-threading Enabled"
+						description = null
+						field {
+							name = "Channel:"
+							value = channel.mention
+							inline = true
+						}
+						field {
+							name = "Role:"
+							value = arguments.role?.mention ?: "null"
+							inline = true
+						}
+						field {
+							name = "Allow Duplicates:"
+							value = arguments.allowDuplicates.toString()
+							inline = true
+						}
+						field {
+							name = "Begin Archived:"
+							value = arguments.archive.toString()
+							inline = true
+						}
+						field {
+							name = "Naming Scheme:"
+							value = arguments.namingScheme.toString()
+							inline = true
+						}
+						field {
+							name = "Initial Message:"
+							value = if (arguments.message != null) "```${arguments.message}```" else "null"
+							inline = arguments.message == null
+						}
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_BLACK
+					}
 				}
 			}
 
@@ -117,7 +164,26 @@ class AutoThreading : Extension() {
 						content = "Auto-threading has been **disabled** in this channel."
 					}
 
-					// todo logging
+					// Log the change
+					val config = DatabaseHelper.getConfig(guild!!.id) ?: return@action
+					val modActionLog = guild!!.getChannelOfOrNull<TextChannel>(config.modActionLog)
+
+					modActionLog?.createEmbed {
+						title = "Auto-threading Disabled"
+						description = null
+
+						field {
+							name = "Channel:"
+							value = channel.mention
+							inline = true
+						}
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_BLACK
+					}
 				}
 			}
 
@@ -216,9 +282,8 @@ class AutoThreading : Extension() {
 				}
 			}
 			action {
-				// todo There has to be a better way to do this
-				val thread = event.channel.guild.getChannelOfOrNull<TextChannelThread>(event.channel.id)
-				val options = getAutoThread(thread!!.parentId) ?: return@action
+				val thread = event.channel.asChannelOfOrNull<TextChannelThread>() ?: return@action
+				val options = getAutoThread(thread.parentId) ?: return@action
 
 				val threadMessage = event.channel.createMessage("message")
 
@@ -245,11 +310,6 @@ class AutoThreading : Extension() {
 			description = "The role, if any, to invite to threads created in this channel."
 		}
 
-		val message by optionalString {
-			name = "message"
-			description = "The message, if any, to send at the beginning of new threads in this channel."
-		}
-
 		val allowDuplicates by defaultingBoolean {
 			name = "allow-duplicates"
 			description = "If users should be prevented from having multiple threads open in this channel. " +
@@ -263,13 +323,18 @@ class AutoThreading : Extension() {
 			defaultValue = false
 		}
 
-		// todo Make this present options
+		// todo make this auto-complete options
 		val namingScheme by defaultingEnum<ThreadNamingSchemes> {
 			name = "naming-scheme"
 			description = "The method for naming threads in this channel."
 			defaultValue = ThreadNamingSchemes.USERNAME
 			typeName = "foo" // todo what does this do?
 		}
+
+		val message by optionalString {
+			name = "message"
+			description = "The message, if any, to send at the beginning of new threads in this channel."
+		} // todo trim this so as not to go over message size limits
 	}
 
 	enum class ThreadNamingSchemes {
