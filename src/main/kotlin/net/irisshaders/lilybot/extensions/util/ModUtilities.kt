@@ -128,13 +128,19 @@ class ModUtilities : Extension() {
 							icon = user.asUser().avatar?.url
 						}
 						timestamp = Clock.System.now()
-						color = DISCORD_BLACK
 						if (arguments.embed) {
+							if (arguments.color == DISCORD_BLURPLE) {
+								color = DISCORD_BLACK
+							} else {
+								color = arguments.color
+							}
 							field {
 								name = "Color:"
 								value = arguments.color.toString()
 								inline = true
 							}
+						} else {
+							color = DISCORD_BLACK
 						}
 					}
 					components {
