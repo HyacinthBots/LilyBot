@@ -107,6 +107,19 @@ tasks {
             )
         }
     }
+
+    wrapper {
+        /*
+         * To update the gradle wrapper version, change
+         * the `gradleVersion` below and in `gradle-wrapper.properties`
+         *
+         * Then run the following command twice to update the gradle
+         * scripts suitably
+         * `./gradlew wrapper`
+         */
+        gradleVersion = "7.5.1"
+        distributionType = Wrapper.DistributionType.BIN
+    }
 }
 
 detekt {

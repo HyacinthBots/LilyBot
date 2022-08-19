@@ -429,21 +429,29 @@ class Tags : Extension() {
 				val pagesObj = Pages()
 				val tags = TagsCollection().getAllTags(guild!!.id)
 
-				tags.chunked(10).forEach { tag ->
-					var response = ""
-					tag.forEach {
-						response += "• ${it.name} - ${it.tagTitle}\n"
-					}
+				if (tags.isEmpty()) {
 					pagesObj.addPage(
 						Page {
-							title = "Tags for this guild"
-							description = "Here are all the tags for this guild"
-							field {
-								name = "Name | Title"
-								value = response
-							}
+							description = "There are no tags for this guild."
 						}
 					)
+				} else {
+					tags.chunked(10).forEach { tag ->
+						var response = ""
+						tag.forEach {
+							response += "• ${it.name} - ${it.tagTitle}\n"
+						}
+						pagesObj.addPage(
+							Page {
+								title = "Tags for this guild"
+								description = "Here are all the tags for this guild"
+								field {
+									name = "Name | Title"
+									value = response
+								}
+							}
+						)
+					}
 				}
 
 				val paginator = EphemeralResponsePaginator(

@@ -88,6 +88,13 @@ class Reminders : Extension() {
 					if (arguments.customMessage != null && arguments.customMessage!!.length >= 1024) {
 						respond { content = "Message is too long. Message must be 1024 characters or fewer" }
 						return@action
+					} else if (arguments.customMessage != null) {
+						if (arguments.customMessage!!.contains("@everyone") ||
+							arguments.customMessage!!.contains("@here")
+						) {
+							respond { content = "You can't use `@everyone` or `@here` in your message" }
+							return@action
+						}
 					}
 
 					if (arguments.repeating && arguments.repeatingInterval == null) {
@@ -226,10 +233,10 @@ class Reminders : Extension() {
 							@Suppress("DuplicatedCode")
 							response = reminderContent(it)
 							RemindMeCollection().removeReminder(guild!!.id, user.id, arguments.reminder)
-							val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+							val message = event.kord.getGuild(it.guildId)!!
 								.getChannelOf<GuildMessageChannel>(it.channelId)
-								.getMessage(Snowflake(it.originalMessageUrl.split("/")[6]))
-							message.edit {
+								.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
+							message?.edit {
 								content = "${message.content} ${
 									if (it.repeating) "**Repeating" else "**"
 								} Reminder cancelled.**"
@@ -273,7 +280,7 @@ class Reminders : Extension() {
 						if (it.guildId == guild?.id && it.userId == arguments.userID && it.id == arguments.reminder) {
 							response = reminderContent(it)
 							RemindMeCollection().removeReminder(guild!!.id, arguments.userID, arguments.reminder)
-							val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+							val message = event.kord.getGuild(it.guildId)!!
 								.getChannelOf<GuildMessageChannel>(it.channelId)
 								.getMessage(Snowflake(it.originalMessageUrl.split("/")[6]))
 							message.edit {
@@ -320,11 +327,11 @@ class Reminders : Extension() {
 								if (it.guildId == guild?.id && it.userId == user.id) {
 									RemindMeCollection().removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-									val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+									val message = event.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
-										.getMessage(messageId)
+										.getMessageOrNull(messageId)
 
-									message.edit {
+									message?.edit {
 										content = "${message.content} ${
 											if (it.repeating) "**Repeating" else "**"
 										} Reminder cancelled.**"
@@ -340,11 +347,11 @@ class Reminders : Extension() {
 								if (it.guildId == guild?.id && it.userId == user.id && it.repeating) {
 									RemindMeCollection().removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-									val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+									val message = event.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
-										.getMessage(messageId)
+										.getMessageOrNull(messageId)
 
-									message.edit {
+									message?.edit {
 										content = "${message.content} **Repeating Reminder cancelled.**"
 									}
 								}
@@ -358,11 +365,11 @@ class Reminders : Extension() {
 								if (it.guildId == guild?.id && it.userId == user.id && !it.repeating) {
 									RemindMeCollection().removeReminder(guild!!.id, user.id, it.id)
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-									val message = this@ephemeralSubCommand.kord.getGuild(it.guildId)!!
+									val message = event.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
-										.getMessage(messageId)
+										.getMessageOrNull(messageId)
 
-									message.edit {
+									message?.edit {
 										content = "${message.content} **Reminder cancelled.**"
 									}
 								}
@@ -379,17 +386,17 @@ class Reminders : Extension() {
 	}
 
 	private fun reminderContent(reminder: RemindMeData) = "Reminder ${reminder.id}\nTime set: ${
-			reminder.initialSetTime.toDiscord(TimestampType.ShortDateTime)
-		},\nTime until " +
-				"reminder: ${reminder.remindTime.toDiscord(TimestampType.RelativeTime)} (${
-					reminder.remindTime.toDiscord(TimestampType.ShortDateTime)
-				}),\nCustom Message: ${
-					if (reminder.customMessage != null && reminder.customMessage.length >= 1024) {
-						reminder.customMessage.substring(0..1000)
-					} else {
-						reminder.customMessage ?: "none"
-					}
-				}\n---\n"
+		reminder.initialSetTime.toDiscord(TimestampType.ShortDateTime)
+	},\nTime until " +
+			"reminder: ${reminder.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+				reminder.remindTime.toDiscord(TimestampType.ShortDateTime)
+			}),\nCustom Message: ${
+				if (reminder.customMessage != null && reminder.customMessage.length >= 1024) {
+					reminder.customMessage.substring(0..1000)
+				} else {
+					reminder.customMessage ?: "none"
+				}
+			}\n---\n"
 
 	/**
 	 * Collect a String of reminders that a user has for this guild and return it.
@@ -450,8 +457,7 @@ class Reminders : Extension() {
 		reminders.forEach {
 			if (it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0) {
 				val channel = kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
-				val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-				val message = channel.getMessageOrNull(messageId)
+				val message = channel.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
 				if (it.customMessage.isNullOrEmpty()) {
 					try {
 						channel.createMessage {
@@ -514,8 +520,8 @@ class Reminders : Extension() {
 
 					if (!it.repeating) {
 						message?.edit {
-								content = "Reminder completed!"
-							} ?: utilsLogger.debug { "Unable to find original message" }
+							content = "Reminder completed!"
+						} ?: utilsLogger.debug { "Unable to find original message" }
 					}
 				} else {
 					// FIXME Maybe duplicaten't?
