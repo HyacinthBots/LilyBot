@@ -8,6 +8,7 @@ import org.litote.kmongo.eq
 // This is a temporary file to make integration of this branch into the config rewrite easier
 @Serializable
 data class AutoThreadingData(
+	val guildId: Snowflake,
 	val channelId: Snowflake,
 	val roleId: Snowflake?,
 	val allowDuplicates: Boolean,
@@ -31,4 +32,9 @@ suspend inline fun setAutoThread(inputAutoThreadData: AutoThreadingData) {
 suspend inline fun deleteAutoThread(inputChannelId: Snowflake) {
 	val collection = database.getCollection<AutoThreadingData>()
 	collection.deleteOne(AutoThreadingData::channelId eq inputChannelId)
+}
+
+suspend inline fun getAllAutoThreads(inputGuildId: Snowflake): List<AutoThreadingData> {
+	val collection = database.getCollection<AutoThreadingData>()
+	return collection.find(AutoThreadingData::guildId eq inputGuildId).toList()
 }

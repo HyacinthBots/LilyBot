@@ -32,6 +32,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
@@ -76,6 +77,7 @@ class AutoThreading : Extension() {
 					// Add the channel to the database as auto-threaded
 					setAutoThread(
 						AutoThreadingData(
+							guildId = guild!!.id,
 							channelId = channel.id,
 							roleId = arguments.role?.id,
 							allowDuplicates = arguments.allowDuplicates,
@@ -194,7 +196,39 @@ class AutoThreading : Extension() {
 				}
 			}
 
-			// todo Command to list all auto-threaded channels in a guild
+			ephemeralSubCommand {
+				name = "list"
+				description = "List all the auto-threaded channels in this server, if any."
+
+				check {
+					anyGuild()
+					requireBotPermissions(Permission.SendMessages)
+					botHasChannelPerms(Permissions(Permission.SendMessages))
+				}
+				action {
+					val autoThreads = getAllAutoThreads(guild!!.id)
+					var responseContent: String? = null
+					autoThreads.forEach {
+						responseContent += "\n<#${it.channelId}>"
+						if (responseContent!!.length > 4080) {
+							responseContent += "(List trimmed.)"
+							return@forEach
+						}
+					}
+
+					respond {
+						embed {
+							if (responseContent == null) {
+								title = "There are no auto-threaded channels in this guild."
+								description = "Add new ones by using `/auto-threading enable`"
+							} else {
+								title = "Auto-threaded channels in this guild:"
+								description = responseContent.replace("null", "")
+							}
+						}
+					}
+				}
+			}
 		}
 
 		// todo Use PluralKit module
