@@ -97,7 +97,8 @@ class MessageDelete : Extension() {
 					}
 					field {
 						name = "Message Author:"
-						value = eventMessage.author?.mention ?: "Failed to get author of message"
+						value = "${eventMessage.author?.mention ?: "Failed to get author of message"} " +
+								"(${eventMessage.author?.tag ?: "Failed to get author tag"})"
 						inline = true
 					}
 					field {
