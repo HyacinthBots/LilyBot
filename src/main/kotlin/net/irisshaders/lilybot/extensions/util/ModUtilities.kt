@@ -129,11 +129,7 @@ class ModUtilities : Extension() {
 						}
 						timestamp = Clock.System.now()
 						if (arguments.embed) {
-							if (arguments.color == DISCORD_BLURPLE) {
-								color = DISCORD_BLACK
-							} else {
-								color = arguments.color
-							}
+							color = arguments.color
 							field {
 								name = "Color:"
 								value = arguments.color.toString()
