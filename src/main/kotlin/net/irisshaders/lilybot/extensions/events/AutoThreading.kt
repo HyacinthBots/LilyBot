@@ -74,6 +74,14 @@ class AutoThreading : Extension() {
 						return@action
 					}
 
+					// Check if the role can be pinged
+					if (arguments.role?.mentionable == false) {
+						respond {
+							content = "Lily cannot mention this role. Please fix the role's permissions and try again."
+						}
+						return@action
+					}
+
 					// Add the channel to the database as auto-threaded
 					setAutoThread(
 						AutoThreadingData(
@@ -237,7 +245,6 @@ class AutoThreading : Extension() {
 				anyGuild()
 				configPresent()
 				failIf {
-					// todo This can probably be tidied further
 					event.message.author?.id == kord.selfId ||
 							event.message.type in listOf(
 						MessageType.ChatInputCommand,
@@ -356,7 +363,6 @@ class AutoThreading : Extension() {
 	}
 
 	inner class AutoThreadingArgs : Arguments() {
-		// todo Check that the role can be pinged
 		val role by optionalRole {
 			name = "role"
 			description = "The role, if any, to invite to threads created in this channel."
