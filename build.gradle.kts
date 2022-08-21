@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "net.irisshaders.lilybot"
-version = "3.5.2"
+version = "3.5.3"
 
 repositories {
     mavenCentral()
@@ -106,6 +106,19 @@ tasks {
                 "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
             )
         }
+    }
+
+    wrapper {
+        /*
+         * To update the gradle wrapper version, change
+         * the `gradleVersion` below and in `gradle-wrapper.properties`
+         *
+         * Then run the following command twice to update the gradle
+         * scripts suitably
+         * `./gradlew wrapper`
+         */
+        gradleVersion = "7.5.1"
+        distributionType = Wrapper.DistributionType.BIN
     }
 }
 

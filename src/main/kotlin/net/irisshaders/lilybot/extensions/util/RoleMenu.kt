@@ -144,6 +144,7 @@ class RoleMenu : Extension() {
 								inline = true
 							}
 							footer {
+								icon = user.asUser().avatar?.url
 								text = "Created by ${user.asUser().tag}"
 							}
 						}
@@ -219,6 +220,7 @@ class RoleMenu : Extension() {
 							description = "The ${arguments.role.mention} role was added to a role menu in " +
 									"${channel.mention}."
 							footer {
+								icon = user.asUser().avatar?.url
 								text = "Added by ${user.asUser().tag}"
 							}
 						}
@@ -284,6 +286,7 @@ class RoleMenu : Extension() {
 							description = "The ${arguments.role.mention} role was removed from a role menu in " +
 									"${channel.mention}."
 							footer {
+								icon = user.asUser().avatar?.url
 								text = "Removed by ${user.asUser().tag}"
 							}
 						}
@@ -384,6 +387,7 @@ class RoleMenu : Extension() {
 							title = "Pronoun Role Menu Created"
 							description = "A pronoun role menu was created in ${channel.mention}."
 							footer {
+								icon = user.asUser().avatar?.url
 								text = "Created by ${user.asUser().tag}"
 							}
 						}
