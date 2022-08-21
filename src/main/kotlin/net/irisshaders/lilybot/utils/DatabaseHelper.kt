@@ -537,6 +537,94 @@ object DatabaseHelper {
 		val collection = database.getCollection<RemindMeData>()
 		return collection.find().toList()
 	}
+
+	/**
+	 * Set's a channel as blacklisted for uploading logs.
+	 *
+	 * @param inputGuildId The guild the command was run in
+	 * @param inputChannelId The channel to disable uploading for
+	 *
+	 * @author NoComment1105
+	 * @since 3.5.4
+	 */
+	suspend inline fun setLogUploadingBlacklist(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+		val collection = database.getCollection<LogUploadingBlacklistData>()
+		collection.insertOne(LogUploadingBlacklistData(inputGuildId, inputChannelId))
+	}
+
+	/**
+	 * Removes a channel from the blacklist for uploading logs.
+	 *
+	 * @param inputGuildId The guild the command was run in
+	 * @param inputChannelId The channel to re-enable uploading for
+	 *
+	 * @author NoComment1105
+	 * @since 3.5.4
+	 */
+	suspend inline fun removeLogUploadingBlacklist(inputGuildId: Snowflake, inputChannelId: Snowflake) {
+		val collection = database.getCollection<LogUploadingBlacklistData>()
+		collection.deleteOne(
+			LogUploadingBlacklistData::guildId eq inputGuildId,
+			LogUploadingBlacklistData::channelId eq inputChannelId
+		)
+	}
+
+	/**
+	 * Gets the log uploading blacklist for the given guild.
+	 *
+	 * @param inputGuildId The guild to get the blacklist for
+	 *
+	 * @return The list of blacklisted channels for the given guild
+	 *
+	 * @author NoComment1105
+	 * @since 3.5.4
+	 */
+	suspend inline fun getLogUploadingBlacklist(inputGuildId: Snowflake): List<LogUploadingBlacklistData> {
+		val collection = database.getCollection<LogUploadingBlacklistData>()
+		return collection.find(LogUploadingBlacklistData::guildId eq inputGuildId).toList()
+	}
+
+	/**
+	 * Sets the log uploading data for the given [guild][inputGuildId].
+	 *
+	 * @param inputGuildId The guild to set the data for
+	 * @param disable Whether to enable or disable uploading
+	 *
+	 * @author NoComment1105
+	 * @since 3.5.4
+	 */
+	suspend inline fun setLogUploadingData(inputGuildId: Snowflake, disable: Boolean) {
+		val collection = database.getCollection<LogUploadingData>()
+		collection.insertOne(LogUploadingData(inputGuildId, disable))
+	}
+
+	/**
+	 * Removes the log uploading data for the given [guild][inputGuildId].
+	 *
+	 * @param inputGuildId The guild to remove the data for
+	 *
+	 * @author NoComment1105
+	 * @since 3.5.4
+	 */
+	suspend inline fun removeLogUploadingData(inputGuildId: Snowflake) {
+		val collection = database.getCollection<LogUploadingData>()
+		collection.deleteOne(LogUploadingData::guildId eq inputGuildId)
+	}
+
+	/**
+	 * Gets the log uploading data for the guild.
+	 *
+	 * @param inputGuildId The guild to get the data for
+	 *
+	 * @return The data for the requested [guild][inputGuildId]
+	 *
+	 * @author NoComment1105
+	 * @since 3.5.4
+	 */
+	suspend inline fun getLogUploadingData(inputGuildId: Snowflake): LogUploadingData? {
+		val collection = database.getCollection<LogUploadingData>()
+		return collection.findOne(LogUploadingData::guildId eq inputGuildId)
+	}
 }
 
 /**
@@ -694,4 +782,16 @@ data class RemindMeData(
 	val customMessage: String?,
 	val repeating: Boolean,
 	val id: Int
+)
+
+@Serializable
+data class LogUploadingBlacklistData(
+	val guildId: Snowflake,
+	val channelId: Snowflake
+)
+
+@Serializable
+data class LogUploadingData(
+	val guildId: Snowflake,
+	val disable: Boolean
 )
