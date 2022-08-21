@@ -784,12 +784,28 @@ data class RemindMeData(
 	val id: Int
 )
 
+/**
+ * The Data for blacklisting channels from uploading logs.
+ *
+ * @property guildId The guild the channel is in
+ * @property channelId The channel to block uploads in
+ *
+ * @since 3.5.4
+ */
 @Serializable
 data class LogUploadingBlacklistData(
 	val guildId: Snowflake,
 	val channelId: Snowflake
 )
 
+/**
+ * The Data for controlling log uploading.
+ *
+ * @property guildId The guild the data is for
+ * @property disable Whether log uploading is disabled or not
+ *
+ * @since 3.5.4
+ */
 @Serializable
 data class LogUploadingData(
 	val guildId: Snowflake,
