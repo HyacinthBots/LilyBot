@@ -39,7 +39,8 @@ class MessageDelete : Extension() {
 			action {
 				delay(PK_API_DELAY) // Allow the PK API to catch up
 				if (event.message?.author?.isBot == true) return@action
-				if (PluralKit.containsPkChatCommandPrefix(event.message!!)) return@action
+				val eventMessage = event.message ?: return@action
+				if (PluralKit.containsPkChatCommandPrefix(eventMessage)) return@action
 
 				val config = DatabaseHelper.getConfig(event.guild!!.id)!!
 
@@ -50,23 +51,18 @@ class MessageDelete : Extension() {
 				} catch (e: EntityNotFoundException) {
 					DatabaseHelper.clearConfig(event.guildId!!) // Clear the config to make the user fix it
 				}
-				val eventMessage = event.message
-				val messageContent = if (eventMessage?.asMessageOrNull() != null) {
-					if (eventMessage.asMessageOrNull().content.length > 1024) {
-						eventMessage.asMessageOrNull().content.substring(0, 1020) + " ..."
-					} else {
-						eventMessage.asMessageOrNull().content
-					}
+
+				val messageContent = if (eventMessage.asMessageOrNull().content.length > 1024) {
+					eventMessage.asMessageOrNull().content.substring(0, 1020) + " ..."
 				} else {
-					null
+					eventMessage.asMessageOrNull().content
 				}
 				val messageLocation = event.channel.id.value
 
 				// Avoid logging messages proxied by PluralKit, since these messages aren't "actually deleted"
-				if (PluralKit.isProxied(eventMessage?.id)) {
+				if (PluralKit.isProxied(eventMessage.id)) {
 					return@action
 				}
-				if (eventMessage == null) return@action
 
 				messageLog?.createEmbed {
 					color = DISCORD_PINK
@@ -79,8 +75,7 @@ class MessageDelete : Extension() {
 
 					field {
 						name = "Message Contents:"
-						value =
-							if (messageContent.isNullOrEmpty()) "Failed to get content of message" else messageContent
+						value = messageContent.ifEmpty { "Failed to get content of message" }
 						inline = false
 					}
 					// If the message has an attachment, add the link to it to the embed
@@ -102,7 +97,8 @@ class MessageDelete : Extension() {
 					}
 					field {
 						name = "Message Author:"
-						value = eventMessage.author?.mention ?: "Failed to get author of message"
+						value = "${eventMessage.author?.mention ?: "Failed to get author of message"} " +
+								"(${eventMessage.author?.tag ?: "Failed to get author tag"})"
 						inline = true
 					}
 					field {

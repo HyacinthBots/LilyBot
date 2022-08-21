@@ -10,6 +10,7 @@ import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.utils.delete
+import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.ArchiveDuration
 import dev.kord.common.entity.ChannelType
@@ -27,6 +28,8 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
+import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
+import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration.Companion.seconds
@@ -66,6 +69,7 @@ class ThreadInviter : Extension() {
 				}
 			}
 			action {
+				delay(PK_API_DELAY)
 				val config = DatabaseHelper.getConfig(event.guildId!!)!!
 
 				config.supportTeam ?: return@action
@@ -84,7 +88,11 @@ class ThreadInviter : Extension() {
 
 				if (textChannel != supportChannel) return@action
 
-				val userId = event.member!!.id
+				if (event.message.author?.isNullOrBot() == false &&
+					PluralKit.isProxied(event.message.id)
+				) return@action
+
+				val userId = PluralKit.getProxiedMessageAuthorId(event.message.id) ?: event.member!!.id
 				val user = UserBehavior(userId, kord)
 
 				DatabaseHelper.getOwnerThreads(userId).forEach {
