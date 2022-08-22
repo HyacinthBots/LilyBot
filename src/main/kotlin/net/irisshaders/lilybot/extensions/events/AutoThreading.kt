@@ -246,17 +246,17 @@ class AutoThreading : Extension() {
 				configPresent()
 				failIf {
 					event.message.author?.id == kord.selfId ||
-							event.message.type in listOf(
-						MessageType.ChatInputCommand,
-						MessageType.ThreadCreated,
-						MessageType.ThreadStarterMessage
-					) ||
-							event.message.getChannelOrNull()?.type in listOf(
-						ChannelType.GuildNews,
-						ChannelType.GuildVoice,
-						ChannelType.PublicGuildThread,
-						ChannelType.PublicNewsThread
-					)
+							listOf(
+								MessageType.ChatInputCommand,
+								MessageType.ThreadCreated,
+								MessageType.ThreadStarterMessage
+							).contains(event.message.type) ||
+							listOf(
+								ChannelType.GuildNews,
+								ChannelType.GuildVoice,
+								ChannelType.PublicGuildThread,
+								ChannelType.PublicNewsThread
+							).contains(event.message.getChannelOrNull()?.type)
 				}
 			}
 			action {
