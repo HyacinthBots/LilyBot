@@ -3,11 +3,14 @@ package net.irisshaders.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.time.TimestampType
+import com.kotlindiscord.kord.extensions.time.toDiscord
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.event.gateway.ReadyEvent
+import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.ONLINE_STATUS_CHANNEL
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
@@ -27,17 +30,21 @@ class StartupHooks : Extension() {
 	override suspend fun setup() {
 		event<ReadyEvent> {
 			action {
+				val now = Clock.System.now()
+
 				/**
 				 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
 				 * @author IMS212
 				 * @since v2.0
 				 */
 				// The channel specifically for sending online notifications to
-				val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannelOf<GuildMessageChannel>(ONLINE_STATUS_CHANNEL)
+				val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannelOf<NewsChannel>(ONLINE_STATUS_CHANNEL)
 				onlineLog?.createEmbed {
 					title = "Lily is now online!"
+					description =
+						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
 					color = DISCORD_GREEN
-				}
+				}?.publish()
 
 				/**
 				 * This function is called to remove any threads in the database that haven't had a message sent in the last
