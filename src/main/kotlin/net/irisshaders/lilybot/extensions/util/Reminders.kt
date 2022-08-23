@@ -439,11 +439,28 @@ class Reminders : Extension() {
 				try {
 					channel = kord.getGuild(it.guildId)!!.getChannelOf(it.channelId)
 				} catch (e: EntityNotFoundException) {
-					utilsLogger.info { "If this appears we have great success and I know what the issue is!" }
-				} catch (e: KtorRequestException) {
-					utilsLogger.info { "If this appears we have great success and I know what the issue is!" }
+					kord.getUser(it.userId)?.dm {
+						content = "I was unable to send your reminder in <#${it.channelId}> from ${
+							kord.getGuild(it.guildId)?.name
+						}. due to channel access issues.\n\n${
+							if (it.repeating) {
+								"Repeating reminder for <@${it.userId}>"
+							} else {
+								"Reminder for <@${it.userId}> set ${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} at ${
+									it.initialSetTime.toDiscord(
+										TimestampType.ShortDateTime
+									)
+								}"
+							}
+						}"
+						components {
+							linkButton {
+								label = "Jump to message"
+								url = it.originalMessageUrl
+							}
+						}
+					}
 				}
-				utilsLogger.info { "It was not that" }
 
 				val message = channel?.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
 				if (it.customMessage.isNullOrEmpty()) {
