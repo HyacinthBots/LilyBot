@@ -488,9 +488,13 @@ class Reminders : Extension() {
 					}
 
 					if (!it.repeating) {
-						message?.edit {
-							content = "Reminder completed!"
-						} ?: utilsLogger.debug { "Unable to find original message" }
+						try {
+							message?.edit {
+								content = "Reminder completed!"
+							} ?: utilsLogger.debug { "Unable to find original message" }
+						} catch (e: KtorRequestException) {
+							utilsLogger.debug { "Unable to edit original message" }
+						}
 					}
 				} else {
 					// FIXME Maybe duplicaten't?
@@ -570,9 +574,13 @@ class Reminders : Extension() {
 					}
 
 					if (!it.repeating) {
-						message?.edit {
-							content = "Reminder completed!"
-						} ?: utilsLogger.debug { "Unable to find original message" }
+						try {
+							message?.edit {
+								content = "Reminder completed!"
+							} ?: utilsLogger.debug { "Unable to find original message" }
+						} catch (e: KtorRequestException) {
+							utilsLogger.debug { "Unable to edit original message" }
+						}
 					}
 				}
 
