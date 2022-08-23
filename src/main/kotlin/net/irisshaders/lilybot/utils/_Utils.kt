@@ -14,6 +14,7 @@ import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
@@ -196,8 +197,8 @@ suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.ca
  * @author tempest15
  * @since 3.5.4
  */
-suspend inline fun getFirstUsableChannel(inputGuild: Guild): TextChannel? {
-	var channel: TextChannel? = null
+suspend inline fun getFirstUsableChannel(inputGuild: Guild): GuildMessageChannel? {
+	var channel: GuildMessageChannel? = null
 
 	inputGuild.channels.collect {
 		if (it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)) {

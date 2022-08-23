@@ -10,7 +10,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Guild
-import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.coroutines.delay
@@ -111,9 +111,9 @@ class MemberJoinLeave : Extension() {
 	 * @author tempest15
 	 * @since 3.5.4
 	 */
-	private suspend fun getJoinLeaveChannelWithPerms(inputGuild: Guild): TextChannel? {
+	private suspend fun getJoinLeaveChannelWithPerms(inputGuild: Guild): GuildMessageChannel? {
 		val config = DatabaseHelper.getConfig(inputGuild.id)!!
-		val joinLeaveChannel = inputGuild.getChannelOfOrNull<TextChannel>(config.joinChannel)
+		val joinLeaveChannel = inputGuild.getChannelOfOrNull<GuildMessageChannel>(config.joinChannel)
 
 		if (joinLeaveChannel?.botHasPermissions(
 				Permission.ViewChannel,
