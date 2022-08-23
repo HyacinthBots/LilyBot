@@ -7,12 +7,16 @@ import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import com.kotlindiscord.kord.extensions.utils.loadModule
-import dev.kord.common.entity.ChannelType
+import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
+import dev.kord.core.entity.Guild
 import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.exception.EntityNotFoundException
@@ -118,6 +122,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		return
 	}
 
+	val eventChannel = channelFor(event)?.asChannel() ?: return
+
 	val permissionsSet: MutableSet<String> = mutableSetOf()
 	var count = 0
 	permissions.values.forEach { _ ->
@@ -134,27 +140,34 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 	}
 
 	/* Use `TextChannel` when the channel is a Text channel */
-	if (channelFor(event)!!.asChannel().type == ChannelType.GuildText) {
-		if (channelFor(event)!!.asChannelOf<TextChannel>().getEffectivePermissions(event.kord.selfId)
+	if (eventChannel is TextChannel) {
+		if (eventChannel.asChannelOf<TextChannel>().getEffectivePermissions(event.kord.selfId)
 				.contains(Permissions(permissions))
 		) {
 			pass()
 		} else {
 			fail(
-				"Incorrect permissions!\nI do not have the $permissionsSet permissions for ${channelFor(event)?.mention}"
+				"Incorrect permissions!\nI do not have the $permissionsSet permissions for ${eventChannel.mention}"
 			)
 		}
-	} else if (channelFor(event)!!.asChannel().type == ChannelType.PublicGuildThread ||
-		channelFor(event)!!.asChannel().type == ChannelType.PublicNewsThread ||
-		channelFor(event)!!.asChannel().type == ChannelType.PrivateThread
-	) {
-		if (channelFor(event)!!.asChannelOf<ThreadChannel>().getParent().getEffectivePermissions(event.kord.selfId)
+	} else if (eventChannel is NewsChannel) {
+		if (eventChannel.asChannelOf<NewsChannel>().getEffectivePermissions(event.kord.selfId)
 				.contains(Permissions(permissions))
 		) {
 			pass()
 		} else {
 			fail(
-				"Incorrect permissions!\nI do not have the $permissionsSet permissions for ${channelFor(event)?.mention}"
+				"Incorrect permissions!\nI do not have the $permissionsSet permissions for ${eventChannel.mention}"
+			)
+		}
+	} else if (eventChannel is ThreadChannel) {
+		if (eventChannel.asChannelOf<ThreadChannel>().getParent().getEffectivePermissions(event.kord.selfId)
+				.contains(Permissions(permissions))
+		) {
+			pass()
+		} else {
+			fail(
+				"Incorrect permissions!\nI do not have the $permissionsSet permissions for ${eventChannel.mention}"
 			)
 		}
 	} else {
@@ -271,4 +284,26 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 			}
 		}
 	}
+}
+
+/**
+ * Get the first text channel the bot can send a message in.
+ *
+ * @param inputGuild The guild in which to get the channel.
+ * @return The first text channel the bot can send a message in or null if there isn't one.
+ * @author tempest15
+ * @since 3.5.4
+ */
+suspend inline fun getFirstUsableChannel(inputGuild: Guild): TextChannel? {
+	var channel: TextChannel? = null
+
+	inputGuild.channels.collect {
+		if (it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)) {
+			channel = it.fetchChannelOrNull()?.asChannelOfOrNull()
+			if (channel != null) {
+				return@collect
+			}
+		}
+	}
+	return channel
 }

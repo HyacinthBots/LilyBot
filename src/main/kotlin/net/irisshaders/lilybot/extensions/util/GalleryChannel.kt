@@ -196,7 +196,7 @@ class GalleryChannel : Extension() {
 						delay(0.25.seconds.millisecondsLong)
 						if (event.message.embeds.isEmpty()) { // If there is still no embed, we delete the message
 							// and explain why
-							if (event.message.type != MessageType.Default || event.message.type != MessageType.Reply) {
+							if (event.message.type != MessageType.Default && event.message.type != MessageType.Reply) {
 								event.message.delete()
 								return@action
 							}

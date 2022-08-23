@@ -114,6 +114,14 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 			return@action
 		}
 
+		if (reportedMessage.author == event.interaction.user) {
+			ackEphemeral()
+			respondEphemeral {
+				content = "You may not report your own message."
+			}
+			return@action
+		}
+
 		createReportModal(
 			event.interaction as ModalParentInteractionBehavior,
 			user,
@@ -177,6 +185,14 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 			ackEphemeral()
 			respondEphemeral {
 				content = "Sorry, I can't find this message. Please ping the moderators instead."
+			}
+			return@action
+		}
+
+		if (reportedMessage.author == event.interaction.user) {
+			ackEphemeral()
+			respondEphemeral {
+				content = "You may not report your own message."
 			}
 			return@action
 		}
