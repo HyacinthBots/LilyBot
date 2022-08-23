@@ -6,9 +6,13 @@ import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.botHasPermissions
+import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
+import dev.kord.core.entity.Guild
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
@@ -183,3 +187,25 @@ suspend inline fun Extension.updateDefaultPresence() {
  * @since 3.4.5
  */
 suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.cacheWithRestFallback).guilds.count()
+
+/**
+ * Get the first text channel the bot can send a message in.
+ *
+ * @param inputGuild The guild in which to get the channel.
+ * @return The first text channel the bot can send a message in or null if there isn't one.
+ * @author tempest15
+ * @since 3.5.4
+ */
+suspend inline fun getFirstUsableChannel(inputGuild: Guild): TextChannel? {
+	var channel: TextChannel? = null
+
+	inputGuild.channels.collect {
+		if (it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)) {
+			channel = it.fetchChannelOrNull()?.asChannelOfOrNull()
+			if (channel != null) {
+				return@collect
+			}
+		}
+	}
+	return channel
+}
