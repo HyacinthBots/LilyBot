@@ -539,7 +539,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Set's a channel as blacklisted for uploading logs.
+	 * Sets a channel as blacklisted for uploading logs.
 	 *
 	 * @param inputGuildId The guild the command was run in
 	 * @param inputChannelId The channel to disable uploading for
@@ -570,10 +570,30 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Gets the log uploading blacklist for the given guild.
+	 * Checks the log uploading blacklist for the given [inputChannelId].
+	 *
+	 * @param inputGuildId The guild to get the [inputChannelId] is in
+	 * @param inputChannelId The channel to check is blacklisted or not
+	 * @return The data for the channel or null
+	 *
+	 * @author NoComment1105
+	 * @since 3.5.4
+	 */
+	suspend inline fun isChannelInUploadBlacklist(
+		inputGuildId: Snowflake,
+		inputChannelId: Snowflake
+	): LogUploadingBlacklistData? {
+		val collection = database.getCollection<LogUploadingBlacklistData>()
+		return collection.findOne(
+			LogUploadingBlacklistData::guildId eq inputGuildId,
+			LogUploadingBlacklistData::channelId eq inputChannelId
+		)
+	}
+
+	/**
+	 * Gets the log uploading blacklist for the given [inputGuildId].
 	 *
 	 * @param inputGuildId The guild to get the blacklist for
-	 *
 	 * @return The list of blacklisted channels for the given guild
 	 *
 	 * @author NoComment1105
@@ -585,7 +605,7 @@ object DatabaseHelper {
 	}
 
 	/**
-	 * Sets the log uploading data for the given [guild][inputGuildId].
+	 * Sets the log uploading data for the given [inputGuildId].
 	 *
 	 * @param inputGuildId The guild to set the data for
 	 * @param disable Whether to enable or disable uploading
@@ -615,7 +635,6 @@ object DatabaseHelper {
 	 * Gets the log uploading data for the guild.
 	 *
 	 * @param inputGuildId The guild to get the data for
-	 *
 	 * @return The data for the requested [guild][inputGuildId]
 	 *
 	 * @author NoComment1105

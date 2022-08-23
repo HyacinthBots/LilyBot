@@ -4,8 +4,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.channelFor
-import com.kotlindiscord.kord.extensions.checks.guildFor
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
@@ -79,14 +78,9 @@ class LogUploading : Extension() {
 				configPresent()
 			}
 			action {
-				val uploadingBlacklist = DatabaseHelper.getLogUploadingBlacklist(guildFor(event)!!.id)
-				val isInBlacklist = uploadingBlacklist.find {
-					channelFor(event)!!.id == it.channelId
-				}
+				DatabaseHelper.isChannelInUploadBlacklist(event.guildId!!, event.message.channelId) ?: return@action
 
-				if (isInBlacklist != null) return@action
-
-				val isUploadingDisabled = DatabaseHelper.getLogUploadingData(guildFor(event)!!.id)?.disable
+				val isUploadingDisabled = DatabaseHelper.getLogUploadingData(event.guildId!!)?.disable
 
 				if (isUploadingDisabled != null && isUploadingDisabled == true) {
 					return@action
@@ -266,6 +260,7 @@ class LogUploading : Extension() {
 			check {
 				anyGuild()
 				configPresent()
+				hasPermission(Permission.ModerateMembers)
 			}
 
 			ephemeralSubCommand {
@@ -273,13 +268,10 @@ class LogUploading : Extension() {
 				description = "Add a channel to the log uploading blacklist"
 
 				action {
-					val blacklist = DatabaseHelper.getLogUploadingBlacklist(guild!!.id)
+					val blacklist = DatabaseHelper.isChannelInUploadBlacklist(guild!!.id, channel.id)
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val blacklistChannel = blacklist.find {
-						channel.id == it.channelId
-					}
 
-					if (blacklistChannel != null) {
+					if (blacklist != null) {
 						respond {
 							content = "This channel already blocks the log uploading"
 						}
@@ -311,18 +303,14 @@ class LogUploading : Extension() {
 				description = "Remove a channel from the log uploading blacklist"
 
 				action {
-					val blacklist = DatabaseHelper.getLogUploadingBlacklist(guild!!.id)
-					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val blacklistChannel = blacklist.find {
-						channel.id == it.channelId
-					}
-
-					if (blacklistChannel == null) {
+					DatabaseHelper.isChannelInUploadBlacklist(guild!!.id, channel.id) ?: run {
 						respond {
 							content = "This channel does not block log uploading"
 						}
 						return@action
 					}
+
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
 
 					DatabaseHelper.removeLogUploadingBlacklist(guild!!.id, channel.id)
 
@@ -375,7 +363,7 @@ class LogUploading : Extension() {
 
 			ephemeralSubCommand {
 				name = "disable"
-				description = "Disable log-uploading globally"
+				description = "Disable log-uploading for this entire guild"
 
 				action {
 					val isDisabled = DatabaseHelper.getLogUploadingData(guild!!.id)?.disable
@@ -409,7 +397,7 @@ class LogUploading : Extension() {
 
 			ephemeralSubCommand {
 				name = "enable"
-				description = "Enable log-uploading globally"
+				description = "Enable log-uploading for this entire guild"
 
 				action {
 					val isDisabled = DatabaseHelper.getLogUploadingData(guild!!.id)?.disable
