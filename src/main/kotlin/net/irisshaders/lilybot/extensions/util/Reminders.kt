@@ -434,111 +434,75 @@ class Reminders : Extension() {
 
 		reminders.forEach {
 			if (it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0) {
-				val channel = kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
-				val message = channel.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
-				if (it.customMessage.isNullOrEmpty()) {
-					try {
-						channel.createMessage {
-							content = if (it.repeating) {
-								"Repeating reminder for <@${it.userId}>"
-							} else {
-								"Reminder for <@${it.userId}> set ${
-									it.initialSetTime.toDiscord(
-										TimestampType.RelativeTime
-									)
-								} at ${
-									it.initialSetTime.toDiscord(
-										TimestampType.ShortDateTime
-									)
-								}"
-							}
-							if (message != null) {
-								components {
-									linkButton {
-										label = "Jump to message"
-										url = it.originalMessageUrl
-									}
-								}
-							} else {
-								content += "\nOriginal message not found."
-							}
-						}
-					} catch (e: KtorRequestException) {
-						kord.getUser(it.userId)?.dm {
-							content = "I was unable to send your reminder in <#${it.channelId}> from ${
-								kord.getGuild(it.guildId)?.name
-							}.\n\n${
-								if (it.repeating) {
+				try {
+					val channel = kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
+					val message = channel.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
+					if (it.customMessage.isNullOrEmpty()) {
+						try {
+							channel.createMessage {
+								content = if (it.repeating) {
 									"Repeating reminder for <@${it.userId}>"
 								} else {
-									"Reminder for <@${it.userId}> set ${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} at ${
+									"Reminder for <@${it.userId}> set ${
+										it.initialSetTime.toDiscord(
+											TimestampType.RelativeTime
+										)
+									} at ${
 										it.initialSetTime.toDiscord(
 											TimestampType.ShortDateTime
 										)
 									}"
 								}
-							}"
-							components {
-								linkButton {
-									label = "Jump to message"
-									url = it.originalMessageUrl
+								if (message != null) {
+									components {
+										linkButton {
+											label = "Jump to message"
+											url = it.originalMessageUrl
+										}
+									}
+								} else {
+									content += "\nOriginal message not found."
 								}
 							}
-						}
-					}
-
-					if (!it.repeating) {
-						try {
-							message?.edit {
-								content = "Reminder completed!"
-							} ?: utilsLogger.debug { "Unable to find original message" }
 						} catch (e: KtorRequestException) {
-							utilsLogger.debug { "Unable to edit original message" }
-						}
-					}
-				} else {
-					// FIXME Maybe duplicaten't?
-					@Suppress("DuplicatedCode")
-					try {
-						channel.createMessage {
-							content = if (it.repeating) {
-								"Repeating reminder for <@${it.userId}>\n> ${
-									if (it.customMessage.length >= 1024) {
-										it.customMessage.substring(0..1000)
+							kord.getUser(it.userId)?.dm {
+								content = "I was unable to send your reminder in <#${it.channelId}> from ${
+									kord.getGuild(it.guildId)?.name
+								}.\n\n${
+									if (it.repeating) {
+										"Repeating reminder for <@${it.userId}>"
 									} else {
-										it.customMessage
+										"Reminder for <@${it.userId}> set ${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} at ${
+											it.initialSetTime.toDiscord(
+												TimestampType.ShortDateTime
+											)
+										}"
 									}
 								}"
-							} else {
-								"Reminder for <@${it.userId}> set ${
-									it.initialSetTime.toDiscord(TimestampType.RelativeTime)
-								} at ${
-									it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
-								}\n> ${
-									if (it.customMessage.length >= 1024) {
-										it.customMessage.substring(0..1000)
-									} else {
-										it.customMessage
-									}
-								}"
-							}
-							if (message != null) {
 								components {
 									linkButton {
 										label = "Jump to message"
 										url = it.originalMessageUrl
 									}
 								}
-							} else {
-								content += "\nOriginal message not found."
 							}
 						}
-					} catch (e: KtorRequestException) {
-						kord.getUser(it.userId)?.dm {
-							content = "I was unable to send your reminder in <#${it.channelId}> from ${
-								kord.getGuild(it.guildId)?.name
-							}.\n\n${
-								if (it.repeating) {
+
+						if (!it.repeating) {
+							try {
+								message?.edit {
+									content = "Reminder completed!"
+								} ?: utilsLogger.debug { "Unable to find original message" }
+							} catch (e: KtorRequestException) {
+								utilsLogger.debug { "Unable to edit original message" }
+							}
+						}
+					} else {
+						// FIXME Maybe duplicaten't?
+						@Suppress("DuplicatedCode")
+						try {
+							channel.createMessage {
+								content = if (it.repeating) {
 									"Repeating reminder for <@${it.userId}>\n> ${
 										if (it.customMessage.length >= 1024) {
 											it.customMessage.substring(0..1000)
@@ -559,28 +523,71 @@ class Reminders : Extension() {
 										}
 									}"
 								}
-							}"
-							if (message != null) {
-								components {
-									linkButton {
-										label = "Jump to message"
-										url = it.originalMessageUrl
+								if (message != null) {
+									components {
+										linkButton {
+											label = "Jump to message"
+											url = it.originalMessageUrl
+										}
 									}
+								} else {
+									content += "\nOriginal message not found."
 								}
-							} else {
-								content += "\nOriginal message not found."
+							}
+						} catch (e: KtorRequestException) {
+							kord.getUser(it.userId)?.dm {
+								content = "I was unable to send your reminder in <#${it.channelId}> from ${
+									kord.getGuild(it.guildId)?.name
+								}.\n\n${
+									if (it.repeating) {
+										"Repeating reminder for <@${it.userId}>\n> ${
+											if (it.customMessage.length >= 1024) {
+												it.customMessage.substring(0..1000)
+											} else {
+												it.customMessage
+											}
+										}"
+									} else {
+										"Reminder for <@${it.userId}> set ${
+											it.initialSetTime.toDiscord(TimestampType.RelativeTime)
+										} at ${
+											it.initialSetTime.toDiscord(TimestampType.ShortDateTime)
+										}\n> ${
+											if (it.customMessage.length >= 1024) {
+												it.customMessage.substring(0..1000)
+											} else {
+												it.customMessage
+											}
+										}"
+									}
+								}"
+								if (message != null) {
+									components {
+										linkButton {
+											label = "Jump to message"
+											url = it.originalMessageUrl
+										}
+									}
+								} else {
+									content += "\nOriginal message not found."
+								}
+							}
+						}
+
+						if (!it.repeating) {
+							try {
+								message?.edit {
+									content = "Reminder completed!"
+								} ?: utilsLogger.debug { "Unable to find original message" }
+							} catch (e: KtorRequestException) {
+								utilsLogger.debug { "Unable to edit original message" }
 							}
 						}
 					}
-
-					if (!it.repeating) {
-						try {
-							message?.edit {
-								content = "Reminder completed!"
-							} ?: utilsLogger.debug { "Unable to find original message" }
-						} catch (e: KtorRequestException) {
-							utilsLogger.debug { "Unable to edit original message" }
-						}
+				} catch (e: KtorRequestException) {
+					utilsLogger.info {
+						"If this message appears somewhere in this code there is a KtorRequestException. Please tell " +
+								"me there is and I'm not insane"
 					}
 				}
 
