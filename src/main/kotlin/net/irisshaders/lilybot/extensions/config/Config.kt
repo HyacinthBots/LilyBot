@@ -256,11 +256,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		@Suppress("DuplicatedCode")
 		action {
-			if (arguments.enableJoinChannel && arguments.joinChannel == null) {
-				respond { content = "You must specify a channel to log joins to!" }
+			if (arguments.enableMemberLogging && arguments.memberLog == null) {
+				respond { content = "You must specify a channel to log members joining and leaving to!" }
 				return@action
 			} else if (arguments.enableMessageLogs && arguments.messageLogs == null) {
-				respond { content = "You must specify a channel to message deletes joins to!" }
+				respond { content = "You must specify a channel to log deleted messages to!" }
 				return@action
 			}
 
@@ -276,9 +276,9 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						}
 					}
 					field {
-						name = "Join/Leave Logs"
-						value = if (!arguments.enableJoinChannel || arguments.joinChannel?.mention == null) {
-							arguments.joinChannel!!.mention
+						name = "Member Logs"
+						value = if (!arguments.enableMemberLogging || arguments.memberLog?.mention == null) {
+							arguments.memberLog!!.mention
 						} else {
 							"Disabled"
 						}
@@ -291,8 +291,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					guild!!.id,
 					arguments.enableMessageLogs,
 					arguments.messageLogs?.id,
-					arguments.enableJoinChannel,
-					arguments.joinChannel?.id
+					arguments.enableMemberLogging,
+					arguments.memberLog?.id
 				)
 			)
 
@@ -318,9 +318,9 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						}
 					}
 					field {
-						name = "Join/Leave Logs"
-						value = if (!arguments.enableJoinChannel || arguments.joinChannel?.mention == null) {
-							arguments.joinChannel!!.mention
+						name = "Member Logs"
+						value = if (!arguments.enableMemberLogging || arguments.memberLog?.mention == null) {
+							arguments.memberLog!!.mention
 						} else {
 							"Disabled"
 						}
@@ -464,9 +464,9 @@ class LoggingArgs : Arguments() {
 		description = "Enable logging of message deletions"
 	}
 
-	val enableJoinChannel by boolean {
-		name = "enable-join-channel"
-		description = "Enable logging of joins and leaves"
+	val enableMemberLogging by boolean {
+		name = "enable-member-logging"
+		description = "Enable logging of members joining and leaving the guild"
 	}
 
 	val messageLogs by optionalChannel {
@@ -474,9 +474,9 @@ class LoggingArgs : Arguments() {
 		description = "The channel for logging message deletions"
 	}
 
-	val joinChannel by optionalChannel {
-		name = "join-channel"
-		description = "The channel for logging member joins/leaves"
+	val memberLog by optionalChannel {
+		name = "member-log"
+		description = "The channel for logging members joining and leaving the guild"
 	}
 }
 

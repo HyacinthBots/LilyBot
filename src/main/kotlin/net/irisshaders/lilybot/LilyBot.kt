@@ -15,7 +15,7 @@ import net.irisshaders.lilybot.database.storage.MongoDBDataAdapter
 import net.irisshaders.lilybot.extensions.config.Config
 import net.irisshaders.lilybot.extensions.config.GuildLogging
 import net.irisshaders.lilybot.extensions.events.LogUploading
-import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
+import net.irisshaders.lilybot.extensions.events.MemberLogging
 import net.irisshaders.lilybot.extensions.events.MessageDelete
 import net.irisshaders.lilybot.extensions.events.ThreadInviter
 import net.irisshaders.lilybot.extensions.moderation.Report
@@ -77,7 +77,7 @@ suspend fun main() {
 			add(::InfoCommands)
 			add(::GuildLogging)
 			add(::LogUploading)
-			add(::MemberJoinLeave)
+			add(::MemberLogging)
 			add(::MessageDelete)
 			add(::ModUtilities)
 			add(::PublicUtilities)

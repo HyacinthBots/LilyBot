@@ -22,13 +22,13 @@ import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.getFirstUsableChannel
 
 /**
- * Logs members joining and leaving a guild to the join messages channel designated in the config for that guild.
+ * Logs members joining and leaving a guild to the member log channel designated in the config for that guild.
  * @author NoComment1105
  * @author tempest15
  * @since 2.0
  */
-class MemberJoinLeave : Extension() {
-	override val name = "member-join-leave"
+class MemberLogging : Extension() {
+	override val name = "member-logging"
 
 	override suspend fun setup() {
 		/** Create an embed in the join channel on user join */
@@ -39,10 +39,10 @@ class MemberJoinLeave : Extension() {
 				failIf { event.member.id == kord.selfId }
 			}
 			action {
-				val joinChannel = getJoinLeaveChannelWithPerms(event.getGuild()) ?: return@action
+				val memberLog = getMemberLogWithPerms(event.getGuild()) ?: return@action
 				val guildMemberCount = event.guild.members.count()
 
-				joinChannel.createEmbed {
+				memberLog.createEmbed {
 					author {
 						name = "User joined the server!"
 						icon = event.member.avatar?.url
@@ -74,10 +74,10 @@ class MemberJoinLeave : Extension() {
 				failIf { event.user.id == kord.selfId }
 			}
 			action {
-				val leaveChannel = getJoinLeaveChannelWithPerms(event.getGuild()) ?: return@action
+				val memberLog = getMemberLogWithPerms(event.getGuild()) ?: return@action
 				val guildMemberCount = event.guild.members.count()
 
-				leaveChannel.createEmbed {
+				memberLog.createEmbed {
 					author {
 						name = "User left the server!"
 						icon = event.user.avatar?.url
@@ -103,24 +103,24 @@ class MemberJoinLeave : Extension() {
 	}
 
 	/**
-	 * Check if the bot can send messages in the guild's configured member join/leave logging channel.
+	 * Check if the bot can send messages in the guild's configured member logging channel.
 	 * If the bot can't, reset a config and send a message in the top usable channel saying that the config was reset.
-	 * If the bot can, return the member join/leave logging channel.
+	 * If the bot can, return the member logging channel.
 	 *
 	 * @param inputGuild The guild to check in.
-	 * @return The member join/leave logging channel or null if it does not have the correct permissions.
+	 * @return The member logging channel or null if it does not have the correct permissions.
 	 * @author tempest15
 	 * @since 3.5.4
 	 */
-	private suspend fun getJoinLeaveChannelWithPerms(inputGuild: Guild): TextChannel? {
+	private suspend fun getMemberLogWithPerms(inputGuild: Guild): TextChannel? {
 		val config = LoggingConfigCollection().getConfig(inputGuild.id)!!
-		val joinLeaveChannel = if (config.joinChannel != null) {
-			inputGuild.getChannelOfOrNull<TextChannel>(config.joinChannel)
+		val memberLog = if (config.memberLog != null) {
+			inputGuild.getChannelOfOrNull<TextChannel>(config.memberLog)
 		} else {
 			null
 		}
 
-		if (joinLeaveChannel?.botHasPermissions(
+		if (memberLog?.botHasPermissions(
 				Permission.ViewChannel,
 				Permission.SendMessages,
 				Permission.EmbedLinks
@@ -128,7 +128,7 @@ class MemberJoinLeave : Extension() {
 		) {
 			val usableChannel = getFirstUsableChannel(inputGuild) ?: return null
 			usableChannel.createMessage(
-				"Lily cannot send messages in your configured member join/leave logging channel. " +
+				"Lily cannot send messages in your configured member logging channel. " +
 						"As a result, your config has been reset. " +
 						"Please fix the permissions before setting a new config."
 			)
@@ -136,6 +136,6 @@ class MemberJoinLeave : Extension() {
 			LoggingConfigCollection().clearConfig(usableChannel.guildId)
 			return null
 		}
-		return joinLeaveChannel
+		return memberLog
 	}
 }
