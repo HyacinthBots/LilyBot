@@ -13,8 +13,8 @@ import net.irisshaders.lilybot.database.collections.GuildLeaveTimeCollection
  *
  * @since 3.2.0
  */
-class JoinLeaveDetection : Extension() {
-	override val name = "join-leave-detection"
+class GuildLogging : Extension() {
+	override val name = "guild-logging"
 
 	override suspend fun setup() {
 		/**

@@ -13,7 +13,7 @@ import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.storage.MongoDBDataAdapter
 import net.irisshaders.lilybot.extensions.config.Config
-import net.irisshaders.lilybot.extensions.config.JoinLeaveDetection
+import net.irisshaders.lilybot.extensions.config.GuildLogging
 import net.irisshaders.lilybot.extensions.events.LogUploading
 import net.irisshaders.lilybot.extensions.events.MemberJoinLeave
 import net.irisshaders.lilybot.extensions.events.MessageDelete
@@ -75,7 +75,7 @@ suspend fun main() {
 			add(::Github)
 			add(::GalleryChannel)
 			add(::InfoCommands)
-			add(::JoinLeaveDetection)
+			add(::GuildLogging)
 			add(::LogUploading)
 			add(::MemberJoinLeave)
 			add(::MessageDelete)
