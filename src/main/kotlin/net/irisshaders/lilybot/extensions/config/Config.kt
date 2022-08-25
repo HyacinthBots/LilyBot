@@ -421,68 +421,68 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 class SupportArgs : Arguments() {
 	val enable by boolean {
-		name = "enable"
+		name = "enable-support"
 		description = "Whether to enable the support system"
 	}
 
 	val customMessage by boolean {
-		name = "custommessage"
+		name = "custom-message"
 		description = "True if you'd like to add a custom message, false if you'd like the default."
 	}
 
 	val channel by optionalChannel {
-		name = "channel"
+		name = "support-channel"
 		description = "The channel to be used for creating support threads in."
 	}
 
 	val role by optionalRole {
-		name = "role"
+		name = "support-role"
 		description = "The role to add to support threads, when one is created."
 	}
 }
 
 class ModerationArgs : Arguments() {
 	val enabled by boolean {
-		name = "enable"
+		name = "enable-moderation"
 		description = "Whether to enable the moderation system"
 	}
 
 	val moderatorRole by optionalRole {
-		name = "moderatorrole"
+		name = "moderator-role"
 		description = "The role of your moderators, used for pinging in message logs."
 	}
 
 	val modActionLog by optionalChannel {
-		name = "actionlog"
+		name = "action-log"
 		description = "The channel used to store moderator actions."
 	}
 }
 
 class LoggingArgs : Arguments() {
 	val enableMessageLogs by boolean {
-		name = "enablemesssgelogs"
+		name = "enable-message-logs"
 		description = "Enable logging of message deletions"
 	}
 
 	val enableJoinChannel by boolean {
-		name = "enablejoinchannel"
+		name = "enable-join-channel"
 		description = "Enable logging of joins and leaves"
 	}
 
 	val messageLogs by optionalChannel {
-		name = "messagelogs"
+		name = "message-logs"
 		description = "The channel for logging message deletions"
 	}
 
 	val joinChannel by optionalChannel {
-		name = "joinchannel"
+		name = "join-channel"
 		description = "The channel for logging member joins/leaves"
 	}
 }
 
 class ClearArgs : Arguments() {
 	val config by stringChoice {
-		name = "configType"
+		name = "config-type"
 		description = "The type of config to clear"
 		choices = mutableMapOf(
 			"support" to ConfigType.SUPPORT.name,
