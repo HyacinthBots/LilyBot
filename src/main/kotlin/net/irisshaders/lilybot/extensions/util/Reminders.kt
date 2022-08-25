@@ -16,6 +16,9 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.pagination.EphemeralResponsePaginator
+import com.kotlindiscord.kord.extensions.pagination.pages.Page
+import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
@@ -24,6 +27,7 @@ import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import com.kotlindiscord.kord.extensions.utils.toDuration
+import dev.kord.common.Locale
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
@@ -165,14 +169,18 @@ class Reminders : Extension() {
 				}
 
 				action {
-					respond {
-						embed {
-							title = "Your reminders"
-							field {
-								value = userReminders(event)
-							}
-						}
-					}
+					// To allow the paginated to be made immediately rather than waiting for the function to run
+					val reminders = userReminders(event)
+
+					val paginator = EphemeralResponsePaginator(
+						pages = reminders,
+						owner = event.interaction.user,
+						timeoutSeconds = 500,
+						locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
+						interaction = interactionResponse
+					)
+
+					paginator.send()
 				}
 			}
 
@@ -187,14 +195,18 @@ class Reminders : Extension() {
 				}
 
 				action {
-					respond {
-						embed {
-							title = "Reminders of ${guild!!.getMember(arguments.userID).tag}"
-							field {
-								value = userReminders(event, arguments.userID)
-							}
-						}
-					}
+					// To allow the paginated to be made immediately rather than waiting for the function to run
+					val reminders = userReminders(event, arguments.userID)
+
+					val paginator = EphemeralResponsePaginator(
+						pages = reminders,
+						owner = event.interaction.user,
+						timeoutSeconds = 500,
+						locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
+						interaction = interactionResponse
+					)
+
+					paginator.send()
 				}
 			}
 
@@ -390,37 +402,51 @@ class Reminders : Extension() {
 	 *
 	 * @param event The event of from the slash command
 	 * @param userId If you'd like to get the reminders for a specific user, other than the interaction user.
+	 * @return Pages of reminders for hte provided [userId]
 	 * @since 3.3.4
 	 * @author NoComment1105
 	 */
 	private suspend inline fun userReminders(
 		event: ChatInputCommandInteractionCreateEvent,
 		userId: Snowflake? = null
-	): String {
-		val reminders = DatabaseHelper.getReminders()
-		var response = ""
-		val user = userId ?: event.interaction.user.id
-		reminders.forEach {
-			if (it.userId == user && it.guildId == guildFor(event)!!.id) {
-				response +=
-					"Reminder ID: ${it.id}\nTime set: ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)},\n" +
+	): Pages {
+		val pagesObj = Pages()
+		val allUserReminders = DatabaseHelper.getUserRemindersForGuild(userId ?: event.interaction.user.id)
+		val guildUserReminders = allUserReminders.filter { it.guildId == guildFor(event)?.id }
+
+		if (guildUserReminders.isEmpty()) {
+			pagesObj.addPage(
+				Page {
+					description = "You have no reminders set for this guild."
+				}
+			)
+		} else {
+			guildUserReminders.chunked(4).forEach { reminder ->
+				var response = ""
+				reminder.forEach {
+					response +=
+						"Reminder ID: ${it.id}\nTime set: ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)},\n" +
 							"Time until reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
 								it.remindTime.toDiscord(TimestampType.ShortDateTime)
 							}),\nCustom Message: ${
-								if (it.customMessage != null && it.customMessage.length >= 1024) {
-									it.customMessage.substring(0..1000)
+								if (it.customMessage != null && it.customMessage.length >= 150) {
+									it.customMessage.substring(0..150)
 								} else {
 									it.customMessage ?: "none"
 								}
 							}\n---\n"
+				}
+
+				pagesObj.addPage(
+					Page {
+						title = "Reminders for ${guildFor(event)?.asGuild()?.name ?: "this guild"}"
+						description = response
+					}
+				)
 			}
 		}
 
-		if (response.isEmpty()) {
-			response = "You do not have any reminders set."
-		}
-
-		return response
+		return pagesObj
 	}
 
 	/**

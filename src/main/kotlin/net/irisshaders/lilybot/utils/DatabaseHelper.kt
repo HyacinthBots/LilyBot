@@ -537,6 +537,19 @@ object DatabaseHelper {
 		val collection = database.getCollection<RemindMeData>()
 		return collection.find().toList()
 	}
+
+	/**
+	 * Gets every reminder for a given [inputUserId] from the database.
+	 *
+	 * @param inputUserId The ID of the user the reminders are being gotten for
+	 * @return A [List] of the users reminders from the database
+	 * @since 3.5.4
+	 * @author NoComment1105
+	 */
+	suspend inline fun getUserRemindersForGuild(inputUserId: Snowflake): List<RemindMeData> {
+		val collection = database.getCollection<RemindMeData>()
+		return collection.find(RemindMeData::userId eq inputUserId).toList()
+	}
 }
 
 /**
