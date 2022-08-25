@@ -317,34 +317,38 @@ class Reminders : Extension() {
 				}
 
 				action {
-					val reminders = DatabaseHelper.getReminders()
+					val reminders = DatabaseHelper.getUserReminders(user.id).filter { it.guildId == guild!!.id }
 
-					// FIXME Duplicaten't the code
-					@Suppress("DuplicatedCode")
-					reminders.forEach {
-						when (arguments.reminderType) {
-							"all" -> {
-								if (it.guildId == guild?.id && it.userId == user.id) {
-									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
-									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-									val message = event.kord.getGuild(it.guildId)!!
-										.getChannelOf<GuildMessageChannel>(it.channelId)
-										.getMessageOrNull(messageId)
+					if (reminders.isEmpty()) {
+						respond {
+							content = "You do not have any reminders for this guild!"
+						}
+						return@action
+					}
 
-									message?.edit {
-										content =
-											"${message.content} ${if (it.repeating) "**Repeating" else "**"} Reminder cancelled.**"
-									}
+					when (arguments.reminderType) {
+						"all" -> {
+							reminders.forEach {
+								val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
+								val message = event.kord.getGuild(it.guildId)!!
+									.getChannelOf<GuildMessageChannel>(it.channelId)
+									.getMessageOrNull(messageId)
+
+								message?.edit {
+									content =
+										"${message.content} ${if (it.repeating) "**Repeating" else "**"} Reminder cancelled.**"
 								}
-
-								respond {
-									content = "Removed all your reminders for this guild."
-								}
+								DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
 							}
 
-							"repeating" -> {
-								if (it.guildId == guild?.id && it.userId == user.id && it.repeating) {
-									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+							respond {
+								content = "Removed all your reminders for this guild."
+							}
+						}
+
+						"repeating" -> {
+							reminders.forEach {
+								if (it.repeating) {
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									val message = event.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
@@ -353,16 +357,18 @@ class Reminders : Extension() {
 									message?.edit {
 										content = "${message.content} **Repeating Reminder cancelled.**"
 									}
-								}
-
-								respond {
-									content = "Removed all your repeating reminders for this guild."
+									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
 								}
 							}
 
-							"non-repeating" -> {
-								if (it.guildId == guild?.id && it.userId == user.id && !it.repeating) {
-									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
+							respond {
+								content = "Removed all your repeating reminders for this guild."
+							}
+						}
+
+						"non-repeating" -> {
+							reminders.forEach {
+								if (!it.repeating) {
 									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
 									val message = event.kord.getGuild(it.guildId)!!
 										.getChannelOf<GuildMessageChannel>(it.channelId)
@@ -371,11 +377,13 @@ class Reminders : Extension() {
 									message?.edit {
 										content = "${message.content} **Reminder cancelled.**"
 									}
-								}
 
-								respond {
-									content = "Removed all your non-repeating reminders for this guild."
+									DatabaseHelper.removeReminder(guild!!.id, user.id, it.id)
 								}
+							}
+
+							respond {
+								content = "Removed all your non-repeating reminders for this guild."
 							}
 						}
 					}
@@ -411,7 +419,7 @@ class Reminders : Extension() {
 		userId: Snowflake? = null
 	): Pages {
 		val pagesObj = Pages()
-		val allUserReminders = DatabaseHelper.getUserRemindersForGuild(userId ?: event.interaction.user.id)
+		val allUserReminders = DatabaseHelper.getUserReminders(userId ?: event.interaction.user.id)
 		val guildUserReminders = allUserReminders.filter { it.guildId == guildFor(event)?.id }
 
 		if (guildUserReminders.isEmpty()) {
@@ -426,15 +434,15 @@ class Reminders : Extension() {
 				reminder.forEach {
 					response +=
 						"Reminder ID: ${it.id}\nTime set: ${it.initialSetTime.toDiscord(TimestampType.ShortDateTime)},\n" +
-							"Time until reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
-								it.remindTime.toDiscord(TimestampType.ShortDateTime)
-							}),\nCustom Message: ${
-								if (it.customMessage != null && it.customMessage.length >= 150) {
-									it.customMessage.substring(0..150)
-								} else {
-									it.customMessage ?: "none"
-								}
-							}\n---\n"
+								"Time until reminder: ${it.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+									it.remindTime.toDiscord(TimestampType.ShortDateTime)
+								}),\nCustom Message: ${
+									if (it.customMessage != null && it.customMessage.length >= 150) {
+										it.customMessage.substring(0..150)
+									} else {
+										it.customMessage ?: "none"
+									}
+								}\n---\n"
 				}
 
 				pagesObj.addPage(
@@ -675,9 +683,9 @@ class Reminders : Extension() {
 			name = "type"
 			description = "Choose which reminder type to remove all of"
 			choices = mutableMapOf(
-				"all" to "All",
-				"repeating" to "Repeating",
-				"non-repeating" to "Non-repeating"
+				"all" to "all",
+				"repeating" to "repeating",
+				"non-repeating" to "non-repeating"
 			)
 		}
 	}

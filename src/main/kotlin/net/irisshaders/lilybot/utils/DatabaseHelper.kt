@@ -546,7 +546,7 @@ object DatabaseHelper {
 	 * @since 3.5.4
 	 * @author NoComment1105
 	 */
-	suspend inline fun getUserRemindersForGuild(inputUserId: Snowflake): List<RemindMeData> {
+	suspend inline fun getUserReminders(inputUserId: Snowflake): List<RemindMeData> {
 		val collection = database.getCollection<RemindMeData>()
 		return collection.find(RemindMeData::userId eq inputUserId).toList()
 	}
