@@ -435,10 +435,19 @@ class Tags : Extension() {
 						}
 					)
 				} else {
-					tags.chunked(10).forEach { tag ->
+					tags.chunked(5).forEach { tag ->
 						var response = ""
 						tag.forEach {
-							response += "• ${it.name} - ${it.tagTitle}\n"
+							response += "• ${it.name} - ${
+								if (it.tagTitle.length >= 175) {
+									it.tagTitle.substring(
+										0,
+										175
+									)
+								} else {
+									it.tagTitle
+								}
+							}\n"
 						}
 						pagesObj.addPage(
 							Page {
