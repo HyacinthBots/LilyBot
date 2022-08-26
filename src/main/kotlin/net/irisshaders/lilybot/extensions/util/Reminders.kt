@@ -36,6 +36,7 @@ import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
@@ -468,11 +469,37 @@ class Reminders : Extension() {
 
 		reminders.forEach {
 			if (it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0) {
-				val channel = kord.getGuild(it.guildId)!!.getChannelOf<GuildMessageChannel>(it.channelId)
-				val message = channel.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
+				var channel: GuildMessageChannel? = null
+				try {
+					channel = kord.getGuild(it.guildId)!!.getChannelOf(it.channelId)
+				} catch (e: EntityNotFoundException) {
+					kord.getUser(it.userId)?.dm {
+						content = "I was unable to send your reminder in <#${it.channelId}> from ${
+							kord.getGuild(it.guildId)?.name
+						}. due to channel access issues.\n\n${
+							if (it.repeating) {
+								"Repeating reminder for <@${it.userId}>"
+							} else {
+								"Reminder for <@${it.userId}> set ${it.initialSetTime.toDiscord(TimestampType.RelativeTime)} at ${
+									it.initialSetTime.toDiscord(
+										TimestampType.ShortDateTime
+									)
+								}"
+							}
+						}"
+						components {
+							linkButton {
+								label = "Jump to message"
+								url = it.originalMessageUrl
+							}
+						}
+					}
+				}
+
+				val message = channel?.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
 				if (it.customMessage.isNullOrEmpty()) {
 					try {
-						channel.createMessage {
+						channel?.createMessage {
 							content = if (it.repeating) {
 								"Repeating reminder for <@${it.userId}>"
 							} else {
@@ -522,15 +549,19 @@ class Reminders : Extension() {
 					}
 
 					if (!it.repeating) {
-						message?.edit {
-							content = "Reminder completed!"
-						} ?: utilsLogger.debug { "Unable to find original message" }
+						try {
+							message?.edit {
+								content = "Reminder completed!"
+							} ?: utilsLogger.debug { "Unable to find original message" }
+						} catch (e: KtorRequestException) {
+							utilsLogger.debug { "Unable to edit original message" }
+						}
 					}
 				} else {
 					// FIXME Maybe duplicaten't?
 					@Suppress("DuplicatedCode")
 					try {
-						channel.createMessage {
+						channel?.createMessage {
 							content = if (it.repeating) {
 								"Repeating reminder for <@${it.userId}>\n> ${
 									if (it.customMessage.length >= 1024) {
@@ -604,9 +635,13 @@ class Reminders : Extension() {
 					}
 
 					if (!it.repeating) {
-						message?.edit {
-							content = "Reminder completed!"
-						} ?: utilsLogger.debug { "Unable to find original message" }
+						try {
+							message?.edit {
+								content = "Reminder completed!"
+							} ?: utilsLogger.debug { "Unable to find original message" }
+						} catch (e: KtorRequestException) {
+							utilsLogger.debug { "Unable to edit original message" }
+						}
 					}
 				}
 
