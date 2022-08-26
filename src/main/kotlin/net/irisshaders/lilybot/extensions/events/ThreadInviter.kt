@@ -34,7 +34,7 @@ import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.SupportConfigCollection
 import net.irisshaders.lilybot.database.collections.ThreadsCollection
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration.Companion.seconds
 
@@ -58,7 +58,7 @@ class ThreadInviter : Extension() {
 			 */
 			check {
 				anyGuild()
-				configPresent(ConfigType.SUPPORT)
+				configPresent(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
 				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
@@ -135,7 +135,7 @@ class ThreadInviter : Extension() {
 					startMessage.edit {
 						content =
 							"${user.asUser().mention}, the ${event.getGuild()
-								?.getRole(config.team!!)?.mention
+								?.getRole(config.role!!)?.mention
 							} will be with you shortly!"
 					}
 
@@ -167,19 +167,24 @@ class ThreadInviter : Extension() {
 					event.channel.ownerId == kord.selfId ||
 							event.channel.member != null
 				}
-				configPresent(ConfigType.SUPPORT, ConfigType.MODERATION)
+				configPresent(
+					ConfigOptions.SUPPORT_ENABLED,
+					ConfigOptions.SUPPORT_CHANNEL,
+					ConfigOptions.SUPPORT_ROLE,
+					ConfigOptions.MODERATOR_ROLE
+				)
 			}
 
 			action {
 				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)!!
 				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-				val modRole = event.channel.guild.getRole(moderationConfig.team!!)
+				val modRole = event.channel.guild.getRole(moderationConfig.role!!)
 				val threadOwner = event.channel.owner.asUser()
 
 				ThreadsCollection().setThreadOwner(event.channel.id, threadOwner.id)
 
 				if (supportConfig.enabled && event.channel.parentId == supportConfig.channel) {
-					val supportRole = event.channel.guild.getRole(supportConfig.team!!)
+					val supportRole = event.channel.guild.getRole(supportConfig.role!!)
 
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(

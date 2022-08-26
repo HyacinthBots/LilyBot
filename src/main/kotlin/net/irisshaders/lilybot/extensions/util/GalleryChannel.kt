@@ -25,7 +25,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import net.irisshaders.lilybot.database.collections.GalleryChannelCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -56,7 +56,7 @@ class GalleryChannel : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.ManageChannels, Permission.ManageMessages)
 					botHasChannelPerms(Permissions(Permission.ManageChannels, Permission.ManageMessages))
@@ -102,7 +102,7 @@ class GalleryChannel : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.ManageChannels)
 					botHasChannelPerms(Permissions(Permission.ManageChannels))

@@ -48,7 +48,7 @@ class Config : Extension() {
 @OptIn(UnsafeAPI::class)
 suspend fun Config.configCommand() = unsafeSlashCommand {
 	name = "config"
-	description = "Configuring Lily's settings"
+	description = "Configure Lily's settings"
 
 	unsafeSubCommand(::SupportArgs) {
 		name = "support"

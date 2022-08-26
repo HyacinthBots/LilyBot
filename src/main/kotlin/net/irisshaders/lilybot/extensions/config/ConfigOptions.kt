@@ -1,0 +1,14 @@
+package net.irisshaders.lilybot.extensions.config
+
+enum class ConfigOptions {
+	SUPPORT_ENABLED,
+	SUPPORT_CHANNEL,
+	SUPPORT_ROLE,
+	MODERATION_ENABLED,
+	MODERATOR_ROLE,
+	ACTION_LOG,
+	MESSAGE_LOGGING_ENABLED,
+	MESSAGE_LOG,
+	MEMBER_LOGGING_ENABLED,
+	MEMBER_LOG
+}

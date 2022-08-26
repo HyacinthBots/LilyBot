@@ -42,7 +42,7 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.configPresent
 import kotlin.time.Duration.Companion.seconds
 
@@ -74,7 +74,7 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 
 	check {
 		anyGuild()
-		configPresent(ConfigType.MODERATION)
+		configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 	}
 
 	action {
@@ -132,7 +132,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 
 	check {
 		anyGuild()
-		configPresent(ConfigType.MODERATION)
+		configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 	}
 
 	action {
@@ -233,7 +233,7 @@ suspend fun createReportModal(
 		user,
 		modLog,
 		reportedMessage,
-		config.team!!,
+		config.role!!,
 		reason,
 		modalResponse
 	)

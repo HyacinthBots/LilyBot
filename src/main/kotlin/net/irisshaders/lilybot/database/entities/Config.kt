@@ -30,7 +30,7 @@ data class LoggingConfigData(
  * @param guildId The ID of the guild the config is for
  * @param enabled If the support module is enabled or not
  * @param channel The ID of the action log for the guild
- * @param team The ID of the moderation role for the guild
+ * @param role The ID of the moderation role for the guild
  * @since 4.0.0
  */
 @Serializable
@@ -38,7 +38,7 @@ data class ModerationConfigData(
 	val guildId: Snowflake,
 	val enabled: Boolean,
 	val channel: Snowflake?,
-	val team: Snowflake?,
+	val role: Snowflake?,
 )
 
 /**
@@ -48,7 +48,7 @@ data class ModerationConfigData(
  * @param guildId The ID of the guild the config is for
  * @param enabled If the support module is enabled or not
  * @param channel The ID of the support channel for the guild
- * @param team The ID of the support team for the guild
+ * @param role The ID of the support team for the guild
  * @param message The support message as a string, nullable
  * @since 4.0.0
  */
@@ -57,7 +57,7 @@ data class SupportConfigData(
 	val guildId: Snowflake,
 	val enabled: Boolean,
 	val channel: Snowflake?,
-	val team: Snowflake?,
+	val role: Snowflake?,
 	val message: String?
 )
 

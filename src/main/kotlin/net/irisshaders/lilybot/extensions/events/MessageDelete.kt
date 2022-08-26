@@ -13,7 +13,7 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -33,7 +33,7 @@ class MessageDelete : Extension() {
 		event<MessageDeleteEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigType.LOGGING)
+				configPresent(ConfigOptions.MESSAGE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message?.author?.id == kord.selfId ||
 					event.message?.author?.isBot!!

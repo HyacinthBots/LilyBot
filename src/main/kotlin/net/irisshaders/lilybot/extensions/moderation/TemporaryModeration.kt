@@ -45,7 +45,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.WarnCollection
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -74,7 +74,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigType.MODERATION)
+				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ManageMessages)
 				requireBotPermissions(Permission.ManageMessages)
 				botHasChannelPerms(Permissions(Permission.ManageMessages))
@@ -121,7 +121,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigType.MODERATION)
+				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -270,7 +270,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigType.MODERATION)
+				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -332,7 +332,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigType.MODERATION)
+				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -408,7 +408,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigType.MODERATION)
+				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -460,7 +460,7 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
 					botHasChannelPerms(Permissions(Permission.ManageChannels))
@@ -518,7 +518,7 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
 				}
@@ -573,7 +573,7 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
 					botHasChannelPerms(Permissions(Permission.ManageChannels))
@@ -636,7 +636,7 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
 				}

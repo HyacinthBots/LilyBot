@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.RoleMenuCollection
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.utilsLogger
@@ -73,7 +73,7 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -173,7 +173,7 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -249,7 +249,7 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -314,7 +314,7 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -414,7 +414,7 @@ class RoleMenu : Extension() {
 				}
 			}
 
-			action {
+			action Button@{
 				val data = RoleMenuCollection().getRoleData(event.interaction.message.id)
 
 				if (data == null) {
@@ -423,7 +423,7 @@ class RoleMenu : Extension() {
 								"If this isn't a role menu, or if the issue persists, open a report at " +
 								"<https://github.com/IrisShaders/LilyBot/issues>"
 					}
-					return@action
+					return@Button
 				}
 
 				if (data.roles.isEmpty()) {
@@ -432,7 +432,7 @@ class RoleMenu : Extension() {
 								"If this isn't a role menu, or if the issue persists, open a report at " +
 								"<https://github.com/IrisShaders/LilyBot/issues>"
 					}
-					return@action
+					return@Button
 				}
 
 				val guild = kord.getGuild(data.guildId)!!
@@ -471,7 +471,7 @@ class RoleMenu : Extension() {
 								}
 							}
 
-							action {
+							action SelectMenu@{
 								val selectedRoles = event.interaction.values.toList().map { Snowflake(it) }.filter { it in guildRoles.keys }
 
 								if (event.interaction.values.isEmpty()) {
@@ -481,7 +481,7 @@ class RoleMenu : Extension() {
 										}
 									}
 									respond { content = "Your roles have been adjusted" }
-									return@action
+									return@SelectMenu
 								}
 
 								val rolesToAdd = selectedRoles.filterNot { it in userRoles }
@@ -491,7 +491,7 @@ class RoleMenu : Extension() {
 									respond {
 										content = "You didn't select any different roles, so no changes were made."
 									}
-									return@action
+									return@SelectMenu
 								}
 
 								member.edit {

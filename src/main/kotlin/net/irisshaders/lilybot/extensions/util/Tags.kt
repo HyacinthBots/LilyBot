@@ -31,7 +31,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.TagsCollection
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -210,7 +210,7 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigType.MODERATION)
+				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
@@ -284,7 +284,7 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigType.MODERATION)
+				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
@@ -325,7 +325,7 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigType.MODERATION)
+				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))

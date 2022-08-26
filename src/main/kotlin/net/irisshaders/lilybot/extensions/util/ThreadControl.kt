@@ -40,7 +40,7 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.ThreadsCollection
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 
@@ -191,7 +191,7 @@ class ThreadControl : Extension() {
 
 				check {
 					isInThread()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					requireBotPermissions(Permission.ManageThreads)
 					botHasChannelPerms(Permissions(Permission.ManageThreads))
 				}

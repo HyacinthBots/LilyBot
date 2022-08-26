@@ -27,7 +27,7 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.configPresent
 
 /**
@@ -84,7 +84,7 @@ class PublicUtilities : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				}
 
 				action {
@@ -277,7 +277,7 @@ class PublicUtilities : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigType.MODERATION)
+					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				}
 
 				action {

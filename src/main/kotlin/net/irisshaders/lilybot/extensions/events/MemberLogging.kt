@@ -17,7 +17,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.getFirstUsableChannel
 
@@ -35,7 +35,7 @@ class MemberLogging : Extension() {
 		event<MemberJoinEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigType.LOGGING)
+				configPresent(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
 				failIf { event.member.id == kord.selfId }
 			}
 			action {
@@ -70,7 +70,7 @@ class MemberLogging : Extension() {
 		event<MemberLeaveEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigType.LOGGING)
+				configPresent(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
 				failIf { event.user.id == kord.selfId }
 			}
 			action {

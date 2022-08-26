@@ -39,7 +39,7 @@ import net.irisshaders.lilybot.database.collections.SupportConfigCollection
 import net.irisshaders.lilybot.database.collections.TagsCollection
 import net.irisshaders.lilybot.database.collections.ThreadsCollection
 import net.irisshaders.lilybot.database.collections.WarnCollection
-import net.irisshaders.lilybot.extensions.config.ConfigType
+import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import org.koin.dsl.bind
 
 @PublishedApi
@@ -52,7 +52,7 @@ internal val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 3.2.0
  */
-suspend inline fun CheckContext<*>.configPresent(vararg configType: ConfigType) {
+suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOptions) {
 	if (!passed) {
 		return
 	}
@@ -60,51 +60,122 @@ suspend inline fun CheckContext<*>.configPresent(vararg configType: ConfigType) 
 	// Prevent commands being run in DMs, although [anyGuild] should still be used as backup
 	guildFor(event) ?: fail("Must be in a server")
 
-	if (configType.isEmpty()) {
-		fail("There is no config type provided in the code. Please inform the developers immediately!")
+	if (configOptions.isEmpty()) {
+		fail("There are no config options provided in the code. Please inform the developers immediately!")
 	}
 
-	// Look at the config type and check the presence of the config in the database.
-	configType.forEach {
+	// Look at the config options and check the presence of the config in the database.
+	configOptions.forEach {
 		when (it) {
-			ConfigType.SUPPORT ->
-				if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null) {
+			ConfigOptions.SUPPORT_ENABLED -> {
+				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
+				if (supportConfig == null) {
 					fail("Unable to access support config for this guild! Please inform a member of staff.")
-				} else if (!SupportConfigCollection().getConfig(guildFor(event)!!.id)!!.enabled) {
+				} else if (!supportConfig.enabled) {
 					fail("Support is disabled for this guild!")
 				} else {
 					pass()
 				}
+			}
 
-			ConfigType.MODERATION ->
-				if (ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null) {
+			ConfigOptions.SUPPORT_CHANNEL -> {
+				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
+				if (supportConfig == null) {
+					fail("Unable to access support config for this guild! Please inform a member of staff.")
+				} else if (supportConfig.channel == null) {
+					fail("A support channel has not been set for this guild!")
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.SUPPORT_ROLE -> {
+				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
+				if (supportConfig == null) {
+					fail("Unable to access support config for this guild! Please inform a member of staff.")
+				} else if (supportConfig.role == null) {
+					fail("A support role has not been set for this guild!")
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.MODERATION_ENABLED -> {
+				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
+				if (moderationConfig == null) {
 					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
-				} else if (!ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!.enabled) {
+				} else if (!moderationConfig.enabled) {
 					fail("Moderation is disabled for this guild!")
 				} else {
 					pass()
 				}
+			}
 
-			ConfigType.LOGGING ->
-				if (LoggingConfigCollection().getConfig(guildFor(event)!!.id) == null) {
+			ConfigOptions.MODERATOR_ROLE -> {
+				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
+				if (moderationConfig == null) {
+					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
+				} else if (moderationConfig.role == null) {
+					fail("A moderator role has not been set for this guild!")
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.ACTION_LOG -> {
+				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
+				if (moderationConfig == null) {
+					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
+				} else if (moderationConfig.channel == null) {
+					fail("An action log has not been set for this guild!")
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.MESSAGE_LOGGING_ENABLED -> {
+				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
+				if (loggingConfig == null) {
 					fail("Unable to access logging config for this guild! Please inform a member of staff.")
-				} else if (!LoggingConfigCollection().getConfig(guildFor(event)!!.id)!!.enableMemberLogs) {
-					fail("Member logging is disabled for this guild!")
-				} else if (!LoggingConfigCollection().getConfig(guildFor(event)!!.id)!!.enableMessageLogs) {
+				} else if (!loggingConfig.enableMessageLogs) {
 					fail("Message logging is disabled for this guild!")
 				} else {
 					pass()
 				}
+			}
 
-			ConfigType.ALL ->
-				if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null ||
-					ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null ||
-					LoggingConfigCollection().getConfig(guildFor(event)!!.id) == null
-				) {
-					fail("Unable to access config for this guild! Please inform a member of staff.")
+			ConfigOptions.MESSAGE_LOG -> {
+				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
+				if (loggingConfig == null) {
+					fail("Unable to access logging config for this guild! Please inform a member of staff.")
+				} else if (loggingConfig.messageChannel == null) {
+					fail("A message log has not been set for this guild!")
 				} else {
 					pass()
 				}
+			}
+
+			ConfigOptions.MEMBER_LOGGING_ENABLED -> {
+				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
+				if (loggingConfig == null) {
+					fail("Unable to access logging config for this guild! Please inform a member of staff.")
+				} else if (!loggingConfig.enableMemberLogs) {
+					fail("Member logging is disabled for this guild!")
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.MEMBER_LOG -> {
+				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
+				if (loggingConfig == null) {
+					fail("Unable to access logging config for this guild! Please inform a member of staff.")
+				} else if (loggingConfig.memberLog == null) {
+					fail("A member log has not been set for this guild")
+				} else {
+					pass()
+				}
+			}
 		}
 	}
 }
@@ -189,7 +260,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  * @since 2.1.0
  */
 suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
-	val moderatorRoleId = ModerationConfigCollection().getConfig(guild!!.id)?.team
+	val moderatorRoleId = ModerationConfigCollection().getConfig(guild!!.id)?.role
 	ModerationConfigCollection().getConfig(guild!!.id) ?: run {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
