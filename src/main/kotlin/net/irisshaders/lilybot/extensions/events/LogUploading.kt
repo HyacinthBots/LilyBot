@@ -1,11 +1,15 @@
 package net.irisshaders.lilybot.extensions.events
 
+import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.hasPermission
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.sentry.tag
 import com.kotlindiscord.kord.extensions.types.respond
@@ -74,6 +78,14 @@ class LogUploading : Extension() {
 				configPresent()
 			}
 			action {
+				DatabaseHelper.isChannelInUploadBlacklist(event.guildId!!, event.message.channelId) ?: return@action
+
+				val isUploadingDisabled = DatabaseHelper.getLogUploadingData(event.guildId!!)?.disable
+
+				if (isUploadingDisabled != null && isUploadingDisabled == true) {
+					return@action
+				}
+
 				val config = DatabaseHelper.getConfig(event.guildId!!)!!
 				var deferUploadUntilThread = false
 				if (config.supportChannel != null && event.message.channel.id == config.supportChannel) {
@@ -234,6 +246,183 @@ class LogUploading : Extension() {
 										}
 									}
 								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		ephemeralSlashCommand {
+			name = "log-uploading"
+			description = "The parent command for blacklisting channels from running the log uploading code"
+
+			check {
+				anyGuild()
+				configPresent()
+				hasPermission(Permission.ModerateMembers)
+			}
+
+			ephemeralSubCommand {
+				name = "blacklist-add"
+				description = "Add a channel to the log uploading blacklist"
+
+				action {
+					val blacklist = DatabaseHelper.isChannelInUploadBlacklist(guild!!.id, channel.id)
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+
+					if (blacklist != null) {
+						respond {
+							content = "This channel already blocks the log uploading"
+						}
+						return@action
+					}
+
+					DatabaseHelper.setLogUploadingBlacklist(guild!!.id, channel.id)
+
+					respond {
+						content = "Log uploading is now blocked in this channel!"
+					}
+
+					guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
+						embed {
+							title = "Log uploading disabled"
+							description = "Log uploading was disabled in ${channel.mention}"
+							color = DISCORD_RED
+							footer {
+								text = "Disabled by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
+							}
+						}
+					}
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "blacklist-remove"
+				description = "Remove a channel from the log uploading blacklist"
+
+				action {
+					DatabaseHelper.isChannelInUploadBlacklist(guild!!.id, channel.id) ?: run {
+						respond {
+							content = "This channel does not block log uploading"
+						}
+						return@action
+					}
+
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+
+					DatabaseHelper.removeLogUploadingBlacklist(guild!!.id, channel.id)
+
+					respond {
+						content = "Log uploading is no longer blocked in this channel!"
+					}
+
+					guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
+						embed {
+							title = "Log uploading re-enabled"
+							description = "Log uploading was re-enabled in ${channel.mention}"
+							color = DISCORD_GREEN
+							footer {
+								text = "Enabled by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
+							}
+						}
+					}
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "blacklist-list"
+				description = "List all channels that block log uploading"
+
+				action {
+					var channels = ""
+
+					DatabaseHelper.getLogUploadingBlacklist(guild!!.id).forEach {
+						channels += "<#${it.channelId}>"
+					}
+
+					respond {
+						embed {
+							title = "Channels that blacklist uploading"
+							description = "The following channels do not run the log uploading code when a matching " +
+									"attachment is sent."
+							field {
+								name = "Channels:"
+								value = if (channels != "") {
+									channels.replace(" ", "\n")
+								} else {
+									"No channels found!"
+								}
+							}
+						}
+					}
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "disable"
+				description = "Disable log-uploading for this entire guild"
+
+				action {
+					val isDisabled = DatabaseHelper.getLogUploadingData(guild!!.id)?.disable
+					if (isDisabled != null && isDisabled == true) {
+						respond {
+							content = "Log uploading is already disabled for this server"
+						}
+						return@action
+					}
+
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+
+					DatabaseHelper.setLogUploadingData(guild!!.id, true)
+
+					respond {
+						content = "Log uploading is now disabled for this server"
+					}
+
+					guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
+						embed {
+							title = "Log uploading disabled for server"
+							color = DISCORD_RED
+							footer {
+								text = "Disabled by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
+							}
+						}
+					}
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "enable"
+				description = "Enable log-uploading for this entire guild"
+
+				action {
+					val isDisabled = DatabaseHelper.getLogUploadingData(guild!!.id)?.disable
+					if (isDisabled == null || isDisabled == false) {
+						respond {
+							content = "Log uploading is not disabled for this server"
+						}
+						return@action
+					}
+
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+
+					DatabaseHelper.removeLogUploadingData(guild!!.id)
+
+					respond {
+						content = "Log uploading is now enabled for this server"
+					}
+
+					guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog).createMessage {
+						embed {
+							title = "Log uploading enabled for server"
+							color = DISCORD_GREEN
+							footer {
+								text = "Enabled by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
 							}
 						}
 					}
