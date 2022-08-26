@@ -13,6 +13,8 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.Permission
@@ -62,6 +64,16 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
+			val supportConfig = SupportConfigCollection().getConfig(guild!!.id)
+			if (supportConfig != null) {
+				ackEphemeral()
+				respondEphemeral {
+					content = "You already have a moderation configuration set. " +
+							"Please clear it before attempting to set a new one."
+				}
+				return@action
+			}
+
 			suspend fun EmbedBuilder.supportEmbed() {
 				title = "Configuration: Support"
 				field {
@@ -174,14 +186,14 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
-			ModerationConfigCollection().setConfig(
-				ModerationConfigData(
-					guild!!.id,
-					arguments.enabled,
-					arguments.modActionLog?.id,
-					arguments.moderatorRole?.id
-				)
-			)
+			val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)
+			if (moderationConfig != null) {
+				respond {
+					content = "You already have a moderation configuration set. " +
+							"Please clear it before attempting to set a new one."
+				}
+				return@action
+			}
 
 			suspend fun EmbedBuilder.moderationEmbed() {
 				title = "Configuration: Moderation"
@@ -205,7 +217,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			}
 
 			if (arguments.modActionLog == null) {
-				guild!!.asGuild().getSystemChannel() // fixme lily might not have access to the system channel
+				guild!!.asGuild().getSystemChannel()
 			} else {
 				guild!!.getChannelOf<GuildMessageChannel>(arguments.modActionLog!!.id)
 			}?.createMessage {
@@ -213,6 +225,15 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					moderationEmbed()
 				}
 			}
+
+			ModerationConfigCollection().setConfig(
+				ModerationConfigData(
+					guild!!.id,
+					arguments.enabled,
+					arguments.modActionLog?.id,
+					arguments.moderatorRole?.id
+				)
+			)
 		}
 	}
 
@@ -226,6 +247,15 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
+			val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)
+			if (loggingConfig != null) {
+				respond {
+					content = "You already have a logging configuration set. " +
+							"Please clear it before attempting to set a new one."
+				}
+				return@action
+			}
+
 			if (arguments.enableMemberLogging && arguments.memberLog == null) {
 				respond { content = "You must specify a channel to log members joining and leaving to!" }
 				return@action
@@ -292,7 +322,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 	}
 
-	// TODO Validate the presence of database values
 	ephemeralSubCommand(::ClearArgs) {
 		name = "clear"
 		description = "Clear a config type"
@@ -300,6 +329,14 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		action {
 			when (arguments.config) {
 				ConfigType.MODERATION.name -> {
+					val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)
+					if (moderationConfig == null) {
+						respond {
+							content = "No moderation configuration exists to clear!"
+						}
+						return@action
+					}
+
 					ModerationConfigCollection().clearConfig(guild!!.id)
 					event.interaction.respondEphemeral {
 						embed {
@@ -313,6 +350,14 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 
 				ConfigType.LOGGING.name -> {
+					val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)
+					if (loggingConfig == null) {
+						respond {
+							content = "No logging configuration exists to clear!"
+						}
+						return@action
+					}
+
 					LoggingConfigCollection().clearConfig(guild!!.id)
 					respond {
 						embed {
@@ -326,6 +371,14 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 
 				ConfigType.SUPPORT.name -> {
+					val supportConfig = SupportConfigCollection().getConfig(guild!!.id)
+					if (supportConfig == null) {
+						respond {
+							content = "No support configuration exists to clear!"
+						}
+						return@action
+					}
+
 					SupportConfigCollection().clearConfig(guild!!.id)
 					respond {
 						embed {
@@ -343,9 +396,9 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					SupportConfigCollection().clearConfig(guild!!.id)
 					respond {
 						embed {
-							title = "Config cleared"
+							title = "All configs cleared"
 							footer {
-								text = "Config cleared by ${user.asUser().tag}"
+								text = "Configs cleared by ${user.asUser().tag}"
 								icon = user.asUser().avatar?.url
 							}
 						}
