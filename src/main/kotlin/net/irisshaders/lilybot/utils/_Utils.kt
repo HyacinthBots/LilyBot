@@ -69,7 +69,7 @@ suspend inline fun CheckContext<*>.configPresent(vararg configType: ConfigType) 
 		when (it) {
 			ConfigType.SUPPORT ->
 				if (SupportConfigCollection().getConfig(guildFor(event)!!.id) == null) {
-					fail("Unable to access Support config for this guild! Please inform a member of staff.")
+					fail("Unable to access support config for this guild! Please inform a member of staff.")
 				} else if (!SupportConfigCollection().getConfig(guildFor(event)!!.id)!!.enabled) {
 					fail("Support is disabled for this guild!")
 				} else {
@@ -78,7 +78,7 @@ suspend inline fun CheckContext<*>.configPresent(vararg configType: ConfigType) 
 
 			ConfigType.MODERATION ->
 				if (ModerationConfigCollection().getConfig(guildFor(event)!!.id) == null) {
-					fail("Unable to access Moderation config for this guild! Please inform a member of staff.")
+					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
 				} else if (!ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!.enabled) {
 					fail("Moderation is disabled for this guild!")
 				} else {
@@ -87,9 +87,9 @@ suspend inline fun CheckContext<*>.configPresent(vararg configType: ConfigType) 
 
 			ConfigType.LOGGING ->
 				if (LoggingConfigCollection().getConfig(guildFor(event)!!.id) == null) {
-					fail("Unable to access Logging config for this guild! Please inform a member of staff.")
+					fail("Unable to access logging config for this guild! Please inform a member of staff.")
 				} else if (!LoggingConfigCollection().getConfig(guildFor(event)!!.id)!!.enableMemberLogs) {
-					fail("Message join is disabled for this guild!")
+					fail("Member logging is disabled for this guild!")
 				} else if (!LoggingConfigCollection().getConfig(guildFor(event)!!.id)!!.enableMessageLogs) {
 					fail("Message logging is disabled for this guild!")
 				} else {
