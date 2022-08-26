@@ -36,18 +36,23 @@ suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser:
  * This function uses a DM variable provided by the place it is run it, and checks to see it succeeded in sending the
  * user a DM.
  *
+ * @param shouldDm Whether the user was supposed to receive a DM or not
  * @param dm The direct message that is sent to the user.
  * @author NoComment1105
  * @since 3.0.0
  */
-fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?) {
+fun EmbedBuilder.dmNotificationStatusEmbedField(shouldDm: Boolean, dm: Message?) {
 	field {
 		name = "User Notification:"
 		value =
-			if (dm != null) {
-				"User notified with a direct message"
+			if (shouldDm) {
+				if (dm != null) {
+					"User notified with a direct message"
+				} else {
+					"Failed to notify user with a direct message"
+				}
 			} else {
-				"Failed to notify user with a direct message"
+				"DM notification was disabled"
 			}
 		inline = false
 	}

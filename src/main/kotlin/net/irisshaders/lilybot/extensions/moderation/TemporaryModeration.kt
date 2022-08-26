@@ -8,6 +8,7 @@ import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
@@ -28,7 +29,6 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
@@ -48,6 +48,7 @@ import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 import net.irisshaders.lilybot.utils.isBotOrModerator
 import java.lang.Integer.min
 import kotlin.time.Duration
@@ -81,7 +82,9 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
 
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
+				val actionLog =
+					getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+						?: return@action
 				val messageAmount = arguments.messages
 				val textChannel = channel.asChannelOf<GuildMessageChannel>()
 
@@ -96,7 +99,7 @@ class TemporaryModeration : Extension() {
 					content = "Messages cleared."
 				}
 
-				actionLog?.createEmbed {
+				actionLog.createEmbed {
 					title = "$messageAmount messages have been cleared."
 					description = "Action occurred in ${textChannel.mention}"
 					footer {
@@ -126,7 +129,9 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
+				val actionLog =
+					getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+						?: return@action
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "warn") ?: return@action
@@ -140,76 +145,50 @@ class TemporaryModeration : Extension() {
 
 				var dm: Message? = null
 				// Check the amount of points before running sanctions and dming the user
-				if (newStrikes == 1) {
-					dm = userArg.dm {
-						embed {
-							title = "First warning in ${guild?.fetchGuild()?.name}"
-							description = "**Reason:** ${arguments.reason}\n\n" +
-									"No moderation action has been taken. Please consider your actions carefully.\n\n" +
-									"For more information about the warn system, please see [this document]" +
-									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
-							color = DISCORD_BLACK
-						}
-					}
-				} else if (newStrikes == 2) {
-					dm = userArg.dm {
-						embed {
-							title = "Second warning and timeout in ${guild?.fetchGuild()?.name}"
-							description = "**Reason:** ${arguments.reason}\n\n" +
-									"You have been timed out for 3 hours. Please consider your actions carefully.\n\n" +
-									"For more information about the warn system, please see [this document]" +
-									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
-							color = DISCORD_BLACK
-						}
-					}
-
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
-					}
-
-					actionLog?.createEmbed {
-						title = "Timeout"
-						description = "${userArg.mention} has been timed-out for 3 hours due to $newStrikes warn " +
-								"strikes\n${userArg.id} (${userArg.tag}) Reason: ${arguments.reason}"
-						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
-						}
-						color = DISCORD_BLACK
-					}
-				} else if (newStrikes == 3) {
-					userArg.dm {
-						embed {
-							title = "Third warning and timeout in ${guild!!.fetchGuild().name}"
-							description =
-								"You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
-										"For more information about the warn system, please see [this document]" +
-										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
-							color = DISCORD_RED
-						}
-					}
-
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
-					}
-
-					actionLog?.createEmbed {
-						title = "Timeout"
-						description = "${userArg.mention} has been timed-out for 12 hours due to $newStrikes warn " +
-								"strikes\n${userArg.id} (${userArg.tag}) Reason: ${arguments.reason}"
-						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
-						}
-						color = DISCORD_BLACK
-					}
-				} else if (newStrikes != null) {
-					if (newStrikes > 3) {
+				if (arguments.dm) {
+					if (newStrikes == 1) {
 						dm = userArg.dm {
 							embed {
-								title = "Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}"
+								title = "First warning in ${guild?.fetchGuild()?.name}"
+								description = "**Reason:** ${arguments.reason}\n\n" +
+										"No moderation action has been taken. Please consider your actions carefully.\n\n" +
+										"For more information about the warn system, please see [this document]" +
+										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+								color = DISCORD_BLACK
+							}
+						}
+					} else if (newStrikes == 2) {
+						dm = userArg.dm {
+							embed {
+								title = "Second warning and timeout in ${guild?.fetchGuild()?.name}"
+								description = "**Reason:** ${arguments.reason}\n\n" +
+										"You have been timed out for 3 hours. Please consider your actions carefully.\n\n" +
+										"For more information about the warn system, please see [this document]" +
+										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+								color = DISCORD_BLACK
+							}
+						}
+
+						guild?.getMember(userArg.id)?.edit {
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+						}
+
+						actionLog.createEmbed {
+							title = "Timeout"
+							description = "${userArg.mention} has been timed-out for 3 hours due to $newStrikes warn " +
+									"strikes\n${userArg.id} (${userArg.tag}) Reason: ${arguments.reason}"
+							footer {
+								text = user.asUser().tag
+								icon = user.asUser().avatar?.url
+							}
+							color = DISCORD_BLACK
+						}
+					} else if (newStrikes == 3) {
+						userArg.dm {
+							embed {
+								title = "Third warning and timeout in ${guild!!.fetchGuild().name}"
 								description =
-									"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
+									"You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
 											"For more information about the warn system, please see [this document]" +
 											"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
 								color = DISCORD_RED
@@ -217,19 +196,49 @@ class TemporaryModeration : Extension() {
 						}
 
 						guild?.getMember(userArg.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
 						}
 
-						actionLog?.createEmbed {
+						actionLog.createEmbed {
 							title = "Timeout"
-							description = "${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
-									"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other " +
-									"action. Reason: ${arguments.reason}"
+							description =
+								"${userArg.mention} has been timed-out for 12 hours due to $newStrikes warn " +
+										"strikes\n${userArg.id} (${userArg.tag}) Reason: ${arguments.reason}"
 							footer {
 								text = user.asUser().tag
 								icon = user.asUser().avatar?.url
 							}
 							color = DISCORD_BLACK
+						}
+					} else if (newStrikes != null) {
+						if (newStrikes > 3) {
+							dm = userArg.dm {
+								embed {
+									title = "Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}"
+									description =
+										"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
+												"For more information about the warn system, please see [this document]" +
+												"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+									color = DISCORD_RED
+								}
+							}
+
+							guild?.getMember(userArg.id)?.edit {
+								timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+							}
+
+							actionLog.createEmbed {
+								title = "Timeout"
+								description =
+									"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
+											"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other " +
+											"action. Reason: ${arguments.reason}"
+								footer {
+									text = user.asUser().tag
+									icon = user.asUser().avatar?.url
+								}
+								color = DISCORD_BLACK
+							}
 						}
 					}
 				}
@@ -239,7 +248,7 @@ class TemporaryModeration : Extension() {
 				embed.title = "Warning"
 				embed.image = arguments.image
 				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(dm)
+				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
 				embed.timestamp = Clock.System.now()
 				embed.field {
 					name = "Total Strikes:"
@@ -248,10 +257,10 @@ class TemporaryModeration : Extension() {
 				}
 
 				try {
-					actionLog?.createMessage { embeds.add(embed) }
+					actionLog.createMessage { embeds.add(embed) }
 				} catch (e: KtorRequestException) {
 					embed.image = null
-					actionLog?.createMessage { embeds.add(embed) }
+					actionLog.createMessage { embeds.add(embed) }
 				}
 			}
 		}
@@ -275,7 +284,9 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
+				val actionLog =
+					getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+						?: return@action
 				val userArg = arguments.userArgument
 
 				val targetUser = guild?.getMember(userArg.id)
@@ -294,15 +305,18 @@ class TemporaryModeration : Extension() {
 					content = "Removed strike from user"
 				}
 
-				val dm = userArg.dm {
-					embed {
-						title = "Warn strike removal in ${guild?.fetchGuild()?.name}"
-						description = "You have had a warn strike removed. You now have $newStrikes strikes."
-						color = DISCORD_GREEN
+				var dm: Message? = null
+				if (arguments.dm) {
+					dm = userArg.dm {
+						embed {
+							title = "Warn strike removal in ${guild?.fetchGuild()?.name}"
+							description = "You have had a warn strike removed. You now have $newStrikes strikes."
+							color = DISCORD_GREEN
+						}
 					}
 				}
 
-				actionLog?.createEmbed {
+				actionLog.createEmbed {
 					title = "Warning Removal"
 					color = DISCORD_BLACK
 					timestamp = Clock.System.now()
@@ -313,7 +327,7 @@ class TemporaryModeration : Extension() {
 						value = newStrikes.toString()
 						inline = false
 					}
-					dmNotificationStatusEmbedField(dm)
+					dmNotificationStatusEmbedField(arguments.dm, dm)
 				}
 			}
 		}
@@ -337,7 +351,9 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
+				val actionLog =
+					getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+						?: return@action
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
 
@@ -357,13 +373,16 @@ class TemporaryModeration : Extension() {
 
 				// Send the DM after the timeout task, in case Lily doesn't have required permissions
 				// DM the user about it
-				val dm = userArg.dm {
-					embed {
-						title = "You have been timed out in ${guild?.fetchGuild()?.name}"
-						description = "**Duration:**\n${
-							duration.toDiscord(TimestampType.Default) + "(" + arguments.duration.toString()
-								.replace("PT", "") + ")"
-						}\n**Reason:**\n${arguments.reason}"
+				var dm: Message? = null
+				if (arguments.dm) {
+					dm = userArg.dm {
+						embed {
+							title = "You have been timed out in ${guild?.fetchGuild()?.name}"
+							description = "**Duration:**\n${
+								duration.toDiscord(TimestampType.Default) + "(" + arguments.duration.toString()
+									.replace("PT", "") + ")"
+							}\n**Reason:**\n${arguments.reason}"
+						}
 					}
 				}
 
@@ -376,7 +395,7 @@ class TemporaryModeration : Extension() {
 				embed.title = "Timeout"
 				embed.image = arguments.image
 				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(dm)
+				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
 				embed.timestamp = Clock.System.now()
 				embed.field {
 					name = "Duration:"
@@ -386,10 +405,10 @@ class TemporaryModeration : Extension() {
 				}
 
 				try {
-					actionLog?.createMessage { embeds.add(embed) }
+					actionLog.createMessage { embeds.add(embed) }
 				} catch (e: KtorRequestException) {
 					embed.image = null
-					actionLog?.createMessage { embeds.add(embed) }
+					actionLog.createMessage { embeds.add(embed) }
 				}
 			}
 		}
@@ -413,7 +432,9 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
+				val actionLog =
+					getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+						?: return@action
 				val userArg = arguments.userArgument
 
 				// Set timeout to null, or no timeout
@@ -425,7 +446,7 @@ class TemporaryModeration : Extension() {
 					content = "Removed timeout on ${userArg.id}"
 				}
 
-				actionLog?.createEmbed {
+				actionLog.createEmbed {
 					title = "Timeout Removed"
 					field {
 						name = "User:"
@@ -467,7 +488,9 @@ class TemporaryModeration : Extension() {
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
+					val actionLog =
+						getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+							?: return@action
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -495,7 +518,7 @@ class TemporaryModeration : Extension() {
 						denied += Permission.UseApplicationCommands
 					}
 
-					actionLog?.createEmbed {
+					actionLog.createEmbed {
 						title = "Channel Locked"
 						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
 						footer {
@@ -523,7 +546,9 @@ class TemporaryModeration : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
+					val actionLog =
+						getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+							?: return@action
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -539,7 +564,7 @@ class TemporaryModeration : Extension() {
 							.minus(Permission.UseApplicationCommands)
 					}
 
-					actionLog?.createEmbed {
+					actionLog.createEmbed {
 						title = "Server locked"
 						description = "**Reason:** ${arguments.reason}"
 						footer {
@@ -580,7 +605,9 @@ class TemporaryModeration : Extension() {
 				@Suppress("DuplicatedCode")
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
+					val actionLog =
+						getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+							?: return@action
 
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -613,7 +640,7 @@ class TemporaryModeration : Extension() {
 						color = DISCORD_GREEN
 					}
 
-					actionLog?.createEmbed {
+					actionLog.createEmbed {
 						title = "Channel Unlocked"
 						description = "${targetChannel.mention} has been unlocked."
 						footer {
@@ -641,7 +668,9 @@ class TemporaryModeration : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.modActionLog)
+					val actionLog =
+						getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+							?: return@action
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -657,7 +686,7 @@ class TemporaryModeration : Extension() {
 							.plus(Permission.UseApplicationCommands)
 					}
 
-					actionLog?.createEmbed {
+					actionLog.createEmbed {
 						title = "Server unlocked"
 						footer {
 							text = user.asUser().tag
@@ -707,6 +736,12 @@ class TemporaryModeration : Extension() {
 			name = "image"
 			description = "The URL to an image you'd like to provide as extra context for the action"
 		}
+
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to send a direct message to the user about the warn"
+			defaultValue = true
+		}
 	}
 
 	inner class RemoveTimeoutArgs : Arguments() {
@@ -736,6 +771,12 @@ class TemporaryModeration : Extension() {
 			name = "image"
 			description = "The URL to an image you'd like to provide as extra context for the action"
 		}
+
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to send a direct message to the user about the warn"
+			defaultValue = true
+		}
 	}
 
 	inner class RemoveWarnArgs : Arguments() {
@@ -743,6 +784,12 @@ class TemporaryModeration : Extension() {
 		val userArgument by user {
 			name = "user"
 			description = "Person to remove warn from"
+		}
+
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to send a direct message to the user about the warn"
+			defaultValue = true
 		}
 	}
 

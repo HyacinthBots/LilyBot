@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 import net.irisshaders.lilybot.utils.utilsLogger
 
 /**
@@ -211,8 +212,10 @@ class RoleMenu : Extension() {
 						data.roles
 					)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config!!.modActionLog)
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog =
+						getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+							?: return@action
 
 					actionLog.createMessage {
 						embed {
@@ -277,8 +280,10 @@ class RoleMenu : Extension() {
 
 					DatabaseHelper.deleteRoleFromMenu(menuMessage!!.id, arguments.role.id)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config!!.modActionLog)
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog =
+						getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+							?: return@action
 
 					actionLog.createMessage {
 						embed {
@@ -379,8 +384,10 @@ class RoleMenu : Extension() {
 						roles
 					)
 
-					val config = DatabaseHelper.getConfig(guild!!.id)
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config!!.modActionLog)
+					val config = DatabaseHelper.getConfig(guild!!.id)!!
+					val actionLog =
+						getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+							?: return@action
 
 					actionLog.createMessage {
 						embed {
@@ -447,7 +454,7 @@ class RoleMenu : Extension() {
 				}
 
 				val guildRoles = guild.roles
-					.filter { it.id in data.roles.map { it }.toList().associateBy { it } }
+					.filter { role -> role.id in data.roles.map { it }.toList().associateBy { it } }
 					.toList()
 					.associateBy { it.id }
 				val member = event.interaction.user.asMember(guild.id)
@@ -471,7 +478,8 @@ class RoleMenu : Extension() {
 							}
 
 							action {
-								val selectedRoles = event.interaction.values.toList().map { Snowflake(it) }.filter { it in guildRoles.keys }
+								val selectedRoles = event.interaction.values.toList().map { Snowflake(it) }
+									.filter { it in guildRoles.keys }
 
 								if (event.interaction.values.isEmpty()) {
 									member.edit {

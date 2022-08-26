@@ -44,6 +44,7 @@ import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 import net.irisshaders.lilybot.utils.updateDefaultPresence
 
 /**
@@ -73,7 +74,9 @@ class ModUtilities : Extension() {
 			}
 			action {
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+				val actionLog =
+					getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+						?: return@action
 				val targetChannel: GuildMessageChannel
 				try {
 					targetChannel =
@@ -175,7 +178,9 @@ class ModUtilities : Extension() {
 				}
 
 				val config = DatabaseHelper.getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+				val actionLog =
+					getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+						?: return@action
 				val message: Message
 
 				try {
@@ -379,7 +384,9 @@ class ModUtilities : Extension() {
 					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size
 
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+					val actionLog =
+						getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+							?: return@action
 
 					respond { content = "Presence set to default" }
 
