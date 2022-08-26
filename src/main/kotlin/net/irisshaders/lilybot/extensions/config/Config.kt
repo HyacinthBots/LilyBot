@@ -25,6 +25,7 @@ import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
+import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
@@ -44,7 +45,6 @@ class Config : Extension() {
 	}
 }
 
-// TODO Do some wizard magic and duplicaten't?
 @OptIn(UnsafeAPI::class)
 suspend fun Config.configCommand() = unsafeSlashCommand {
 	name = "config"
@@ -61,8 +61,22 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			hasPermission(Permission.ManageGuild)
 		}
 
-		@Suppress("DuplicatedCode")
 		action {
+			suspend fun EmbedBuilder.supportEmbed() {
+				title = "Configuration: Support"
+				field {
+					name = "Support Team"
+					value = arguments.role?.mention ?: "Disabled"
+				}
+				field {
+					name = "Support Channel"
+					value = arguments.channel?.mention ?: "Disabled"
+				}
+				footer {
+					text = "Configured by: ${user.asUser().tag}"
+				}
+			}
+
 			if (arguments.customMessage) {
 				val response = event.interaction.modal("Support Module", "supportModuleModal") {
 					actionRow {
@@ -91,21 +105,10 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 				modalResponse.respond {
 					embed {
-						title = "Configuration: Support"
-						field {
-							name = "Support Team"
-							value = arguments.role?.mention ?: "Disabled"
-						}
-						field {
-							name = "Support Channel"
-							value = arguments.channel?.mention ?: "Disabled"
-						}
+						supportEmbed()
 						field {
 							name = "Message"
 							value = supportMsg
-						}
-						footer {
-							text = "Configured by: ${user.asUser().tag}"
 						}
 					}
 				}
@@ -122,21 +125,10 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			} else {
 				event.interaction.respondEphemeral {
 					embed {
-						title = "Configuration: Support"
-						field {
-							name = "Support Team"
-							value = arguments.role?.mention ?: "Disabled"
-						}
-						field {
-							name = "Support Channel"
-							value = arguments.channel?.mention ?: "Disabled"
-						}
+						supportEmbed()
 						field {
 							name = "Message"
 							value = "default"
-						}
-						footer {
-							text = "Configured by: ${user.asUser().tag}"
 						}
 					}
 				}
@@ -158,26 +150,14 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				guild!!.getChannelOf<GuildMessageChannel>(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
 			}?.createMessage {
 				embed {
-					title = "Configuration: Support"
-					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
-						description = "Consider setting the moderation configuration to receive configuration updates" +
-								"where you want them!"
-					}
-					field {
-						name = "Support Team"
-						value = arguments.role?.mention ?: "Disable"
-					}
-					field {
-						name = "Support Channel"
-						value = arguments.channel?.mention ?: "Disable"
-					}
+					supportEmbed()
 					field {
 						name = "Message"
-						value = "default"
+						value = SupportConfigCollection().getConfig(guild!!.id)?.message ?: "default"
 					}
-					footer {
-						text = "Configured by: ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
+					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
+						description = "Consider setting the moderation configuration to receive configuration " +
+								"updates where you want them!"
 					}
 				}
 			}
@@ -193,25 +173,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			hasPermission(Permission.ManageGuild)
 		}
 
-		@Suppress("DuplicatedCode")
 		action {
-			respond {
-				embed {
-					title = "Configuration: Moderation"
-					field {
-						name = "Moderators"
-						value = arguments.moderatorRole?.mention ?: "Disabled"
-					}
-					field {
-						name = "Action log"
-						value = arguments.modActionLog?.mention ?: "Disabled"
-					}
-					footer {
-						text = "Configured by ${user.asUser().tag}"
-					}
-				}
-			}
-
 			ModerationConfigCollection().setConfig(
 				ModerationConfigData(
 					guild!!.id,
@@ -221,25 +183,34 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			)
 
+			suspend fun EmbedBuilder.moderationEmbed() {
+				title = "Configuration: Moderation"
+				field {
+					name = "Moderators"
+					value = arguments.moderatorRole?.mention ?: "Disabled"
+				}
+				field {
+					name = "Action log"
+					value = arguments.modActionLog?.mention ?: "Disabled"
+				}
+				footer {
+					text = "Configured by ${user.asUser().tag}"
+				}
+			}
+
+			respond {
+				embed {
+					moderationEmbed()
+				}
+			}
+
 			if (arguments.modActionLog == null) {
-				guild!!.asGuild().getSystemChannel()
+				guild!!.asGuild().getSystemChannel() // fixme lily might not have access to the system channel
 			} else {
 				guild!!.getChannelOf<GuildMessageChannel>(arguments.modActionLog!!.id)
 			}?.createMessage {
 				embed {
-					title = "Configuration: Moderation"
-					field {
-						name = "Moderators"
-						value = arguments.moderatorRole?.mention ?: "Disabled"
-					}
-					field {
-						name = "Action log"
-						value = arguments.modActionLog?.mention ?: "Disabled"
-					}
-					footer {
-						text = "Configured by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
-					}
+					moderationEmbed()
 				}
 			}
 		}
@@ -254,7 +225,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			hasPermission(Permission.ManageGuild)
 		}
 
-		@Suppress("DuplicatedCode")
 		action {
 			if (arguments.enableMemberLogging && arguments.memberLog == null) {
 				respond { content = "You must specify a channel to log members joining and leaving to!" }
@@ -264,25 +234,33 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
+			suspend fun EmbedBuilder.loggingEmbed() {
+				title = "Configuration: Logging"
+				field {
+					name = "Message Logs"
+					value = if (arguments.enableMessageLogs && arguments.messageLogs?.mention != null) {
+						arguments.messageLogs!!.mention
+					} else {
+						"Disabled"
+					}
+				}
+				field {
+					name = "Member Logs"
+					value = if (arguments.enableMemberLogging && arguments.memberLog?.mention != null) {
+						arguments.memberLog!!.mention
+					} else {
+						"Disabled"
+					}
+				}
+				footer {
+					text = "Configured by ${user.asUser().tag}"
+					icon = user.asUser().avatar?.url
+				}
+			}
+
 			respond {
 				embed {
-					title = "Configuration: Logging"
-					field {
-						name = "Message Logs"
-						value = if (!arguments.enableMessageLogs || arguments.messageLogs?.mention == null) {
-							arguments.messageLogs!!.mention
-						} else {
-							"Disabled"
-						}
-					}
-					field {
-						name = "Member Logs"
-						value = if (!arguments.enableMemberLogging || arguments.memberLog?.mention == null) {
-							arguments.memberLog!!.mention
-						} else {
-							"Disabled"
-						}
-					}
+					loggingEmbed()
 				}
 			}
 
@@ -304,30 +282,10 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				guild!!.getChannelOf<GuildMessageChannel>(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
 			}?.createMessage {
 				embed {
-					title = "Configuration: Logging"
+					loggingEmbed()
 					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
-						description = "Consider setting the moderation configuration to receive configuration updates" +
-								"where you want them!"
-					}
-					field {
-						name = "Message Logs"
-						value = if (!arguments.enableMessageLogs || arguments.messageLogs?.mention == null) {
-							arguments.messageLogs!!.mention
-						} else {
-							"Disabled"
-						}
-					}
-					field {
-						name = "Member Logs"
-						value = if (!arguments.enableMemberLogging || arguments.memberLog?.mention == null) {
-							arguments.memberLog!!.mention
-						} else {
-							"Disabled"
-						}
-					}
-					footer {
-						text = "Configured by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
+						description = "Consider setting the moderation configuration to receive configuration " +
+								"updates where you want them!"
 					}
 				}
 			}
@@ -379,7 +337,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						}
 					}
 				}
-				// FIXME Apparently this is broken. Do something idk
 				ConfigType.ALL.name -> {
 					ModerationConfigCollection().clearConfig(guild!!.id)
 					LoggingConfigCollection().clearConfig(guild!!.id)
@@ -405,9 +362,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				embed {
 					title = "Configuration Cleared: ${arguments.config}"
 					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
-						description =
-							"Consider setting the moderation configuration to receive configuration updates" +
-									"where you want them!"
+						description = "Consider setting the moderation configuration to receive configuration " +
+								"updates where you want them!"
 					}
 					footer {
 						text = "Config cleared by ${user.asUser().tag}"
