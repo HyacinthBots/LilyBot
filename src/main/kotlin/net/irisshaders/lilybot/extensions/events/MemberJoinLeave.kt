@@ -96,37 +96,4 @@ class MemberJoinLeave : Extension() {
 			}
 		}
 	}
-
-// 	/**
-// 	 * Check if the bot can send messages in the guild's configured member join/leave logging channel.
-// 	 * If the bot can't, reset a config and send a message in the top usable channel saying that the config was reset.
-// 	 * If the bot can, return the member join/leave logging channel.
-// 	 *
-// 	 * @param inputGuild The guild to check in.
-// 	 * @return The member join/leave logging channel or null if it does not have the correct permissions.
-// 	 * @author tempest15
-// 	 * @since 3.5.4
-// 	 */
-// 	private suspend fun getJoinLeaveChannelWithPerms(inputGuild: Guild): GuildMessageChannel? {
-// 		val config = DatabaseHelper.getConfig(inputGuild.id)!!
-// 		val joinLeaveChannel = inputGuild.getChannelOfOrNull<GuildMessageChannel>(config.joinChannel)
-//
-// 		if (joinLeaveChannel?.botHasPermissions(
-// 				Permission.ViewChannel,
-// 				Permission.SendMessages,
-// 				Permission.EmbedLinks
-// 			) != true
-// 		) {
-// 			val usableChannel = getFirstUsableChannel(inputGuild) ?: return null
-// 			usableChannel.createMessage(
-// 				"Lily cannot send messages in your configured member join/leave logging channel. " +
-// 						"As a result, your config has been reset. " +
-// 						"Please fix the permissions before setting a new config."
-// 			)
-// 			delay(3000) // So that other events may finish firing
-// 			DatabaseHelper.clearConfig(usableChannel.guildId)
-// 			return null
-// 		}
-// 		return joinLeaveChannel
-// 	}
 }
