@@ -90,7 +90,7 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 
 	action {
 		val config = DatabaseHelper.getConfig(guild!!.id)!!
-		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(config.messageLogs)
+		val messageLog = guild?.getChannelOf<GuildMessageChannel>(config.messageLogs)
 		val reportedMessage: Message
 		val messageAuthor: Member?
 
@@ -220,7 +220,7 @@ suspend fun createReportModal(
 	inputInteraction: ModalParentInteractionBehavior,
 	user: UserBehavior,
 	config: ConfigData,
-	messageLog: GuildMessageChannel,
+	messageLog: GuildMessageChannel?,
 	reportedMessage: Message,
 	messageAuthor: Member?,
 ) {
@@ -276,7 +276,7 @@ suspend fun createReportModal(
  */
 private suspend inline fun createReport(
 	user: UserBehavior,
-	messageLog: GuildMessageChannel,
+	messageLog: GuildMessageChannel?,
 	messageAuthor: Member?,
 	reportedMessage: Message,
 	moderatorRole: Snowflake,
@@ -300,9 +300,9 @@ private suspend inline fun createReport(
 						content = "Message reported to staff"
 						components { removeAll() }
 
-						messageLog.createMessage { content = "<@&$moderatorRole>" }
+						messageLog?.createMessage { content = "<@&$moderatorRole>" }
 
-						reportEmbed = messageLog.createMessage {
+						reportEmbed = messageLog?.createMessage {
 							embed {
 								title = "Message reported"
 								description = "A message was reported in ${reportedMessage.getChannel().mention}"
@@ -404,12 +404,15 @@ private suspend inline fun createReport(
 												}
 												messageAuthor!!.asUser().dm {
 													embed {
-														title = "You have been timed out in ${guild?.fetchGuild()?.name}"
-														description = "**Duration:**\n10 minutes\n**Reason:**\nTimed-out via report"
+														title =
+															"You have been timed out in ${guild?.fetchGuild()?.name}"
+														description =
+															"**Duration:**\n10 minutes\n**Reason:**\nTimed-out via report"
 													}
 												}
 												quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 10)
 											}
+
 											"20-timeout" -> {
 												reportEmbed?.edit { components { removeAll() } }
 												guild?.getMember(messageAuthor!!.id)?.edit {
@@ -420,12 +423,15 @@ private suspend inline fun createReport(
 												}
 												messageAuthor!!.asUser().dm {
 													embed {
-														title = "You have been timed out in ${guild?.fetchGuild()?.name}"
-														description = "**Duration:**\n20 minutes\n**Reason:**\nTimed-out via report"
+														title =
+															"You have been timed out in ${guild?.fetchGuild()?.name}"
+														description =
+															"**Duration:**\n20 minutes\n**Reason:**\nTimed-out via report"
 													}
 												}
 												quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 20)
 											}
+
 											"30-timeout" -> {
 												reportEmbed?.edit { components { removeAll() } }
 												guild?.getMember(messageAuthor!!.id)?.edit {
@@ -436,12 +442,15 @@ private suspend inline fun createReport(
 												}
 												messageAuthor!!.asUser().dm {
 													embed {
-														title = "You have been timed out in ${guild?.fetchGuild()?.name}"
-														description = "**Duration:**\n30 minutes\n**Reason:**\nTimed-out via report"
+														title =
+															"You have been timed out in ${guild?.fetchGuild()?.name}"
+														description =
+															"**Duration:**\n30 minutes\n**Reason:**\nTimed-out via report"
 													}
 												}
 												quickTimeoutEmbed(actionLog, messageAuthor.asUser(), 30)
 											}
+
 											"kick-user" -> {
 												reportEmbed?.edit { components { removeAll() } }
 												messageAuthor!!.asUser().dm {
@@ -453,11 +462,13 @@ private suspend inline fun createReport(
 												messageAuthor.kick(reason = "Kicked via report")
 												quickLogEmbed("Kicked a User", actionLog, messageAuthor.asUser())
 											}
+
 											"soft-ban-user" -> {
 												reportEmbed?.edit { components { removeAll() } }
 												messageAuthor!!.asUser().dm {
 													embed {
-														title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
+														title =
+															"You have been soft-banned from ${guild?.fetchGuild()?.name}"
 														description = "**Reason:**\nSoft-banned via report\n\n" +
 																"You are free to rejoin without the need to be unbanned"
 													}
@@ -469,6 +480,7 @@ private suspend inline fun createReport(
 												reportedMessage.getGuild().unban(messageAuthor.id, reason = "Soft-ban")
 												quickLogEmbed("Soft-Banned a User", actionLog, messageAuthor.asUser())
 											}
+
 											"ban-user" -> {
 												reportEmbed?.edit { components { removeAll() } }
 												messageAuthor!!.asUser().dm {

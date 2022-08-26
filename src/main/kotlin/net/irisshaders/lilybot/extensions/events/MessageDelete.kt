@@ -5,16 +5,14 @@ import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageDeleteEvent
-import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 
 /**
  * The class for logging deletion of messages to the guild message log.
@@ -45,12 +43,7 @@ class MessageDelete : Extension() {
 				val config = DatabaseHelper.getConfig(event.guild!!.id)!!
 
 				val guild = kord.getGuild(event.guildId!!)
-				var messageLog: GuildMessageChannel? = null
-				try {
-					messageLog = guild?.getChannelOf(config.messageLogs)
-				} catch (e: EntityNotFoundException) {
-					DatabaseHelper.clearConfig(event.guildId!!) // Clear the config to make the user fix it
-				}
+				val messageLog = getModerationChannelWithPerms(guild!!, config.messageLogs) ?: return@action
 
 				val messageContent = if (eventMessage.asMessageOrNull().content.length > 1024) {
 					eventMessage.asMessageOrNull().content.substring(0, 1020) + " ..."
@@ -64,7 +57,7 @@ class MessageDelete : Extension() {
 					return@action
 				}
 
-				messageLog?.createEmbed {
+				messageLog.createEmbed {
 					color = DISCORD_PINK
 					author {
 						name = "Message Deleted"
