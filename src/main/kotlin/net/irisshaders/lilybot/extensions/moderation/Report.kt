@@ -51,7 +51,6 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.kord.rest.request.RestRequestException
 import kotlinx.datetime.Clock
-import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
 import net.irisshaders.lilybot.extensions.config.ConfigType
@@ -87,13 +86,12 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 
 	check {
 		anyGuild()
-		configPresent(ConfigType.MODERATION, ConfigType.LOGGING)
+		configPresent(ConfigType.MODERATION)
 	}
 
 	action {
-		val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)!!
 		val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
-		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel!!)
+		val modLog = guild!!.getChannelOf<GuildMessageChannel>(moderationConfig.channel!!)
 		val reportedMessage: Message
 		val messageAuthor: Member?
 
@@ -126,7 +124,7 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 			event.interaction as ModalParentInteractionBehavior,
 			user,
 			moderationConfig,
-			messageLog,
+			modLog,
 			reportedMessage,
 			messageAuthor
 		)
@@ -149,13 +147,12 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 
 	check {
 		anyGuild()
-		configPresent(ConfigType.LOGGING, ConfigType.MODERATION)
+		configPresent(ConfigType.MODERATION)
 	}
 
 	action {
-		val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)!!
 		val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
-		val messageLog = guild!!.getChannelOf<GuildMessageChannel>(loggingConfig.messageChannel!!)
+		val modLog = guild!!.getChannelOf<GuildMessageChannel>(moderationConfig.channel!!)
 		val channel: MessageChannel
 		val reportedMessage: Message
 		val messageAuthor: Member?
@@ -201,7 +198,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 			event.interaction as ModalParentInteractionBehavior,
 			user,
 			moderationConfig,
-			messageLog,
+			modLog,
 			reportedMessage,
 			messageAuthor
 		)
