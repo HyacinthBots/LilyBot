@@ -8,6 +8,7 @@ import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
@@ -140,76 +141,50 @@ class TemporaryModeration : Extension() {
 
 				var dm: Message? = null
 				// Check the amount of points before running sanctions and dming the user
-				if (newStrikes == 1) {
-					dm = userArg.dm {
-						embed {
-							title = "First warning in ${guild?.fetchGuild()?.name}"
-							description = "**Reason:** ${arguments.reason}\n\n" +
-									"No moderation action has been taken. Please consider your actions carefully.\n\n" +
-									"For more information about the warn system, please see [this document]" +
-									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
-							color = DISCORD_BLACK
-						}
-					}
-				} else if (newStrikes == 2) {
-					dm = userArg.dm {
-						embed {
-							title = "Second warning and timeout in ${guild?.fetchGuild()?.name}"
-							description = "**Reason:** ${arguments.reason}\n\n" +
-									"You have been timed out for 3 hours. Please consider your actions carefully.\n\n" +
-									"For more information about the warn system, please see [this document]" +
-									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
-							color = DISCORD_BLACK
-						}
-					}
-
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
-					}
-
-					actionLog?.createEmbed {
-						title = "Timeout"
-						description = "${userArg.mention} has been timed-out for 3 hours due to $newStrikes warn " +
-								"strikes\n${userArg.id} (${userArg.tag}) Reason: ${arguments.reason}"
-						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
-						}
-						color = DISCORD_BLACK
-					}
-				} else if (newStrikes == 3) {
-					userArg.dm {
-						embed {
-							title = "Third warning and timeout in ${guild!!.fetchGuild().name}"
-							description =
-								"You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
-										"For more information about the warn system, please see [this document]" +
-										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
-							color = DISCORD_RED
-						}
-					}
-
-					guild?.getMember(userArg.id)?.edit {
-						timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
-					}
-
-					actionLog?.createEmbed {
-						title = "Timeout"
-						description = "${userArg.mention} has been timed-out for 12 hours due to $newStrikes warn " +
-								"strikes\n${userArg.id} (${userArg.tag}) Reason: ${arguments.reason}"
-						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
-						}
-						color = DISCORD_BLACK
-					}
-				} else if (newStrikes != null) {
-					if (newStrikes > 3) {
+				if (arguments.dm) {
+					if (newStrikes == 1) {
 						dm = userArg.dm {
 							embed {
-								title = "Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}"
+								title = "First warning in ${guild?.fetchGuild()?.name}"
+								description = "**Reason:** ${arguments.reason}\n\n" +
+										"No moderation action has been taken. Please consider your actions carefully.\n\n" +
+										"For more information about the warn system, please see [this document]" +
+										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+								color = DISCORD_BLACK
+							}
+						}
+					} else if (newStrikes == 2) {
+						dm = userArg.dm {
+							embed {
+								title = "Second warning and timeout in ${guild?.fetchGuild()?.name}"
+								description = "**Reason:** ${arguments.reason}\n\n" +
+										"You have been timed out for 3 hours. Please consider your actions carefully.\n\n" +
+										"For more information about the warn system, please see [this document]" +
+										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+								color = DISCORD_BLACK
+							}
+						}
+
+						guild?.getMember(userArg.id)?.edit {
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+						}
+
+						actionLog?.createEmbed {
+							title = "Timeout"
+							description = "${userArg.mention} has been timed-out for 3 hours due to $newStrikes warn " +
+									"strikes\n${userArg.id} (${userArg.tag}) Reason: ${arguments.reason}"
+							footer {
+								text = user.asUser().tag
+								icon = user.asUser().avatar?.url
+							}
+							color = DISCORD_BLACK
+						}
+					} else if (newStrikes == 3) {
+						userArg.dm {
+							embed {
+								title = "Third warning and timeout in ${guild!!.fetchGuild().name}"
 								description =
-									"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
+									"You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
 											"For more information about the warn system, please see [this document]" +
 											"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
 								color = DISCORD_RED
@@ -217,19 +192,49 @@ class TemporaryModeration : Extension() {
 						}
 
 						guild?.getMember(userArg.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
 						}
 
 						actionLog?.createEmbed {
 							title = "Timeout"
-							description = "${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
-									"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other " +
-									"action. Reason: ${arguments.reason}"
+							description =
+								"${userArg.mention} has been timed-out for 12 hours due to $newStrikes warn " +
+										"strikes\n${userArg.id} (${userArg.tag}) Reason: ${arguments.reason}"
 							footer {
 								text = user.asUser().tag
 								icon = user.asUser().avatar?.url
 							}
 							color = DISCORD_BLACK
+						}
+					} else if (newStrikes != null) {
+						if (newStrikes > 3) {
+							dm = userArg.dm {
+								embed {
+									title = "Warning number $newStrikes and timeout in ${guild!!.fetchGuild().name}"
+									description =
+										"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
+												"For more information about the warn system, please see [this document]" +
+												"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+									color = DISCORD_RED
+								}
+							}
+
+							guild?.getMember(userArg.id)?.edit {
+								timeoutUntil = Clock.System.now().plus(Duration.parse("PT72H"))
+							}
+
+							actionLog?.createEmbed {
+								title = "Timeout"
+								description =
+									"${userArg.mention} has been timed-out for 3 days due to $newStrikes warn " +
+											"strike\n${userArg.id} (${userArg.tag})\nIt might be time to consider other " +
+											"action. Reason: ${arguments.reason}"
+								footer {
+									text = user.asUser().tag
+									icon = user.asUser().avatar?.url
+								}
+								color = DISCORD_BLACK
+							}
 						}
 					}
 				}
@@ -239,7 +244,7 @@ class TemporaryModeration : Extension() {
 				embed.title = "Warning"
 				embed.image = arguments.image
 				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(dm)
+				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
 				embed.timestamp = Clock.System.now()
 				embed.field {
 					name = "Total Strikes:"
@@ -294,11 +299,14 @@ class TemporaryModeration : Extension() {
 					content = "Removed strike from user"
 				}
 
-				val dm = userArg.dm {
-					embed {
-						title = "Warn strike removal in ${guild?.fetchGuild()?.name}"
-						description = "You have had a warn strike removed. You now have $newStrikes strikes."
-						color = DISCORD_GREEN
+				var dm: Message? = null
+				if (arguments.dm) {
+					dm = userArg.dm {
+						embed {
+							title = "Warn strike removal in ${guild?.fetchGuild()?.name}"
+							description = "You have had a warn strike removed. You now have $newStrikes strikes."
+							color = DISCORD_GREEN
+						}
 					}
 				}
 
@@ -313,7 +321,7 @@ class TemporaryModeration : Extension() {
 						value = newStrikes.toString()
 						inline = false
 					}
-					dmNotificationStatusEmbedField(dm)
+					dmNotificationStatusEmbedField(arguments.dm, dm)
 				}
 			}
 		}
@@ -357,13 +365,16 @@ class TemporaryModeration : Extension() {
 
 				// Send the DM after the timeout task, in case Lily doesn't have required permissions
 				// DM the user about it
-				val dm = userArg.dm {
-					embed {
-						title = "You have been timed out in ${guild?.fetchGuild()?.name}"
-						description = "**Duration:**\n${
-							duration.toDiscord(TimestampType.Default) + "(" + arguments.duration.toString()
-								.replace("PT", "") + ")"
-						}\n**Reason:**\n${arguments.reason}"
+				var dm: Message? = null
+				if (arguments.dm) {
+					dm = userArg.dm {
+						embed {
+							title = "You have been timed out in ${guild?.fetchGuild()?.name}"
+							description = "**Duration:**\n${
+								duration.toDiscord(TimestampType.Default) + "(" + arguments.duration.toString()
+									.replace("PT", "") + ")"
+							}\n**Reason:**\n${arguments.reason}"
+						}
 					}
 				}
 
@@ -376,7 +387,7 @@ class TemporaryModeration : Extension() {
 				embed.title = "Timeout"
 				embed.image = arguments.image
 				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(dm)
+				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
 				embed.timestamp = Clock.System.now()
 				embed.field {
 					name = "Duration:"
@@ -707,6 +718,12 @@ class TemporaryModeration : Extension() {
 			name = "image"
 			description = "The URL to an image you'd like to provide as extra context for the action"
 		}
+
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to send a direct message to the user about the warn"
+			defaultValue = true
+		}
 	}
 
 	inner class RemoveTimeoutArgs : Arguments() {
@@ -736,6 +753,12 @@ class TemporaryModeration : Extension() {
 			name = "image"
 			description = "The URL to an image you'd like to provide as extra context for the action"
 		}
+
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to send a direct message to the user about the warn"
+			defaultValue = true
+		}
 	}
 
 	inner class RemoveWarnArgs : Arguments() {
@@ -743,6 +766,12 @@ class TemporaryModeration : Extension() {
 		val userArgument by user {
 			name = "user"
 			description = "Person to remove warn from"
+		}
+
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to send a direct message to the user about the warn"
+			defaultValue = true
 		}
 	}
 

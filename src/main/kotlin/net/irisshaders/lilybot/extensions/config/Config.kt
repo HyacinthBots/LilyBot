@@ -55,7 +55,7 @@ class Config : Extension() {
 				}
 
 				action {
-					val actionLogChannel = guild!!.getChannelOf<GuildMessageChannel>(arguments.modActionLog.id)
+					val actionLogChannel = guild?.getChannelOf<GuildMessageChannel>(arguments.modActionLog.id)
 
 					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
@@ -78,7 +78,7 @@ class Config : Extension() {
 						return@action
 					}
 
-					actionLogChannel.createEmbed {
+					actionLogChannel?.createEmbed {
 						title = "Configuration set!"
 						description = "A guild manager has set a config for this guild!"
 						color = DISCORD_BLACK
@@ -124,13 +124,13 @@ class Config : Extension() {
 					} else {
 						// Log the config being cleared to the action log
 						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
-						val actionLogChannel = guild!!.getChannelOf<GuildMessageChannel>(actionLogId!!)
+						val actionLogChannel = guild?.getChannelOf<GuildMessageChannel>(actionLogId!!)
 
 						respond {
 							content = "Config cleared for Guild ID: ${guild!!.id}!"
 						}
 
-						actionLogChannel.createEmbed {
+						actionLogChannel?.createEmbed {
 							title = "Configuration cleared!"
 							description = "A Guild Manager has cleared the configuration for this guild!"
 							footer {
