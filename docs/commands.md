@@ -37,14 +37,25 @@ None
 
 ---
 
-### Name: `set-status`
+### Name: `log-uploading enable`
 **Arguments**:
-* `presence` - Value for Lily's status - String
+None
 
-**Result**: Lily's 'Now Playing:' status is set to `presence`.
-This command can only be executed in the test guild specified in your `.env` file
+**Result**: Enables the log uploading feature for this guild. Uploading is enabled by default.
 
-**Required Permissions**: `Administrator`
+**Required Permissions**: `Moderate Members`
+
+**Command category**: `Administration commands`
+
+---
+
+### Name: `log-uploading disable`
+**Arguments**:
+None
+
+**Result**: Disables the log uploading feature for this guild. Uploading is enabled by default.
+
+**Required Permissions**: `Moderate Members`
 
 **Command category**: `Administration commands`
 
@@ -435,6 +446,42 @@ None
 * `type` - The type of reminder to remove all of, can be `repeating`, `non-repeating` or `all` - String Choice
 
 **Result**: Removes all the specific `type` of reminders for the user from the guild the command was executed in.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `log-uploading blacklist-add`
+**Arguments**:
+None
+
+**Result**: Adds the channel the command was run in to the log uploading blacklist.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `log-uploading blacklist-remove`
+**Arguments**:
+None
+
+**Result**: Removes the channel the command was run in from the log uploading blacklist.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `log-uploading blacklist-list`
+**Arguments**:
+None
+
+**Result**: Lists all the channels in the log uploading blacklist.
 
 **Required Permissions**: `None`
 
