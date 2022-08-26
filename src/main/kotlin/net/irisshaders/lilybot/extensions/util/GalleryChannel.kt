@@ -17,8 +17,6 @@ import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
@@ -26,8 +24,10 @@ import kotlinx.coroutines.delay
 import net.irisshaders.lilybot.database.collections.GalleryChannelCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.extensions.config.ConfigOptions
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -64,7 +64,14 @@ class GalleryChannel : Extension() {
 
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
+					val actionLog =
+						getModerationChannelWithPerms(
+							guild!!.asGuild(),
+							config.channel!!,
+							ConfigType.MODERATION,
+							interactionResponse
+						)
+							?: return@action
 
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
 						if (channel.asChannel().id == it.channelId) {
@@ -110,7 +117,14 @@ class GalleryChannel : Extension() {
 
 				action {
 					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
+					val actionLog =
+						getModerationChannelWithPerms(
+							guild!!.asGuild(),
+							config.channel!!,
+							ConfigType.MODERATION,
+							interactionResponse
+						)
+							?: return@action
 					var channelFound = false
 
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {

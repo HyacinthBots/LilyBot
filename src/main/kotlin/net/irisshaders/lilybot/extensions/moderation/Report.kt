@@ -79,7 +79,7 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 
 	action {
 		val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
-		val modLog = guild!!.getChannelOf<GuildMessageChannel>(moderationConfig.channel!!)
+		val modLog = guild?.getChannelOf<GuildMessageChannel>(moderationConfig.channel!!)
 		val reportedMessage: Message
 
 		try {
@@ -202,7 +202,7 @@ suspend fun createReportModal(
 	inputInteraction: ModalParentInteractionBehavior,
 	user: UserBehavior,
 	config: ModerationConfigData,
-	modLog: GuildMessageChannel,
+	modLog: GuildMessageChannel?,
 	reportedMessage: Message,
 ) {
 	val modal = inputInteraction.modal("Report a message", "reportModal") {
@@ -253,7 +253,7 @@ suspend fun createReportModal(
  */
 private suspend inline fun createReport(
 	user: UserBehavior,
-	modLog: GuildMessageChannel,
+	modLog: GuildMessageChannel?,
 	reportedMessage: Message,
 	moderatorRole: Snowflake,
 	reportReason: String?,
@@ -274,9 +274,9 @@ private suspend inline fun createReport(
 						content = "Message reported to staff"
 						components { removeAll() }
 
-						modLog.createMessage { content = "<@&$moderatorRole>" }
+						modLog?.createMessage { content = "<@&$moderatorRole>" }
 
-						modLog.createMessage {
+						modLog?.createMessage {
 							embed {
 								title = "Message reported"
 								description = "A message was reported in ${reportedMessage.getChannel().mention}"

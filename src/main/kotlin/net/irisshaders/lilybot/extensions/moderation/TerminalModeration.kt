@@ -5,6 +5,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
@@ -20,8 +21,7 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.Message
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
@@ -31,9 +31,11 @@ import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.extensions.config.ConfigOptions
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.baseModerationEmbed
 import net.irisshaders.lilybot.utils.configPresent
 import net.irisshaders.lilybot.utils.dmNotificationStatusEmbedField
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 import net.irisshaders.lilybot.utils.isBotOrModerator
 
 /**
@@ -65,17 +67,27 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
+				val actionLog =
+					getModerationChannelWithPerms(
+						guild!!.asGuild(),
+						config.channel!!,
+						ConfigType.MODERATION,
+						interactionResponse
+					)
+						?: return@action
 				val userArg = arguments.userArgument
 
 				// Clarify the user is not a bot or moderator
 				isBotOrModerator(userArg, "ban") ?: return@action
 
 				// DM the user before the ban task is run, to avoid error, null if fails
-				val dm = userArg.dm {
-					embed {
-						title = "You have been banned from ${guild?.fetchGuild()?.name}"
-						description = "**Reason:**\n${arguments.reason}"
+				val dm: Message? = null
+				if (arguments.dm) {
+					userArg.dm {
+						embed {
+							title = "You have been banned from ${guild?.fetchGuild()?.name}"
+							description = "**Reason:**\n${arguments.reason}"
+						}
 					}
 				}
 
@@ -108,7 +120,7 @@ class TerminalModeration : Extension() {
 				embed.description = "${userArg.mention} has been banned!"
 				embed.image = arguments.image
 				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(dm)
+				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
 				embed.timestamp = Clock.System.now()
 				embed.field {
 					name = "Days of messages deleted:"
@@ -117,10 +129,10 @@ class TerminalModeration : Extension() {
 				}
 
 				try {
-					actionLog?.createMessage { embeds.add(embed) }
+					actionLog.createMessage { embeds.add(embed) }
 				} catch (e: KtorRequestException) {
 					embed.image = null
-					actionLog?.createMessage { embeds.add(embed) }
+					actionLog.createMessage { embeds.add(embed) }
 				}
 			}
 		}
@@ -143,7 +155,14 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
+				val actionLog =
+					getModerationChannelWithPerms(
+						guild!!.asGuild(),
+						config.channel!!,
+						ConfigType.MODERATION,
+						interactionResponse
+					)
+						?: return@action
 				val userArg = arguments.userArgument
 				// Get all the bans into a list
 				val bans = guild!!.bans.toList().map { it.userId }
@@ -161,7 +180,7 @@ class TerminalModeration : Extension() {
 					content = "Unbanned user"
 				}
 
-				actionLog?.createEmbed {
+				actionLog.createEmbed {
 					title = "Unbanned a user"
 					description = "${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})"
 					field {
@@ -196,17 +215,27 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
+				val actionLog =
+					getModerationChannelWithPerms(
+						guild!!.asGuild(),
+						config.channel!!,
+						ConfigType.MODERATION,
+						interactionResponse
+					)
+						?: return@action
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
 
 				// DM the user before the ban task is run
-				val dm = userArg.dm {
-					embed {
-						title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
-						description = "**Reason:**\n${arguments.reason}\n\n" +
-								"You are free to rejoin without the need to be unbanned"
+				val dm: Message? = null
+				if (arguments.dm) {
+					userArg.dm {
+						embed {
+							title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
+							description = "**Reason:**\n${arguments.reason}\n\n" +
+									"You are free to rejoin without the need to be unbanned"
+						}
 					}
 				}
 
@@ -239,7 +268,7 @@ class TerminalModeration : Extension() {
 				embed.description = "${userArg.mention} has been soft-banned!"
 				embed.image = arguments.image
 				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(dm)
+				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
 				embed.timestamp = Clock.System.now()
 				embed.field {
 					name = "Days of messages deleted"
@@ -248,10 +277,10 @@ class TerminalModeration : Extension() {
 				}
 
 				try {
-					actionLog?.createMessage { embeds.add(embed) }
+					actionLog.createMessage { embeds.add(embed) }
 				} catch (e: KtorRequestException) {
 					embed.image = null
-					actionLog?.createMessage { embeds.add(embed) }
+					actionLog.createMessage { embeds.add(embed) }
 				}
 
 				// Unban the user, as you're supposed to in soft-ban
@@ -277,16 +306,26 @@ class TerminalModeration : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
+				val actionLog =
+					getModerationChannelWithPerms(
+						guild!!.asGuild(),
+						config.channel!!,
+						ConfigType.MODERATION,
+						interactionResponse
+					)
+						?: return@action
 				val userArg = arguments.userArgument
 
 				// Clarify the user isn't a bot or a moderator
 				isBotOrModerator(userArg, "kick") ?: return@action
 				// DM the user about it before the kick
-				val dm = userArg.dm {
-					embed {
-						title = "You have been kicked from ${guild?.fetchGuild()?.name}"
-						description = "**Reason:**\n${arguments.reason}"
+				val dm: Message? = null
+				if (arguments.dm) {
+					userArg.dm {
+						embed {
+							title = "You have been kicked from ${guild?.fetchGuild()?.name}"
+							description = "**Reason:**\n${arguments.reason}"
+						}
 					}
 				}
 
@@ -310,14 +349,14 @@ class TerminalModeration : Extension() {
 				embed.description = "${userArg.mention} has been kicked!"
 				embed.image = arguments.image
 				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(dm)
+				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
 				embed.timestamp = Clock.System.now()
 
 				try {
-					actionLog?.createMessage { embeds.add(embed) }
+					actionLog.createMessage { embeds.add(embed) }
 				} catch (e: KtorRequestException) {
 					embed.image = null
-					actionLog?.createMessage { embeds.add(embed) }
+					actionLog.createMessage { embeds.add(embed) }
 				}
 			}
 		}
@@ -335,6 +374,12 @@ class TerminalModeration : Extension() {
 			name = "reason"
 			description = "The reason for the Kick"
 			defaultValue = "No reason provided"
+		}
+
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to send a direct message to the user about the warn"
+			defaultValue = true
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
@@ -362,6 +407,12 @@ class TerminalModeration : Extension() {
 			name = "reason"
 			description = "The reason for the ban"
 			defaultValue = "No reason provided"
+		}
+
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to send a direct message to the user about the warn"
+			defaultValue = true
 		}
 
 		/** An image that the user wishes to provide for context to the ban. */
@@ -405,6 +456,12 @@ class TerminalModeration : Extension() {
 			name = "reason"
 			description = "The reason for the ban"
 			defaultValue = "No reason provided"
+		}
+
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to send a direct message to the user about the warn"
+			defaultValue = true
 		}
 
 		/** An image that the user wishes to provide for context to the soft-ban. */

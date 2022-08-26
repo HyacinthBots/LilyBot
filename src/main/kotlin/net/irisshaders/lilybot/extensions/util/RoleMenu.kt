@@ -42,8 +42,10 @@ import kotlinx.coroutines.flow.toList
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.RoleMenuCollection
 import net.irisshaders.lilybot.extensions.config.ConfigOptions
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 import net.irisshaders.lilybot.utils.utilsLogger
 
 /**
@@ -214,8 +216,14 @@ class RoleMenu : Extension() {
 					)
 
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
-
+					val actionLog =
+						getModerationChannelWithPerms(
+							guild!!.asGuild(),
+							config.channel!!,
+							ConfigType.MODERATION,
+							interactionResponse
+						)
+							?: return@action
 					actionLog.createMessage {
 						embed {
 							title = "Role Added to Role Menu"
@@ -279,8 +287,14 @@ class RoleMenu : Extension() {
 
 					RoleMenuCollection().removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
-
+					val actionLog =
+						getModerationChannelWithPerms(
+							guild!!.asGuild(),
+							config.channel!!,
+							ConfigType.MODERATION,
+							interactionResponse
+						)
+							?: return@action
 					actionLog.createMessage {
 						embed {
 							title = "Role Removed from Role Menu"
@@ -381,8 +395,14 @@ class RoleMenu : Extension() {
 					)
 
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
-
+					val actionLog =
+						getModerationChannelWithPerms(
+							guild!!.asGuild(),
+							config.channel!!,
+							ConfigType.MODERATION,
+							interactionResponse
+						)
+							?: return@action
 					actionLog.createMessage {
 						embed {
 							title = "Pronoun Role Menu Created"
@@ -472,7 +492,8 @@ class RoleMenu : Extension() {
 							}
 
 							action SelectMenu@{
-								val selectedRoles = event.interaction.values.toList().map { Snowflake(it) }.filter { it in guildRoles.keys }
+								val selectedRoles = event.interaction.values.toList().map { Snowflake(it) }
+									.filter { it in guildRoles.keys }
 
 								if (event.interaction.values.isEmpty()) {
 									member.edit {

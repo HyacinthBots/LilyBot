@@ -25,15 +25,15 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.TagsCollection
 import net.irisshaders.lilybot.extensions.config.ConfigOptions
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 
 /**
  * The class that holds the commands to create tags commands.
@@ -218,7 +218,14 @@ class Tags : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
+				val actionLog =
+					getModerationChannelWithPerms(
+						guild!!.asGuild(),
+						config.channel!!,
+						ConfigType.MODERATION,
+						interactionResponse
+					)
+						?: return@action
 
 				if (TagsCollection().getTag(guild!!.id, arguments.tagName) != null) {
 					respond { content = "A tag with that name already exists in this guild." }
@@ -300,7 +307,14 @@ class Tags : Extension() {
 				}
 
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
+				val actionLog =
+					getModerationChannelWithPerms(
+						guild!!.asGuild(),
+						config.channel!!,
+						ConfigType.MODERATION,
+						interactionResponse
+					)
+						?: return@action
 
 				TagsCollection().removeTag(guild!!.id, arguments.tagName)
 
@@ -333,7 +347,14 @@ class Tags : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
+				val actionLog =
+					getModerationChannelWithPerms(
+						guild!!.asGuild(),
+						config.channel!!,
+						ConfigType.MODERATION,
+						interactionResponse
+					)
+						?: return@action
 
 				if (TagsCollection().getTag(guild!!.id, arguments.tagName) == null) {
 					respond { content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?" }
@@ -436,10 +457,19 @@ class Tags : Extension() {
 						}
 					)
 				} else {
-					tags.chunked(10).forEach { tag ->
+					tags.chunked(5).forEach { tag ->
 						var response = ""
 						tag.forEach {
-							response += "• ${it.name} - ${it.tagTitle}\n"
+							response += "• ${it.name} - ${
+								if (it.tagTitle.length >= 175) {
+									it.tagTitle.substring(
+										0,
+										175
+									)
+								} else {
+									it.tagTitle
+								}
+							}\n"
 						}
 						pagesObj.addPage(
 							Page {

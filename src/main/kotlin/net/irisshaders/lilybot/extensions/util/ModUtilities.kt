@@ -44,9 +44,11 @@ import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.StatusCollection
 import net.irisshaders.lilybot.extensions.config.ConfigOptions
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.TEST_GUILD_ID
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 import net.irisshaders.lilybot.utils.updateDefaultPresence
 
 /**
@@ -76,13 +78,27 @@ class ModUtilities : Extension() {
 			}
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
-				val targetChannel: GuildMessageChannel =
-					if (arguments.channel != null) {
-						guild!!.getChannelOf(arguments.channel!!.id)
-					} else {
-						channel.asChannelOf()
-					}
+				val actionLog =
+					getModerationChannelWithPerms(
+						guild!!.asGuild(),
+						config.channel!!,
+						ConfigType.MODERATION,
+						interactionResponse
+					)
+						?: return@action
+
+				val targetChannel: GuildMessageChannel?
+				try {
+					targetChannel =
+						if (arguments.channel != null) {
+							guild!!.getChannelOf(arguments.channel!!.id)
+						} else {
+							channel.asChannelOf()
+						}
+				} catch (e: EntityNotFoundException) {
+					respond { content = "Channel not found." }
+					return@action
+				}
 				val createdMessage: Message
 
 				try {
@@ -171,8 +187,15 @@ class ModUtilities : Extension() {
 					channel
 				}
 
-				val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-				val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
+				val actionLog =
+					getModerationChannelWithPerms(
+						guild!!.asGuild(),
+						config.channel!!,
+						ConfigType.MODERATION,
+						interactionResponse
+					)
+						?: return@action
 				val message: Message
 
 				try {
@@ -378,7 +401,14 @@ class ModUtilities : Extension() {
 					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size
 
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
+					val actionLog =
+						getModerationChannelWithPerms(
+							guild!!.asGuild(),
+							config.channel!!,
+							ConfigType.MODERATION,
+							interactionResponse
+						)
+							?: return@action
 
 					respond { content = "Presence set to default" }
 

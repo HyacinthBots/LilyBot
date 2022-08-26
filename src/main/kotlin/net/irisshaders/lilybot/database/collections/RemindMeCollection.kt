@@ -35,6 +35,17 @@ class RemindMeCollection : KordExKoinComponent {
 		collection.find().toList()
 
 	/**
+	 * Gets every reminder for a given [inputUserId] from the database.
+	 *
+	 * @param inputUserId The ID of the user the reminders are being gotten for
+	 * @return A [List] of the users reminders from the database
+	 * @since 3.5.4
+	 * @author NoComment1105
+	 */
+	suspend inline fun getUserReminders(inputUserId: Snowflake): List<RemindMeData> =
+		collection.find(RemindMeData::userId eq inputUserId).toList()
+
+	/**
 	 * Stores a reminder in the database.
 	 *
 	 * @param initialSetTime The time the reminder was set

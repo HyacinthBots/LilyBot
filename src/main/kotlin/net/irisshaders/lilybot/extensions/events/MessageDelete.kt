@@ -5,16 +5,16 @@ import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageDeleteEvent
-import dev.kord.core.exception.EntityNotFoundException
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.api.pluralkit.PK_API_DELAY
 import net.irisshaders.lilybot.api.pluralkit.PluralKit
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
 import net.irisshaders.lilybot.extensions.config.ConfigOptions
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 
 /**
  * The class for logging deletion of messages to the guild message log.
@@ -36,7 +36,7 @@ class MessageDelete : Extension() {
 				configPresent(ConfigOptions.MESSAGE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message?.author?.id == kord.selfId ||
-					event.message?.author?.isBot!!
+							event.message?.author?.isBot!!
 				}
 			}
 
@@ -46,12 +46,9 @@ class MessageDelete : Extension() {
 				val eventMessage = event.message ?: return@action
 				if (PluralKit.containsPkChatCommandPrefix(eventMessage)) return@action
 
-				var messageLog: GuildMessageChannel? = null
-				try {
-					messageLog = kord.getChannelOf(config.messageChannel!!)
-				} catch (e: EntityNotFoundException) {
-					LoggingConfigCollection().clearConfig(event.getGuild()!!.id) // Clear the config to make the user fix it
-				}
+				val guild = kord.getGuild(event.guildId!!)
+				val messageLog =
+					getModerationChannelWithPerms(guild!!, config.messageChannel!!, ConfigType.LOGGING) ?: return@action
 
 				val messageContent = if (eventMessage.asMessageOrNull().content.length > 1024) {
 					eventMessage.asMessageOrNull().content.substring(0, 1020) + " ..."
@@ -65,7 +62,7 @@ class MessageDelete : Extension() {
 					return@action
 				}
 
-				messageLog?.createEmbed {
+				messageLog.createEmbed {
 					color = DISCORD_PINK
 					author {
 						name = "Message Deleted"
