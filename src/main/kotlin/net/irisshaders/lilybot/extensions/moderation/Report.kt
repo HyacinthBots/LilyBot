@@ -211,7 +211,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
  * @param inputInteraction The interaction to create a modal in response to
  * @param user The user who created the [inputInteraction]
  * @param config The configuration from the database for the guild
- * @param messageLog The channel for the guild that deleted messages are logged to
+ * @param modLog The channel for the guild that deleted messages are logged to
  * @param reportedMessage The message that was reported
  * @param messageAuthor The author of the reported message
  * @author tempest15
@@ -221,7 +221,7 @@ suspend fun createReportModal(
 	inputInteraction: ModalParentInteractionBehavior,
 	user: UserBehavior,
 	config: ModerationConfigData,
-	messageLog: GuildMessageChannel,
+	modLog: GuildMessageChannel,
 	reportedMessage: Message,
 	messageAuthor: Member?,
 ) {
@@ -251,7 +251,7 @@ suspend fun createReportModal(
 
 	createReport(
 		user,
-		messageLog,
+		modLog,
 		messageAuthor,
 		reportedMessage,
 		config.team!!,
@@ -262,10 +262,10 @@ suspend fun createReportModal(
 }
 
 /**
- * Create an embed in the [messageLog] for moderators to respond to with appropriate action.
+ * Create an embed in the [modLog] for moderators to respond to with appropriate action.
  *
  * @param user The user that reported the message
- * @param messageLog The channel to send the report embed to
+ * @param modLog The channel to send the report embed to
  * @param messageAuthor The author of the reported message
  * @param reportedMessage The message being reported
  * @param moderatorRole The role to ping when a report is submitted
@@ -277,7 +277,7 @@ suspend fun createReportModal(
  */
 private suspend inline fun createReport(
 	user: UserBehavior,
-	messageLog: GuildMessageChannel,
+	modLog: GuildMessageChannel,
 	messageAuthor: Member?,
 	reportedMessage: Message,
 	moderatorRole: Snowflake,
@@ -301,9 +301,9 @@ private suspend inline fun createReport(
 						content = "Message reported to staff"
 						components { removeAll() }
 
-						messageLog.createMessage { content = "<@&$moderatorRole>" }
+						modLog.createMessage { content = "<@&$moderatorRole>" }
 
-						reportEmbed = messageLog.createMessage {
+						reportEmbed = modLog.createMessage {
 							embed {
 								title = "Message reported"
 								description = "A message was reported in ${reportedMessage.getChannel().mention}"
