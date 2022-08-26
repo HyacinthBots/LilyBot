@@ -36,14 +36,13 @@ class MessageDelete : Extension() {
 				configPresent(ConfigType.LOGGING)
 				failIf {
 					event.message?.author?.id == kord.selfId ||
-					!event.message?.author?.isBot!!
+					event.message?.author?.isBot!!
 				}
 			}
 
 			action {
 				val config = LoggingConfigCollection().getConfig(event.getGuild()!!.id) ?: return@action
 				delay(PK_API_DELAY) // Allow the PK API to catch up
-				if (event.message?.author?.isBot == true) return@action
 				val eventMessage = event.message ?: return@action
 				if (PluralKit.containsPkChatCommandPrefix(eventMessage)) return@action
 
