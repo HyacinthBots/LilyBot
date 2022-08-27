@@ -17,10 +17,12 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.ConfigData
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 
 /**
  * The class for configuring LilyBot in your guilds.
@@ -55,7 +57,8 @@ class Config : Extension() {
 				}
 
 				action {
-					val actionLogChannel = guild!!.getChannelOf<GuildMessageChannel>(arguments.modActionLog.id)
+					val actionLogChannel =
+						getModerationChannelWithPerms(guild!!.asGuild(), arguments.modActionLog.id, interactionResponse) ?: return@action
 
 					// If an action log ID doesn't exist, set the config
 					// Otherwise, inform the user their config is already set
@@ -124,21 +127,23 @@ class Config : Extension() {
 					} else {
 						// Log the config being cleared to the action log
 						val actionLogId = DatabaseHelper.getConfig(guild!!.id)?.modActionLog
-						val actionLogChannel = guild!!.getChannelOf<GuildMessageChannel>(actionLogId!!)
+						val actionLogChannel = guild?.getChannelOf<GuildMessageChannel>(actionLogId!!)
 
 						respond {
 							content = "Config cleared for Guild ID: ${guild!!.id}!"
 						}
 
-						actionLogChannel.createEmbed {
-							title = "Configuration cleared!"
-							description = "A Guild Manager has cleared the configuration for this guild!"
-							footer {
-								text = user.asUser().tag
-								icon = user.asUser().avatar?.url
+						try {
+							actionLogChannel?.createEmbed {
+								title = "Configuration cleared!"
+								description = "A Guild Manager has cleared the configuration for this guild!"
+								footer {
+									text = user.asUser().tag
+									icon = user.asUser().avatar?.url
+								}
+								color = DISCORD_BLACK
 							}
-							color = DISCORD_BLACK
-						}
+						} catch (_: KtorRequestException) {}
 
 						// Clear the config (do this last)
 						DatabaseHelper.clearConfig(guild!!.id)

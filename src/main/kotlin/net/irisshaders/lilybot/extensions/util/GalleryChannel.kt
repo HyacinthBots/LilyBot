@@ -17,8 +17,6 @@ import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
@@ -26,6 +24,7 @@ import kotlinx.coroutines.delay
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -62,7 +61,9 @@ class GalleryChannel : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+					val actionLog =
+						getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+							?: return@action
 
 					DatabaseHelper.getGalleryChannels(guildFor(event)!!.id).forEach {
 						if (channel.asChannel().id == it.channelId) {
@@ -108,7 +109,9 @@ class GalleryChannel : Extension() {
 
 				action {
 					val config = DatabaseHelper.getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.modActionLog)
+					val actionLog =
+						getModerationChannelWithPerms(guild!!.asGuild(), config.modActionLog, interactionResponse)
+							?: return@action
 					var channelFound = false
 
 					DatabaseHelper.getGalleryChannels(guildFor(event)!!.id).forEach {

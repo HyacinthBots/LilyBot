@@ -6,16 +6,27 @@ import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.botHasPermissions
+import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
+import dev.kord.core.behavior.getChannelOfOrNull
+import dev.kord.core.behavior.interaction.response.FollowupPermittingInteractionResponseBehavior
+import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
+import dev.kord.core.entity.Guild
 import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.supplier.EntitySupplyStrategy
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
 
@@ -183,3 +194,84 @@ suspend inline fun Extension.updateDefaultPresence() {
  * @since 3.4.5
  */
 suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.cacheWithRestFallback).guilds.count()
+
+/**
+ * Get the first text channel the bot can send a message in.
+ *
+ * @param inputGuild The guild in which to get the channel.
+ * @return The first text channel the bot can send a message in or null if there isn't one.
+ * @author tempest15
+ * @since 3.5.4
+ */
+suspend inline fun getFirstUsableChannel(inputGuild: Guild): GuildMessageChannel? = inputGuild.channels.first {
+	it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)
+}.fetchChannelOrNull()?.asChannelOfOrNull()
+
+/**
+ * Check if the bot can send messages in a guild's configured logging channel.
+ * If the bot can't, reset a config and send a message in the top usable channel saying that the config was reset or
+ * if this function is in a command, an [interactionResponse] is provided, allowing a response to be given on the
+ * command.
+ * If the bot can, return the channel.
+ *
+ * **DO NOT USE THIS FUNCTION ON NON-MODERATION CHANNELS!** Use the [botHasChannelPerms] check instead.
+ *
+ * @param inputGuild The guild to check in.
+ * @param targetChannel The channel to check permissions for
+ * @param interactionResponse The interactionResponse to respond to if this function is in a command.
+ * @return The channel or null if it does not have the correct permissions.
+ * @author tempest15
+ * @since 3.5.4
+ */
+suspend inline fun <T : FollowupPermittingInteractionResponseBehavior?> getModerationChannelWithPerms(
+	inputGuild: Guild,
+	targetChannel: Snowflake,
+	interactionResponse: T? = null
+): GuildMessageChannel? {
+	val channel = inputGuild.getChannelOfOrNull<GuildMessageChannel>(targetChannel)
+
+	// Check each permission in a separate check because all in one expects all to be there or not. This allows for
+	// some permissions to be false and some to be true while still producing the correct result.
+	if (channel?.botHasPermissions(Permission.ViewChannel) != true ||
+		!channel.botHasPermissions(Permission.SendMessages) ||
+		!channel.botHasPermissions(Permission.EmbedLinks)
+	) {
+		val usableChannel = getFirstUsableChannel(inputGuild) ?: return null
+
+		if (interactionResponse == null) {
+			usableChannel.createMessage(
+				"Lily cannot send messages in ${channel?.mention}. " +
+						"As a result, your config has been reset. " +
+						"Please fix the permissions before setting a new config."
+			)
+		} else {
+			interactionResponse.createEphemeralFollowup {
+				content = "Lily cannot send messages in ${channel?.mention}. " +
+						"As a result, your config has been reset. " +
+						"Please fix the permissions before setting a new config."
+			}
+		}
+
+		delay(3000) // So that other events may finish firing
+		DatabaseHelper.clearConfig(usableChannel.guildId)
+		return null
+	}
+
+	return channel
+}
+
+/**
+ * Overload function for [getModerationChannelWithPerms] that does not take an interaction response allowing the type
+ * variable not be specified in the function.
+ *
+ * **DO NOT USE THIS FUNCTION ON NON-MODERATION CHANNELS!** Use the [botHasChannelPerms] check instead.
+ *
+ * @see getModerationChannelWithPerms
+ *
+ * @param inputGuild The guild to check in.
+ * @param targetChannel The channel to check permissions for
+ * @return The channel or null if it does not have the correct permissions.
+ * @author NoComment1105
+ */
+suspend inline fun getModerationChannelWithPerms(inputGuild: Guild, targetChannel: Snowflake): GuildMessageChannel? =
+	getModerationChannelWithPerms(inputGuild, targetChannel, null)
