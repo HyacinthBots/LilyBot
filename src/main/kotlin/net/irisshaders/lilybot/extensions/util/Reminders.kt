@@ -234,14 +234,16 @@ class Reminders : Extension() {
 							@Suppress("DuplicatedCode")
 							response = reminderContent(it)
 							DatabaseHelper.removeReminder(guild!!.id, user.id, arguments.reminder)
-							val message = event.kord.getGuild(it.guildId)!!
-								.getChannelOf<GuildMessageChannel>(it.channelId)
-								.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
-							message?.edit {
-								content = "${message.content} ${
-									if (it.repeating) "**Repeating" else "**"
-								} Reminder cancelled.**"
-							}
+							try {
+								val message = event.kord.getGuild(it.guildId)!!
+									.getChannelOf<GuildMessageChannel>(it.channelId)
+									.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
+								message?.edit {
+									content = "${message.content} ${
+										if (it.repeating) "**Repeating" else "**"
+									} Reminder cancelled.**"
+								}
+							} catch (_: EntityNotFoundException) { }
 						}
 					}
 
@@ -281,14 +283,16 @@ class Reminders : Extension() {
 						if (it.guildId == guild?.id && it.userId == arguments.userID && it.id == arguments.reminder) {
 							response = reminderContent(it)
 							DatabaseHelper.removeReminder(guild!!.id, arguments.userID, arguments.reminder)
-							val message = event.kord.getGuild(it.guildId)!!
-								.getChannelOf<GuildMessageChannel>(it.channelId)
-								.getMessage(Snowflake(it.originalMessageUrl.split("/")[6]))
-							message.edit {
-								content = "${message.content} ${
-									if (it.repeating) "**Repeating" else "**"
-								} Reminder cancelled by a moderator.**"
-							}
+							try {
+								val message = event.kord.getGuild(it.guildId)!!
+									.getChannelOf<GuildMessageChannel>(it.channelId)
+									.getMessage(Snowflake(it.originalMessageUrl.split("/")[6]))
+								message.edit {
+									content = "${message.content} ${
+										if (it.repeating) "**Repeating" else "**"
+									} Reminder cancelled by a moderator.**"
+								}
+							} catch (_: EntityNotFoundException) { }
 						}
 					}
 
