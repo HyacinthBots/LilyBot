@@ -64,6 +64,30 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 
 ---
 
+### Name: `log-uploading enable`
+**Arguments**:
+None
+
+**Result**: Enables the log uploading feature for this guild. Uploading is enabled by default.
+
+**Required Permissions**: `Moderate Members`
+
+**Command category**: `Administration commands`
+
+---
+
+### Name: `log-uploading disable`
+**Arguments**:
+None
+
+**Result**: Disables the log uploading feature for this guild. Uploading is enabled by default.
+
+**Required Permissions**: `Moderate Members`
+
+**Command category**: `Administration commands`
+
+---
+
 
 ## Moderation commands
 These commands are for use by moderators. They utilize built-in permission checks. All moderation commands are logged to the modActionLog established in the config. A Direct Message is sent to the target user containing the sanction they received and the provided reason. If Lily fails to DM them, this failure will be noted in the logging embed.
@@ -451,6 +475,42 @@ None
 * `type` - The type of reminder to remove all of, can be `repeating`, `non-repeating` or `all` - String Choice
 
 **Result**: Removes all the specific `type` of reminders for the user from the guild the command was executed in.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `log-uploading blacklist-add`
+**Arguments**:
+None
+
+**Result**: Adds the channel the command was run in to the log uploading blacklist.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `log-uploading blacklist-remove`
+**Arguments**:
+None
+
+**Result**: Removes the channel the command was run in from the log uploading blacklist.
+
+**Required Permissions**: `None`
+
+**Command category**: `Utility commands`
+
+---
+
+### Name: `log-uploading blacklist-list`
+**Arguments**:
+None
+
+**Result**: Lists all the channels in the log uploading blacklist.
 
 **Required Permissions**: `None`
 

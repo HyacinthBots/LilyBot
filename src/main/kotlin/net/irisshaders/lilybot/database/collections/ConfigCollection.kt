@@ -7,13 +7,14 @@ import dev.kord.common.entity.Snowflake
 import net.irisshaders.lilybot.database.Database
 import net.irisshaders.lilybot.database.entities.ConfigData
 import net.irisshaders.lilybot.database.entities.LoggingConfigData
+import net.irisshaders.lilybot.database.entities.MiscellaneousConfigData
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
 import net.irisshaders.lilybot.database.entities.SupportConfigData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This class contains the functions for interacting with the [Logging Config Database][LoggingConfigData]. This object
+ * This class contains the functions for interacting with the [Logging Config Database][LoggingConfigData]. This class
  * contains functions for getting, setting and removing logging config.
  *
  * @since 4.0.0
@@ -41,7 +42,7 @@ class LoggingConfigCollection : KordExKoinComponent {
 	/**
 	 * Adds the given [loggingConfig] to the database.
 	 *
-	 * @param loggingConfig The new config values for the support module you want to set.
+	 * @param loggingConfig The new config values for the logging config you want to set.
 	 * @author NoComment1105
 	 * @since 4.0.0
 	 */
@@ -63,7 +64,7 @@ class LoggingConfigCollection : KordExKoinComponent {
 
 /**
  * This class contains the functions for interacting with the [Moderation Config Database][ModerationConfigData]. This
- * object contains functions for getting, setting and removing logging config.
+ * class contains functions for getting, setting and removing logging config.
  *
  * @since 4.0.0
  * @see getConfig
@@ -90,7 +91,7 @@ class ModerationConfigCollection : KordExKoinComponent {
 	/**
 	 * Adds the given [moderationConfig] to the database.
 	 *
-	 * @param moderationConfig The new config values for the support module you want to set.
+	 * @param moderationConfig The new config values for the moderation config you want to set.
 	 * @author NoComment1105
 	 * @since 4.0.0
 	 */
@@ -111,7 +112,7 @@ class ModerationConfigCollection : KordExKoinComponent {
 }
 
 /**
- * This class contains the functions for interacting with the [Support Config Database][SupportConfigData]. This object
+ * This class contains the functions for interacting with the [Support Config Database][SupportConfigData]. This class
  * contains functions for getting, setting and removing support config.
  *
  * @since 4.0.0
@@ -139,7 +140,7 @@ class SupportConfigCollection : KordExKoinComponent {
 	/**
 	 * Adds the given [supportConfig] to the database.
 	 *
-	 * @param supportConfig The new config values for the support module you want to set.
+	 * @param supportConfig The new config values for the support config you want to set.
 	 * @author Miss Corruption
 	 * @since 4.0.0
 	 */
@@ -157,6 +158,55 @@ class SupportConfigCollection : KordExKoinComponent {
 	 */
 	suspend inline fun clearConfig(inputGuildId: Snowflake) =
 		collection.deleteOne(SupportConfigData::guildId eq inputGuildId)
+}
+
+/**
+ * This class contains the functions for interacting with the [Miscellaneous Config Database][MiscellaneousConfigData].
+ * This class contains functions for getting, setting and removing miscellaneous config.
+ *
+ * @since 4.0.0
+ * @see getConfig
+ * @see setConfig
+ * @see clearConfig
+ */
+class MiscellaneousConfigCollection : KordExKoinComponent {
+	private val configDb: Database by inject()
+
+	@PublishedApi
+	internal val collection = configDb.configDatabase.getCollection<MiscellaneousConfigData>()
+
+	/**
+	 * Gets the Miscellaneous config for the given guild using the [guildId][inputGuildId].
+	 *
+	 * @param inputGuildId The guild id to get the config for.
+	 * @return The Miscellaneous config for the given guild.
+	 * @author NoComment1105
+	 * @since 4.0.0
+	 */
+	suspend inline fun getConfig(inputGuildId: Snowflake): MiscellaneousConfigData? =
+		collection.findOne(MiscellaneousConfigData::guildId eq inputGuildId)
+
+	/**
+	 * Adds the given [miscellaneousConfig] to the database.
+	 *
+	 * @param miscellaneousConfig The new config values for the miscellaneous config you want to set.
+	 * @author NoComment1105
+	 * @since 4.0.0
+	 */
+	suspend inline fun setConfig(miscellaneousConfig: MiscellaneousConfigData) {
+		collection.deleteOne(MiscellaneousConfigData::guildId eq miscellaneousConfig.guildId)
+		collection.insertOne(miscellaneousConfig)
+	}
+
+	/**
+	 * Clears the miscellaneous config for the given guild using the [guildId][inputGuildId].
+	 *
+	 * @param inputGuildId The guild id to clear the config for.
+	 * @author NoComment1105
+	 * @since 4.0.0
+	 */
+	suspend inline fun clearConfig(inputGuildId: Snowflake) =
+		collection.deleteOne(MiscellaneousConfigData::guildId eq inputGuildId)
 }
 
 class OldConfigCollection : KordExKoinComponent {

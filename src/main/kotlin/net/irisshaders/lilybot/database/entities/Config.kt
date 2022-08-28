@@ -62,6 +62,20 @@ data class SupportConfigData(
 )
 
 /**
+ * The data for miscellaneous configuration. The miscellaneous config stores the data for enabling or disabling log
+ * uploading.
+ *
+ * @param guildId The ID of the guild the config is for
+ * @param disableLogUploading If log uploading is enabled or not
+ * @since 4.0.0
+ */
+@Serializable
+data class MiscellaneousConfigData(
+	val guildId: Snowflake,
+	val disableLogUploading: Boolean,
+)
+
+/**
  * The data for guild configuration.
  *
  * @param guildId The ID of the guild the config is for
@@ -83,4 +97,19 @@ data class ConfigData(
 	val joinChannel: Snowflake,
 	val supportChannel: Snowflake?,
 	val supportTeam: Snowflake?,
+)
+
+/**
+ * The Data for controlling log uploading.
+ *
+ * @property guildId The guild the data is for
+ * @property disable Whether log uploading is disabled or not
+ *
+ * @since 3.5.4
+ */
+@Deprecated("Use the new config system", level = DeprecationLevel.ERROR)
+@Serializable
+data class LogUploadingData(
+	val guildId: Snowflake,
+	val disable: Boolean
 )

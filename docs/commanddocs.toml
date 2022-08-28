@@ -30,6 +30,18 @@ name = "config clear"
 args = "* `configType` - The type of config to clean, 'support', 'moderation', 'logging', 'all' - String Choice"
 result = "Clears the config of the specified type."
 permissions = "Manage Guild"
+
+[[command]]
+category = "Administration commands"
+name = "log-uploading enable"
+result = "Enables the log uploading feature for this guild. Uploading is enabled by default."
+permissions = "Moderate Members"
+
+[[command]]
+category = "Administration commands"
+name = "log-uploading disable"
+result = "Disables the log uploading feature for this guild. Uploading is enabled by default."
+permissions = "Moderate Members"
 # End administration commands
 
 # Moderation commands
@@ -230,6 +242,24 @@ category = "Utility commands"
 name = "reminder remove-all"
 args = "* `type` - The type of reminder to remove all of, can be `repeating`, `non-repeating` or `all` - String Choice"
 result = "Removes all the specific `type` of reminders for the user from the guild the command was executed in."
+
+[[command]]
+category = "Utility commands"
+name = "log-uploading blacklist-add"
+result = "Adds the channel the command was run in to the log uploading blacklist."
+permisions = "Moderate Members"
+
+[[command]]
+category = "Utility commands"
+name = "log-uploading blacklist-remove"
+result = "Removes the channel the command was run in from the log uploading blacklist."
+permisions = "Moderate Members"
+
+[[command]]
+category = "Utility commands"
+name = "log-uploading blacklist-list"
+result = "Lists all the channels in the log uploading blacklist."
+permisions = "Moderate Members"
 # End Utility commands
 
 # GitHub commands
