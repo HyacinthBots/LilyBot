@@ -243,7 +243,9 @@ class Reminders : Extension() {
 										if (it.repeating) "**Repeating" else "**"
 									} Reminder cancelled.**"
 								}
-							} catch (_: EntityNotFoundException) { }
+							} catch (_: EntityNotFoundException) {
+							} catch (_: KtorRequestException) {
+							}
 						}
 					}
 
@@ -292,7 +294,8 @@ class Reminders : Extension() {
 										if (it.repeating) "**Repeating" else "**"
 									} Reminder cancelled by a moderator.**"
 								}
-							} catch (_: EntityNotFoundException) { }
+							} catch (_: EntityNotFoundException) {
+							} catch (_: KtorRequestException) { }
 						}
 					}
 
