@@ -57,6 +57,7 @@ internal val utilsLogger = KotlinLogging.logger("Checks Logger")
  * This is a check to verify that no element of the guild config is null, since these are all non-nullable values, if
  * any one of them is null, we fail with the unable to access config error message.
  *
+ * @param configOptions The config options to check the database for.
  * @author NoComment1105
  * @since 3.2.0
  */
