@@ -20,8 +20,15 @@ permissions = "Manage Guild"
 [[command]]
 category = "Administration commands"
 name = "config logging"
-args = "* `enableMessageLogs` - Whether to enable message delete logging or not - Boolean\n* `enableJoinChannel` - Whether to enable logging of join and leaves - Boolean\n* `messageLogs` - The channel for logging message deletion - Optional Channel\n* `joinChannel` - The channel for logging member join/leaves to -  Optional Channel"
+args = "* `enableMessageLogs` - Whether to enable message delete logging or not - Boolean\n* `enableMemberLogs` - Whether to enable logging of member joins and leaves - Boolean\n* `messageLogs` - The channel for logging message deletion - Optional Channel\n* `memberLogs` - The channel for logging member join/leaves to -  Optional Channel"
 result = "The config is set for logging."
+permissions = "Manage Guild"
+
+[[command]]
+category = "Administration commands"
+name = "config miscellaneous"
+args = "* `disableLogUploading - Whether to disable log uploading or not - Boolean"
+result = "The config is set for miscellaneous settings."
 permissions = "Manage Guild"
 
 [[command]]

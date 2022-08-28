@@ -40,11 +40,23 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 ### Name: `config logging`
 **Arguments**:
 * `enableMessageLogs` - Whether to enable message delete logging or not - Boolean
-* `enableJoinChannel` - Whether to enable logging of join and leaves - Boolean
+* `enableMemberLogs` - Whether to enable logging of member joins and leaves - Boolean
 * `messageLogs` - The channel for logging message deletion - Optional Channel
-* `joinChannel` - The channel for logging member join/leaves to -  Optional Channel
+* `memberLogs` - The channel for logging member join/leaves to -  Optional Channel
 
 **Result**: The config is set for logging.
+
+**Required Permissions**: `Manage Guild`
+
+**Command category**: `Administration commands`
+
+---
+
+### Name: `config miscellaneous`
+**Arguments**:
+* `disableLogUploading - Whether to disable log uploading or not - Boolean
+
+**Result**: The config is set for miscellaneous settings.
 
 **Required Permissions**: `Manage Guild`
 
