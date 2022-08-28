@@ -78,7 +78,9 @@ class LogUploading : Extension() {
 				configPresent()
 			}
 			action {
-				DatabaseHelper.isChannelInUploadBlacklist(event.guildId!!, event.message.channelId) ?: return@action
+				if (DatabaseHelper.isChannelInUploadBlacklist(event.guildId!!, event.message.channelId) != null) {
+					return@action
+				}
 
 				val isUploadingDisabled = DatabaseHelper.getLogUploadingData(event.guildId!!)?.disable
 
