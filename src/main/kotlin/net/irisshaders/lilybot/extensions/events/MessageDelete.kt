@@ -11,13 +11,14 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Attachment
 import dev.kord.core.entity.channel.GuildMessageChannel
-import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
 import net.irisshaders.lilybot.extensions.config.ConfigOptions
+import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 
 /**
  * The class for logging deletion of messages to the guild message log.
@@ -44,12 +45,9 @@ class MessageDelete : Extension() {
 
 			action {
 				val config = LoggingConfigCollection().getConfig(event.getGuild().id) ?: return@action
-				var messageLog: GuildMessageChannel? = null
-				try {
-					messageLog = kord.getChannelOf(config.messageChannel!!)
-				} catch (e: EntityNotFoundException) {
-					LoggingConfigCollection().clearConfig(event.getGuild().id) // Clear the config to make the user fix it
-				}
+				val messageLog =
+					getModerationChannelWithPerms(event.getGuild(), config.messageChannel!!, ConfigType.LOGGING)
+						?: return@action
 
 				val originalMessage = event.message
 				val proxiedMessage = event.pkMessage
@@ -67,7 +65,7 @@ class MessageDelete : Extension() {
 				val images: MutableSet<Attachment> = mutableSetOf()
 				attachments?.forEach { if (it.isImage) images += it }
 
-				messageLog?.createMessage {
+				messageLog.createMessage {
 					embed {
 						color = DISCORD_PINK
 						author {
@@ -113,13 +111,9 @@ class MessageDelete : Extension() {
 
 				val message = event.message
 
-				val guild = kord.getGuild(event.guildId!!)!!
-				var messageLog: GuildMessageChannel? = null
-				try {
-					messageLog = guild.getChannelOf(config.messageChannel!!)
-				} catch (e: EntityNotFoundException) {
-					LoggingConfigCollection().clearConfig(guild.id) // Clear the config to make the user fix it
-				}
+				val messageLog =
+					getModerationChannelWithPerms(event.getGuild(), config.messageChannel!!, ConfigType.LOGGING)
+						?: return@action
 
 				val messageContent = if (message?.asMessageOrNull() != null) {
 					if (message.asMessageOrNull().content.length > 1024) {
@@ -138,7 +132,7 @@ class MessageDelete : Extension() {
 				val images: MutableSet<Attachment> = mutableSetOf()
 				attachments?.forEach { if (it.isImage) images += it }
 
-				messageLog?.createMessage {
+				messageLog.createMessage {
 					embed {
 						color = DISCORD_PINK
 						author {
@@ -154,7 +148,8 @@ class MessageDelete : Extension() {
 
 						field {
 							name = "Message Author:"
-							value = "${message.author?.tag ?: "Failed to get author of message"} ${message.author?.mention ?: ""}"
+							value =
+								"${message.author?.tag ?: "Failed to get author of message"} ${message.author?.mention ?: ""}"
 							inline = true
 						}
 
