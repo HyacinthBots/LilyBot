@@ -41,6 +41,7 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import net.irisshaders.lilybot.database.collections.RemindMeCollection
@@ -105,6 +106,16 @@ class Reminders : Extension() {
 					if (arguments.repeating && arguments.repeatingInterval == null) {
 						respond {
 							content = "You must specify a repeating interval if you are setting a repeating reminder"
+						}
+						return@action
+					}
+
+					if (arguments.repeatingInterval != null && arguments.repeatingInterval!!.toDuration(TimeZone.UTC) <=
+						DateTimePeriod(hours = 1).toDuration(TimeZone.UTC)
+					) {
+						respond {
+							content = "Repeating interval cannot be less than or equal to one hour!\n\n" +
+									"This is to prevent spam and abuse of the system."
 						}
 						return@action
 					}
