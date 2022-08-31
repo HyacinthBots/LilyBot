@@ -38,6 +38,7 @@ import net.irisshaders.lilybot.database.collections.GalleryChannelCollection
 import net.irisshaders.lilybot.database.collections.GuildLeaveTimeCollection
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
 import net.irisshaders.lilybot.database.collections.MainMetaCollection
+import net.irisshaders.lilybot.database.collections.MiscConfigCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.RemindMeCollection
 import net.irisshaders.lilybot.database.collections.RoleMenuCollection
@@ -181,6 +182,17 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 					fail("Unable to access logging config for this guild! Please inform a member of staff.")
 				} else if (loggingConfig.memberLog == null) {
 					fail("A member log has not been set for this guild")
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.LOG_UPLOADS_ENABLED -> {
+				val miscConfig = MiscConfigCollection().getConfig(guildFor(event)!!.id)
+				if (miscConfig == null) {
+					fail("Unable to access misc config for this guild! Please inform a member of staff.")
+				} else if (miscConfig.disableLogUploading) {
+					fail("Log uploads are disabled for this guild!")
 				} else {
 					pass()
 				}
@@ -345,6 +357,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { ModerationConfigCollection() } bind ModerationConfigCollection::class
 				single { SupportConfigCollection() } bind SupportConfigCollection::class
 				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
+				single { MiscConfigCollection() } bind MiscConfigCollection::class
 				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
@@ -430,10 +443,12 @@ suspend inline fun <T : FollowupPermittingInteractionResponseBehavior?> getModer
 			ConfigType.MODERATION -> ModerationConfigCollection().clearConfig(usableChannel.guildId)
 			ConfigType.LOGGING -> LoggingConfigCollection().clearConfig(usableChannel.guildId)
 			ConfigType.SUPPORT -> SupportConfigCollection().clearConfig(usableChannel.guildId)
+			ConfigType.MISC -> MiscConfigCollection().clearConfig(usableChannel.guildId)
 			ConfigType.ALL -> {
 				ModerationConfigCollection().clearConfig(usableChannel.guildId)
 				LoggingConfigCollection().clearConfig(usableChannel.guildId)
 				SupportConfigCollection().clearConfig(usableChannel.guildId)
+				MiscConfigCollection().clearConfig(usableChannel.guildId)
 			}
 		}
 

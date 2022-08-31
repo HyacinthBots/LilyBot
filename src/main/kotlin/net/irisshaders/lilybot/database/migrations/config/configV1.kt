@@ -8,7 +8,7 @@ import dev.kord.common.entity.Snowflake
 import net.irisshaders.lilybot.database.entities.ConfigData
 import net.irisshaders.lilybot.database.entities.LogUploadingData
 import net.irisshaders.lilybot.database.entities.LoggingConfigData
-import net.irisshaders.lilybot.database.entities.MiscellaneousConfigData
+import net.irisshaders.lilybot.database.entities.MiscConfigData
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
 import net.irisshaders.lilybot.database.entities.SupportConfigData
 import org.litote.kmongo.coroutine.CoroutineDatabase
@@ -34,7 +34,7 @@ suspend fun configV1(mainDb: CoroutineDatabase, configDb: CoroutineDatabase) {
 	val loggingConfig = configDb.getCollection<LoggingConfigData>("loggingConfigData")
 	val moderationConfig = configDb.getCollection<ModerationConfigData>("moderationConfigData")
 	val supportConfig = configDb.getCollection<SupportConfigData>("supportConfigData")
-	val miscellaneousConfig = configDb.getCollection<MiscellaneousConfigData>("miscellaneousConfigData")
+	val miscellaneousConfig = configDb.getCollection<MiscConfigData>("miscellaneousConfigData")
 
 	oldConfig.find().consumeEach {
 		guildId = it.guildId
@@ -62,7 +62,7 @@ suspend fun configV1(mainDb: CoroutineDatabase, configDb: CoroutineDatabase) {
 	}
 	if (oldLogUploadingData.isNotEmpty()) {
 		miscellaneousConfig.insertOne(
-			MiscellaneousConfigData(
+			MiscConfigData(
 				oldLogUploadingData[0] as Snowflake,
 				oldLogUploadingData[1] as Boolean
 			)

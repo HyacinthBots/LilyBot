@@ -15,6 +15,9 @@ enum class ConfigType {
 	/** The entry for the logging config. */
 	LOGGING,
 
+	/** The entry for the misc config. */
+	MISC,
+
 	/** The entry for all config types. */
 	ALL
 }

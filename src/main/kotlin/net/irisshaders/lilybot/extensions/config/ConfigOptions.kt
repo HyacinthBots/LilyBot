@@ -34,5 +34,8 @@ enum class ConfigOptions {
 	MEMBER_LOGGING_ENABLED,
 
 	/** The option that stores the member logging channel. */
-	MEMBER_LOG
+	MEMBER_LOG,
+
+	/** The option that stores whether log uploads are enabled or not. */
+	LOG_UPLOADS_ENABLED,
 }
