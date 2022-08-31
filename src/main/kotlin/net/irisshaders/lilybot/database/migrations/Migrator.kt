@@ -96,7 +96,7 @@ object Migrator : KordExKoinComponent {
 				when (nextVersion) {
 					1 -> ::configV1
 					else -> break
-				}(db.mainDatabase, db.configDatabase) // TODO Remove the first param, comment knows whats needed
+				}(db.mainDatabase, db.configDatabase) // TODO Remove the first param after migration
 
 				logger.info { "Migrated config database to version $nextVersion" }
 			} catch (t: Throwable) {
@@ -109,9 +109,10 @@ object Migrator : KordExKoinComponent {
 		}
 
 		if (currentVersion != meta.version) {
-			meta = meta.copy(version = currentVersion)
+			// TODO Uncomment after initial database migration
+			// meta = meta.copy(version = currentVersion)
 
-			configMetaCollection.update(meta)
+			// configMetaCollection.update(meta)
 
 			logger.info { "Finished config database migrations." }
 		}

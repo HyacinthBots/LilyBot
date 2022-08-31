@@ -44,11 +44,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import net.irisshaders.lilybot.database.collections.LogUploadingBlacklistCollection
-import net.irisshaders.lilybot.database.collections.MiscellaneousConfigCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.SupportConfigCollection
 import net.irisshaders.lilybot.database.collections.ThreadsCollection
-import net.irisshaders.lilybot.database.entities.MiscellaneousConfigData
 import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.utils.botHasChannelPerms
 import net.irisshaders.lilybot.utils.configPresent
@@ -83,7 +81,11 @@ class LogUploading : Extension() {
 					event.message.author.isNullOrBot()
 					event.message.getChannelOrNull() !is MessageChannel
 				}
-				configPresent(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL)
+				configPresent(
+					ConfigOptions.SUPPORT_ENABLED,
+					ConfigOptions.SUPPORT_CHANNEL,
+					ConfigOptions.LOG_UPLOADS_ENABLED
+				)
 
 				// I hate NullPointerExceptions. This is to prevent a null pointer exception if the message is a Pk one.
 				if (channelFor(event) == null) return@check
@@ -95,13 +97,6 @@ class LogUploading : Extension() {
 						event.message.channelId
 					) != null
 				) {
-					return@action
-				}
-
-				val isUploadingDisabled =
-					MiscellaneousConfigCollection().getConfig(event.guildId!!)?.disableLogUploading
-
-				if (isUploadingDisabled != null && isUploadingDisabled == true) {
 					return@action
 				}
 
@@ -198,8 +193,10 @@ class LogUploading : Extension() {
 												val uploadMessage = uploadChannel.createEmbed {
 													title = "Uploading `$attachmentFileName` to mclo.gs..."
 													footer {
-														text = "Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
-														icon = eventMessage.author?.avatar?.url ?: eventMember.asUser().avatar?.url
+														text =
+															"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
+														icon = eventMessage.author?.avatar?.url
+															?: eventMember.asUser().avatar?.url
 													}
 													timestamp = Clock.System.now()
 													color = DISCORD_PINK
@@ -212,8 +209,10 @@ class LogUploading : Extension() {
 														embed {
 															title = "`$attachmentFileName` uploaded to mclo.gs"
 															footer {
-																text = "Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
-																icon = eventMessage.author?.avatar?.url ?: eventMember.asUser().avatar?.url
+																text =
+																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
+																icon = eventMessage.author?.avatar?.url
+																	?: eventMember.asUser().avatar?.url
 															}
 															timestamp = Clock.System.now()
 															color = DISCORD_PINK
@@ -233,8 +232,10 @@ class LogUploading : Extension() {
 																"Failed to upload `$attachmentFileName` to mclo.gs"
 															description = "Error: $e"
 															footer {
-																text = "Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
-																icon = eventMessage.author?.avatar?.url ?: eventMember.asUser().avatar?.url
+																text =
+																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
+																icon = eventMessage.author?.avatar?.url
+																	?: eventMember.asUser().avatar?.url
 															}
 															timestamp = Clock.System.now()
 															color = DISCORD_RED
@@ -375,74 +376,6 @@ class LogUploading : Extension() {
 								} else {
 									"No channels found!"
 								}
-							}
-						}
-					}
-				}
-			}
-
-			ephemeralSubCommand {
-				name = "disable"
-				description = "Disable log-uploading for this entire guild"
-
-				action {
-					val isDisabled = MiscellaneousConfigCollection().getConfig(guild!!.id)?.disableLogUploading
-					if (isDisabled != null && isDisabled == true) {
-						respond {
-							content = "Log uploading is already disabled for this server"
-						}
-						return@action
-					}
-
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-
-					MiscellaneousConfigCollection().setConfig(MiscellaneousConfigData(guild!!.id, true))
-
-					respond {
-						content = "Log uploading is now disabled for this server"
-					}
-
-					guild!!.getChannelOf<GuildMessageChannel>(config.channel!!).createMessage {
-						embed {
-							title = "Log uploading disabled for server"
-							color = DISCORD_RED
-							footer {
-								text = "Disabled by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
-							}
-						}
-					}
-				}
-			}
-
-			ephemeralSubCommand {
-				name = "enable"
-				description = "Enable log-uploading for this entire guild"
-
-				action {
-					val isDisabled = MiscellaneousConfigCollection().getConfig(guild!!.id)?.disableLogUploading
-					if (isDisabled == null || isDisabled == false) {
-						respond {
-							content = "Log uploading is not disabled for this server"
-						}
-						return@action
-					}
-
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-
-					MiscellaneousConfigCollection().clearConfig(guild!!.id)
-
-					respond {
-						content = "Log uploading is now enabled for this server"
-					}
-
-					guild!!.getChannelOf<GuildMessageChannel>(config.channel!!).createMessage {
-						embed {
-							title = "Log uploading enabled for server"
-							color = DISCORD_GREEN
-							footer {
-								text = "Enabled by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
 							}
 						}
 					}

@@ -1,17 +1,17 @@
 @file:Suppress("DEPRECATION_ERROR")
 
+// TODO :crab: after first migration
+
 package net.irisshaders.lilybot.database.migrations.config
 
 import dev.kord.common.entity.Snowflake
 import net.irisshaders.lilybot.database.entities.ConfigData
-import net.irisshaders.lilybot.database.entities.ConfigMetaData
 import net.irisshaders.lilybot.database.entities.LogUploadingData
 import net.irisshaders.lilybot.database.entities.LoggingConfigData
-import net.irisshaders.lilybot.database.entities.MiscellaneousConfigData
+import net.irisshaders.lilybot.database.entities.MiscConfigData
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
 import net.irisshaders.lilybot.database.entities.SupportConfigData
 import org.litote.kmongo.coroutine.CoroutineDatabase
-import org.litote.kmongo.eq
 
 // Due to the needing of ConfigData having to hang around deprecated until after the migration this function will
 // have to be deleted and as such at the end of the function we reset the configMeta version, so that the migrations are
@@ -34,7 +34,7 @@ suspend fun configV1(mainDb: CoroutineDatabase, configDb: CoroutineDatabase) {
 	val loggingConfig = configDb.getCollection<LoggingConfigData>("loggingConfigData")
 	val moderationConfig = configDb.getCollection<ModerationConfigData>("moderationConfigData")
 	val supportConfig = configDb.getCollection<SupportConfigData>("supportConfigData")
-	val miscellaneousConfig = configDb.getCollection<MiscellaneousConfigData>("miscellaneousConfigData")
+	val miscellaneousConfig = configDb.getCollection<MiscConfigData>("miscellaneousConfigData")
 
 	oldConfig.find().consumeEach {
 		guildId = it.guildId
@@ -62,7 +62,7 @@ suspend fun configV1(mainDb: CoroutineDatabase, configDb: CoroutineDatabase) {
 	}
 	if (oldLogUploadingData.isNotEmpty()) {
 		miscellaneousConfig.insertOne(
-			MiscellaneousConfigData(
+			MiscConfigData(
 				oldLogUploadingData[0] as Snowflake,
 				oldLogUploadingData[1] as Boolean
 			)
@@ -71,7 +71,4 @@ suspend fun configV1(mainDb: CoroutineDatabase, configDb: CoroutineDatabase) {
 
 	mainDb.dropCollection("configData")
 	mainDb.dropCollection("logUploadingData")
-
-	configDb.getCollection<ConfigMetaData>().deleteOne(ConfigMetaData::version eq 1)
-	configDb.getCollection<ConfigMetaData>().insertOne(ConfigMetaData(0))
 }

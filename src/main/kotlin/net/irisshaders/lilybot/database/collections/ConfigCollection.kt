@@ -5,9 +5,8 @@ package net.irisshaders.lilybot.database.collections
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
 import net.irisshaders.lilybot.database.Database
-import net.irisshaders.lilybot.database.entities.ConfigData
 import net.irisshaders.lilybot.database.entities.LoggingConfigData
-import net.irisshaders.lilybot.database.entities.MiscellaneousConfigData
+import net.irisshaders.lilybot.database.entities.MiscConfigData
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
 import net.irisshaders.lilybot.database.entities.SupportConfigData
 import org.koin.core.component.inject
@@ -161,7 +160,7 @@ class SupportConfigCollection : KordExKoinComponent {
 }
 
 /**
- * This class contains the functions for interacting with the [Miscellaneous Config Database][MiscellaneousConfigData].
+ * This class contains the functions for interacting with the [Miscellaneous Config Database][MiscConfigData].
  * This class contains functions for getting, setting and removing miscellaneous config.
  *
  * @since 4.0.0
@@ -169,11 +168,11 @@ class SupportConfigCollection : KordExKoinComponent {
  * @see setConfig
  * @see clearConfig
  */
-class MiscellaneousConfigCollection : KordExKoinComponent {
+class MiscConfigCollection : KordExKoinComponent {
 	private val configDb: Database by inject()
 
 	@PublishedApi
-	internal val collection = configDb.configDatabase.getCollection<MiscellaneousConfigData>()
+	internal val collection = configDb.configDatabase.getCollection<MiscConfigData>()
 
 	/**
 	 * Gets the Miscellaneous config for the given guild using the [guildId][inputGuildId].
@@ -183,8 +182,8 @@ class MiscellaneousConfigCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 4.0.0
 	 */
-	suspend inline fun getConfig(inputGuildId: Snowflake): MiscellaneousConfigData? =
-		collection.findOne(MiscellaneousConfigData::guildId eq inputGuildId)
+	suspend inline fun getConfig(inputGuildId: Snowflake): MiscConfigData? =
+		collection.findOne(MiscConfigData::guildId eq inputGuildId)
 
 	/**
 	 * Adds the given [miscellaneousConfig] to the database.
@@ -193,8 +192,8 @@ class MiscellaneousConfigCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 4.0.0
 	 */
-	suspend inline fun setConfig(miscellaneousConfig: MiscellaneousConfigData) {
-		collection.deleteOne(MiscellaneousConfigData::guildId eq miscellaneousConfig.guildId)
+	suspend inline fun setConfig(miscellaneousConfig: MiscConfigData) {
+		collection.deleteOne(MiscConfigData::guildId eq miscellaneousConfig.guildId)
 		collection.insertOne(miscellaneousConfig)
 	}
 
@@ -206,45 +205,5 @@ class MiscellaneousConfigCollection : KordExKoinComponent {
 	 * @since 4.0.0
 	 */
 	suspend inline fun clearConfig(inputGuildId: Snowflake) =
-		collection.deleteOne(MiscellaneousConfigData::guildId eq inputGuildId)
-}
-
-class OldConfigCollection : KordExKoinComponent {
-	private val configDb: Database by inject()
-
-	@PublishedApi
-	internal val collection = configDb.mainDatabase.getCollection<ConfigData>()
-
-	/**
-	 * Using the provided [inputGuildId] the config for that guild  will be returned from the database.
-	 *
-	 * @param inputGuildId The ID of the guild the command was run in.
-	 * @return The config for [inputGuildId]
-	 * @author NoComment1105, tempest15
-	 * @since 3.0.0
-	 */
-	suspend inline fun getConfig(inputGuildId: Snowflake) =
-		collection.findOne(ConfigData::guildId eq inputGuildId)
-
-	/**
-	 * Adds the given [newConfig] to the database.
-	 *
-	 * @param newConfig The new config values you want to set.
-	 * @author tempest15
-	 * @since 3.0.0
-	 */
-	suspend inline fun setConfig(newConfig: ConfigData) {
-		collection.deleteOne(ConfigData::guildId eq newConfig.guildId)
-		collection.insertOne(newConfig)
-	}
-
-	/**
-	 * Clears the config for the provided [inputGuildId].
-	 *
-	 * @param inputGuildId The ID of the guild the command was run in
-	 * @author tempest15
-	 * @since 3.0.0
-	 */
-	suspend inline fun clearConfig(inputGuildId: Snowflake) =
-		collection.deleteOne(ConfigData::guildId eq inputGuildId)
+		collection.deleteOne(MiscConfigData::guildId eq inputGuildId)
 }

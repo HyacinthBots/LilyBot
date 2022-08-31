@@ -31,9 +31,11 @@ import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import net.irisshaders.lilybot.database.collections.LoggingConfigCollection
+import net.irisshaders.lilybot.database.collections.MiscConfigCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
 import net.irisshaders.lilybot.database.collections.SupportConfigCollection
 import net.irisshaders.lilybot.database.entities.LoggingConfigData
+import net.irisshaders.lilybot.database.entities.MiscConfigData
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
 import net.irisshaders.lilybot.database.entities.SupportConfigData
 import kotlin.time.Duration.Companion.seconds
@@ -322,15 +324,87 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 	}
 
+	ephemeralSubCommand(::MiscArgs) {
+		name = "miscellaneous"
+		description = "Configure Lily's miscellaneous settings"
+
+		check {
+			anyGuild()
+			hasPermission(Permission.ManageGuild)
+		}
+
+		action {
+			val miscConfig = MiscConfigCollection().getConfig(guild!!.id)
+
+			if (miscConfig != null) {
+				respond {
+					content = "You already have a miscellaneous configuration set. " +
+							"Please clear it before attempting to set a new one."
+				}
+				return@action
+			}
+
+			suspend fun EmbedBuilder.miscEmbed() {
+				title = "Configuration: Miscellaneous"
+				field {
+					name = "Enable log uploading"
+					value = if (arguments.enableLogUploading) {
+						"Enabled"
+					} else {
+						"Disabled"
+					}
+				}
+
+				footer {
+					text = "Configured by ${user.asUser().tag}"
+					icon = user.asUser().avatar?.url
+				}
+			}
+
+			respond {
+				embed {
+					miscEmbed()
+				}
+			}
+
+			MiscConfigCollection().setConfig(
+				MiscConfigData(
+					guild!!.id,
+					arguments.enableLogUploading
+				)
+			)
+
+			if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
+				!ModerationConfigCollection().getConfig(guild!!.id)!!.enabled
+			) {
+				guild!!.asGuild().getSystemChannel()
+			} else {
+				guild!!.getChannelOf<GuildMessageChannel>(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
+			}?.createMessage {
+				embed {
+					miscEmbed()
+					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
+						description = "Consider setting the moderation configuration to receive configuration " +
+								"updates where you want them!"
+					}
+				}
+			}
+		}
+	}
+
 	ephemeralSubCommand(::ClearArgs) {
 		name = "clear"
 		description = "Clear a config type"
 
+		check {
+			anyGuild()
+			hasPermission(Permission.ManageGuild)
+		}
+
 		action {
 			when (arguments.config) {
 				ConfigType.MODERATION.name -> {
-					val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)
-					if (moderationConfig == null) {
+					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
 						respond {
 							content = "No moderation configuration exists to clear!"
 						}
@@ -338,7 +412,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 
 					ModerationConfigCollection().clearConfig(guild!!.id)
-					event.interaction.respondEphemeral {
+					respond {
 						embed {
 							title = "Config cleared: Moderation"
 							footer {
@@ -350,8 +424,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 
 				ConfigType.LOGGING.name -> {
-					val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)
-					if (loggingConfig == null) {
+					LoggingConfigCollection().getConfig(guild!!.id) ?: run {
 						respond {
 							content = "No logging configuration exists to clear!"
 						}
@@ -371,8 +444,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 
 				ConfigType.SUPPORT.name -> {
-					val supportConfig = SupportConfigCollection().getConfig(guild!!.id)
-					if (supportConfig == null) {
+					SupportConfigCollection().getConfig(guild!!.id) ?: run {
 						respond {
 							content = "No support configuration exists to clear!"
 						}
@@ -390,10 +462,32 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						}
 					}
 				}
+
+				ConfigType.MISC.name -> {
+					MiscConfigCollection().getConfig(guild!!.id) ?: run {
+						respond {
+							content = "No misc configuration exists to clear"
+						}
+						return@action
+					}
+
+					MiscConfigCollection().clearConfig(guild!!.id)
+					respond {
+						embed {
+							title = "Config cleared: Miscellaneous"
+							footer {
+								text = "Config cleared by ${user.asUser().tag}"
+								icon = user.asUser().avatar?.url
+							}
+						}
+					}
+				}
+
 				ConfigType.ALL.name -> {
 					ModerationConfigCollection().clearConfig(guild!!.id)
 					LoggingConfigCollection().clearConfig(guild!!.id)
 					SupportConfigCollection().clearConfig(guild!!.id)
+					MiscConfigCollection().clearConfig(guild!!.id)
 					respond {
 						embed {
 							title = "All configs cleared"
@@ -489,6 +583,13 @@ class LoggingArgs : Arguments() {
 	}
 }
 
+class MiscArgs : Arguments() {
+	val enableLogUploading by boolean {
+		name = "enable-log-uploading"
+		description = "Enable or disbale log uploading for this guild"
+	}
+}
+
 class ClearArgs : Arguments() {
 	val config by stringChoice {
 		name = "config-type"
@@ -497,6 +598,7 @@ class ClearArgs : Arguments() {
 			"support" to ConfigType.SUPPORT.name,
 			"moderation" to ConfigType.MODERATION.name,
 			"logging" to ConfigType.LOGGING.name,
+			"misc" to ConfigType.MISC.name,
 			"all" to ConfigType.ALL.name
 		)
 	}

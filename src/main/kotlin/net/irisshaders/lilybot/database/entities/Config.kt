@@ -70,7 +70,7 @@ data class SupportConfigData(
  * @since 4.0.0
  */
 @Serializable
-data class MiscellaneousConfigData(
+data class MiscConfigData(
 	val guildId: Snowflake,
 	val disableLogUploading: Boolean,
 )
