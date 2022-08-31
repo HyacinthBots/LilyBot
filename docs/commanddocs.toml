@@ -34,7 +34,7 @@ permissions = "Manage Guild"
 [[command]]
 category = "Administration commands"
 name = "config clear"
-args = "* `configType` - The type of config to clean, 'support', 'moderation', 'logging', 'all' - String Choice"
+args = "* `configType` - The type of config to clear, 'support', 'moderation', 'logging', 'miscellaneous', 'all' - String Choice"
 result = "Clears the config of the specified type."
 permissions = "Manage Guild"
 # End administration commands
