@@ -197,6 +197,17 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
+			if (
+				arguments.moderatorRole != null && arguments.modActionLog == null ||
+				arguments.moderatorRole == null && arguments.modActionLog != null
+			) {
+				respond {
+					content =
+						"You must set both the moderator role and the action log channel to use the moderation configuration."
+				}
+				return@action
+			}
+
 			suspend fun EmbedBuilder.moderationEmbed() {
 				title = "Configuration: Moderation"
 				field {
@@ -402,22 +413,24 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
-			if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
-				!ModerationConfigCollection().getConfig(guild!!.id)!!.enabled
-			) {
-				guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
-			} else {
-				guild!!.getChannelOf(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
-			}?.createMessage {
-				embed {
-					title = "Configuration Cleared: ${arguments.config}"
-					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
-						description = "Consider setting the moderation configuration to receive configuration " +
-								"updates where you want them!"
-					}
-					footer {
-						text = "Config cleared by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
+			suspend fun logClear() {
+				if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
+					!ModerationConfigCollection().getConfig(guild!!.id)!!.enabled
+				) {
+					guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
+				} else {
+					guild!!.getChannelOf(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
+				}?.createMessage {
+					embed {
+						title = "Configuration Cleared: ${arguments.config}"
+						ModerationConfigCollection().getConfig(guild!!.id) ?: run {
+							description = "Consider setting the moderation configuration to receive configuration " +
+									"updates where you want them!"
+						}
+						footer {
+							text = "Config cleared by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
+						}
 					}
 				}
 			}
@@ -441,6 +454,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							}
 						}
 					}
+
+					logClear()
 				}
 
 				ConfigType.LOGGING.name -> {
@@ -461,6 +476,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							}
 						}
 					}
+
+					logClear()
 				}
 
 				ConfigType.SUPPORT.name -> {
@@ -481,6 +498,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							}
 						}
 					}
+
+					logClear()
 				}
 
 				ConfigType.MISC.name -> {
@@ -501,6 +520,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							}
 						}
 					}
+
+					logClear()
 				}
 
 				ConfigType.ALL.name -> {
