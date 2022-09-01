@@ -149,6 +149,19 @@ class Tags : Extension() {
 							"${arguments.user?.mention ?: ""}\n**${tagFromDatabase.tagTitle}**\n${tagFromDatabase.tagValue}"
 					}
 				}
+
+				// Log when a message tag is sent to allow identification of tag spammers
+				if (tagFromDatabase.tagAppearance == "message") {
+					getModerationChannelWithPerms(
+						guild!!.asGuild(),
+						ModerationConfigCollection().getConfig(guild!!.id)!!.channel ?: guild!!.asGuild()
+							.getSystemChannel()!!.id,
+						ConfigType.MODERATION,
+						interactionResponse
+					)?.createMessage {
+						content = "${tagFromDatabase.name} was used by ${user.asUser().tag} in ${channel.mention}"
+					}
+				}
 			}
 		}
 
