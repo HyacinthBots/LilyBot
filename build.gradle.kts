@@ -11,7 +11,7 @@ plugins {
     id("com.github.jakemarsden.git-hooks")
 }
 
-group = "net.irisshaders.lilybot"
+group = "org.hyacinthbots.lilybot"
 version = "4.0.0-alpha"
 
 repositories {

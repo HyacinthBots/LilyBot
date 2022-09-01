@@ -2,7 +2,7 @@
 
 This is a guide on how to **add the official instance of Lily to your sever**.
 If you're looking to set up a development environment for Lily,
-try our [development guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/development-guide.md).
+try our [development guide](https://github.com/HyacinthBots/LilyBot/blob/main/docs/development-guide.md).
 
 If you have issues with this guide, please join [our discord](https://discord.gg/hy2329fcTZ) for support.
 
@@ -28,7 +28,7 @@ and paste that into the command argument.
 Congrats! You now have the official instance of LilyBot running in your server!
 
 For more information on all of Lily's commands,
-check out the [command list](https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md).
+check out the [command list](https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md).
 
 If you're running this your own server, please be sure to allow the `Send Messages`, `Send Messages In Threads`,
 `Add Reactions`, and `Use Application Commands` permissions for your moderator role and any other role you want to be
