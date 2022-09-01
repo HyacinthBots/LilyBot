@@ -75,7 +75,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("net.irisshaders.lilybot.LilyBotKt")
+    mainClass.set("org.hyacinthbots.lilybot.LilyBotKt")
 }
 
 gitHooks {
@@ -103,7 +103,7 @@ tasks {
     jar {
         manifest {
             attributes(
-                "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
+                "Main-Class" to "org.hyacinthbots.lilybot.LilyBotKt"
             )
         }
     }
