@@ -65,8 +65,8 @@ class GalleryChannel : Extension() {
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)
 					val logChannel: GuildMessageChannel? =
-						if (config != null) {
-							guild!!.getChannelOf(config.channel!!)
+						if (config?.channel != null) {
+							guild!!.getChannelOf(config.channel)
 						} else {
 							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
 						}
@@ -130,8 +130,8 @@ class GalleryChannel : Extension() {
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)
 					val logChannel: GuildMessageChannel? =
-						if (config != null) {
-							guild!!.getChannelOf(config.channel!!)
+						if (config?.channel != null) {
+							guild!!.getChannelOf(config.channel)
 						} else {
 							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
 						}
