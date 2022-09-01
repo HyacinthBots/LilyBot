@@ -66,35 +66,11 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 
 ### Name: `config clear`
 **Arguments**:
-* `configType` - The type of config to clean, 'support', 'moderation', 'logging', 'all' - String Choice
+* `configType` - The type of config to clear, 'support', 'moderation', 'logging', 'miscellaneous', 'all' - String Choice
 
 **Result**: Clears the config of the specified type.
 
 **Required Permissions**: `Manage Guild`
-
-**Command category**: `Administration commands`
-
----
-
-### Name: `log-uploading enable`
-**Arguments**:
-None
-
-**Result**: Enables the log uploading feature for this guild. Uploading is enabled by default.
-
-**Required Permissions**: `Moderate Members`
-
-**Command category**: `Administration commands`
-
----
-
-### Name: `log-uploading disable`
-**Arguments**:
-None
-
-**Result**: Disables the log uploading feature for this guild. Uploading is enabled by default.
-
-**Required Permissions**: `Moderate Members`
 
 **Command category**: `Administration commands`
 
