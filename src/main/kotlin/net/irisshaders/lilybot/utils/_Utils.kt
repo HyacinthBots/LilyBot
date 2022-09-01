@@ -75,8 +75,8 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 	}
 
 	// Look at the config options and check the presence of the config in the database.
-	for (it in configOptions) {
-		when (it) {
+	for (option in configOptions) {
+		when (option) {
 			ConfigOptions.SUPPORT_ENABLED -> {
 				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
 				if (supportConfig == null) {
