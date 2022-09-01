@@ -6,35 +6,35 @@ description = "These are commands for the maintenance of LilyBot. The can only b
 [[command]]
 category = "Administration commands"
 name = "config support"
-args = "* `enable` - Whether to enable the support system or not - Boolean\n* `channel` - The channel to create the support threads in - Channel\n* `role` - The role to add to support threads, when one is created - Role\n* `customMessage` - True if you'd like to add a custom message, false if you'd like the default - Boolean"
+args = "* `enable` - Whether to enable the support system or not - Boolean\n* `channel` - The channel to create the support threads in - Channel\n* `role` - The role to add to support threads, when one is created - Role\n* `custom-message` - True if you'd like to add a custom message, false if you'd like the default - Boolean"
 result = "If `customMessage` is true, a modal will appear where you can provide your custom support message, then the config is set. If it is false, the config is set immediately."
 permissions = "Manage Guild"
 
 [[command]]
 category = "Administration commands"
 name = "config moderation"
-args = "* `enable` - Whether to enable the moderation system or not - Boolean\n* `moderatorRole` - The role of the guild moderators, used for pinging in message logs and adding to threads\n* `modActionLog` - The channel to store the moderation actions in - Channel"
+args = "* `enable` - Whether to enable the moderation system or not - Boolean\n* `moderator-role` - The role of the guild moderators, used for pinging in message logs and adding to threads\n* `mod-action-log` - The channel to store the moderation actions in - Channel"
 result = "The config is set for moderation."
 permissions = "Manage Guild"
 
 [[command]]
 category = "Administration commands"
 name = "config logging"
-args = "* `enableMessageLogs` - Whether to enable message delete logging or not - Boolean\n* `enableMemberLogs` - Whether to enable logging of member joins and leaves - Boolean\n* `messageLogs` - The channel for logging message deletion - Optional Channel\n* `memberLogs` - The channel for logging member join/leaves to -  Optional Channel"
+args = "* `enable-message-logs` - Whether to enable message delete logging or not - Boolean\n* `enable-member-logs` - Whether to enable logging of member joins and leaves - Boolean\n* `message-logs` - The channel for logging message deletion - Optional Channel\n* `member-logs` - The channel for logging member join/leaves to -  Optional Channel"
 result = "The config is set for logging."
 permissions = "Manage Guild"
 
 [[command]]
 category = "Administration commands"
 name = "config miscellaneous"
-args = "* `disableLogUploading - Whether to disable log uploading or not - Boolean"
+args = "* `enable-log-uploading - Whether to enable log uploading or not - Boolean"
 result = "The config is set for miscellaneous settings."
 permissions = "Manage Guild"
 
 [[command]]
 category = "Administration commands"
 name = "config clear"
-args = "* `configType` - The type of config to clear, 'support', 'moderation', 'logging', 'miscellaneous', 'all' - String Choice"
+args = "* `config-type` - The type of config to clear, 'support', 'moderation', 'logging', 'miscellaneous', 'all' - String Choice"
 result = "Clears the config of the specified type."
 permissions = "Manage Guild"
 # End administration commands
@@ -54,35 +54,35 @@ permissions = "Manage Messages"
 [[command]]
 category = "Moderation commands"
 name = "ban"
-args = "* `banUser` – Person to ban - User\n* `messages` - Number of days of messages to delete - Integer\n* `reason` - Reason for the ban - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String"
+args = "* `user` – Person to ban - User\n* `messages` - Number of days of messages to delete - Integer\n* `reason` - Reason for the ban - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
 result = "Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last `messages` day(s)."
 permissions = "Ban Members"
 
 [[command]]
 category = "Moderation commands"
 name = "unban"
-args = "* `unbanUserId ` - The Discord ID of the person to unban - User ID"
+args = "* `user ` - The Discord ID of the person to unban - User ID"
 result = "The user with the ID `unbanUserId` is unbanned."
 permissions = "Ban Members"
 
 [[command]]
 category = "Moderation commands"
 name = "soft-ban"
-args = "* `softBanUser` - Person to soft ban - User\n* `messages` - Number of days of messages to delete - Integer (default 3)\n* `reason` - Reason for the ban - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String"
+args = "* `user` - Person to soft ban - User\n* `messages` - Number of days of messages to delete - Integer (default 3)\n* `reason` - Reason for the ban - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
 result = "Bans `softBanUser`, deletes the last `messages` days of messages from them, and unbans them."
 permissions = "Ban Members"
 
 [[command]]
 category = "Moderation commands"
 name = "warn"
-args = "* `warnUser` - Person to warn - User\n* `reason` - Reason for warn - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String"
+args = "* `user` - Person to warn - User\n* `reason` - Reason for warn - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
 result = "Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.\n\n| Points |     Sanction     |\n|:------:|:----------------:|\n|   1    |      None.       |\n|   2    | 3 hour timeout.  |\n|   3    | 12 hour timeout. |\n|   3+   |  3 day timeout.  |"
 permissions = "Moderate Members"
 
 [[command]]
 category = "Moderation commands"
 name = "timeout"
-args = "* `timeoutUser` - Person to timeout - User\n* `duration` - Duration of timeout - Duration [e.g. 6h or 30s] (default 6h)\n* `reason` - Reason for timeout - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String"
+args = "* `user` - Person to timeout - User\n* `duration` - Duration of timeout - Duration [e.g. 6h or 30s] (default 6h)\n* `reason` - Reason for timeout - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
 result = "Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function."
 permissions = "Moderate Members"
 
@@ -129,14 +129,14 @@ permissions = "Manage Roles"
 [[command]]
 category = "Utility commands"
 name = "role-menu add"
-args = "(Moderator only)\n* `menuId` - The message ID of the role menu to edit - Snowflake\n* `role` - The role to add to the menu - String"
+args = "(Moderator only)\n* `menu-id` - The message ID of the role menu to edit - Snowflake\n* `role` - The role to add to the menu - String"
 result = "Adds the `role` to the menu associated with `menuId`."
 permissions = "Manage Roles"
 
 [[command]]
 category = "Utility commands"
 name = "role-menu remove"
-args = "(Moderator only)\n* `menuId` - The message ID of the role menu to edit - Snowflake\n* `role` - The role to remove from the menu - String"
+args = "(Moderator only)\n* `menu-id` - The message ID of the role menu to edit - Snowflake\n* `role` - The role to remove from the menu - String"
 result = "Removes the `role` from the menu associated with `menuId`."
 permissions = "Manage Roles"
 
@@ -156,7 +156,7 @@ permissions = "Moderate Members"
 [[command]]
 category = "Utility commands"
 name = "edit-say"
-args = "(Moderators only)\n* `messageToEdit` - The ID of the message contain the embed you'd like to edit - Snowflake\n* `newContent` - The new content for the message - Optional String\n* `newColor` - The new color for the embed - Optional Color (default: Blurple)\n* `channelOfMessage` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)\n* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean (default: true)"
+args = "(Moderators only)\n* `message-to-edit` - The ID of the message contain the embed you'd like to edit - Snowflake\n* `new-content` - The new content for the message - Optional String\n* `new-color` - The new color for the embed - Optional Color (default: Blurple)\n* `channel-of-message` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)\n* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean (default: true)"
 result = "Edited message/embed"
 permissions = "Moderate Members"
 
@@ -176,14 +176,14 @@ permissions = "none (Manage Threads for locking)"
 [[command]]
 category = "Utility commands"
 name = "thread rename"
-args = "* `newName` - New name for the thread executed in - String"
+args = "* `new-name` - New name for the thread executed in - String"
 result = "Renames the thread executed in **if executed by a moderator or the thread owner**."
 permissions = "none (Manage Threads if not owner)"
 
 [[command]]
 category = "Utility commands"
 name = "thread transfer"
-args = "* `newOwner` - The person you want to transfer ownership of the thread to - User"
+args = "* `new-owner` - The person you want to transfer ownership of the thread to - User"
 result = "Transfers ownership of the thread executed in to `newOwner` **if executed by a moderator or the thread owner**. Creates a message in the executed thread noting this transfer."
 permissions = "none (Manage Threads if not owner)"
 
@@ -207,7 +207,7 @@ result = "Clears the nickname of the user that ran the command"
 [[command]]
 category = "Utility commands"
 name = "reminder set"
-args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `customMessage` - A custom message to attach to the reminder - Optional String\n* `repeat` - Whether you'd like the reminder to repeat or not. Defaults to false - Optional Boolean\n* `repeatingInterval - The interval at which the reminder should be repeated - Optional Coalescing Duration"
+args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `custom-message` - A custom message to attach to the reminder - Optional String\n* `repeat` - Whether you'd like the reminder to repeat or not. Defaults to false - Optional Boolean\n* `repeating-interval - The interval at which the reminder should be repeated - Optional Coalescing Duration"
 result = "Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed"
 
 [[command]]
@@ -218,7 +218,7 @@ result = "Sends an embed containing all the reminders you have set in that guild
 [[command]]
 category = "Mod/Utility commands"
 name = "remind mod-list"
-args = "* `userId` - The ID of the user to get the reminders for - Snowflake"
+args = "* `user-id` - The ID of the user to get the reminders for - Snowflake"
 result = "Displays an embed containing all the reminders for the target user. If there are none, it returns a messages saying so."
 
 [[command]]
@@ -229,7 +229,7 @@ result = "Allows the user to input the number ID of the reminder they would like
 [[command]]
 category = "Mod/Utility commands"
 name = "remind mod-remove"
-args = "* `userId` - The ID of the user to get the reminders for - Snowflake\n* `reminderId` - The ID of the reminder to remove - Snowflake"
+args = "* `user-id` - The ID of the user to get the reminders for - Snowflake\n* `reminder-id` - The ID of the reminder to remove - Snowflake"
 result = "Deletes the reminder from the user"
 
 [[command]]
@@ -289,27 +289,27 @@ description = "Tag commands are guild specific commands, that can be added at ru
 [[command]]
 category = "Tag commands"
 name = "tag"
-args = "* `tagName` - The named identifier of the tag you wish to run - String"
+args = "* `tag-name` - The named identifier of the tag you wish to run - String"
 result = "Posts the tag embed you requested"
 
 [[command]]
 category = "Tag commands"
 name = "tag-create"
-args = "(Moderators only)\n* `tagName` - The named identifier of the tag you wish to create. - String\n* `tagTitle` - The tag embed title - String\n* `tagValue` - The tag embed description - String"
+args = "(Moderators only)\n* `tag-name` - The named identifier of the tag you wish to create. - String\n* `tag-title` - The tag embed title - String\n* `tag-value` - The tag embed description - String\n* `appearance` - Whether the tag should appear as an embed or a message. Options: `embed`, `message` - String choice"
 result = "Creates a tag for the guild you ran this command in"
 permissions = "Moderate Members"
 
 [[command]]
 category = "Tag commands"
 name = "tag-delete"
-args = "* `tagName` - The named identifier of the tag you wish to delete - String"
+args = "* `tag-name` - The named identifier of the tag you wish to delete - String"
 result = "Deletes the tag for the guild you ran this command in"
 permissions = "Moderate members"
 
 [[command]]
 category = "Tag commands"
 name = "tag-edit"
-args = "* `tagName` - The named identifier of the tag you wish to edit - String\n* `newName` - The new named identifier of the tag - Optional String\n* `newTitle` - The new embed title - Optional String\n* `newValue` - The new embed description - Optional String"
+args = "* `tag-name` - The named identifier of the tag you wish to edit - String\n* `new-name` - The new named identifier of the tag - Optional String\n* `new-title` - The new embed title - Optional String\n* `new-value` - The new embed description - Optional String\n* `new-appearance` - Whether the tag should appear as an embed or a message. Options: `embed`, `message` - String choice"
 result = "Edits the tag for the guild you ran this command in"
 permissions = "Moderate members"
 
@@ -326,7 +326,7 @@ result = "Displays a paginated list of all the tags for the guild you ran this c
 [[command]]
 category = "Tag commands"
 name = "tag-preview"
-args = "* `tagName` - The named identifier of the tag you wish to preview - String"
+args = "* `tag-name` - The named identifier of the tag you wish to preview - String"
 result = "Displays a preview of the tag embed you requested."
 # End tag commands
 
