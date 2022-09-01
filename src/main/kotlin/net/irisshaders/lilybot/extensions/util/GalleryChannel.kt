@@ -17,16 +17,17 @@ import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import net.irisshaders.lilybot.database.collections.GalleryChannelCollection
 import net.irisshaders.lilybot.database.collections.ModerationConfigCollection
-import net.irisshaders.lilybot.extensions.config.ConfigOptions
 import net.irisshaders.lilybot.extensions.config.ConfigType
 import net.irisshaders.lilybot.utils.botHasChannelPerms
-import net.irisshaders.lilybot.utils.configPresent
+import net.irisshaders.lilybot.utils.getFirstUsableChannel
 import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 
 /**
@@ -56,18 +57,23 @@ class GalleryChannel : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.ManageChannels, Permission.ManageMessages)
 					botHasChannelPerms(Permissions(Permission.ManageChannels, Permission.ManageMessages))
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
+					val config = ModerationConfigCollection().getConfig(guild!!.id)
+					val logChannel: GuildMessageChannel? =
+						if (config != null) {
+							guild!!.getChannelOf(config.channel!!)
+						} else {
+							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
+						}
 					val actionLog =
 						getModerationChannelWithPerms(
 							guild!!.asGuild(),
-							config.channel!!,
+							logChannel!!.id,
 							ConfigType.MODERATION,
 							interactionResponse
 						)
@@ -88,9 +94,16 @@ class GalleryChannel : Extension() {
 						content = "Set channel as gallery channel."
 					}
 
+					val descriptionAddon = if (config == null) {
+						"\n\nConsider setting the moderation configuration to receive configuration updates where you" +
+								" want them!"
+					} else {
+						""
+					}
+
 					actionLog.createEmbed {
 						title = "New Gallery channel"
-						description = "${channel.mention} was added as a Gallery channel"
+						description = "${channel.mention} was added as a Gallery channel$descriptionAddon"
 						footer {
 							text = "Requested by ${user.asUser().tag}"
 							icon = user.asUser().avatar?.url
@@ -109,18 +122,23 @@ class GalleryChannel : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageGuild)
 					requireBotPermissions(Permission.ManageChannels)
 					botHasChannelPerms(Permissions(Permission.ManageChannels))
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
+					val config = ModerationConfigCollection().getConfig(guild!!.id)
+					val logChannel: GuildMessageChannel? =
+						if (config != null) {
+							guild!!.getChannelOf(config.channel!!)
+						} else {
+							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
+						}
 					val actionLog =
 						getModerationChannelWithPerms(
 							guild!!.asGuild(),
-							config.channel!!,
+							logChannel?.id!!,
 							ConfigType.MODERATION,
 							interactionResponse
 						)
@@ -203,7 +221,7 @@ class GalleryChannel : Extension() {
 			}
 
 			action {
-				GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
+				GalleryChannelCollection().getChannels(event.guildId!!).forEach {
 					// If there are no attachments to the message and the channel we're in is an image channel
 					if (event.message.channelId == it.channelId && event.message.attachments.isEmpty()) {
 						// We delay to give the message a chance to populate with an embed, if it is a link to imgur etc.
