@@ -252,6 +252,15 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
+			if (getModerationChannelWithPerms(
+					guild!!.asGuild(),
+					arguments.modActionLog?.id,
+					ConfigType.MODERATION
+				)?.id != arguments.modActionLog?.id
+			) {
+				return@action
+			}
+
 			ModerationConfigCollection().setConfig(
 				ModerationConfigData(
 					guild!!.id,
@@ -264,7 +273,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 			checkChannel(
 				guild,
-				arguments.modActionLog!!.id,
+				arguments.modActionLog?.id,
 				interactionResponse
 			)?.createMessage {
 				embed {
@@ -436,7 +445,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			suspend fun logClear() {
 				checkChannel(
 					guild,
-					ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!,
+					ModerationConfigCollection().getConfig(guild!!.id)!!.channel,
 					interactionResponse
 				)?.createMessage {
 					embed {
@@ -661,12 +670,13 @@ class ClearArgs : Arguments() {
  */
 suspend inline fun checkChannel(
 	guild: GuildBehavior?,
-	channelIdToCheck: Snowflake,
+	channelIdToCheck: Snowflake?,
 	interactionResponse: FollowupPermittingInteractionResponseBehavior
 ): GuildMessageChannel? {
 	val toReturn: GuildMessageChannel?
 	if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
-		!ModerationConfigCollection().getConfig(guild.id)!!.enabled
+		!ModerationConfigCollection().getConfig(guild.id)!!.enabled ||
+				channelIdToCheck == null
 	) {
 		toReturn = getModerationChannelWithPerms(
 			guild.asGuild(),

@@ -28,7 +28,7 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 * `enable` - Whether to enable the moderation system or not - Boolean
 * `moderator-role` - The role of the guild moderators, used for pinging in message logs and adding to threads
 * `mod-action-log` - The channel to store the moderation actions in - Channel
-*`log-publicly` - Whether to log moderation actions in the channel they were run in as well as the action log - Optional Boolean
+*`log-publicly` - Whether to log moderation actions in the channel they were run in as well as the action log. Defaults to false - Optional Boolean
 
 **Result**: The config is set for moderation.
 
