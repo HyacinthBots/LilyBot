@@ -297,8 +297,7 @@ style:
     ignoreOverridden: true
     ignoreUsageInGenerics: false
   LoopWithTooManyJumpStatements:
-    active: true
-    maxJumpCount: 3
+    active: false
   MagicNumber:
     active: false
     ignoreNumbers: ['-1', '0', '1', '2']

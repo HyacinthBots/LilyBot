@@ -75,14 +75,16 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 	}
 
 	// Look at the config options and check the presence of the config in the database.
-	configOptions.forEach {
+	for (it in configOptions) {
 		when (it) {
 			ConfigOptions.SUPPORT_ENABLED -> {
 				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
 				if (supportConfig == null) {
 					fail("Unable to access support config for this guild! Please inform a member of staff.")
+					break
 				} else if (!supportConfig.enabled) {
 					fail("Support is disabled for this guild!")
+					break
 				} else {
 					pass()
 				}
@@ -92,8 +94,10 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
 				if (supportConfig == null) {
 					fail("Unable to access support config for this guild! Please inform a member of staff.")
+					break
 				} else if (supportConfig.channel == null) {
 					fail("A support channel has not been set for this guild!")
+					break
 				} else {
 					pass()
 				}
@@ -103,8 +107,10 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
 				if (supportConfig == null) {
 					fail("Unable to access support config for this guild! Please inform a member of staff.")
+					break
 				} else if (supportConfig.role == null) {
 					fail("A support role has not been set for this guild!")
+					break
 				} else {
 					pass()
 				}
@@ -114,8 +120,10 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
 				if (moderationConfig == null) {
 					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
+					break
 				} else if (!moderationConfig.enabled) {
 					fail("Moderation is disabled for this guild!")
+					break
 				} else {
 					pass()
 				}
@@ -125,8 +133,10 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
 				if (moderationConfig == null) {
 					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
+					break
 				} else if (moderationConfig.role == null) {
 					fail("A moderator role has not been set for this guild!")
+					break
 				} else {
 					pass()
 				}
@@ -136,8 +146,10 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
 				if (moderationConfig == null) {
 					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
+					break
 				} else if (moderationConfig.channel == null) {
 					fail("An action log has not been set for this guild!")
+					break
 				} else {
 					pass()
 				}
@@ -147,8 +159,10 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
 				if (loggingConfig == null) {
 					fail("Unable to access logging config for this guild! Please inform a member of staff.")
+					break
 				} else if (!loggingConfig.enableMessageLogs) {
 					fail("Message logging is disabled for this guild!")
+					break
 				} else {
 					pass()
 				}
@@ -158,8 +172,10 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
 				if (loggingConfig == null) {
 					fail("Unable to access logging config for this guild! Please inform a member of staff.")
+					break
 				} else if (loggingConfig.messageChannel == null) {
 					fail("A message log has not been set for this guild!")
+					break
 				} else {
 					pass()
 				}
@@ -169,8 +185,10 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
 				if (loggingConfig == null) {
 					fail("Unable to access logging config for this guild! Please inform a member of staff.")
+					break
 				} else if (!loggingConfig.enableMemberLogs) {
 					fail("Member logging is disabled for this guild!")
+					break
 				} else {
 					pass()
 				}
@@ -180,8 +198,10 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
 				if (loggingConfig == null) {
 					fail("Unable to access logging config for this guild! Please inform a member of staff.")
+					break
 				} else if (loggingConfig.memberLog == null) {
 					fail("A member log has not been set for this guild")
+					break
 				} else {
 					pass()
 				}
@@ -191,8 +211,10 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				val miscConfig = MiscConfigCollection().getConfig(guildFor(event)!!.id)
 				if (miscConfig == null) {
 					fail("Unable to access misc config for this guild! Please inform a member of staff.")
+					break
 				} else if (miscConfig.disableLogUploading) {
 					fail("Log uploads are disabled for this guild!")
+					break
 				} else {
 					pass()
 				}
