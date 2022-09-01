@@ -5,28 +5,38 @@ description = "These are commands for the maintenance of LilyBot. The can only b
 
 [[command]]
 category = "Administration commands"
-name = "config set"
-args = "* `moderatorRole` - Moderator role that will be pinged for reports - Role\n* `modActionLog` - Channel for embeds created by mod actions to be sent - Channel\n* `messageLogs` - Channel for deleted messages to be logged - Channel\n* `joinChannel` - Channel for members joining or leaving to be logged - Channel\n* `supportChannel` - Channel for the support auto-threading system to be used in - Optional Channel\n* `supportTeamRole` - The role to be added to any threads created in the `supportchannel` - Optional Role"
-result = "Sets a configuration for the guild executed in."
+name = "config support"
+args = "* `enable` - Whether to enable the support system or not - Boolean\n* `channel` - The channel to create the support threads in - Channel\n* `role` - The role to add to support threads, when one is created - Role\n* `customMessage` - True if you'd like to add a custom message, false if you'd like the default - Boolean"
+result = "If `customMessage` is true, a modal will appear where you can provide your custom support message, then the config is set. If it is false, the config is set immediately."
+permissions = "Manage Guild"
+
+[[command]]
+category = "Administration commands"
+name = "config moderation"
+args = "* `enable` - Whether to enable the moderation system or not - Boolean\n* `moderatorRole` - The role of the guild moderators, used for pinging in message logs and adding to threads\n* `modActionLog` - The channel to store the moderation actions in - Channel"
+result = "The config is set for moderation."
+permissions = "Manage Guild"
+
+[[command]]
+category = "Administration commands"
+name = "config logging"
+args = "* `enableMessageLogs` - Whether to enable message delete logging or not - Boolean\n* `enableMemberLogs` - Whether to enable logging of member joins and leaves - Boolean\n* `messageLogs` - The channel for logging message deletion - Optional Channel\n* `memberLogs` - The channel for logging member join/leaves to -  Optional Channel"
+result = "The config is set for logging."
+permissions = "Manage Guild"
+
+[[command]]
+category = "Administration commands"
+name = "config miscellaneous"
+args = "* `disableLogUploading - Whether to disable log uploading or not - Boolean"
+result = "The config is set for miscellaneous settings."
 permissions = "Manage Guild"
 
 [[command]]
 category = "Administration commands"
 name = "config clear"
-result = "Clears the configuration for the guild executed in."
+args = "* `configType` - The type of config to clear, 'support', 'moderation', 'logging', 'miscellaneous', 'all' - String Choice"
+result = "Clears the config of the specified type."
 permissions = "Manage Guild"
-
-[[command]]
-category = "Administration commands"
-name = "log-uploading enable"
-result = "Enables the log uploading feature for this guild. Uploading is enabled by default."
-permissions = "Moderate Members"
-
-[[command]]
-category = "Administration commands"
-name = "log-uploading disable"
-result = "Disables the log uploading feature for this guild. Uploading is enabled by default."
-permissions = "Moderate Members"
 # End administration commands
 
 # Moderation commands
@@ -197,7 +207,7 @@ result = "Clears the nickname of the user that ran the command"
 [[command]]
 category = "Utility commands"
 name = "reminder set"
-args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `customMessage` - A custom message to attach to the reminder - Optional String"
+args = "* `time` - The time until the bot should send the reminder - Coalescing Duration\n* `customMessage` - A custom message to attach to the reminder - Optional String\n* `repeat` - Whether you'd like the reminder to repeat or not. Defaults to false - Optional Boolean\n* `repeatingInterval - The interval at which the reminder should be repeated - Optional Coalescing Duration"
 result = "Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed"
 
 [[command]]
