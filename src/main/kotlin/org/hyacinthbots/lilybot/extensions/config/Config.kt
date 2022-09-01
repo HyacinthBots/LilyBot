@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -18,6 +19,7 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.channel.createMessage
@@ -231,6 +233,14 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					name = "Action log"
 					value = arguments.modActionLog?.mention ?: "Disabled"
 				}
+				field {
+					name = "Log publicly"
+					value = when (arguments.logPublicly) {
+						true -> "True"
+						false -> "Disabled"
+						null -> "Disabled"
+					}
+				}
 				footer {
 					text = "Configured by ${user.asUser().tag}"
 				}
@@ -242,20 +252,25 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			checkChannel(guild, interactionResponse)?.createMessage {
-				embed {
-					moderationEmbed()
-				}
-			}
-
 			ModerationConfigCollection().setConfig(
 				ModerationConfigData(
 					guild!!.id,
 					arguments.enabled,
 					arguments.modActionLog?.id,
-					arguments.moderatorRole?.id
+					arguments.moderatorRole?.id,
+					arguments.logPublicly
 				)
 			)
+
+			checkChannel(
+				guild,
+				arguments.modActionLog!!.id,
+				interactionResponse
+			)?.createMessage {
+				embed {
+					moderationEmbed()
+				}
+			}
 		}
 	}
 
@@ -326,7 +341,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			)
 
-			checkChannel(guild, interactionResponse)?.createMessage {
+			checkChannel(
+				guild,
+				ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!,
+				interactionResponse
+			)?.createMessage {
 				embed {
 					loggingEmbed()
 					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
@@ -388,7 +407,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			)
 
-			checkChannel(guild, interactionResponse)?.createMessage {
+			checkChannel(
+				guild,
+				ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!,
+				interactionResponse
+			)?.createMessage {
 				embed {
 					miscEmbed()
 					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
@@ -411,7 +434,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		action {
 			suspend fun logClear() {
-				checkChannel(guild, interactionResponse)?.createMessage {
+				checkChannel(
+					guild,
+					ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!,
+					interactionResponse
+				)?.createMessage {
 					embed {
 						title = "Configuration Cleared: ${arguments.config}"
 						ModerationConfigCollection().getConfig(guild!!.id) ?: run {
@@ -435,6 +462,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						return@action
 					}
 
+					logClear()
+
 					ModerationConfigCollection().clearConfig(guild!!.id)
 					respond {
 						embed {
@@ -445,8 +474,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							}
 						}
 					}
-
-					logClear()
 				}
 
 				ConfigType.LOGGING.name -> {
@@ -456,6 +483,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						}
 						return@action
 					}
+
+					logClear()
 
 					LoggingConfigCollection().clearConfig(guild!!.id)
 					respond {
@@ -467,8 +496,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							}
 						}
 					}
-
-					logClear()
 				}
 
 				ConfigType.SUPPORT.name -> {
@@ -478,6 +505,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						}
 						return@action
 					}
+
+					logClear()
 
 					SupportConfigCollection().clearConfig(guild!!.id)
 					respond {
@@ -489,8 +518,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							}
 						}
 					}
-
-					logClear()
 				}
 
 				ConfigType.MISC.name -> {
@@ -500,6 +527,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						}
 						return@action
 					}
+
+					logClear()
 
 					MiscConfigCollection().clearConfig(guild!!.id)
 					respond {
@@ -511,8 +540,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							}
 						}
 					}
-
-					logClear()
 				}
 
 				ConfigType.ALL.name -> {
@@ -572,6 +599,11 @@ class ModerationArgs : Arguments() {
 		name = "action-log"
 		description = "The channel used to store moderator actions."
 	}
+
+	val logPublicly by optionalBoolean {
+		name = "log-publicly"
+		description = "Whether to log moderation publicly or not."
+	}
 }
 
 class LoggingArgs : Arguments() {
@@ -599,7 +631,7 @@ class LoggingArgs : Arguments() {
 class MiscArgs : Arguments() {
 	val enableLogUploading by boolean {
 		name = "enable-log-uploading"
-		description = "Enable or disbale log uploading for this guild"
+		description = "Enable or disable log uploading for this guild"
 	}
 }
 
@@ -621,14 +653,16 @@ class ClearArgs : Arguments() {
  * Checks the moderation config and returns where the message needs to be sent.
  *
  * @param guild The guild the event is in
+ * @param channelIdToCheck The id of the channel to check
  * @param interactionResponse The response for the interaction
  * @return the channel to send the message to
  * @since 4.0.0
  * @author NoComment
  */
 suspend inline fun checkChannel(
-    guild: GuildBehavior?,
-    interactionResponse: FollowupPermittingInteractionResponseBehavior
+	guild: GuildBehavior?,
+	channelIdToCheck: Snowflake,
+	interactionResponse: FollowupPermittingInteractionResponseBehavior
 ): GuildMessageChannel? {
 	val toReturn: GuildMessageChannel?
 	if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
@@ -643,7 +677,7 @@ suspend inline fun checkChannel(
 	} else {
 		toReturn = getModerationChannelWithPerms(
 			guild.asGuild(),
-			ModerationConfigCollection().getConfig(guild.id)!!.channel!!,
+			channelIdToCheck,
 			ConfigType.MODERATION,
 			interactionResponse
 		)

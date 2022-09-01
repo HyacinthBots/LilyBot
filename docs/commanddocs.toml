@@ -13,7 +13,7 @@ permissions = "Manage Guild"
 [[command]]
 category = "Administration commands"
 name = "config moderation"
-args = "* `enable` - Whether to enable the moderation system or not - Boolean\n* `moderatorRole` - The role of the guild moderators, used for pinging in message logs and adding to threads\n* `modActionLog` - The channel to store the moderation actions in - Channel"
+args = "* `enable` - Whether to enable the moderation system or not - Boolean\n* `moderatorRole` - The role of the guild moderators, used for pinging in message logs and adding to threads\n* `modActionLog` - The channel to store the moderation actions in - Channel\n*`log-publicly` - Whether to log moderation actions in the channel they were run in as well as the action log - Optional Boolean"
 result = "The config is set for moderation."
 permissions = "Manage Guild"
 

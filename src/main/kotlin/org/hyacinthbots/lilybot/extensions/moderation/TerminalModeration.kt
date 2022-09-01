@@ -134,6 +134,14 @@ class TerminalModeration : Extension() {
 					embed.image = null
 					actionLog.createMessage { embeds.add(embed) }
 				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Banned a user"
+						description = "${userArg.mention} has been banned!"
+						color = DISCORD_BLACK
+					}
+				}
 			}
 		}
 
@@ -283,6 +291,13 @@ class TerminalModeration : Extension() {
 					actionLog.createMessage { embeds.add(embed) }
 				}
 
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Soft-Banned a user"
+						description = "${userArg.mention} has been soft-banned!"
+					}
+				}
+
 				// Unban the user, as you're supposed to in soft-ban
 				guild?.unban(userArg.id)
 			}
@@ -357,6 +372,13 @@ class TerminalModeration : Extension() {
 				} catch (e: KtorRequestException) {
 					embed.image = null
 					actionLog.createMessage { embeds.add(embed) }
+				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Kicked a user"
+						description = "${userArg.mention} has been kicked!"
+					}
 				}
 			}
 		}
