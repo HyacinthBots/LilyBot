@@ -441,7 +441,7 @@ class RoleMenu : Extension() {
 					event.interaction.respondEphemeral {
 						content = "This role menu seems to be broken, please ask staff to recreate it. " +
 								"If this isn't a role menu, or if the issue persists, open a report at " +
-								"<https://github.com/IrisShaders/LilyBot/issues>"
+								"<https://github.com/HyacinthBots/LilyBot/issues>"
 					}
 					return@Button
 				}
@@ -450,7 +450,7 @@ class RoleMenu : Extension() {
 					event.interaction.respondEphemeral {
 						content = "Could not find any roles associated with this menu. Please ask staff to add some " +
 								"If this isn't a role menu, or if the issue persists, open a report at " +
-								"<https://github.com/IrisShaders/LilyBot/issues>"
+								"<https://github.com/HyacinthBots/LilyBot/issues>"
 					}
 					return@Button
 				}

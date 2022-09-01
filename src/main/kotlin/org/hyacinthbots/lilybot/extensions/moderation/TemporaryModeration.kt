@@ -166,7 +166,7 @@ class TemporaryModeration : Extension() {
 								description = "**Reason:** ${arguments.reason}\n\n" +
 										"No moderation action has been taken. Please consider your actions carefully.\n\n" +
 										"For more information about the warn system, please see [this document]" +
-										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+										"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md#L89)"
 								color = DISCORD_BLACK
 							}
 						}
@@ -177,7 +177,7 @@ class TemporaryModeration : Extension() {
 								description = "**Reason:** ${arguments.reason}\n\n" +
 										"You have been timed out for 3 hours. Please consider your actions carefully.\n\n" +
 										"For more information about the warn system, please see [this document]" +
-										"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+										"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md#L89)"
 								color = DISCORD_BLACK
 							}
 						}
@@ -203,7 +203,7 @@ class TemporaryModeration : Extension() {
 								description =
 									"You have been timed out for 12 hours. Please consider your actions carefully.\n\n" +
 											"For more information about the warn system, please see [this document]" +
-											"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+											"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md#L89)"
 								color = DISCORD_RED
 							}
 						}
@@ -231,7 +231,7 @@ class TemporaryModeration : Extension() {
 									description =
 										"You have been timed out for 3 days. Please consider your actions carefully.\n\n" +
 												"For more information about the warn system, please see [this document]" +
-												"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md#L89)"
+												"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md#L89)"
 									color = DISCORD_RED
 								}
 							}

@@ -63,7 +63,7 @@ class Github : Extension() {
 						respondEphemeral {
 							embed {
 								title = "Make sure your repository input is formatted like this:"
-								description = "Format: `User/Repo` or `Org/Repo` \nFor example: `IrisShaders/Iris`"
+								description = "Format: `User/Repo` or `Org/Repo` \nFor example: `HyacinthBots/LilyBot`"
 							}
 						}
 						return@action
@@ -282,7 +282,7 @@ class Github : Extension() {
 						respondEphemeral {
 							embed {
 								title = "Make sure your input is formatted like this:"
-								description = "Format: `User/Repo` or `Org/Repo`\nFor example: `IrisShaders/Iris`"
+								description = "Format: `User/Repo` or `Org/Repo`\nFor example: `HyacinthBots/LilyBot`"
 							}
 						}
 						return@action

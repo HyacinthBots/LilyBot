@@ -115,15 +115,15 @@ class InfoCommands : Extension() {
 							name = "What commands are there?"
 							value = "Lots! Too many to list here. You can read about the commands using the `/help` " +
 									"command, or visiting the [Commands List]" +
-									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md) on the GitHub."
+									"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md) on the GitHub."
 						}
 
 						field {
 							name = "More information"
 							value = "For a full list of commands, see the [Commands List]" +
-									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md).\nFor information " +
+									"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md).\nFor information " +
 									"on how to start developing with LilyBot, see the [Development guide]" +
-									"(https://github.com/IrisShaders/LilyBot/blob/main/docs/development-guide.md)."
+									"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/development-guide.md)."
 						}
 
 						field {
@@ -150,7 +150,7 @@ class InfoCommands : Extension() {
 					components {
 						linkButton(0) {
 							label = "GitHub"
-							url = "https://github.com/IrisShaders/LilyBot"
+							url = "https://github.com/HyacinthBots/LilyBot"
 						}
 						linkButton(0) {
 							label = "Invite"
@@ -159,7 +159,7 @@ class InfoCommands : Extension() {
 						}
 						linkButton(0) {
 							label = "Privacy Policy"
-							url = "https://github.com/IrisShaders/LilyBot/blob/main/docs/privacy-policy.md"
+							url = "https://github.com/HyacinthBots/LilyBot/blob/main/docs/privacy-policy.md"
 						}
 					}
 				}
