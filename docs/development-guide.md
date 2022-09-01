@@ -2,7 +2,7 @@
 
 This is a guide on how to set up Lily **for development purposes**.
 If you're looking to add Lily to your server,
-try our [usage guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/usage-guide.md).
+try our [usage guide](https://github.com/HyacinthBots/LilyBot/blob/main/docs/usage-guide.md).
 If you have issues with this guide, please join [our discord](https://discord.gg/hy2329fcTZ) for support.
 
 ## Step 1 - Install tools
@@ -19,7 +19,7 @@ you can find a tutorial on how to install it [here](https://docs.mongodb.com/man
 
 ## Step 2 - Clone the Lily repository
 When you first open IntelliJ, select the `Get from VCS` button in the top right,
-enter `https://github.com/IrisShaders/LilyBot.git`, and press clone.
+enter `https://github.com/HyacinthBots/LilyBot.git`, and press clone.
 Wait for IntelliJ to finish setting up the project.
 
 ## Step 3 - Setting a `.env` file
@@ -65,7 +65,7 @@ This command can be found in the same place as the one for starting the database
 ## Step 5 - Profit!
 Congrats! You now have a development instance of Lily fully up and running.
 For more information on all of Lily's commands,
-check out the [command list](https://github.com/IrisShaders/LilyBot/blob/main/docs/commands.md).
+check out the [command list](https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md).
 
 If you're running this your own server, please be sure to allow the `Send Messages`, `Send Messages In Threads`,
 `Add Reactions`, and `Use Application Commands` permissions for your moderator role and any other role you want to be

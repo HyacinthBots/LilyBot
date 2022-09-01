@@ -11,8 +11,8 @@ plugins {
     id("com.github.jakemarsden.git-hooks")
 }
 
-group = "net.irisshaders.lilybot"
-version = "3.5.5"
+group = "org.hyacinthbots.lilybot"
+version = "4.0.0-alpha"
 
 repositories {
     mavenCentral()
@@ -75,7 +75,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("net.irisshaders.lilybot.LilyBotKt")
+    mainClass.set("org.hyacinthbots.lilybot.LilyBotKt")
 }
 
 gitHooks {
@@ -103,7 +103,7 @@ tasks {
     jar {
         manifest {
             attributes(
-                "Main-Class" to "net.irisshaders.lilybot.LilyBotKt"
+                "Main-Class" to "org.hyacinthbots.lilybot.LilyBotKt"
             )
         }
     }

@@ -1,15 +1,15 @@
 # LilyBot
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/IrisShaders/LilyBot/Build%20Only?label=Build%20Only)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/IrisShaders/LilyBot/Build%20&%20Deploy?label=Build%20and%20Deploy)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/HyacinthBots/LilyBot/Build%20Only?label=Build%20Only)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/HyacinthBots/LilyBot/Build%20&%20Deploy?label=Build%20and%20Deploy)
 
-![GitHub issues](https://img.shields.io/github/issues/IrisShaders/LilyBot?label=Issues)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/IrisShaders/LilyBot?label=Pull%20Requests) 
+![GitHub issues](https://img.shields.io/github/issues/HyacinthBots/LilyBot?label=Issues)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/hyacinthbots/LilyBot?label=Pull%20Requests) 
 
-![GitHub](https://img.shields.io/github/license/IrisShaders/LilyBot?label=License)
-![GitHub repo size](https://img.shields.io/github/repo-size/IrisShaders/LilyBot?label=Repository%20Size)
+![GitHub](https://img.shields.io/github/license/hyacinthbots/LilyBot?label=License)
+![GitHub repo size](https://img.shields.io/github/repo-size/hyacinthbots/LilyBot?label=Repository%20Size)
 
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/IrisShaders/LilyBot/latest/develop?include_prereleases)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/w/IrisShaders/LilyBot?label=Commit%20Activity)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/hyacinthbots/LilyBot/latest/develop?include_prereleases)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/hyacinthbots/LilyBot?label=Commit%20Activity)
 
 <img src="docs/lily-logo-transparent.png" alt="The LilyBot Logo" style="width: 128px"/>
 
@@ -38,9 +38,9 @@ using the [Kord API](https://github.com/kordlib/kord) and
 
 ### How can I use LilyBot myself!?
 * If you're looking to add Lily to your server, try our
-[usage guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/usage-guide.md).
+[usage guide](https://github.com/hyacinthbots/LilyBot/blob/main/docs/usage-guide.md).
 * If you're looking to set up a development environment for Lily, try our
-[development guide](https://github.com/IrisShaders/LilyBot/blob/main/docs/development-guide.md).
+[development guide](https://github.com/hyacinthbots/LilyBot/blob/main/docs/development-guide.md).
 
 ### What was used to write this bot and what does each thing do?
 * [Kord](https://github.com/kordlib/kord), the Kotlin API for Discord.
@@ -61,8 +61,8 @@ a lightweight logging that wraps slf4j with kotlin extensions
 us keep our code clean and nicely formatted.
 
 **This repo is open to contributions by the community. If you plan on contributing, please check our
-[Contributor Guidelines](https://github.com/IrisShaders/LilyBot/blob/main/CONTRIBUTING.md).**
+[Contributor Guidelines](https://github.com/hyacinthbots/LilyBot/blob/main/CONTRIBUTING.md).**
 
 ### Contributors
-![GitHub contributors](https://img.shields.io/github/contributors/IrisShaders/LilyBot?label=Total%20Contributors)
-![contributors](https://contrib.rocks/image?repo=IrisShaders/LilyBot)
+![GitHub contributors](https://img.shields.io/github/contributors/hyacinthbots/LilyBot?label=Total%20Contributors)
+![contributors](https://contrib.rocks/image?repo=hyacinthbots/LilyBot)

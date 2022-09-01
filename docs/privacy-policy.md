@@ -1,6 +1,6 @@
 # LilyBot Privacy Policy
 
-For an overview of LilyBot's features and capabilities, please visit our [README.md](https://github.com/IrisShaders/LilyBot/blob/main/README.md).
+For an overview of LilyBot's features and capabilities, please visit our [README.md](https://github.com/HyacinthBots/LilyBot/blob/main/README.md).
 
 The developers of LilyBot are not lawyers and do not have the resources to hire lawyers. We have, to the best of our ability, written this document clearly, concisely, and accurately. If you have any questions, please see the `Contact & Data Access or Removal` sections.
 
