@@ -19,12 +19,14 @@ import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.TextInputStyle
+import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.behavior.interaction.response.FollowupPermittingInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.behavior.interaction.response.respond
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
@@ -38,6 +40,7 @@ import net.irisshaders.lilybot.database.entities.MiscConfigData
 import net.irisshaders.lilybot.database.entities.ModerationConfigData
 import net.irisshaders.lilybot.database.entities.SupportConfigData
 import net.irisshaders.lilybot.utils.getFirstUsableChannel
+import net.irisshaders.lilybot.utils.getModerationChannelWithPerms
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -159,9 +162,19 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			}
 
 			if (ModerationConfigCollection().getConfig(guild!!.id) == null) {
-				guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
+				getModerationChannelWithPerms(
+					guild!!.asGuild(),
+					guild!!.asGuild().getSystemChannel()?.id ?: getFirstUsableChannel(guild!!.asGuild())!!.id,
+					ConfigType.MODERATION,
+					interactionResponse
+				)
 			} else {
-				guild!!.getChannelOf(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
+				getModerationChannelWithPerms(
+					guild!!.asGuild(),
+					ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!,
+					ConfigType.MODERATION,
+					interactionResponse
+				)
 			}?.createMessage {
 				embed {
 					supportEmbed()
@@ -229,11 +242,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			if (arguments.modActionLog == null) {
-				guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
-			} else {
-				guild!!.getChannelOf(arguments.modActionLog!!.id)
-			}?.createMessage {
+			checkChannel(guild, interactionResponse)?.createMessage {
 				embed {
 					moderationEmbed()
 				}
@@ -317,13 +326,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			)
 
-			if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
-				!ModerationConfigCollection().getConfig(guild!!.id)!!.enabled
-			) {
-				guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
-			} else {
-				guild!!.getChannelOf(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
-			}?.createMessage {
+			checkChannel(guild, interactionResponse)?.createMessage {
 				embed {
 					loggingEmbed()
 					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
@@ -385,13 +388,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			)
 
-			if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
-				!ModerationConfigCollection().getConfig(guild!!.id)!!.enabled
-			) {
-				guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
-			} else {
-				guild!!.getChannelOf(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
-			}?.createMessage {
+			checkChannel(guild, interactionResponse)?.createMessage {
 				embed {
 					miscEmbed()
 					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
@@ -414,13 +411,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		action {
 			suspend fun logClear() {
-				if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
-					!ModerationConfigCollection().getConfig(guild!!.id)!!.enabled
-				) {
-					guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
-				} else {
-					guild!!.getChannelOf(ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!)
-				}?.createMessage {
+				checkChannel(guild, interactionResponse)?.createMessage {
 					embed {
 						title = "Configuration Cleared: ${arguments.config}"
 						ModerationConfigCollection().getConfig(guild!!.id) ?: run {
@@ -624,4 +615,38 @@ class ClearArgs : Arguments() {
 			"all" to ConfigType.ALL.name
 		)
 	}
+}
+
+/**
+ * Checks the moderation config and returns where the message needs to be sent.
+ *
+ * @param guild The guild the event is in
+ * @param interactionResponse The response for the interaction
+ * @return the channel to send the message to
+ * @since 4.0.0
+ * @author NoComment
+ */
+suspend inline fun checkChannel(
+    guild: GuildBehavior?,
+    interactionResponse: FollowupPermittingInteractionResponseBehavior
+): GuildMessageChannel? {
+	val toReturn: GuildMessageChannel?
+	if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
+		!ModerationConfigCollection().getConfig(guild.id)!!.enabled
+	) {
+		toReturn = getModerationChannelWithPerms(
+			guild.asGuild(),
+			guild.asGuild().getSystemChannel()?.id ?: getFirstUsableChannel(guild.asGuild())!!.id,
+			ConfigType.MODERATION,
+			interactionResponse
+		)
+	} else {
+		toReturn = getModerationChannelWithPerms(
+			guild.asGuild(),
+			ModerationConfigCollection().getConfig(guild.id)!!.channel!!,
+			ConfigType.MODERATION,
+			interactionResponse
+		)
+	}
+	return toReturn
 }
