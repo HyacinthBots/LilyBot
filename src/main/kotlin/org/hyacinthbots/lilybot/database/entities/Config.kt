@@ -39,6 +39,7 @@ data class ModerationConfigData(
 	val enabled: Boolean,
 	val channel: Snowflake?,
 	val role: Snowflake?,
+	val publicLogging: Boolean?,
 )
 
 /**

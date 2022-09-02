@@ -116,6 +116,13 @@ class TemporaryModeration : Extension() {
 					}
 					color = DISCORD_BLACK
 				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "$messageAmount messages have been cleared."
+						color = DISCORD_BLACK
+					}
+				}
 			}
 		}
 
@@ -275,6 +282,14 @@ class TemporaryModeration : Extension() {
 					embed.image = null
 					actionLog.createMessage { embeds.add(embed) }
 				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Warning"
+						description = "${userArg.mention} has been warned by a moderator"
+						color = DISCORD_BLACK
+					}
+				}
 			}
 		}
 
@@ -432,6 +447,20 @@ class TemporaryModeration : Extension() {
 				} catch (e: KtorRequestException) {
 					embed.image = null
 					actionLog.createMessage { embeds.add(embed) }
+				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Timeout"
+						description = "${userArg.mention} was timed out by a moderator"
+						color = DISCORD_BLACK
+						field {
+							name = "Duration:"
+							value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
+								.replace("PT", "") + ")"
+							inline = false
+						}
+					}
 				}
 			}
 		}

@@ -55,7 +55,7 @@ suspend fun configV1(mainDb: CoroutineDatabase, configDb: CoroutineDatabase) {
 		loggingConfig.insertOne(LoggingConfigData(guildId, true, oldLoggingData[0], true, oldLoggingData[1]))
 	}
 	if (oldModerationData.isNotEmpty()) {
-		moderationConfig.insertOne(ModerationConfigData(guildId, true, oldModerationData[0], oldModerationData[1]))
+		moderationConfig.insertOne(ModerationConfigData(guildId, true, oldModerationData[0], oldModerationData[1], false))
 	}
 	if (oldSupportData[0] != null) {
 		supportConfig.insertOne(SupportConfigData(guildId, true, oldSupportData[0]!!, oldSupportData[1]!!, null))

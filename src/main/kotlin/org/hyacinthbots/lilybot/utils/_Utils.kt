@@ -155,6 +155,19 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				}
 			}
 
+			ConfigOptions.LOG_PUBLICLY -> {
+				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
+				if (moderationConfig == null) {
+					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
+					break
+				} else if (moderationConfig.publicLogging == null) {
+					fail("Public logging has not been enabled for this guild!")
+					break
+				} else {
+					pass()
+				}
+			}
+
 			ConfigOptions.MESSAGE_LOGGING_ENABLED -> {
 				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
 				if (loggingConfig == null) {
@@ -432,11 +445,11 @@ suspend inline fun getFirstUsableChannel(inputGuild: Guild): GuildMessageChannel
  */
 suspend inline fun <T : FollowupPermittingInteractionResponseBehavior?> getModerationChannelWithPerms(
 	inputGuild: Guild,
-	targetChannel: Snowflake,
+	targetChannel: Snowflake?,
 	configType: ConfigType,
 	interactionResponse: T? = null
 ): GuildMessageChannel? {
-	val channel = inputGuild.getChannelOfOrNull<GuildMessageChannel>(targetChannel)
+	val channel = targetChannel?.let { inputGuild.getChannelOfOrNull<GuildMessageChannel>(it) }
 
 	// Check each permission in a separate check because all in one expects all to be there or not. This allows for
 	// some permissions to be false and some to be true while still producing the correct result.
@@ -496,7 +509,7 @@ suspend inline fun <T : FollowupPermittingInteractionResponseBehavior?> getModer
  */
 suspend inline fun getModerationChannelWithPerms(
 	inputGuild: Guild,
-	targetChannel: Snowflake,
+	targetChannel: Snowflake?,
 	configType: ConfigType
 ): GuildMessageChannel? =
 	getModerationChannelWithPerms(inputGuild, targetChannel, configType, null)
