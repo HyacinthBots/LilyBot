@@ -40,6 +40,7 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configPresent
@@ -191,13 +192,13 @@ class ThreadControl : Extension() {
 
 				check {
 					isInThread()
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+					configPresent(ConfigOptions.UTILITY_LOG)
 					requireBotPermissions(Permission.ManageThreads)
 					botHasChannelPerms(Permissions(Permission.ManageThreads))
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
+					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
@@ -228,7 +229,7 @@ class ThreadControl : Extension() {
 									action {
 										ThreadsCollection().setThreadOwner(thread.threadId, thread.ownerId, false)
 										edit { content = "Thread archiving will no longer be prevented" }
-										guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
+										guild!!.getChannelOf<GuildMessageChannel>(config.utilityLogChannel!!)
 											.createMessage {
 												embed {
 													title = "Thread archive prevention disabled"
@@ -262,7 +263,7 @@ class ThreadControl : Extension() {
 					} else if (thread?.preventArchiving == false) {
 						ThreadsCollection().setThreadOwner(thread.threadId, thread.ownerId, true)
 						try {
-							guild!!.getChannelOf<GuildMessageChannel>(config.channel!!).createMessage {
+							guild!!.getChannelOf<GuildMessageChannel>(config.utilityLogChannel!!).createMessage {
 								embed {
 									title = "Thread archive prevention enabled"
 									color = DISCORD_FUCHSIA

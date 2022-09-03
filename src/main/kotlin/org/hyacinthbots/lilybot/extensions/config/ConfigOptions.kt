@@ -41,4 +41,7 @@ enum class ConfigOptions {
 
 	/** The option that stores whether log uploads are enabled or not. */
 	LOG_UPLOADS_ENABLED,
+
+	/** The option that stores the utility logging channel. */
+	UTILITY_LOG,
 }

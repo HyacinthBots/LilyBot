@@ -38,7 +38,6 @@ import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
-import org.hyacinthbots.lilybot.database.collections.MiscConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.RemindMeCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
@@ -46,6 +45,7 @@ import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
@@ -221,12 +221,25 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 			}
 
 			ConfigOptions.LOG_UPLOADS_ENABLED -> {
-				val miscConfig = MiscConfigCollection().getConfig(guildFor(event)!!.id)
-				if (miscConfig == null) {
-					fail("Unable to access misc config for this guild! Please inform a member of staff.")
+				val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
+				if (utilityConfig == null) {
+					fail("Unable to access utility config for this guild! Please inform a member of staff.")
 					break
-				} else if (miscConfig.disableLogUploading) {
+				} else if (utilityConfig.disableLogUploading) {
 					fail("Log uploads are disabled for this guild!")
+					break
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.UTILITY_LOG -> {
+				val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
+				if (utilityConfig == null) {
+					fail("Unable to access utility config for this guild! Please inform a member of staff.")
+					break
+				} else if (utilityConfig.utilityLogChannel == null) {
+					fail("A utility log has not been set for this guild")
 					break
 				} else {
 					pass()
@@ -392,7 +405,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { ModerationConfigCollection() } bind ModerationConfigCollection::class
 				single { SupportConfigCollection() } bind SupportConfigCollection::class
 				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
-				single { MiscConfigCollection() } bind MiscConfigCollection::class
+				single { UtilityConfigCollection() } bind UtilityConfigCollection::class
 				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
@@ -478,12 +491,12 @@ suspend inline fun <T : FollowupPermittingInteractionResponseBehavior?> getModer
 			ConfigType.MODERATION -> ModerationConfigCollection().clearConfig(usableChannel.guildId)
 			ConfigType.LOGGING -> LoggingConfigCollection().clearConfig(usableChannel.guildId)
 			ConfigType.SUPPORT -> SupportConfigCollection().clearConfig(usableChannel.guildId)
-			ConfigType.MISC -> MiscConfigCollection().clearConfig(usableChannel.guildId)
+			ConfigType.UTILITY -> UtilityConfigCollection().clearConfig(usableChannel.guildId)
 			ConfigType.ALL -> {
 				ModerationConfigCollection().clearConfig(usableChannel.guildId)
 				LoggingConfigCollection().clearConfig(usableChannel.guildId)
 				SupportConfigCollection().clearConfig(usableChannel.guildId)
-				MiscConfigCollection().clearConfig(usableChannel.guildId)
+				UtilityConfigCollection().clearConfig(usableChannel.guildId)
 			}
 		}
 

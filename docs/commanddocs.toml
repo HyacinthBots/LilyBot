@@ -26,9 +26,9 @@ permissions = "Manage Guild"
 
 [[command]]
 category = "Administration commands"
-name = "config miscellaneous"
-args = "* `enable-log-uploading - Whether to enable log uploading or not - Boolean"
-result = "The config is set for miscellaneous settings."
+name = "config utility"
+args = "* `disable-log-uploading - Whether to enable log uploading or not - Boolean\n* `utilityLogChannel` - The channel for logging utility functions. - Optional channel "
+result = "The config is set for utility settings."
 permissions = "Manage Guild"
 
 [[command]]

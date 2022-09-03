@@ -53,11 +53,12 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 
 ---
 
-### Name: `config miscellaneous`
+### Name: `config utility`
 **Arguments**:
-* `enable-log-uploading - Whether to enable log uploading or not - Boolean
+* `disable-log-uploading - Whether to enable log uploading or not - Boolean
+* `utilityLogChannel` - The channel for logging utility functions. - Optional channel 
 
-**Result**: The config is set for miscellaneous settings.
+**Result**: The config is set for utility settings.
 
 **Required Permissions**: `Manage Guild`
 

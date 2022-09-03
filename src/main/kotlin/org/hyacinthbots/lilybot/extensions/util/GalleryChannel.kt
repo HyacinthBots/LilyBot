@@ -24,7 +24,7 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
@@ -63,10 +63,10 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)
+					val config = UtilityConfigCollection().getConfig(guild!!.id)
 					val logChannel: GuildMessageChannel? =
-						if (config?.channel != null) {
-							guild!!.getChannelOf(config.channel)
+						if (config?.utilityLogChannel != null) {
+							guild!!.getChannelOf(config.utilityLogChannel)
 						} else {
 							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
 						}
@@ -74,7 +74,7 @@ class GalleryChannel : Extension() {
 						getModerationChannelWithPerms(
 							guild!!.asGuild(),
 							logChannel!!.id,
-							ConfigType.MODERATION,
+							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action
@@ -128,10 +128,10 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)
+					val config = UtilityConfigCollection().getConfig(guild!!.id)
 					val logChannel: GuildMessageChannel? =
-						if (config?.channel != null) {
-							guild!!.getChannelOf(config.channel)
+						if (config?.utilityLogChannel != null) {
+							guild!!.getChannelOf(config.utilityLogChannel)
 						} else {
 							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
 						}
@@ -139,7 +139,7 @@ class GalleryChannel : Extension() {
 						getModerationChannelWithPerms(
 							guild!!.asGuild(),
 							logChannel?.id!!,
-							ConfigType.MODERATION,
+							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action
