@@ -10,6 +10,8 @@ import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
+import dev.kord.cache.map.MapLikeCollection
+import dev.kord.cache.map.internal.MapEntryCache
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
@@ -118,6 +120,14 @@ suspend fun main() {
 
 			sentry {
 				enableIfDSN(SENTRY_DSN) // Use the nullable sentry function to allow the bot to be used without a DSN
+			}
+		}
+
+		kord {
+			cache {
+				members { cache, description ->
+					MapEntryCache(cache, description, MapLikeCollection.concurrentHashMap())
+				}
 			}
 		}
 
