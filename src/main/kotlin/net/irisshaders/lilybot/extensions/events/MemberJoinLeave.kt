@@ -8,7 +8,7 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
-import kotlinx.coroutines.flow.count
+import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
@@ -35,7 +35,7 @@ class MemberJoinLeave : Extension() {
 				val config = DatabaseHelper.getConfig(event.guildId)!!
 				val joinChannel = getModerationChannelWithPerms(event.getGuild(), config.joinChannel) ?: return@action
 				val guildMemberCount =
-					event.getGuild().members.count()
+					event.getGuild().withStrategy(EntitySupplyStrategy.rest).approximateMemberCount
 
 				joinChannel.createEmbed {
 					author {
@@ -72,7 +72,7 @@ class MemberJoinLeave : Extension() {
 				val config = DatabaseHelper.getConfig(event.guildId)!!
 				val leaveChannel = getModerationChannelWithPerms(event.getGuild(), config.joinChannel) ?: return@action
 				val guildMemberCount =
-					event.getGuild().members.count()
+					event.getGuild().withStrategy(EntitySupplyStrategy.rest).approximateMemberCount
 
 				leaveChannel.createEmbed {
 					author {
