@@ -222,7 +222,7 @@ class Tags : Extension() {
 					getModerationChannelWithPerms(
 						guild!!.asGuild(),
 						config.utilityLogChannel!!,
-						ConfigType.MODERATION,
+						ConfigType.UTILITY,
 						interactionResponse
 					)
 						?: return@action

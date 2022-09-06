@@ -38,6 +38,7 @@ import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResp
 import dev.kord.core.event.channel.thread.ThreadUpdateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
+import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -157,6 +158,8 @@ class ThreadControl : Extension() {
 				action {
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
+					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
+					val utilityLog = guild!!.getChannelOf<GuildMessageChannel>(config.utilityLogChannel!!)
 
 					val oldOwnerId = ThreadsCollection().getThread(threadChannel.id)?.ownerId ?: threadChannel.ownerId
 					val oldOwner = guild!!.getMember(oldOwnerId)
@@ -183,6 +186,28 @@ class ThreadControl : Extension() {
 					if (member != oldOwner) content += " Transferred by ${member.mention}"
 
 					threadChannel.createMessage(content)
+
+					utilityLog.createMessage {
+						embed {
+							title = "Thread ownership transfered"
+							field {
+								name = "Previous owner"
+								value = "${oldOwner.mention} ${oldOwner.tag}"
+							}
+							field {
+								name = "New owner"
+								value = "${arguments.newOwner.mention} ${arguments.newOwner.tag}"
+							}
+							if (member != oldOwner) {
+								footer {
+									text = "Transferred by ${member.mention}"
+									icon = member.avatar?.url
+								}
+							}
+							timestamp = Clock.System.now()
+							color = DISCORD_FUCHSIA
+						}
+					}
 				}
 			}
 

@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
@@ -173,7 +174,7 @@ class ModUtilities : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+				configPresent(ConfigOptions.UTILITY_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
@@ -187,12 +188,12 @@ class ModUtilities : Extension() {
 					channel
 				}
 
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
+				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
+				val utilityLog =
 					getModerationChannelWithPerms(
 						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
+						config.utilityLogChannel!!,
+						ConfigType.UTILITY,
 						interactionResponse
 					)
 						?: return@action
@@ -235,7 +236,7 @@ class ModUtilities : Extension() {
 
 					respond { content = "Message edited" }
 
-					actionLog.createMessage {
+					utilityLog.createMessage {
 						embed {
 							title = "Say message edited"
 							field {
@@ -281,7 +282,7 @@ class ModUtilities : Extension() {
 
 					respond { content = "Embed updated" }
 
-					actionLog.createMessage {
+					utilityLog.createMessage {
 						embed {
 							title = "Say message edited"
 							field {
