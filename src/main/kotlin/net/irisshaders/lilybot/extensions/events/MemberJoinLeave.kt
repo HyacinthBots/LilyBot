@@ -8,7 +8,6 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
-import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.datetime.Clock
 import net.irisshaders.lilybot.utils.DatabaseHelper
 import net.irisshaders.lilybot.utils.configPresent
@@ -34,8 +33,6 @@ class MemberJoinLeave : Extension() {
 			action {
 				val config = DatabaseHelper.getConfig(event.guildId)!!
 				val joinChannel = getModerationChannelWithPerms(event.getGuild(), config.joinChannel) ?: return@action
-				val guildMemberCount =
-					event.getGuild().withStrategy(EntitySupplyStrategy.rest).approximateMemberCount
 
 				joinChannel.createEmbed {
 					author {
@@ -51,9 +48,6 @@ class MemberJoinLeave : Extension() {
 						name = "ID:"
 						value = event.member.id.toString()
 						inline = false
-					}
-					footer {
-						text = "Member Count: $guildMemberCount"
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_GREEN
@@ -71,8 +65,6 @@ class MemberJoinLeave : Extension() {
 			action {
 				val config = DatabaseHelper.getConfig(event.guildId)!!
 				val leaveChannel = getModerationChannelWithPerms(event.getGuild(), config.joinChannel) ?: return@action
-				val guildMemberCount =
-					event.getGuild().withStrategy(EntitySupplyStrategy.rest).approximateMemberCount
 
 				leaveChannel.createEmbed {
 					author {
@@ -88,9 +80,6 @@ class MemberJoinLeave : Extension() {
 						name = "ID:"
 						value = event.user.id.toString()
 						inline = false
-					}
-					footer {
-						text = "Member count: $guildMemberCount"
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_RED
