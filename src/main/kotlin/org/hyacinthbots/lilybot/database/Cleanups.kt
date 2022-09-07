@@ -11,6 +11,7 @@ import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.database.entities.GuildLeaveTimeData
 import org.hyacinthbots.lilybot.database.entities.ThreadData
@@ -57,6 +58,7 @@ object Cleanups : KordExKoinComponent {
 				ModerationConfigCollection().clearConfig(it.guildId)
 				SupportConfigCollection().clearConfig(it.guildId)
 				LoggingConfigCollection().clearConfig(it.guildId)
+				UtilityConfigCollection().clearConfig(it.guildId)
 				TagsCollection().clearTags(it.guildId)
 				WarnCollection().clearWarns(it.guildId)
 				RoleMenuCollection().removeAllRoleMenus(it.guildId)
