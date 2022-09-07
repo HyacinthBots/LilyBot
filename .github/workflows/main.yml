@@ -49,5 +49,5 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
 
-      - run: docker build -t ghcr.io/irisshaders/lilybot:latest .
-      - run: docker push ghcr.io/irisshaders/lilybot:latest
+      - run: docker build -t ghcr.io/hyacinthbots/lilybot:latest .
+      - run: docker push ghcr.io/hyacinthbots/lilybot:latest
