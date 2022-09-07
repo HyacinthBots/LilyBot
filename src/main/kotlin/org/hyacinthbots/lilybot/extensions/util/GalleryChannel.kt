@@ -22,10 +22,11 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
+import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -63,7 +64,7 @@ class GalleryChannel : Extension() {
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
+							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)
@@ -114,7 +115,7 @@ class GalleryChannel : Extension() {
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
+							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)

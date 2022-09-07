@@ -530,17 +530,25 @@ suspend inline fun getLoggingChannelWithPerms(
 	getLoggingChannelWithPerms(inputGuild, targetChannel, configType, null)
 
 /**
- * A small function to get the utility log of a guild or the first available channel.
+ * A small function to get a log of a guild or the first available channel.
  *
+ * @param configOption The option to get the channel of
  * @param guild The guild for the channel
  * @return The utility log or the first usable channel
+ * @throws IllegalArgumentException when the [configOption] is invalid
  * @author NoComment1105
  * @since 4.0.1
  */
-suspend inline fun getUtilityLogOrFirst(guild: GuildBehavior?): GuildMessageChannel? {
-	val config = UtilityConfigCollection().getConfig(guild!!.id)
-	return if (config?.utilityLogChannel != null) {
-		guild.getChannelOf(config.utilityLogChannel)
+suspend inline fun getChannelOrFirstUsable(configOption: ConfigOptions, guild: GuildBehavior?): GuildMessageChannel? {
+	val channel = when (configOption) {
+		ConfigOptions.ACTION_LOG -> ModerationConfigCollection().getConfig(guild!!.id)?.channel
+		ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().getConfig(guild!!.id)?.messageChannel
+		ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().getConfig(guild!!.id)?.memberLog
+		ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().getConfig(guild!!.id)?.utilityLogChannel
+		else -> throw IllegalArgumentException("Config Option $configOption does not point to a channel.")
+	}
+	return if (channel != null) {
+		guild.getChannelOf(channel)
 	} else {
 		guild.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild.asGuild())
 	}

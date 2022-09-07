@@ -38,10 +38,11 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
+import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 import org.hyacinthbots.lilybot.utils.utilsLogger
 
 /**
@@ -121,7 +122,7 @@ class RoleMenu : Extension() {
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
+							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)
@@ -218,7 +219,7 @@ class RoleMenu : Extension() {
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
+							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)
@@ -287,7 +288,7 @@ class RoleMenu : Extension() {
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
+							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)
@@ -394,7 +395,7 @@ class RoleMenu : Extension() {
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
+							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)

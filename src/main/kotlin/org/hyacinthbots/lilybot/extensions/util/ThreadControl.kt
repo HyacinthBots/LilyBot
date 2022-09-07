@@ -41,10 +41,11 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
+import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 
 class ThreadControl : Extension() {
 
@@ -161,7 +162,7 @@ class ThreadControl : Extension() {
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
+							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)
@@ -195,7 +196,7 @@ class ThreadControl : Extension() {
 
 					utilityLog.createMessage {
 						embed {
-							title = "Thread ownership transfered"
+							title = "Thread ownership transferred"
 							field {
 								name = "Previous owner"
 								value = "${oldOwner.mention} ${oldOwner.tag}"
@@ -231,7 +232,7 @@ class ThreadControl : Extension() {
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
+							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)

@@ -32,8 +32,8 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configPresent
+import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 
 /**
  * The class that holds the commands to create tags commands.
@@ -219,7 +219,7 @@ class Tags : Extension() {
 				val utilityLog =
 					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						getUtilityLogOrFirst(guild)?.id,
+						getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 						ConfigType.UTILITY,
 						interactionResponse
 					)
@@ -306,7 +306,7 @@ class Tags : Extension() {
 				val utilityLog =
 					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						getUtilityLogOrFirst(guild)?.id,
+						getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 						ConfigType.UTILITY,
 						interactionResponse
 					)
@@ -345,7 +345,7 @@ class Tags : Extension() {
 				val utilityLog =
 					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						getUtilityLogOrFirst(guild)?.id,
+						getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
 						ConfigType.UTILITY,
 						interactionResponse
 					)
