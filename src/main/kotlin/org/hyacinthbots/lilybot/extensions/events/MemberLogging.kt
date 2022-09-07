@@ -8,7 +8,6 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
-import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -37,7 +36,6 @@ class MemberLogging : Extension() {
 				val config = LoggingConfigCollection().getConfig(event.guildId)!!
 				val memberLog = getLoggingChannelWithPerms(event.getGuild(), config.memberLog!!, ConfigType.LOGGING)
 					?: return@action
-				val guildMemberCount = event.guild.members.count()
 
 				memberLog.createEmbed {
 					author {
@@ -53,9 +51,6 @@ class MemberLogging : Extension() {
 						name = "ID:"
 						value = event.member.id.toString()
 						inline = false
-					}
-					footer {
-						text = "Member Count: $guildMemberCount"
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_GREEN
@@ -74,7 +69,6 @@ class MemberLogging : Extension() {
 				val config = LoggingConfigCollection().getConfig(event.guildId)!!
 				val memberLog = getLoggingChannelWithPerms(event.getGuild(), config.memberLog!!, ConfigType.LOGGING)
 					?: return@action
-				val guildMemberCount = event.guild.members.count()
 
 				memberLog.createEmbed {
 					author {
@@ -90,9 +84,6 @@ class MemberLogging : Extension() {
 						name = "ID:"
 						value = event.user.id.toString()
 						inline = false
-					}
-					footer {
-						text = "Member count: $guildMemberCount"
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_RED
