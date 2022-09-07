@@ -28,7 +28,7 @@ import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -71,7 +71,7 @@ class GalleryChannel : Extension() {
 							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
 						}
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							logChannel!!.id,
 							ConfigType.UTILITY,
@@ -136,7 +136,7 @@ class GalleryChannel : Extension() {
 							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
 						}
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							logChannel?.id!!,
 							ConfigType.UTILITY,

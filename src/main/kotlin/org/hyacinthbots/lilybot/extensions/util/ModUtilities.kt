@@ -49,7 +49,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configPresent
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 
 /**
@@ -80,7 +80,7 @@ class ModUtilities : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -190,7 +190,7 @@ class ModUtilities : Extension() {
 
 				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 				val utilityLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.utilityLogChannel!!,
 						ConfigType.UTILITY,
@@ -403,7 +403,7 @@ class ModUtilities : Extension() {
 
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.channel!!,
 							ConfigType.MODERATION,

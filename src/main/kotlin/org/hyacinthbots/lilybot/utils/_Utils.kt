@@ -456,7 +456,7 @@ suspend inline fun getFirstUsableChannel(inputGuild: Guild): GuildMessageChannel
  * @author tempest15
  * @since 3.5.4
  */
-suspend inline fun <T : FollowupPermittingInteractionResponseBehavior?> getModerationChannelWithPerms(
+suspend inline fun <T : FollowupPermittingInteractionResponseBehavior?> getLoggingChannelWithPerms(
 	inputGuild: Guild,
 	targetChannel: Snowflake?,
 	configType: ConfigType,
@@ -507,12 +507,12 @@ suspend inline fun <T : FollowupPermittingInteractionResponseBehavior?> getModer
 }
 
 /**
- * Overload function for [getModerationChannelWithPerms] that does not take an interaction response allowing the type
+ * Overload function for [getLoggingChannelWithPerms] that does not take an interaction response allowing the type
  * variable not be specified in the function.
  *
  * **DO NOT USE THIS FUNCTION ON NON-MODERATION CHANNELS!** Use the [botHasChannelPerms] check instead.
  *
- * @see getModerationChannelWithPerms
+ * @see getLoggingChannelWithPerms
  *
  * @param inputGuild The guild to check in.
  * @param targetChannel The channel to check permissions for
@@ -520,9 +520,9 @@ suspend inline fun <T : FollowupPermittingInteractionResponseBehavior?> getModer
  * @return The channel or null if it does not have the correct permissions.
  * @author NoComment1105
  */
-suspend inline fun getModerationChannelWithPerms(
+suspend inline fun getLoggingChannelWithPerms(
 	inputGuild: Guild,
 	targetChannel: Snowflake?,
 	configType: ConfigType
 ): GuildMessageChannel? =
-	getModerationChannelWithPerms(inputGuild, targetChannel, configType, null)
+	getLoggingChannelWithPerms(inputGuild, targetChannel, configType, null)

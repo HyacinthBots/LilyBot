@@ -43,7 +43,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configPresent
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.utilsLogger
 
 /**
@@ -123,7 +123,7 @@ class RoleMenu : Extension() {
 
 					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val utilityLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.utilityLogChannel!!,
 							ConfigType.UTILITY,
@@ -222,7 +222,7 @@ class RoleMenu : Extension() {
 
 					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val utilityLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.utilityLogChannel!!,
 							ConfigType.UTILITY,
@@ -293,7 +293,7 @@ class RoleMenu : Extension() {
 					RoleMenuCollection().removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
 					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val utilityLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.utilityLogChannel!!,
 							ConfigType.UTILITY,
@@ -401,7 +401,7 @@ class RoleMenu : Extension() {
 
 					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val utilityLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.utilityLogChannel!!,
 							ConfigType.UTILITY,

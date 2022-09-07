@@ -42,7 +42,7 @@ import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -164,14 +164,14 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			}
 
 			if (ModerationConfigCollection().getConfig(guild!!.id) == null) {
-				getModerationChannelWithPerms(
+				getLoggingChannelWithPerms(
 					guild!!.asGuild(),
 					guild!!.asGuild().getSystemChannel()?.id ?: getFirstUsableChannel(guild!!.asGuild())!!.id,
 					ConfigType.MODERATION,
 					interactionResponse
 				)
 			} else {
-				getModerationChannelWithPerms(
+				getLoggingChannelWithPerms(
 					guild!!.asGuild(),
 					ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!,
 					ConfigType.MODERATION,
@@ -252,7 +252,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			if (getModerationChannelWithPerms(
+			if (getLoggingChannelWithPerms(
 					guild!!.asGuild(),
 					arguments.modActionLog?.id,
 					ConfigType.MODERATION
@@ -691,14 +691,14 @@ suspend inline fun checkChannel(
 		!ModerationConfigCollection().getConfig(guild.id)!!.enabled ||
 				channelIdToCheck == null
 	) {
-		toReturn = getModerationChannelWithPerms(
+		toReturn = getLoggingChannelWithPerms(
 			guild.asGuild(),
 			guild.asGuild().getSystemChannel()?.id ?: getFirstUsableChannel(guild.asGuild())!!.id,
 			ConfigType.MODERATION,
 			interactionResponse
 		)
 	} else {
-		toReturn = getModerationChannelWithPerms(
+		toReturn = getLoggingChannelWithPerms(
 			guild.asGuild(),
 			channelIdToCheck,
 			ConfigType.MODERATION,
