@@ -13,8 +13,10 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.asChannelOfOrNull
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.response.FollowupPermittingInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
@@ -526,3 +528,20 @@ suspend inline fun getLoggingChannelWithPerms(
 	configType: ConfigType
 ): GuildMessageChannel? =
 	getLoggingChannelWithPerms(inputGuild, targetChannel, configType, null)
+
+/**
+ * A small function to get the utility log of a guild or the first available channel.
+ *
+ * @param guild The guild for the channel
+ * @return The utility log or the first usable channel
+ * @author NoComment1105
+ * @since 4.0.1
+ */
+suspend inline fun getUtilityLogOrFirst(guild: GuildBehavior?): GuildMessageChannel? {
+	val config = UtilityConfigCollection().getConfig(guild!!.id)
+	return if (config?.utilityLogChannel != null) {
+		guild.getChannelOf(config.utilityLogChannel)
+	} else {
+		guild.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild.asGuild())
+	}
+}

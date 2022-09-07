@@ -43,13 +43,13 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
-import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 
 /**
@@ -174,7 +174,6 @@ class ModUtilities : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.UTILITY_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
@@ -188,15 +187,15 @@ class ModUtilities : Extension() {
 					channel
 				}
 
-				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 				val utilityLog =
 					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						config.utilityLogChannel!!,
+						getUtilityLogOrFirst(guild)?.id,
 						ConfigType.UTILITY,
 						interactionResponse
 					)
 						?: return@action
+
 				val message: Message
 
 				try {
@@ -335,6 +334,8 @@ class ModUtilities : Extension() {
 			name = "status"
 			description = "Set Lily's current presence/status."
 
+			guild(TEST_GUILD_ID)
+
 			ephemeralSubCommand(::PresenceArgs) {
 				name = "set"
 				description = "Set a custom status for Lily."
@@ -346,12 +347,6 @@ class ModUtilities : Extension() {
 				}
 
 				action {
-// 					// Lock this command to the testing guild
-// 					if (guild?.id != TEST_GUILD_ID) {
-// 						respond { content = "**Error:** This command can only be run in Lily's testing guild." }
-// 						return@action
-// 					}
-
 					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
@@ -389,12 +384,6 @@ class ModUtilities : Extension() {
 				}
 
 				action {
-// 					// Lock this command to the testing guild
-// 					if (guild?.id != TEST_GUILD_ID) {
-// 						respond { content = "**Error:** This command can only be run in Lily's testing guild." }
-// 						return@action
-// 					}
-
 					// Store the new presence in the database for if there is a restart
 					StatusCollection().setStatus(null)
 

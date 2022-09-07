@@ -28,12 +28,12 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
-import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 
 /**
  * The class that holds the commands to create tags commands.
@@ -210,18 +210,16 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.UTILITY_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
-				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 				val utilityLog =
 					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						config.utilityLogChannel!!,
+						getUtilityLogOrFirst(guild)?.id,
 						ConfigType.UTILITY,
 						interactionResponse
 					)
@@ -291,7 +289,6 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.UTILITY_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
@@ -306,11 +303,10 @@ class Tags : Extension() {
 					return@action
 				}
 
-				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 				val utilityLog =
 					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						config.utilityLogChannel!!,
+						getUtilityLogOrFirst(guild)?.id,
 						ConfigType.UTILITY,
 						interactionResponse
 					)
@@ -346,11 +342,10 @@ class Tags : Extension() {
 			}
 
 			action {
-				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 				val utilityLog =
 					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						config.utilityLogChannel!!,
+						getUtilityLogOrFirst(guild)?.id,
 						ConfigType.UTILITY,
 						interactionResponse
 					)

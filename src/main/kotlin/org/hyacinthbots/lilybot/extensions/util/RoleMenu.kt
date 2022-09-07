@@ -38,12 +38,10 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
-import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
-import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 import org.hyacinthbots.lilybot.utils.utilsLogger
 
 /**
@@ -73,7 +71,6 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.UTILITY_LOG)
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -121,11 +118,10 @@ class RoleMenu : Extension() {
 						mutableListOf(arguments.initialRole.id)
 					)
 
-					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							config.utilityLogChannel!!,
+							getUtilityLogOrFirst(guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)
@@ -180,7 +176,6 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.UTILITY_LOG)
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -220,11 +215,10 @@ class RoleMenu : Extension() {
 						data.roles
 					)
 
-					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							config.utilityLogChannel!!,
+							getUtilityLogOrFirst(guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)
@@ -262,7 +256,6 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.UTILITY_LOG)
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -291,15 +284,15 @@ class RoleMenu : Extension() {
 					}
 
 					RoleMenuCollection().removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
-					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							config.utilityLogChannel!!,
+							getUtilityLogOrFirst(guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action
+
 					utilityLog.createMessage {
 						embed {
 							title = "Role Removed from Role Menu"
@@ -333,7 +326,6 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.UTILITY_LOG)
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -399,15 +391,15 @@ class RoleMenu : Extension() {
 						roles
 					)
 
-					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val utilityLog =
 						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							config.utilityLogChannel!!,
+							getUtilityLogOrFirst(guild)?.id,
 							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action
+
 					utilityLog.createMessage {
 						embed {
 							title = "Pronoun Role Menu Created"
