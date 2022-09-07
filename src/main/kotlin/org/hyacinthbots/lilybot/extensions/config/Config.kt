@@ -389,11 +389,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			suspend fun EmbedBuilder.utilityEmbed() {
 				title = "Configuration: Utility"
 				field {
-					name = "Enable log uploading"
+					name = "Disable log uploading"
 					value = if (arguments.disableLogUploading) {
-						"Enabled"
+						"True"
 					} else {
-						"Disabled"
+						"false"
 					}
 				}
 				field {
