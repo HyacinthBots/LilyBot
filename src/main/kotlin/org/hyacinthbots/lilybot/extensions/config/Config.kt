@@ -352,7 +352,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 			checkChannel(
 				guild,
-				ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!,
+				ModerationConfigCollection().getConfig(guild!!.id)?.channel,
 				interactionResponse
 			)?.createMessage {
 				embed {
