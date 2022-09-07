@@ -131,23 +131,21 @@ class LogUploading : Extension() {
 					if (attachmentFileExtension in logFileExtensions) {
 						val logBytes = attachment.download()
 
-						val builder = StringBuilder()
-
-						if (attachmentFileExtension != "gz") {
+						val logContent: String = if (attachmentFileExtension != "gz") {
 							// If the file is not a gz log, we just decode it
-							builder.append(logBytes.decodeToString())
+							logBytes.decodeToString()
 						} else {
 							// If the file is a gz log, we convert it to a byte array,
 							// and unzip it
 							val bis = ByteArrayInputStream(logBytes)
 							val gis = GZIPInputStream(bis)
 
-							builder.append(String(gis.readAllBytes()))
+							gis.readAllBytes().decodeToString()
 						}
 
 						// Ask the user to remove NEC to ease the debugging on the support team
 						val necText = "at Not Enough Crashes"
-						val indexOfNECText = builder.indexOf(necText)
+						val indexOfNECText = logContent.indexOf(necText)
 						if (indexOfNECText != -1) {
 							uploadChannel.createEmbed {
 								title = "Not Enough Crashes detected in logs"
@@ -203,7 +201,7 @@ class LogUploading : Extension() {
 												}
 
 												try {
-													val response = postToMCLogs(builder.toString())
+													val response = postToMCLogs(logContent)
 
 													uploadMessage.edit {
 														embed {
