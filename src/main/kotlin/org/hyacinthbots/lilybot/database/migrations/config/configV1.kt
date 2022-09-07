@@ -8,9 +8,9 @@ import dev.kord.common.entity.Snowflake
 import org.hyacinthbots.lilybot.database.entities.ConfigData
 import org.hyacinthbots.lilybot.database.entities.LogUploadingData
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
-import org.hyacinthbots.lilybot.database.entities.MiscConfigData
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.database.entities.SupportConfigData
+import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.litote.kmongo.coroutine.CoroutineDatabase
 
 // Due to the needing of ConfigData having to hang around deprecated until after the migration this function will
@@ -20,7 +20,7 @@ suspend fun configV1(mainDb: CoroutineDatabase, configDb: CoroutineDatabase) {
 	configDb.createCollection("loggingConfigData")
 	configDb.createCollection("moderationConfigData")
 	configDb.createCollection("supportConfigData")
-	configDb.createCollection("miscellaneousConfigData")
+	configDb.createCollection("utilityConfigData")
 
 	val oldLoggingData = mutableListOf<Snowflake>()
 	val oldModerationData = mutableListOf<Snowflake>()
@@ -34,7 +34,7 @@ suspend fun configV1(mainDb: CoroutineDatabase, configDb: CoroutineDatabase) {
 	val loggingConfig = configDb.getCollection<LoggingConfigData>("loggingConfigData")
 	val moderationConfig = configDb.getCollection<ModerationConfigData>("moderationConfigData")
 	val supportConfig = configDb.getCollection<SupportConfigData>("supportConfigData")
-	val miscellaneousConfig = configDb.getCollection<MiscConfigData>("miscellaneousConfigData")
+	val utilityConfig = configDb.getCollection<UtilityConfigData>("utilityConfigData")
 
 	oldConfig.find().consumeEach {
 		guildId = it.guildId
@@ -57,14 +57,19 @@ suspend fun configV1(mainDb: CoroutineDatabase, configDb: CoroutineDatabase) {
 	if (oldModerationData.isNotEmpty()) {
 		moderationConfig.insertOne(ModerationConfigData(guildId, true, oldModerationData[0], oldModerationData[1], false))
 	}
-	if (oldSupportData[0] != null) {
-		supportConfig.insertOne(SupportConfigData(guildId, true, oldSupportData[0]!!, oldSupportData[1]!!, null))
+	try {
+		if (oldSupportData.first() != null) {
+			supportConfig.insertOne(SupportConfigData(guildId, true, oldSupportData[0]!!, oldSupportData[1]!!, null))
+		}
+	} catch (e: NoSuchElementException) {
+		supportConfig.insertOne(SupportConfigData(guildId, false, null, null, null))
 	}
 	if (oldLogUploadingData.isNotEmpty()) {
-		miscellaneousConfig.insertOne(
-			MiscConfigData(
+		utilityConfig.insertOne(
+			UtilityConfigData(
 				oldLogUploadingData[0] as Snowflake,
-				oldLogUploadingData[1] as Boolean
+				oldLogUploadingData[1] as Boolean,
+				null
 			)
 		)
 	}

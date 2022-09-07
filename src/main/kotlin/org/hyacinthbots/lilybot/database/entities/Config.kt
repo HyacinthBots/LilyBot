@@ -68,12 +68,14 @@ data class SupportConfigData(
  *
  * @param guildId The ID of the guild the config is for
  * @param disableLogUploading If log uploading is enabled or not
+ * @param utilityLogChannel The channel to log various utility actions too
  * @since 4.0.0
  */
 @Serializable
-data class MiscConfigData(
+data class UtilityConfigData(
 	val guildId: Snowflake,
 	val disableLogUploading: Boolean,
+	val utilityLogChannel: Snowflake?
 )
 
 /**

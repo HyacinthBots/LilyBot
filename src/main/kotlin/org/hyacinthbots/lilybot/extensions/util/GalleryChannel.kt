@@ -24,11 +24,11 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -63,18 +63,18 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)
+					val config = UtilityConfigCollection().getConfig(guild!!.id)
 					val logChannel: GuildMessageChannel? =
-						if (config?.channel != null) {
-							guild!!.getChannelOf(config.channel)
+						if (config?.utilityLogChannel != null) {
+							guild!!.getChannelOf(config.utilityLogChannel)
 						} else {
 							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
 						}
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							logChannel!!.id,
-							ConfigType.MODERATION,
+							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action
@@ -128,18 +128,18 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)
+					val config = UtilityConfigCollection().getConfig(guild!!.id)
 					val logChannel: GuildMessageChannel? =
-						if (config?.channel != null) {
-							guild!!.getChannelOf(config.channel)
+						if (config?.utilityLogChannel != null) {
+							guild!!.getChannelOf(config.utilityLogChannel)
 						} else {
 							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
 						}
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							logChannel?.id!!,
-							ConfigType.MODERATION,
+							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action

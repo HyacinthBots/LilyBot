@@ -34,15 +34,15 @@ import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
-import org.hyacinthbots.lilybot.database.collections.MiscConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
-import org.hyacinthbots.lilybot.database.entities.MiscConfigData
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.database.entities.SupportConfigData
+import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -164,14 +164,14 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			}
 
 			if (ModerationConfigCollection().getConfig(guild!!.id) == null) {
-				getModerationChannelWithPerms(
+				getLoggingChannelWithPerms(
 					guild!!.asGuild(),
 					guild!!.asGuild().getSystemChannel()?.id ?: getFirstUsableChannel(guild!!.asGuild())!!.id,
 					ConfigType.MODERATION,
 					interactionResponse
 				)
 			} else {
-				getModerationChannelWithPerms(
+				getLoggingChannelWithPerms(
 					guild!!.asGuild(),
 					ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!,
 					ConfigType.MODERATION,
@@ -252,7 +252,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			if (getModerationChannelWithPerms(
+			if (getLoggingChannelWithPerms(
 					guild!!.asGuild(),
 					arguments.modActionLog?.id,
 					ConfigType.MODERATION
@@ -366,9 +366,9 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 	}
 
-	ephemeralSubCommand(::MiscArgs) {
-		name = "miscellaneous"
-		description = "Configure Lily's miscellaneous settings"
+	ephemeralSubCommand(::UtilityArgs) {
+		name = "utility"
+		description = "Configure Lily's utility settings"
 
 		check {
 			anyGuild()
@@ -376,21 +376,29 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 
 		action {
-			val miscConfig = MiscConfigCollection().getConfig(guild!!.id)
+			val utilityConfig = UtilityConfigCollection().getConfig(guild!!.id)
 
-			if (miscConfig != null) {
+			if (utilityConfig != null) {
 				respond {
-					content = "You already have a miscellaneous configuration set. " +
+					content = "You already have a utility configuration set. " +
 							"Please clear it before attempting to set a new one."
 				}
 				return@action
 			}
 
-			suspend fun EmbedBuilder.miscEmbed() {
-				title = "Configuration: Miscellaneous"
+			suspend fun EmbedBuilder.utilityEmbed() {
+				title = "Configuration: Utility"
 				field {
 					name = "Enable log uploading"
-					value = if (arguments.enableLogUploading) {
+					value = if (arguments.disableLogUploading) {
+						"Enabled"
+					} else {
+						"Disabled"
+					}
+				}
+				field {
+					name = "Utility Log"
+					value = if (arguments.utilityLogChannel != null) {
 						"Enabled"
 					} else {
 						"Disabled"
@@ -405,24 +413,25 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 			respond {
 				embed {
-					miscEmbed()
+					utilityEmbed()
 				}
 			}
 
-			MiscConfigCollection().setConfig(
-				MiscConfigData(
+			UtilityConfigCollection().setConfig(
+				UtilityConfigData(
 					guild!!.id,
-					arguments.enableLogUploading
+					arguments.disableLogUploading,
+					arguments.utilityLogChannel?.id
 				)
 			)
 
 			checkChannel(
 				guild,
-				ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!,
+				ModerationConfigCollection().getConfig(guild!!.id)?.channel,
 				interactionResponse
 			)?.createMessage {
 				embed {
-					miscEmbed()
+					utilityEmbed()
 					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
 						description = "Consider setting the moderation configuration to receive configuration " +
 								"updates where you want them!"
@@ -445,7 +454,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			suspend fun logClear() {
 				checkChannel(
 					guild,
-					ModerationConfigCollection().getConfig(guild!!.id)!!.channel,
+					ModerationConfigCollection().getConfig(guild!!.id)?.channel,
 					interactionResponse
 				)?.createMessage {
 					embed {
@@ -529,20 +538,20 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					}
 				}
 
-				ConfigType.MISC.name -> {
-					MiscConfigCollection().getConfig(guild!!.id) ?: run {
+				ConfigType.UTILITY.name -> {
+					UtilityConfigCollection().getConfig(guild!!.id) ?: run {
 						respond {
-							content = "No misc configuration exists to clear"
+							content = "No utility configuration exists to clear"
 						}
 						return@action
 					}
 
 					logClear()
 
-					MiscConfigCollection().clearConfig(guild!!.id)
+					UtilityConfigCollection().clearConfig(guild!!.id)
 					respond {
 						embed {
-							title = "Config cleared: Miscellaneous"
+							title = "Config cleared: Utility"
 							footer {
 								text = "Config cleared by ${user.asUser().tag}"
 								icon = user.asUser().avatar?.url
@@ -555,7 +564,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					ModerationConfigCollection().clearConfig(guild!!.id)
 					LoggingConfigCollection().clearConfig(guild!!.id)
 					SupportConfigCollection().clearConfig(guild!!.id)
-					MiscConfigCollection().clearConfig(guild!!.id)
+					UtilityConfigCollection().clearConfig(guild!!.id)
 					respond {
 						embed {
 							title = "All configs cleared"
@@ -637,10 +646,14 @@ class LoggingArgs : Arguments() {
 	}
 }
 
-class MiscArgs : Arguments() {
-	val enableLogUploading by boolean {
-		name = "enable-log-uploading"
+class UtilityArgs : Arguments() {
+	val disableLogUploading by boolean {
+		name = "disable-log-uploading"
 		description = "Enable or disable log uploading for this guild"
+	}
+	val utilityLogChannel by optionalChannel {
+		name = "utility-log"
+		description = "The channel to log various utility actions too."
 	}
 }
 
@@ -652,7 +665,7 @@ class ClearArgs : Arguments() {
 			"support" to ConfigType.SUPPORT.name,
 			"moderation" to ConfigType.MODERATION.name,
 			"logging" to ConfigType.LOGGING.name,
-			"misc" to ConfigType.MISC.name,
+			"utility" to ConfigType.UTILITY.name,
 			"all" to ConfigType.ALL.name
 		)
 	}
@@ -678,14 +691,14 @@ suspend inline fun checkChannel(
 		!ModerationConfigCollection().getConfig(guild.id)!!.enabled ||
 				channelIdToCheck == null
 	) {
-		toReturn = getModerationChannelWithPerms(
+		toReturn = getLoggingChannelWithPerms(
 			guild.asGuild(),
 			guild.asGuild().getSystemChannel()?.id ?: getFirstUsableChannel(guild.asGuild())!!.id,
 			ConfigType.MODERATION,
 			interactionResponse
 		)
 	} else {
-		toReturn = getModerationChannelWithPerms(
+		toReturn = getLoggingChannelWithPerms(
 			guild.asGuild(),
 			channelIdToCheck,
 			ConfigType.MODERATION,

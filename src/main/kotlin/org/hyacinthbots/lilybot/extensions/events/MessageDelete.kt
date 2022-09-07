@@ -18,7 +18,7 @@ import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.configPresent
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 /**
  * The class for logging deletion of messages to the guild message log.
@@ -46,7 +46,7 @@ class MessageDelete : Extension() {
 			action {
 				val config = LoggingConfigCollection().getConfig(event.getGuild().id) ?: return@action
 				val messageLog =
-					getModerationChannelWithPerms(event.getGuild(), config.messageChannel!!, ConfigType.LOGGING)
+					getLoggingChannelWithPerms(event.getGuild(), config.messageChannel!!, ConfigType.LOGGING)
 						?: return@action
 
 				val originalMessage = event.message
@@ -112,7 +112,7 @@ class MessageDelete : Extension() {
 				val message = event.message
 
 				val messageLog =
-					getModerationChannelWithPerms(event.getGuild(), config.messageChannel!!, ConfigType.LOGGING)
+					getLoggingChannelWithPerms(event.getGuild(), config.messageChannel!!, ConfigType.LOGGING)
 						?: return@action
 
 				val messageContent = if (message?.asMessageOrNull() != null) {

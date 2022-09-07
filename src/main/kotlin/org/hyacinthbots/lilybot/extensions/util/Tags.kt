@@ -27,13 +27,13 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configPresent
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 /**
  * The class that holds the commands to create tags commands.
@@ -210,19 +210,19 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+				configPresent(ConfigOptions.UTILITY_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getModerationChannelWithPerms(
+				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
+				val utilityLog =
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
+						config.utilityLogChannel!!,
+						ConfigType.UTILITY,
 						interactionResponse
 					)
 						?: return@action
@@ -248,7 +248,7 @@ class Tags : Extension() {
 					arguments.tagAppearance
 				)
 
-				actionLog.createEmbed {
+				utilityLog.createEmbed {
 					title = "Tag created!"
 					description = "The tag `${arguments.tagName}` has been created"
 					field {
@@ -291,7 +291,7 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+				configPresent(ConfigOptions.UTILITY_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
@@ -306,19 +306,19 @@ class Tags : Extension() {
 					return@action
 				}
 
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getModerationChannelWithPerms(
+				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
+				val utilityLog =
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
+						config.utilityLogChannel!!,
+						ConfigType.UTILITY,
 						interactionResponse
 					)
 						?: return@action
 
 				TagsCollection().removeTag(guild!!.id, arguments.tagName)
 
-				actionLog.createEmbed {
+				utilityLog.createEmbed {
 					title = "Tag deleted!"
 					description = "The tag ${arguments.tagName} was deleted"
 					footer {
@@ -339,19 +339,19 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+				configPresent(ConfigOptions.UTILITY_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getModerationChannelWithPerms(
+				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
+				val utilityLog =
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
+						config.utilityLogChannel!!,
+						ConfigType.UTILITY,
 						interactionResponse
 					)
 						?: return@action
@@ -385,7 +385,7 @@ class Tags : Extension() {
 					arguments.newAppearance ?: originalAppearance
 				)
 
-				actionLog.createMessage {
+				utilityLog.createMessage {
 					embed {
 						title = "Tag Edited"
 						description = "The tag `${arguments.tagName}` was edited"

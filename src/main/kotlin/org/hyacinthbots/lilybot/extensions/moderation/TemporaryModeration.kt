@@ -51,7 +51,7 @@ import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 import java.lang.Integer.min
 import kotlin.time.Duration
@@ -86,7 +86,7 @@ class TemporaryModeration : Extension() {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -145,7 +145,7 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -313,7 +313,7 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -385,7 +385,7 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -485,7 +485,7 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -550,7 +550,7 @@ class TemporaryModeration : Extension() {
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.channel!!,
 							ConfigType.MODERATION,
@@ -617,7 +617,7 @@ class TemporaryModeration : Extension() {
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.channel!!,
 							ConfigType.MODERATION,
@@ -685,7 +685,7 @@ class TemporaryModeration : Extension() {
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.channel!!,
 							ConfigType.MODERATION,
@@ -757,7 +757,7 @@ class TemporaryModeration : Extension() {
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.channel!!,
 							ConfigType.MODERATION,

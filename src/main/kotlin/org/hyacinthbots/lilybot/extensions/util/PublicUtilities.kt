@@ -25,8 +25,9 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.configPresent
 
@@ -84,12 +85,12 @@ class PublicUtilities : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+					configPresent(ConfigOptions.UTILITY_LOG)
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
+					val config = UtilityConfigCollection().getConfig(guildFor(event)!!.id)!!
+					val utilityLog = guild?.getChannelOf<GuildMessageChannel>(config.utilityLogChannel!!)
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
@@ -98,175 +99,190 @@ class PublicUtilities : Extension() {
 
 					respond { content = "Nickname request sent!" }
 
-					actionLogEmbed = actionLog?.createMessage {
-						embed {
-							color = DISCORD_YELLOW
-							title = "Nickname Request"
-							timestamp = Clock.System.now()
+					try {
+						actionLogEmbed =
+							utilityLog?.createMessage {
+								embed {
+									color = DISCORD_YELLOW
+									title = "Nickname Request"
+									timestamp = Clock.System.now()
 
-							field {
-								name = "User:"
-								value = "${requester.mention}\n${requester.asUser().tag}\n${requester.id}"
-								inline = false
-							}
+									field {
+										name = "User:"
+										value = "${requester.mention}\n${requester.asUser().tag}\n${requester.id}"
+										inline = false
+									}
 
-							field {
-								name = "Current Nickname:"
-								value = "`${requesterAsMember.nickname}`"
-								inline = false
-							}
+									field {
+										name = "Current Nickname:"
+										value = "`${requesterAsMember.nickname}`"
+										inline = false
+									}
 
-							field {
-								name = "Requested Nickname:"
-								value = "`${arguments.newNick}`"
-								inline = false
-							}
-						}
-						components {
-							ephemeralButton(row = 0) {
-								label = "Accept"
-								style = ButtonStyle.Success
+									field {
+										name = "Requested Nickname:"
+										value = "`${arguments.newNick}`"
+										inline = false
+									}
+								}
+								components {
+									ephemeralButton(row = 0) {
+										label = "Accept"
+										style = ButtonStyle.Success
 
-								action {
-									requesterAsMember.edit { nickname = arguments.newNick }
+										action {
+											requesterAsMember.edit { nickname = arguments.newNick }
 
-									requester.dm {
-										embed {
-											title = "Nickname Change Accepted in ${guild!!.asGuild().name}"
-											description = "Nickname updated from `${requesterAsMember.nickname}` to " +
-													"`${arguments.newNick}`"
-											color = DISCORD_GREEN
+											requester.dm {
+												embed {
+													title = "Nickname Change Accepted in ${guild!!.asGuild().name}"
+													description =
+														"Nickname updated from `${requesterAsMember.nickname}` to " +
+																"`${arguments.newNick}`"
+													color = DISCORD_GREEN
+												}
+											}
+
+											actionLogEmbed!!.edit {
+												components { removeAll() }
+
+												embed {
+													color = DISCORD_GREEN
+													title = "Nickname Request Accepted"
+
+													field {
+														name = "User:"
+														value = "${requester.mention}\n${requester.asUser().tag}\n" +
+																"${requester.id}"
+														inline = false
+													}
+
+													// these two fields should be the same and exist as a sanity check
+													field {
+														name = "Previous Nickname:"
+														value = "`${requesterAsMember.nickname}`"
+														inline = false
+													}
+
+													field {
+														name = "Accepted Nickname:"
+														value = "`${arguments.newNick}`"
+														inline = false
+													}
+
+													footer {
+														text = "Nickname accepted by ${user.asUser().tag}"
+														icon = user.asUser().avatar?.url
+													}
+
+													timestamp = Clock.System.now()
+												}
+											}
 										}
 									}
 
-									actionLogEmbed!!.edit {
-										components { removeAll() }
+									ephemeralButton(row = 0) {
+										label = "Deny"
+										style = ButtonStyle.Danger
 
-										embed {
-											color = DISCORD_GREEN
-											title = "Nickname Request Accepted"
+										// Declare the reason outside the action to allow us to reference it in the action
+										var reason: String? = null
 
-											field {
-												name = "User:"
-												value = "${requester.mention}\n${requester.asUser().tag}\n" +
-														"${requester.id}"
-												inline = false
+										action {
+											actionLogEmbed!!.edit {
+												components {
+													removeAll()
+
+													ephemeralSelectMenu(row = 1) {
+														placeholder = "Why are you denying this nickname?"
+
+														option("Inappropriate", "inappropriate") {
+															description = "This nickname is inappropriate"
+														}
+														option("Impersonates Others", "impersonation") {
+															description = "This nickname impersonates someone"
+														}
+														option("Hoisting", "hoisting") {
+															description = "This nickname deliberately hoists the user"
+														}
+
+														action {
+															when (this.selected[0]) {
+																"inappropriate" ->
+																	reason = "is inappropriate for this server."
+																"impersonation" ->
+																	reason = "impersonates another user."
+																"hoisting" ->
+																	reason = "deliberately hoists you up the user " +
+																			"ladder, which is not allowed."
+															}
+
+															requester.dm {
+																embed {
+																	title =
+																		"Nickname Change Denied in ${guild!!.asGuild().name}"
+																	description =
+																		"Staff have reviewed your nickname request (" +
+																				"`${arguments.newNick}`) and rejected it," +
+																				" because it $reason"
+																	color = DISCORD_RED
+																}
+															}
+
+															actionLogEmbed!!.edit {
+																components { removeAll() }
+																embed {
+																	title = "Nickname Request Denied"
+
+																	field {
+																		name = "User:"
+																		value = "${requester.mention}\n" +
+																				"${requester.asUser().tag}\n${requester.id}"
+																		inline = false
+																	}
+
+																	field {
+																		name = "Current Nickname:"
+																		value = "`${requesterAsMember.nickname}`"
+																		inline = false
+																	}
+
+																	field {
+																		name = "Rejected Nickname:"
+																		value = "`${arguments.newNick}`"
+																		inline = false
+																	}
+
+																	field {
+																		name = "Reason:"
+																		value = selected[0]
+																		inline = false
+																	}
+
+																	footer {
+																		text = "Nickname denied by ${user.asUser().tag}"
+																		icon = user.asUser().avatar?.url
+																	}
+
+																	timestamp = Clock.System.now()
+																	color = DISCORD_RED
+																}
+															}
+														}
+													}
+												}
 											}
-
-											// these two fields should be the same and exist as a sanity check
-											field {
-												name = "Previous Nickname:"
-												value = "`${requesterAsMember.nickname}`"
-												inline = false
-											}
-
-											field {
-												name = "Accepted Nickname:"
-												value = "`${arguments.newNick}`"
-												inline = false
-											}
-
-											footer {
-												text = "Nickname accepted by ${user.asUser().tag}"
-												icon = user.asUser().avatar?.url
-											}
-
-											timestamp = Clock.System.now()
 										}
 									}
 								}
 							}
-
-							ephemeralButton(row = 0) {
-								label = "Deny"
-								style = ButtonStyle.Danger
-
-								// Declare the reason outside the action to allow us to reference it in the action
-								var reason: String? = null
-
-								action {
-									actionLogEmbed!!.edit {
-										components {
-											removeAll()
-
-											ephemeralSelectMenu(row = 1) {
-												placeholder = "Why are you denying this nickname?"
-
-												option("Inappropriate", "inappropriate") {
-													description = "This nickname is inappropriate"
-												}
-												option("Impersonates Others", "impersonation") {
-													description = "This nickname impersonates someone"
-												}
-												option("Hoisting", "hoisting") {
-													description = "This nickname deliberately hoists the user"
-												}
-
-												action {
-													when (this.selected[0]) {
-														"inappropriate" -> reason = "is inappropriate for this server."
-														"impersonation" -> reason = "impersonates another user."
-														"hoisting" ->
-															reason = "deliberately hoists you up the user " +
-																	"ladder, which is not allowed."
-													}
-
-													requester.dm {
-														embed {
-															title = "Nickname Change Denied in ${guild!!.asGuild().name}"
-															description = "Staff have reviewed your nickname request (" +
-																	"`${arguments.newNick}`) and rejected it," +
-																	" because it $reason"
-															color = DISCORD_RED
-														}
-													}
-
-													actionLogEmbed!!.edit {
-														components { removeAll() }
-														embed {
-															title = "Nickname Request Denied"
-
-															field {
-																name = "User:"
-																value = "${requester.mention}\n" +
-																		"${requester.asUser().tag}\n${requester.id}"
-																inline = false
-															}
-
-															field {
-																name = "Current Nickname:"
-																value = "`${requesterAsMember.nickname}`"
-																inline = false
-															}
-
-															field {
-																name = "Rejected Nickname:"
-																value = "`${arguments.newNick}`"
-																inline = false
-															}
-
-															field {
-																name = "Reason:"
-																value = selected[0]
-																inline = false
-															}
-
-															footer {
-																text = "Nickname denied by ${user.asUser().tag}"
-																icon = user.asUser().avatar?.url
-															}
-
-															timestamp = Clock.System.now()
-															color = DISCORD_RED
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
+					} catch (e: KtorRequestException) {
+						// Avoid hard failing on permission error, since the public won't know what it means
+						respond {
+						    content = "Error sending message to moderators. Please ask the moderators to check" +
+								"the `UTILITY` config."
 						}
+						return@action
 					}
 				}
 			}
@@ -277,12 +293,12 @@ class PublicUtilities : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+					configPresent(ConfigOptions.UTILITY_LOG)
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild?.getChannelOf<GuildMessageChannel>(config.channel!!)
+					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
+					val utilityLog = guild?.getChannelOf<GuildMessageChannel>(config.utilityLogChannel!!)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {
@@ -292,22 +308,31 @@ class PublicUtilities : Extension() {
 
 					respond { content = "Nickname cleared" }
 
-					actionLog?.createEmbed {
-						title = "Nickname Cleared"
-						color = DISCORD_YELLOW
-						timestamp = Clock.System.now()
+					try {
+						utilityLog?.createEmbed {
+							title = "Nickname Cleared"
+							color = DISCORD_YELLOW
+							timestamp = Clock.System.now()
 
-						field {
-							name = "User:"
-							value = "${user.mention}\n${user.asUser().tag}\n${user.id}"
-							inline = false
-						}
+							field {
+								name = "User:"
+								value = "${user.mention}\n${user.asUser().tag}\n${user.id}"
+								inline = false
+							}
 
-						field {
-							name = "New Nickname:"
-							value = "Nickname changed from `${user.asMember(guild!!.id).nickname}` to `null`"
-							inline = false
+							field {
+								name = "New Nickname:"
+								value = "Nickname changed from `${user.asMember(guild!!.id).nickname}` to `null`"
+								inline = false
+							}
 						}
+					} catch (_: KtorRequestException) {
+						// Avoid hard failing on permission error, since the public won't know what it means
+						respond {
+						    content = "Error sending message to moderators. Please " +
+								"ask the moderators to check the `UTILITY` config."
+						}
+						return@action
 					}
 					user.asMember(guild!!.id).edit { nickname = null }
 				}
