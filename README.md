@@ -25,7 +25,7 @@ If you're looking to set up a development environment for Lily, try our [develop
 ## Links
 * Visit [our buymeacoffee page](https://buymeacoffee.com/Hyacinthbots) to support the continued development of HyacinthBots projects!
 * Join [our Discord](https://discord.gg/hy2329fcTZ) to watch the development and get support for LilyBot and other HyacinthBots projects!
-* Follow us on Twitter [`@HyacinthBots`](https://https://twitter.com/hyacinthbots)
+* Follow us on Twitter [`@HyacinthBots`](https://twitter.com/hyacinthbots)
 * Email us at [`hyacinthbots@outlook.com`](mailto:hyacinthbots@outlook.com)
 
 ### Tooling
