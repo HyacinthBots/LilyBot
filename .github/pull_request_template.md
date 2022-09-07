@@ -1,9 +1,9 @@
 ### Preface
 
-Please read our [Contributor Guidelines](https://github.com/IrisShaders/LilyBot/blob/main/CONTRIBUTING.md) before
+Please read our [Contributor Guidelines](https://github.com/HyacinthBots/LilyBot/blob/main/CONTRIBUTING.md) before
 submitting any pull requests to this repository.
 
-By submitting a pull request, you are indicating that you agree to the [Contributor License Agreement](https://github.com/IrisShaders/LilyBot/blob/main/CONTRIBUTING.md#contributor-license-agreement-cla)
+By submitting a pull request, you are indicating that you agree to the [Contributor License Agreement](https://github.com/HyacinthBots/LilyBot/blob/main/CONTRIBUTING.md#contributor-license-agreement-cla)
 and that your code will be licensed irrecoverably under the GNU GPLv3. If you do not agree to these terms, do not open
 a pull request.
 
