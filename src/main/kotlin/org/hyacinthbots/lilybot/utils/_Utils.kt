@@ -21,6 +21,7 @@ import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.response.FollowupPermittingInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.NewsChannel
@@ -552,4 +553,28 @@ suspend inline fun getChannelOrFirstUsable(configOption: ConfigOptions, guild: G
 	} else {
 		guild.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild.asGuild())
 	}
+}
+
+/**
+ * Utility to get a string or a default value.
+ * Basically String.ifEmpty but works with nullable strings
+ *
+ * @return This, or defaultValue if this is null or empty
+ * @author trainb0y
+ * @see String.ifEmpty
+ */
+fun String?.ifNullOrEmpty(defaultValue: () -> String): String =
+	if (this.isNullOrEmpty()) defaultValue()
+	else this
+
+/**
+ * Get this message's contents, trimmed to 1024 characters.
+ * If the message exceeds that length, it will be truncated and an ellipsis appended.
+ * @author trainb0y
+ */
+fun Message?.trimmedContents(): String? {
+	this ?: return null
+	return if (this.content.length > 1024) {
+		this.content.substring(0, 1020) + " ..."
+	} else this.content
 }

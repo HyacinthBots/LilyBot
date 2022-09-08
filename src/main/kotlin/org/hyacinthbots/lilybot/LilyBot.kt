@@ -18,6 +18,7 @@ import org.hyacinthbots.lilybot.extensions.config.GuildLogging
 import org.hyacinthbots.lilybot.extensions.events.LogUploading
 import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
+import org.hyacinthbots.lilybot.extensions.events.MessageEdit
 import org.hyacinthbots.lilybot.extensions.events.ThreadInviter
 import org.hyacinthbots.lilybot.extensions.moderation.Report
 import org.hyacinthbots.lilybot.extensions.moderation.TemporaryModeration
@@ -80,6 +81,7 @@ suspend fun main() {
 			add(::LogUploading)
 			add(::MemberLogging)
 			add(::MessageDelete)
+			add(::MessageEdit)
 			add(::ModUtilities)
 			add(::PublicUtilities)
 			add(::Reminders)
