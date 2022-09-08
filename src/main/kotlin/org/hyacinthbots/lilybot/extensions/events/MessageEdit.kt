@@ -37,7 +37,7 @@ class MessageEdit : Extension() {
 		event<UnProxiedMessageUpdateEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MESSAGE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				configPresent(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message.asMessage().author?.id == kord.selfId
 				}
@@ -55,7 +55,7 @@ class MessageEdit : Extension() {
 		event<ProxiedMessageUpdateEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MESSAGE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				configPresent(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message.asMessage().author?.id == kord.selfId
 				}

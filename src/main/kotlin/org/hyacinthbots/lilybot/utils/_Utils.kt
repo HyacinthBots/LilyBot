@@ -171,13 +171,26 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				}
 			}
 
-			ConfigOptions.MESSAGE_LOGGING_ENABLED -> {
+			ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED -> {
 				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
 				if (loggingConfig == null) {
 					fail("Unable to access logging config for this guild! Please inform a member of staff.")
 					break
-				} else if (!loggingConfig.enableMessageLogs) {
-					fail("Message logging is disabled for this guild!")
+				} else if (!loggingConfig.enableMessageDeleteLogs) {
+					fail("Message delete logging is disabled for this guild!")
+					break
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED -> {
+				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
+				if (loggingConfig == null) {
+					fail("Unable to access logging config for this guild! Please inform a member of staff.")
+					break
+				} else if (!loggingConfig.enableMessageEditLogs) {
+					fail("Message edit logging is disabled for this guild!")
 					break
 				} else {
 					pass()

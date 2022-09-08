@@ -305,7 +305,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			if (arguments.enableMemberLogging && arguments.memberLog == null) {
 				respond { content = "You must specify a channel to log members joining and leaving to!" }
 				return@action
-			} else if (arguments.enableMessageLogs && arguments.messageLogs == null) {
+			} else if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) && arguments.messageLogs == null) {
 				respond { content = "You must specify a channel to log deleted messages to!" }
 				return@action
 			}
@@ -313,8 +313,16 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			suspend fun EmbedBuilder.loggingEmbed() {
 				title = "Configuration: Logging"
 				field {
-					name = "Message Logs"
-					value = if (arguments.enableMessageLogs && arguments.messageLogs?.mention != null) {
+					name = "Message Delete Logs"
+					value = if (arguments.enableMessageDeleteLogs && arguments.messageLogs?.mention != null) {
+						arguments.messageLogs!!.mention
+					} else {
+						"Disabled"
+					}
+				}
+				field {
+					name = "Message Edit Logs"
+					value = if (arguments.enableMessageEditLogs && arguments.messageLogs?.mention != null) {
 						arguments.messageLogs!!.mention
 					} else {
 						"Disabled"
@@ -343,7 +351,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			LoggingConfigCollection().setConfig(
 				LoggingConfigData(
 					guild!!.id,
-					arguments.enableMessageLogs,
+					arguments.enableMessageDeleteLogs,
+					arguments.enableMessageEditLogs,
 					arguments.messageLogs?.id,
 					arguments.enableMemberLogging,
 					arguments.memberLog?.id
@@ -625,9 +634,14 @@ class ModerationArgs : Arguments() {
 }
 
 class LoggingArgs : Arguments() {
-	val enableMessageLogs by boolean {
-		name = "enable-message-logs"
+	val enableMessageDeleteLogs by boolean {
+		name = "enable-delete-logs"
 		description = "Enable logging of message deletions"
+	}
+
+	val enableMessageEditLogs by boolean {
+		name = "enable-edit-logs"
+		description = "Enable logging of message edits"
 	}
 
 	val enableMemberLogging by boolean {

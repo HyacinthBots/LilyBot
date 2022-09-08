@@ -38,7 +38,7 @@ class MessageDelete : Extension() {
 		event<ProxiedMessageDeleteEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MESSAGE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				configPresent(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message?.author?.id == kord.selfId
 				}
@@ -57,7 +57,7 @@ class MessageDelete : Extension() {
 		event<UnProxiedMessageDeleteEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MESSAGE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				configPresent(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message?.author?.id == kord.selfId ||
 							event.message?.author?.isBot == true
