@@ -23,6 +23,7 @@ import org.hyacinthbots.lilybot.utils.trimmedContents
 
 /**
  * The class for logging editing of messages to the guild message log.
+ * @since 4.1.0
  */
 class MessageEdit : Extension() {
 	override val name = "message-edit"
@@ -30,7 +31,7 @@ class MessageEdit : Extension() {
 	override suspend fun setup() {
 		/**
 		 * Logs edited messages to the message log channel.
-		 * @see messageEdit
+		 * @see onMessageEdit
 		 * @author trainb0y
 		 */
 		event<UnProxiedMessageUpdateEvent> {
@@ -42,13 +43,13 @@ class MessageEdit : Extension() {
 				}
 			}
 			action {
-				messageEdit(event.getMessage(), event.old, null)
+				onMessageEdit(event.getMessage(), event.old, null)
 			}
 		}
 
 		/**
 		 * Logs proxied edited messages to the message log channel.
-		 * @see messageEdit
+		 * @see onMessageEdit
 		 * @author trainb0y
 		 */
 		event<ProxiedMessageUpdateEvent> {
@@ -60,20 +61,20 @@ class MessageEdit : Extension() {
 				}
 			}
 			action {
-				messageEdit(event.getMessage(), event.old, event.pkMessage)
+				onMessageEdit(event.getMessage(), event.old, event.pkMessage)
 			}
 		}
 	}
 
 	/**
-	 * If message logging is enabled, sends an embed describing the message edit to the guild's message log channel
+	 * If message logging is enabled, sends an embed describing the message edit to the guild's message log channel.
 	 *
 	 * @param message The current message
 	 * @param old The original message
 	 * @param proxiedMessage Extra data for PluralKit proxied messages
 	 * @author trainb0y
 	 */
-	private suspend fun messageEdit(message: Message, old: Message?, proxiedMessage: PKMessage?) {
+	private suspend fun onMessageEdit(message: Message, old: Message?, proxiedMessage: PKMessage?) {
 		val guild = message.getGuild()
 		val config = LoggingConfigCollection().getConfig(guild.id) ?: return
 		val messageLog =

@@ -33,7 +33,7 @@ class MessageDelete : Extension() {
 		/**
 		 * Logs proxied deleted messages in a guild to the message log channel designated in the config for that guild
 		 * @author NoComment1105
-		 * @see messageDelete
+		 * @see onMessageDelete
 		 */
 		event<ProxiedMessageDeleteEvent> {
 			check {
@@ -45,14 +45,14 @@ class MessageDelete : Extension() {
 			}
 
 			action {
-				messageDelete(event.getMessage(), event.pkMessage)
+				onMessageDelete(event.getMessage(), event.pkMessage)
 			}
 		}
 
 		/**
-		 * Logs unproxied deleted messages in a guild to the message log channel designated in the config for that guild
+		 * Logs unproxied deleted messages in a guild to the message log channel designated in the config for that guild.
 		 * @author NoComment1105
-		 * @see messageDelete
+		 * @see onMessageDelete
 		 */
 		event<UnProxiedMessageDeleteEvent> {
 			check {
@@ -65,19 +65,19 @@ class MessageDelete : Extension() {
 			}
 
 			action {
-				messageDelete(event.getMessage(), null)
+				onMessageDelete(event.getMessage(), null)
 			}
 		}
 	}
 
 	/**
-	 * If message logging is enabled, sends an embed describing the message deletion to the guild's message log channel
+	 * If message logging is enabled, sends an embed describing the message deletion to the guild's message log channel.
 	 *
 	 * @param message The deleted message
 	 * @param proxiedMessage Extra data for PluralKit proxied messages
 	 * @author trainb0y
 	 */
-	private suspend fun messageDelete(message: Message, proxiedMessage: PKMessage?) {
+	private suspend fun onMessageDelete(message: Message, proxiedMessage: PKMessage?) {
 		val guild = message.getGuild()
 		val config = LoggingConfigCollection().getConfig(guild.id) ?: return
 		val messageLog =

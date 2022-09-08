@@ -561,16 +561,21 @@ suspend inline fun getChannelOrFirstUsable(configOption: ConfigOptions, guild: G
  *
  * @return This, or defaultValue if this is null or empty
  * @author trainb0y
+ * @since 4.1.0
  * @see String.ifEmpty
  */
 fun String?.ifNullOrEmpty(defaultValue: () -> String): String =
-	if (this.isNullOrEmpty()) defaultValue()
-	else this
+	if (this.isNullOrEmpty()) {
+		defaultValue()
+	} else {
+		this
+	}
 
 /**
  * Get this message's contents, trimmed to 1024 characters.
  * If the message exceeds that length, it will be truncated and an ellipsis appended.
  * @author trainb0y
+ * @since 4.1.0
  */
 fun Message?.trimmedContents(): String? {
 	this ?: return null
