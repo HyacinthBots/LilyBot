@@ -8,7 +8,8 @@ import kotlinx.serialization.Serializable
  * disable certain configurations.
  *
  * @param guildId The ID of the guild the config is for
- * @param enableMessageLogs If edited and deleted messages should be logged
+ * @param enableMessageDeleteLogs If deleted messages should be logged
+ * @param enableMessageEditLogs If edited messages should be logged
  * @param messageChannel The channel to send message logs to
  * @param enableMemberLogs If users joining or leaving the guild should be logged
  * @param memberLog The channel to send member logs to
@@ -17,7 +18,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class LoggingConfigData(
 	val guildId: Snowflake,
-	val enableMessageLogs: Boolean,
+	val enableMessageDeleteLogs: Boolean,
+	val enableMessageEditLogs: Boolean,
 	val messageChannel: Snowflake?,
 	val enableMemberLogs: Boolean,
 	val memberLog: Snowflake?,

@@ -75,6 +75,9 @@ object Migrator : KordExKoinComponent {
 	suspend fun migrateConfig() {
 		logger.info { "Starting config database migration" }
 
+		// TODO Remove this line once the migration is done because nc is an absolute clown and got versions out of sync
+		db.configDatabase.dropCollection("configMetaData")
+		// ^
 		var meta = configMetaCollection.get()
 
 		if (meta == null) {
