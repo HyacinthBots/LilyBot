@@ -25,10 +25,9 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Artifacts
-        run: ./gradlew build --stacktrace
-#        uses: gradle/gradle-build-action@v2
-#        with:
-#          arguments: build --stacktrace
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build --stacktrace
 
       - name: Extract Current Branch name
         shell: bash
