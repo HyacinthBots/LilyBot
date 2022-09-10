@@ -306,7 +306,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				respond { content = "You must specify a channel to log members joining and leaving to!" }
 				return@action
 			} else if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) && arguments.messageLogs == null) {
-				respond { content = "You must specify a channel to log deleted messages to!" }
+				respond { content = "You must specify a channel to log deleted/edited messages to!" }
 				return@action
 			}
 
