@@ -187,7 +187,7 @@ class Tags : Extension() {
 									"again aided by autocomplete.\n`/tag-edit`\nYou will be prompted to enter a " +
 									"tag name, but will have an autocomplete window to aid you. The window will " +
 									"list all the tags that the guild has. From there you can enter a new name, title " +
-									"or value. None of these are mandatory.\n`/tag-list\nDisplays a paginated list " +
+									"or value. None of these are mandatory.\n`/tag-list`\nDisplays a paginated list " +
 									"of all tags for this guild. There are 10 tags on each page.\n\n**Guilds can " +
 									"have any number of tags they like.** The limit on `tagValue` for tags is 1024 " +
 									"characters, which is the embed description limit enforced by Discord."
