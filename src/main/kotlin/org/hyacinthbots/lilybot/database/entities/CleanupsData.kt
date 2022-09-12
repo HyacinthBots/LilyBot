@@ -1,6 +1,7 @@
 package org.hyacinthbots.lilybot.database.entities
 
 import kotlinx.datetime.Instant
+import kotlinx.serialization.Serializable
 
 /**
  * The data for when to run cleanups on old data.
@@ -9,6 +10,7 @@ import kotlinx.datetime.Instant
  * @property runThreadCleanup The instant to run the thread cleanups. Should be run on 7-day intervals.
  * @since 4.1.0
  */
+@Serializable
 data class CleanupsData(
 	val runGuildCleanup: Instant,
 	val runThreadCleanup: Instant,
