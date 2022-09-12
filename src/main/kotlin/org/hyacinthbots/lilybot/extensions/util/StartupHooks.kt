@@ -36,9 +36,7 @@ class StartupHooks : Extension() {
 
 	private val cleanupScheduler = Scheduler()
 
-	private lateinit var threadTask: Task
-
-	private lateinit var guildTask: Task
+	private lateinit var cleanupTask: Task
 
 	override suspend fun setup() {
 		event<ReadyEvent> {
@@ -74,8 +72,7 @@ class StartupHooks : Extension() {
 			}
 		}
 
-		threadTask = cleanupScheduler.schedule(1.hours, callback = ::cleanupThreads)
-		guildTask = cleanupScheduler.schedule(1.hours, callback = ::cleanupGuildData)
+		cleanupTask = cleanupScheduler.schedule(1.hours, callback = ::cleanup)
 	}
 
 	/**
@@ -85,7 +82,7 @@ class StartupHooks : Extension() {
 	 * @author NoComment1105
 	 * @since 4.1.0
 	 */
-	private suspend fun cleanupThreads() {
+	private suspend fun cleanup() {
 		if (CleanupsCollection().getCleanupTime()!!.runThreadCleanup.toEpochMilliseconds() - Clock.System.now()
 				.toEpochMilliseconds() <= 0
 		) {
@@ -95,17 +92,7 @@ class StartupHooks : Extension() {
 		} else {
 			return
 		}
-	}
 
-	/**
-	 * This function is called to remove any guilds in the database that haven't had Lily in them for more than
-	 * a month. It only runs once a scheduled period in the database has run out. That period is then extended for the
-	 * next cleanup.
-	 *
-	 * @author NoComment1105
-	 * @since 4.1.0
-	 */
-	private suspend fun cleanupGuildData() {
 		if (CleanupsCollection().getCleanupTime()!!.runGuildCleanup.toEpochMilliseconds() - Clock.System.now()
 				.toEpochMilliseconds() <= 0
 		) {
