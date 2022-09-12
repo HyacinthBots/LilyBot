@@ -279,7 +279,7 @@ class LogUploading : Extension() {
 
 			check {
 				anyGuild()
-				configPresent()
+				configPresent(ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 			}
 
