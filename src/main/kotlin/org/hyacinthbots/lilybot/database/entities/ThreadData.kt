@@ -6,9 +6,9 @@ import kotlinx.serialization.Serializable
 /**
  * The data for threads.
  *
- * @param threadId The ID of the thread
- * @param ownerId The ID of the thread's owner
- * @param preventArchiving Whether to stop the thread from being archived or not
+ * @property threadId The ID of the thread
+ * @property ownerId The ID of the thread's owner
+ * @property preventArchiving Whether to stop the thread from being archived or not
  * @since 3.2.0
  */
 @Suppress("DataClassShouldBeImmutable")

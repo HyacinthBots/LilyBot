@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 /**
  * The data for image channels in a guild.
  *
- * @param guildId The ID of the guild the image channel is for
- * @param channelId The ID of the image channel being set
+ * @property guildId The ID of the guild the image channel is for
+ * @property channelId The ID of the image channel being set
  * @since 3.3.0
  */
 @Serializable

@@ -21,6 +21,7 @@ import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 
 /**
  * This class serves as a place for all functions that get run on bot start and bot start alone. This *hypothetically*
@@ -33,16 +34,13 @@ import kotlin.time.Duration.Companion.days
 class StartupHooks : Extension() {
 	override val name = "startup-hooks"
 
-	private val scheduler = Scheduler()
+	private val cleanupScheduler = Scheduler()
 
 	private lateinit var threadTask: Task
 
 	private lateinit var guildTask: Task
 
 	override suspend fun setup() {
-		threadTask = scheduler.schedule(7.days, callback = ::cleanupThreads)
-		guildTask = scheduler.schedule(30.days, callback = ::cleanupGuildData)
-
 		event<ReadyEvent> {
 			action {
 				val now = Clock.System.now()
@@ -75,13 +73,17 @@ class StartupHooks : Extension() {
 				}
 			}
 		}
+
+		threadTask = cleanupScheduler.schedule(1.hours, callback = ::cleanupThreads)
+		guildTask = cleanupScheduler.schedule(1.hours, callback = ::cleanupGuildData)
 	}
 
 	/**
 	 * This function is called to remove any threads in the database that haven't had a message sent in the last
-	 * week. It only runs on startup.
-	 * @author tempest15
-	 * @since 3.2.0
+	 * week. It only runs once a scheduled period in the database has run out. That period is then extended for the
+	 * next cleanup.
+	 * @author NoComment1105
+	 * @since 4.1.0
 	 */
 	private suspend fun cleanupThreads() {
 		if (CleanupsCollection().getCleanupTime()!!.runThreadCleanup.toEpochMilliseconds() - Clock.System.now()
@@ -97,7 +99,8 @@ class StartupHooks : Extension() {
 
 	/**
 	 * This function is called to remove any guilds in the database that haven't had Lily in them for more than
-	 * a month. It only runs on startup
+	 * a month. It only runs once a scheduled period in the database has run out. That period is then extended for the
+	 * next cleanup.
 	 *
 	 * @author NoComment1105
 	 * @since 4.1.0
