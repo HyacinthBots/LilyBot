@@ -14,14 +14,11 @@ import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.Cleanups
-import org.hyacinthbots.lilybot.database.collections.CleanupsCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
-import org.hyacinthbots.lilybot.database.entities.CleanupsData
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
 
 /**
  * This class serves as a place for all functions that get run on bot start and bot start alone. This *hypothetically*
@@ -72,35 +69,17 @@ class StartupHooks : Extension() {
 			}
 		}
 
-		cleanupTask = cleanupScheduler.schedule(1.hours, callback = ::cleanup)
+		cleanupTask = cleanupScheduler.schedule(1.days, callback = ::cleanup)
 	}
 
 	/**
 	 * This function is called to remove any threads in the database that haven't had a message sent in the last
-	 * week. It only runs once a scheduled period in the database has run out. That period is then extended for the
-	 * next cleanup.
+	 * week.
 	 * @author NoComment1105
 	 * @since 4.1.0
 	 */
 	private suspend fun cleanup() {
-		if (CleanupsCollection().getCleanupTime()!!.runThreadCleanup.toEpochMilliseconds() - Clock.System.now()
-				.toEpochMilliseconds() <= 0
-		) {
-			Cleanups.cleanupThreadData(kord)
-			val guildCleanup = CleanupsCollection().getCleanupTime()!!.runGuildCleanup
-			CleanupsCollection().setCleanupTime(CleanupsData(guildCleanup, Clock.System.now().plus(7.days)))
-		} else {
-			return
-		}
-
-		if (CleanupsCollection().getCleanupTime()!!.runGuildCleanup.toEpochMilliseconds() - Clock.System.now()
-				.toEpochMilliseconds() <= 0
-		) {
-			Cleanups.cleanupGuildData()
-			val threadCleanup = CleanupsCollection().getCleanupTime()!!.runThreadCleanup
-			CleanupsCollection().setCleanupTime(CleanupsData(Clock.System.now().plus(30.days), threadCleanup))
-		} else {
-			return
-		}
+		Cleanups.cleanupThreadData(kord)
+		Cleanups.cleanupGuildData()
 	}
 }

@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Database
-import org.hyacinthbots.lilybot.database.collections.CleanupsCollection
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
@@ -426,7 +425,6 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
-				single { CleanupsCollection() } bind CleanupsCollection::class
 				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
 				single { RemindMeCollection() } bind RemindMeCollection::class
 				single { RoleMenuCollection() } bind RoleMenuCollection::class
