@@ -831,7 +831,7 @@ class Reminders : Extension() {
 
 		/** The interval at which you want the reminder to repeat. */
 		val repeatingInterval by coalescingOptionalDuration {
-			name = "repeatingInterval"
+			name = "repeating-interval"
 			description = "How often should the reminder repeat?"
 		}
 	}
