@@ -16,33 +16,57 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
+import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
+import com.kotlindiscord.kord.extensions.utils.waitFor
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
+import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.getChannelOfOrNull
+import dev.kord.core.behavior.interaction.modal
+import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
+import dev.kord.core.behavior.interaction.response.edit
+import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
+import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
+import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
+import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
+import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
+import org.hyacinthbots.lilybot.database.collections.TagsCollection
+import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
+import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
@@ -51,6 +75,7 @@ import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
@@ -60,6 +85,7 @@ import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 class ModUtilities : Extension() {
 	override val name = "mod-utilities"
 
+	@OptIn(UnsafeAPI::class)
 	override suspend fun setup() {
 		/**
 		 * Say Command
@@ -413,6 +439,107 @@ class ModUtilities : Extension() {
 							icon = user.asUser().avatar?.url
 						}
 						color = DISCORD_BLACK
+					}
+				}
+			}
+		}
+
+		unsafeSlashCommand {
+			name = "reset"
+			description = "'Resets' Lily for this guild by deleting all database information relating to this guild"
+
+			initialResponse = InitialSlashCommandResponse.None
+
+			requirePermission(Permission.Administrator) // Hide this command from non-administrators
+
+			check {
+				anyGuild()
+				hasPermission(Permission.Administrator)
+			}
+
+			action {
+				val modal = event.interaction.modal("Reset data for this guild", "resetModal") {
+					actionRow {
+						textInput(TextInputStyle.Short, "confirmation", "Confirm reset") {
+							placeholder = "Type 'yes' to confirm"
+						}
+					}
+				}
+
+				val interaction =
+					modal.kord.waitFor<ModalSubmitInteractionCreateEvent>(120.seconds.inWholeMilliseconds) {
+						interaction.modalId == "resetModal"
+					}?.interaction
+
+				if (interaction == null) {
+					modal.createEphemeralFollowup { content = "Reset interaction timed out" }
+					return@action
+				}
+
+				val confirmation = interaction.textInputs["confirmation"]!!.value!!
+				val modalResponse = interaction.deferEphemeralResponse()
+
+				if (confirmation.lowercase() != "yes") {
+					modalResponse.respond { content = "Confirmation failure. Reset cancelled" }
+					return@action
+				}
+
+				var response: EphemeralMessageInteractionResponse? = null
+
+				response = modalResponse.respond {
+					content = "Are you sure you want to reset the database? This action is **irreversible**."
+
+					components {
+						ephemeralButton(0) {
+							label = "I'm sure"
+							style = ButtonStyle.Danger
+
+							action {
+								response?.edit {
+									content = "Database reset!"
+									components { removeAll() }
+								}
+
+								guild?.getChannelOf<GuildMessageChannel>(
+									ModerationConfigCollection().getConfig(guild!!.id)?.channel ?: guild!!.asGuild()
+										.getSystemChannel()!!.id
+								)?.createMessage {
+									embed {
+										title = "Database Reset!"
+										description = "All data associated with this guild has been reset."
+										timestamp = Clock.System.now()
+										color = DISCORD_BLACK
+									}
+								}
+
+								// Reset
+								LoggingConfigCollection().clearConfig(guild!!.id)
+								ModerationConfigCollection().clearConfig(guild!!.id)
+								SupportConfigCollection().clearConfig(guild!!.id)
+								UtilityConfigCollection().clearConfig(guild!!.id)
+								GalleryChannelCollection().removeAll(guild!!.id)
+								LogUploadingBlacklistCollection().clearBlacklist(guild!!.id)
+								RoleMenuCollection().removeAllRoleMenus(guild!!.id)
+								TagsCollection().clearTags(guild!!.id)
+								for (it in ThreadsCollection().getAllThreads()) {
+									val thread = guild?.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: continue
+									ThreadsCollection().removeThread(thread.id)
+								}
+								WarnCollection().clearWarns(guild!!.id)
+							}
+						}
+
+						ephemeralButton(0) {
+							label = "Never-mind"
+							style = ButtonStyle.Secondary
+
+							action {
+								response?.edit {
+									content = "Reset cancelled"
+									components { removeAll() }
+								}
+							}
+						}
 					}
 				}
 			}

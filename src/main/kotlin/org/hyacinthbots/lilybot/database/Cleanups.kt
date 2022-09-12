@@ -6,11 +6,14 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
+import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
+import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
+import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.database.entities.GuildLeaveTimeData
@@ -86,11 +89,11 @@ object Cleanups : KordExKoinComponent {
 				val latestMessage = thread.getLastMessage() ?: continue
 				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 				if (timeSinceLatestMessage.inWholeDays > 7) {
-					threadDataCollection.deleteOne(ThreadData::threadId eq thread.id)
+					ThreadsCollection().removeThread(thread.id)
 					deletedThreads++
 				}
 			} catch (e: KtorRequestException) {
-				threadDataCollection.deleteOne(ThreadData::threadId eq it.threadId)
+				ThreadsCollection().removeThread(it.threadId)
 				deletedThreads++
 				continue
 			}
