@@ -73,7 +73,7 @@ class Reminders : Extension() {
 
 	override suspend fun setup() {
 		/** Set the task to run every 30 seconds. */
-		task = scheduler.schedule(30, pollingSeconds = 30, repeat = true, callback = ::postReminders)
+		task = scheduler.schedule(30, pollingSeconds = 1, repeat = true, callback = ::postReminders)
 
 		/**
 		 * The command for reminders
