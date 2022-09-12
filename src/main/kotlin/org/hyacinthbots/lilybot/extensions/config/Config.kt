@@ -76,7 +76,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			if (supportConfig != null) {
 				ackEphemeral()
 				respondEphemeral {
-					content = "You already have a moderation configuration set. " +
+					content = "You already have a support configuration set. " +
 							"Please clear it before attempting to set a new one."
 				}
 				return@action
@@ -468,7 +468,9 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					interactionResponse
 				)?.createMessage {
 					embed {
-						title = "Configuration Cleared: ${arguments.config}"
+						title = "Configuration Cleared: ${arguments.config[0]}${
+									arguments.config.substring(1, arguments.config.length).lowercase()
+								}"
 						ModerationConfigCollection().getConfig(guild!!.id) ?: run {
 							description = "Consider setting the moderation configuration to receive configuration " +
 									"updates where you want them!"
@@ -652,8 +654,18 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							title = "Current logging config"
 							description = "This is the current logging config for this guild"
 							field {
-								name = "Message logs"
-								value = if (config.enableMessageLogs) {
+								name = "Message delete logs"
+								value = if (config.enableMessageDeleteLogs) {
+									"Enabled\n" +
+											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.mention }} " +
+											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.name }}"
+								} else {
+									"Disabled"
+								}
+							}
+							field {
+								name = "Message edit logs"
+								value = if (config.enableMessageEditLogs) {
 									"Enabled\n" +
 											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.mention }} " +
 											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.name }}"
@@ -733,8 +745,9 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 							field {
 								name = "Channel"
 								value =
-									"${config.utilityLogChannel?.let {guild!!.getChannelOrNull(it)?.mention } ?: "None"
-									} ${config.utilityLogChannel?.let {guild!!.getChannelOrNull(it)?.name } ?: "" }"
+									"${
+										config.utilityLogChannel?.let { guild!!.getChannelOrNull(it)?.mention } ?: "None"
+									} ${config.utilityLogChannel?.let { guild!!.getChannelOrNull(it)?.name } ?: ""}"
 							}
 							timestamp = Clock.System.now()
 						}
