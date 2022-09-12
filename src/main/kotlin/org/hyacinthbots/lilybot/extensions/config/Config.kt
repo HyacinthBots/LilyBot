@@ -409,7 +409,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				field {
 					name = "Utility Log"
 					value = if (arguments.utilityLogChannel != null) {
-						"Enabled"
+						"${arguments.utilityLogChannel!!.mention} ${arguments.utilityLogChannel!!.data.name.value}"
 					} else {
 						"Disabled"
 					}
@@ -469,8 +469,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)?.createMessage {
 					embed {
 						title = "Configuration Cleared: ${arguments.config[0]}${
-									arguments.config.substring(1, arguments.config.length).lowercase()
-								}"
+							arguments.config.substring(1, arguments.config.length).lowercase()
+						}"
 						ModerationConfigCollection().getConfig(guild!!.id) ?: run {
 							description = "Consider setting the moderation configuration to receive configuration " +
 									"updates where you want them!"
