@@ -101,7 +101,7 @@ class ThreadControl : Extension() {
 						if (it.threadId == threadChannel.id) {
 							val preventingArchiving = ThreadsCollection().getThread(it.threadId)?.preventArchiving
 							ThreadsCollection().removeThread(it.threadId)
-							ThreadsCollection().setThreadOwner(it.threadId, it.ownerId, false)
+							ThreadsCollection().setThreadOwner(it.guildId, it.threadId, it.ownerId, false)
 							if (preventingArchiving == true) {
 								guild!!.getChannelOf<GuildMessageChannel>(
 									ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!
@@ -183,7 +183,7 @@ class ThreadControl : Extension() {
 						return@action
 					}
 
-					ThreadsCollection().setThreadOwner(threadChannel.id, arguments.newOwner.id)
+					ThreadsCollection().setThreadOwner(guild!!.id, threadChannel.id, arguments.newOwner.id)
 
 					respond { content = "Ownership transferred." }
 
@@ -253,7 +253,7 @@ class ThreadControl : Extension() {
 					var message: EphemeralMessageInteractionResponse? = null
 					var thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					if (thread == null) {
-						ThreadsCollection().setThreadOwner(threadChannel.id, threadChannel.ownerId, false)
+						ThreadsCollection().setThreadOwner(threadChannel.guildId, threadChannel.id, threadChannel.ownerId, false)
 						thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					}
 					if (thread?.preventArchiving == true) {
@@ -266,7 +266,7 @@ class ThreadControl : Extension() {
 									style = ButtonStyle.Primary
 
 									action {
-										ThreadsCollection().setThreadOwner(thread.threadId, thread.ownerId, false)
+										ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, false)
 										edit { content = "Thread archiving will no longer be prevented" }
 										utilityLog.createMessage {
 												embed {
@@ -299,7 +299,7 @@ class ThreadControl : Extension() {
 						}
 						return@action
 					} else if (thread?.preventArchiving == false) {
-						ThreadsCollection().setThreadOwner(thread.threadId, thread.ownerId, true)
+						ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, true)
 						try {
 							utilityLog.createMessage {
 								embed {

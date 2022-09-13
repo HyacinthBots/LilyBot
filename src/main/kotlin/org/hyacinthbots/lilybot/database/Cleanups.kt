@@ -2,6 +2,7 @@ package org.hyacinthbots.lilybot.database
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.core.Kord
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
@@ -85,7 +86,7 @@ object Cleanups : KordExKoinComponent {
 		var deletedThreads = 0
 		for (it in threads) {
 			try {
-				val thread = kordInstance.getChannelOf<ThreadChannel>(it.threadId) ?: continue
+				val thread = kordInstance.getGuild(it.guildId!!)?.getChannelOf<ThreadChannel>(it.threadId) ?: continue
 				val latestMessage = thread.getLastMessage() ?: continue
 				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 				if (timeSinceLatestMessage.inWholeDays > 7) {

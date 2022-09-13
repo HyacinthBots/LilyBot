@@ -38,14 +38,12 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
-import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
@@ -525,10 +523,7 @@ class ModUtilities : Extension() {
 								RemindMeCollection().removeGuildReminders(guild!!.id)
 								RoleMenuCollection().removeAllRoleMenus(guild!!.id)
 								TagsCollection().clearTags(guild!!.id)
-								for (it in ThreadsCollection().getAllThreads()) {
-									val thread = guild?.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: continue
-									ThreadsCollection().removeThread(thread.id)
-								}
+								ThreadsCollection().removeGuildThreads(guild!!.id)
 								WarnCollection().clearWarns(guild!!.id)
 							}
 						}

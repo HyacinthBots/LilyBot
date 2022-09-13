@@ -11,13 +11,19 @@ import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.channel.NewsChannel
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.Cleanups
+import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
+import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
+import org.litote.kmongo.coroutine.toList
+import org.litote.kmongo.eq
+import org.litote.kmongo.setValue
 import kotlin.time.Duration.Companion.days
 
 /**
@@ -38,6 +44,17 @@ class StartupHooks : Extension() {
 	override suspend fun setup() {
 		event<ReadyEvent> {
 			action {
+				// TODO Remove this once the migration is done, because of the fact we cannot access kord in the
+				//  migration we need to do this to apply the guild IDs
+				with(Database().mainDatabase.getCollection<ThreadData>("threadData")) {
+					collection.find(ThreadData::guildId eq null).toList().forEach {
+						updateOne(
+							ThreadData::threadId eq it.threadId,
+							setValue(ThreadData::guildId, kord.getChannelOf<ThreadChannel>(it.threadId)!!.guildId)
+						)
+					}
+				}
+
 				val now = Clock.System.now()
 
 				/**

@@ -128,7 +128,7 @@ class ThreadInviter : Extension() {
 							event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 						)
 
-					ThreadsCollection().setThreadOwner(thread.id, userId)
+					ThreadsCollection().setThreadOwner(guild.id, thread.id, userId)
 
 					val startMessage =
 						thread.createMessage("Welcome to your support thread! Let me grab the support team...")
@@ -234,7 +234,7 @@ class ThreadInviter : Extension() {
 							event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 						)
 
-					ThreadsCollection().setThreadOwner(thread.id, userId)
+					ThreadsCollection().setThreadOwner(guild.id, thread.id, userId)
 
 					val startMessage =
 						thread.createMessage("Welcome to your support thread! Let me grab the support team...")
@@ -293,7 +293,7 @@ class ThreadInviter : Extension() {
 				val modRole = event.channel.guild.getRole(moderationConfig.role!!)
 				val threadOwner = event.channel.owner.asUser()
 
-				ThreadsCollection().setThreadOwner(event.channel.id, threadOwner.id)
+				ThreadsCollection().setThreadOwner(event.channel.guildId, event.channel.id, threadOwner.id)
 
 				if (supportConfig.enabled && event.channel.parentId == supportConfig.channel) {
 					val supportRole = event.channel.guild.getRole(supportConfig.role!!)
