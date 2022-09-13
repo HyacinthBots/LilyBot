@@ -51,7 +51,7 @@ import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 import java.lang.Integer.min
 import kotlin.time.Duration
@@ -86,7 +86,7 @@ class TemporaryModeration : Extension() {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -116,6 +116,13 @@ class TemporaryModeration : Extension() {
 					}
 					color = DISCORD_BLACK
 				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "$messageAmount messages have been cleared."
+						color = DISCORD_BLACK
+					}
+				}
 			}
 		}
 
@@ -138,7 +145,7 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -275,6 +282,14 @@ class TemporaryModeration : Extension() {
 					embed.image = null
 					actionLog.createMessage { embeds.add(embed) }
 				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Warning"
+						description = "${userArg.mention} has been warned by a moderator"
+						color = DISCORD_BLACK
+					}
+				}
 			}
 		}
 
@@ -298,7 +313,7 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -370,7 +385,7 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -433,6 +448,20 @@ class TemporaryModeration : Extension() {
 					embed.image = null
 					actionLog.createMessage { embeds.add(embed) }
 				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Timeout"
+						description = "${userArg.mention} was timed out by a moderator"
+						color = DISCORD_BLACK
+						field {
+							name = "Duration:"
+							value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
+								.replace("PT", "") + ")"
+							inline = false
+						}
+					}
+				}
 			}
 		}
 
@@ -456,7 +485,7 @@ class TemporaryModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -521,7 +550,7 @@ class TemporaryModeration : Extension() {
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.channel!!,
 							ConfigType.MODERATION,
@@ -588,7 +617,7 @@ class TemporaryModeration : Extension() {
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.channel!!,
 							ConfigType.MODERATION,
@@ -656,7 +685,7 @@ class TemporaryModeration : Extension() {
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.channel!!,
 							ConfigType.MODERATION,
@@ -728,7 +757,7 @@ class TemporaryModeration : Extension() {
 				action {
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.channel!!,
 							ConfigType.MODERATION,

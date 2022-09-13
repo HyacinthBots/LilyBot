@@ -48,7 +48,8 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configPresent
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 
 /**
@@ -79,7 +80,7 @@ class ModUtilities : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -173,7 +174,6 @@ class ModUtilities : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 			}
@@ -187,15 +187,15 @@ class ModUtilities : Extension() {
 					channel
 				}
 
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getModerationChannelWithPerms(
+				val utilityLog =
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
+						getUtilityLogOrFirst(guild)?.id,
+						ConfigType.UTILITY,
 						interactionResponse
 					)
 						?: return@action
+
 				val message: Message
 
 				try {
@@ -235,7 +235,7 @@ class ModUtilities : Extension() {
 
 					respond { content = "Message edited" }
 
-					actionLog.createMessage {
+					utilityLog.createMessage {
 						embed {
 							title = "Say message edited"
 							field {
@@ -281,7 +281,7 @@ class ModUtilities : Extension() {
 
 					respond { content = "Embed updated" }
 
-					actionLog.createMessage {
+					utilityLog.createMessage {
 						embed {
 							title = "Say message edited"
 							field {
@@ -334,6 +334,8 @@ class ModUtilities : Extension() {
 			name = "status"
 			description = "Set Lily's current presence/status."
 
+			guild(TEST_GUILD_ID)
+
 			ephemeralSubCommand(::PresenceArgs) {
 				name = "set"
 				description = "Set a custom status for Lily."
@@ -345,12 +347,6 @@ class ModUtilities : Extension() {
 				}
 
 				action {
-// 					// Lock this command to the testing guild
-// 					if (guild?.id != TEST_GUILD_ID) {
-// 						respond { content = "**Error:** This command can only be run in Lily's testing guild." }
-// 						return@action
-// 					}
-
 					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
 					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
 
@@ -388,12 +384,6 @@ class ModUtilities : Extension() {
 				}
 
 				action {
-// 					// Lock this command to the testing guild
-// 					if (guild?.id != TEST_GUILD_ID) {
-// 						respond { content = "**Error:** This command can only be run in Lily's testing guild." }
-// 						return@action
-// 					}
-
 					// Store the new presence in the database for if there is a restart
 					StatusCollection().setStatus(null)
 
@@ -402,7 +392,7 @@ class ModUtilities : Extension() {
 
 					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 					val actionLog =
-						getModerationChannelWithPerms(
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
 							config.channel!!,
 							ConfigType.MODERATION,

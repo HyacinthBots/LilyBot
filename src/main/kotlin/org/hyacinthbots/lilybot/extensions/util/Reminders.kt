@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.application.slash.publicSubCommand
@@ -35,6 +36,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
@@ -61,6 +63,13 @@ class Reminders : Extension() {
 
 	/** The task to attach the [scheduler] to. */
 	private lateinit var task: Task
+
+	/** The choices of reminder type. For use in `stringChoice` arguments. */
+	private val reminderChoices = mutableMapOf(
+		"all" to "all",
+		"repeating" to "repeating",
+		"non-repeating" to "non-repeating"
+	)
 
 	override suspend fun setup() {
 		/** Set the task to run every 30 seconds. */
@@ -361,16 +370,7 @@ class Reminders : Extension() {
 					when (arguments.reminderType) {
 						"all" -> {
 							reminders.forEach {
-								val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-								val message = event.kord.getGuild(it.guildId)!!
-									.getChannelOf<GuildMessageChannel>(it.channelId)
-									.getMessageOrNull(messageId)
-
-								message?.edit {
-									content =
-										"${message.content} ${if (it.repeating) "**Repeating" else "**"} Reminder cancelled.**"
-								}
-								RemindMeCollection().removeReminder(guild!!.id, user.id, it.id)
+								editAndRemoveReminder(it)
 							}
 
 							respond {
@@ -381,15 +381,7 @@ class Reminders : Extension() {
 						"repeating" -> {
 							reminders.forEach {
 								if (it.repeating) {
-									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-									val message = event.kord.getGuild(it.guildId)!!
-										.getChannelOf<GuildMessageChannel>(it.channelId)
-										.getMessageOrNull(messageId)
-
-									message?.edit {
-										content = "${message.content} **Repeating Reminder cancelled.**"
-									}
-									RemindMeCollection().removeReminder(guild!!.id, user.id, it.id)
+									editAndRemoveReminder(it)
 								}
 							}
 
@@ -401,16 +393,7 @@ class Reminders : Extension() {
 						"non-repeating" -> {
 							reminders.forEach {
 								if (!it.repeating) {
-									val messageId = Snowflake(it.originalMessageUrl.split("/")[6])
-									val message = event.kord.getGuild(it.guildId)!!
-										.getChannelOf<GuildMessageChannel>(it.channelId)
-										.getMessageOrNull(messageId)
-
-									message?.edit {
-										content = "${message.content} **Reminder cancelled.**"
-									}
-
-									RemindMeCollection().removeReminder(guild!!.id, user.id, it.id)
+									editAndRemoveReminder(it)
 								}
 							}
 
@@ -421,9 +404,103 @@ class Reminders : Extension() {
 					}
 				}
 			}
+
+			ephemeralSubCommand(::ModRemoveAllArgs) {
+				name = "mod-remove-all"
+				description = "Remove all a users reminders of a specific type for this guild"
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
+
+				action {
+					val reminders = RemindMeCollection().getUserReminders(user.id).filter { it.guildId == guild!!.id }
+
+					if (reminders.isEmpty()) {
+						respond {
+							content = "This user does not have any reminders in this guild!"
+						}
+						return@action
+					}
+
+					when (arguments.reminderType) {
+						"all" -> {
+							reminders.forEach {
+								editAndRemoveReminder(it, arguments.userID)
+							}
+
+							respond {
+								content = "Removed all ${
+									guild!!.getMember(arguments.userID).mention
+								}'s reminders for this guild."
+							}
+						}
+
+						"repeating" -> {
+							reminders.forEach {
+								if (it.repeating) {
+									editAndRemoveReminder(it, arguments.userID)
+								}
+							}
+
+							respond {
+								content = "Removed all ${
+									guild!!.getMember(arguments.userID).mention
+								}'s repeating reminders for this guild."
+							}
+						}
+
+						"non-repeating" -> {
+							reminders.forEach {
+								if (!it.repeating) {
+									editAndRemoveReminder(it, arguments.userID)
+								}
+							}
+
+							respond {
+								content = "Removed all ${
+									guild!!.getMember(arguments.userID).mention
+								}'s non-repeating reminders for this guild."
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
+	/**
+	 * Edits a reminder message to contain cancelled and removes it from the database.
+	 *
+	 * @param reminder The reminder to edit and remove
+	 * @param userId The user to remove the reminder from. Will use interaction author if null
+	 * @since 4.0.0
+	 * @author NoComment1105
+	 */
+	private suspend inline fun EphemeralSlashCommandContext<*>.editAndRemoveReminder(
+		reminder: RemindMeData,
+		userId: Snowflake? = null
+	) {
+		val messageId = Snowflake(reminder.originalMessageUrl.split("/")[6])
+		val message = event.kord.getGuild(reminder.guildId)!!
+			.getChannelOf<GuildMessageChannel>(reminder.channelId)
+			.getMessageOrNull(messageId)
+
+		completeOrCancelReminder(message, true)
+
+		RemindMeCollection().removeReminder(guild!!.id, userId ?: user.id, reminder.id)
+	}
+
+	/**
+	 * Gets a reminders information and produces a formatted string to send in an embed.
+	 *
+	 * @param reminder The reminder to get the information from
+	 * @return A formatted string to send in an embed
+	 * @since 3.5.2
+	 * @author NoComment1105
+	 */
 	private fun reminderContent(reminder: RemindMeData) = "Reminder ${reminder.id}\nTime set: ${
 		reminder.initialSetTime.toDiscord(TimestampType.ShortDateTime)
 	},\nTime until " +
@@ -457,7 +534,7 @@ class Reminders : Extension() {
 		if (guildUserReminders.isEmpty()) {
 			pagesObj.addPage(
 				Page {
-					description = "You have no reminders set for this guild."
+					description = "There are no reminders set for this guild."
 				}
 			)
 		} else {
@@ -532,7 +609,12 @@ class Reminders : Extension() {
 					try {
 						channel?.createMessage {
 							content = if (it.repeating) {
-								"Repeating reminder for <@${it.userId}>"
+								"Repeating reminder for <@${it.userId}>\n" +
+										"This reminder will repeat every `${
+											it.repeatingInterval.toString().lowercase()
+												.replace("pt", "")
+												.replace("p", "")
+										}`"
 							} else {
 								"Reminder for <@${it.userId}> set ${
 									it.initialSetTime.toDiscord(
@@ -542,14 +624,6 @@ class Reminders : Extension() {
 									it.initialSetTime.toDiscord(
 										TimestampType.ShortDateTime
 									)
-								}${
-									if (it.repeating) {
-										"This reminder will repeat every `${
-											it.repeatingInterval.toString().lowercase()
-												.replace("pt", "")
-												.replace("p", "")
-										}`"
-									} else ""
 								}"
 							}
 
@@ -593,13 +667,7 @@ class Reminders : Extension() {
 					}
 
 					if (!it.repeating) {
-						try {
-							message?.edit {
-								content = "Reminder completed!"
-							} ?: utilsLogger.debug { "Unable to find original message" }
-						} catch (e: KtorRequestException) {
-							utilsLogger.debug { "Unable to edit original message" }
-						}
+						completeOrCancelReminder(message, false)
 					}
 				} else {
 					// FIXME Maybe duplicaten't?
@@ -687,13 +755,7 @@ class Reminders : Extension() {
 					}
 
 					if (!it.repeating) {
-						try {
-							message?.edit {
-								content = "Reminder completed!"
-							} ?: utilsLogger.debug { "Unable to find original message" }
-						} catch (e: KtorRequestException) {
-							utilsLogger.debug { "Unable to edit original message" }
-						}
+						completeOrCancelReminder(message, false)
 					}
 				}
 
@@ -715,6 +777,34 @@ class Reminders : Extension() {
 				} else {
 					RemindMeCollection().removeReminder(it.guildId, it.userId, it.id)
 				}
+			}
+		}
+	}
+
+	/**
+	 * Edits the reminders initial message to detail whether it has been completed or cancelled.
+	 *
+	 * @param message The message to edit
+	 * @param cancel Whether the reminder has been cancelled or not
+	 * @since 4.0.0
+	 * @author NoComment1105
+	 */
+	private suspend inline fun completeOrCancelReminder(message: Message?, cancel: Boolean) {
+		if (cancel) {
+			try {
+				message?.edit {
+					content = "${message.content} **Cancelled**"
+				} ?: utilsLogger.debug { "Unable to find original message" }
+			} catch (e: KtorRequestException) {
+				utilsLogger.debug { "Unable to edit original message" }
+			}
+		} else {
+			try {
+				message?.edit {
+					content = "${message.content} **Completed**"
+				} ?: utilsLogger.debug { "Unable to find original message" }
+			} catch (e: KtorRequestException) {
+				utilsLogger.debug { "Unable to edit original message" }
 			}
 		}
 	}
@@ -741,7 +831,7 @@ class Reminders : Extension() {
 
 		/** The interval at which you want the reminder to repeat. */
 		val repeatingInterval by coalescingOptionalDuration {
-			name = "repeatingInterval"
+			name = "repeating-interval"
 			description = "How often should the reminder repeat?"
 		}
 	}
@@ -755,11 +845,13 @@ class Reminders : Extension() {
 	}
 
 	inner class ModRemoveRemindArgs : Arguments() {
+		/** The ID of the user whose reminders you'd like to remove. */
 		val userID by snowflake {
 			name = "userid"
 			description = "The user id of the user to remove the reminder from"
 		}
 
+		/** The reminder number you would like to remove. */
 		val reminder by int {
 			name = "reminder-number"
 			description = "The number of the reminder to remove. Use `/reminders list` to find out the reminder."
@@ -767,6 +859,7 @@ class Reminders : Extension() {
 	}
 
 	inner class ModReminderListArgs : Arguments() {
+		/** The ID of the user whose reminders you'd like to remove. */
 		val userID by snowflake {
 			name = "user-id"
 			description = "The user id of the user to list the reminders of"
@@ -778,11 +871,22 @@ class Reminders : Extension() {
 		val reminderType by stringChoice {
 			name = "type"
 			description = "Choose which reminder type to remove all of"
-			choices = mutableMapOf(
-				"all" to "all",
-				"repeating" to "repeating",
-				"non-repeating" to "non-repeating"
-			)
+			choices = reminderChoices
+		}
+	}
+
+	inner class ModRemoveAllArgs : Arguments() {
+		/** The ID of the user whose reminders you'd like to remove. */
+		val userID by snowflake {
+			name = "userid"
+			description = "The user id of the user to remove the reminder from"
+		}
+
+		/** The type of the reminder to delete all of. */
+		val reminderType by stringChoice {
+			name = "type"
+			description = "Choose which reminder type to remove all of"
+			choices = reminderChoices
 		}
 	}
 }

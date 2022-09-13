@@ -24,6 +24,9 @@ enum class ConfigOptions {
 	/** The option that stores the action logging channel. */
 	ACTION_LOG,
 
+	/** The option that stores whether to log a moderation action publicly. */
+	LOG_PUBLICLY,
+
 	/** The option that stores whether the logging config is enabled or not. */
 	MESSAGE_LOGGING_ENABLED,
 
@@ -38,4 +41,7 @@ enum class ConfigOptions {
 
 	/** The option that stores whether log uploads are enabled or not. */
 	LOG_UPLOADS_ENABLED,
+
+	/** The option that stores the utility logging channel. */
+	UTILITY_LOG,
 }

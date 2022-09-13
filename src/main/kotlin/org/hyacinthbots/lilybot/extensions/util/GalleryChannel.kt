@@ -17,18 +17,15 @@ import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -63,18 +60,11 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)
-					val logChannel: GuildMessageChannel? =
-						if (config?.channel != null) {
-							guild!!.getChannelOf(config.channel)
-						} else {
-							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
-						}
-					val actionLog =
-						getModerationChannelWithPerms(
+					val utilityLog =
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							logChannel!!.id,
-							ConfigType.MODERATION,
+							getUtilityLogOrFirst(guild)?.id,
+							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action
@@ -94,16 +84,9 @@ class GalleryChannel : Extension() {
 						content = "Set channel as gallery channel."
 					}
 
-					val descriptionAddon = if (config == null) {
-						"\n\nConsider setting the moderation configuration to receive configuration updates where you" +
-								" want them!"
-					} else {
-						""
-					}
-
-					actionLog.createEmbed {
+					utilityLog.createEmbed {
 						title = "New Gallery channel"
-						description = "${channel.mention} was added as a Gallery channel$descriptionAddon"
+						description = "${channel.mention} was added as a Gallery channel"
 						footer {
 							text = "Requested by ${user.asUser().tag}"
 							icon = user.asUser().avatar?.url
@@ -128,21 +111,15 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)
-					val logChannel: GuildMessageChannel? =
-						if (config?.channel != null) {
-							guild!!.getChannelOf(config.channel)
-						} else {
-							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
-						}
-					val actionLog =
-						getModerationChannelWithPerms(
+					val utilityLog =
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							logChannel?.id!!,
-							ConfigType.MODERATION,
+							getUtilityLogOrFirst(guild)?.id,
+							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action
+
 					var channelFound = false
 
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
@@ -157,7 +134,7 @@ class GalleryChannel : Extension() {
 							content = "Unset channel as gallery channel."
 						}
 
-						actionLog.createEmbed {
+						utilityLog.createEmbed {
 							title = "Removed Gallery channel"
 							description = "${channel.mention} was removed as a Gallery channel"
 							footer {

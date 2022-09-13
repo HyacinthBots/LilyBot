@@ -8,13 +8,12 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
-import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.configPresent
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 /**
  * Logs members joining and leaving a guild to the member log channel designated in the config for that guild.
@@ -35,9 +34,8 @@ class MemberLogging : Extension() {
 			}
 			action {
 				val config = LoggingConfigCollection().getConfig(event.guildId)!!
-				val memberLog = getModerationChannelWithPerms(event.getGuild(), config.memberLog!!, ConfigType.LOGGING)
+				val memberLog = getLoggingChannelWithPerms(event.getGuild(), config.memberLog!!, ConfigType.LOGGING)
 					?: return@action
-				val guildMemberCount = event.guild.members.count()
 
 				memberLog.createEmbed {
 					author {
@@ -54,9 +52,6 @@ class MemberLogging : Extension() {
 						value = event.member.id.toString()
 						inline = false
 					}
-					footer {
-						text = "Member Count: $guildMemberCount"
-					}
 					timestamp = Clock.System.now()
 					color = DISCORD_GREEN
 				}
@@ -72,9 +67,8 @@ class MemberLogging : Extension() {
 			}
 			action {
 				val config = LoggingConfigCollection().getConfig(event.guildId)!!
-				val memberLog = getModerationChannelWithPerms(event.getGuild(), config.memberLog!!, ConfigType.LOGGING)
+				val memberLog = getLoggingChannelWithPerms(event.getGuild(), config.memberLog!!, ConfigType.LOGGING)
 					?: return@action
-				val guildMemberCount = event.guild.members.count()
 
 				memberLog.createEmbed {
 					author {
@@ -90,9 +84,6 @@ class MemberLogging : Extension() {
 						name = "ID:"
 						value = event.user.id.toString()
 						inline = false
-					}
-					footer {
-						text = "Member count: $guildMemberCount"
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_RED

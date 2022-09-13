@@ -29,23 +29,19 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.createRole
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.Role
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
-import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.configPresent
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 import org.hyacinthbots.lilybot.utils.utilsLogger
 
 /**
@@ -75,7 +71,6 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -123,10 +118,16 @@ class RoleMenu : Extension() {
 						mutableListOf(arguments.initialRole.id)
 					)
 
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
+					val utilityLog =
+						getLoggingChannelWithPerms(
+							guild!!.asGuild(),
+							getUtilityLogOrFirst(guild)?.id,
+							ConfigType.UTILITY,
+							interactionResponse
+						)
+							?: return@action
 
-					actionLog.createMessage {
+					utilityLog.createMessage {
 						embed {
 							title = "Role Menu Created"
 							description = "A role menu for the ${arguments.initialRole.mention} role was created in " +
@@ -175,7 +176,6 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageRoles)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -215,16 +215,15 @@ class RoleMenu : Extension() {
 						data.roles
 					)
 
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog =
-						getModerationChannelWithPerms(
+					val utilityLog =
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							config.channel!!,
-							ConfigType.MODERATION,
+							getUtilityLogOrFirst(guild)?.id,
+							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action
-					actionLog.createMessage {
+					utilityLog.createMessage {
 						embed {
 							title = "Role Added to Role Menu"
 							description = "The ${arguments.role.mention} role was added to a role menu in " +
@@ -257,7 +256,6 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -286,16 +284,16 @@ class RoleMenu : Extension() {
 					}
 
 					RoleMenuCollection().removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog =
-						getModerationChannelWithPerms(
+					val utilityLog =
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							config.channel!!,
-							ConfigType.MODERATION,
+							getUtilityLogOrFirst(guild)?.id,
+							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action
-					actionLog.createMessage {
+
+					utilityLog.createMessage {
 						embed {
 							title = "Role Removed from Role Menu"
 							description = "The ${arguments.role.mention} role was removed from a role menu in " +
@@ -328,7 +326,6 @@ class RoleMenu : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					hasPermission(Permission.ManageMessages)
 					requireBotPermissions(Permission.SendMessages, Permission.ManageRoles)
 					botHasChannelPerms(
@@ -394,16 +391,16 @@ class RoleMenu : Extension() {
 						roles
 					)
 
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog =
-						getModerationChannelWithPerms(
+					val utilityLog =
+						getLoggingChannelWithPerms(
 							guild!!.asGuild(),
-							config.channel!!,
-							ConfigType.MODERATION,
+							getUtilityLogOrFirst(guild)?.id,
+							ConfigType.UTILITY,
 							interactionResponse
 						)
 							?: return@action
-					actionLog.createMessage {
+
+					utilityLog.createMessage {
 						embed {
 							title = "Pronoun Role Menu Created"
 							description = "A pronoun role menu was created in ${channel.mention}."

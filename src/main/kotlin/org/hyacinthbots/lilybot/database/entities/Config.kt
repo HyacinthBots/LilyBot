@@ -39,6 +39,7 @@ data class ModerationConfigData(
 	val enabled: Boolean,
 	val channel: Snowflake?,
 	val role: Snowflake?,
+	val publicLogging: Boolean?,
 )
 
 /**
@@ -67,49 +68,12 @@ data class SupportConfigData(
  *
  * @param guildId The ID of the guild the config is for
  * @param disableLogUploading If log uploading is enabled or not
+ * @param utilityLogChannel The channel to log various utility actions too
  * @since 4.0.0
  */
 @Serializable
-data class MiscConfigData(
+data class UtilityConfigData(
 	val guildId: Snowflake,
 	val disableLogUploading: Boolean,
-)
-
-/**
- * The data for guild configuration.
- *
- * @param guildId The ID of the guild the config is for
- * @param moderatorsPing The ID of the moderator ping role
- * @param modActionLog The ID of the guild's action/audit log channel
- * @param messageLogs The ID of the guild's message logging channel
- * @param joinChannel The ID of the guild's member flow channel
- * @param supportChannel The ID of the support channel for the guild, nullable
- * @param supportTeam The ID of the support team for the guild, nullable
- * @since 3.0.0
- */
-@Deprecated("Use the new config system", level = DeprecationLevel.ERROR)
-@Serializable
-data class ConfigData(
-	val guildId: Snowflake,
-	val moderatorsPing: Snowflake,
-	val modActionLog: Snowflake,
-	val messageLogs: Snowflake,
-	val joinChannel: Snowflake,
-	val supportChannel: Snowflake?,
-	val supportTeam: Snowflake?,
-)
-
-/**
- * The Data for controlling log uploading.
- *
- * @property guildId The guild the data is for
- * @property disable Whether log uploading is disabled or not
- *
- * @since 3.5.4
- */
-@Deprecated("Use the new config system", level = DeprecationLevel.ERROR)
-@Serializable
-data class LogUploadingData(
-	val guildId: Snowflake,
-	val disable: Boolean
+	val utilityLogChannel: Snowflake?
 )

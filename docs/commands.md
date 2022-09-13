@@ -13,7 +13,7 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 * `enable` - Whether to enable the support system or not - Boolean
 * `channel` - The channel to create the support threads in - Channel
 * `role` - The role to add to support threads, when one is created - Role
-* `customMessage` - True if you'd like to add a custom message, false if you'd like the default - Boolean
+* `custom-message` - True if you'd like to add a custom message, false if you'd like the default - Boolean
 
 **Result**: If `customMessage` is true, a modal will appear where you can provide your custom support message, then the config is set. If it is false, the config is set immediately.
 
@@ -26,8 +26,9 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 ### Name: `config moderation`
 **Arguments**:
 * `enable` - Whether to enable the moderation system or not - Boolean
-* `moderatorRole` - The role of the guild moderators, used for pinging in message logs and adding to threads
-* `modActionLog` - The channel to store the moderation actions in - Channel
+* `moderator-role` - The role of the guild moderators, used for pinging in message logs and adding to threads
+* `mod-action-log` - The channel to store the moderation actions in - Channel
+*`log-publicly` - Whether to log moderation actions in the channel they were run in as well as the action log. Defaults to false - Optional Boolean
 
 **Result**: The config is set for moderation.
 
@@ -39,10 +40,10 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 
 ### Name: `config logging`
 **Arguments**:
-* `enableMessageLogs` - Whether to enable message delete logging or not - Boolean
-* `enableMemberLogs` - Whether to enable logging of member joins and leaves - Boolean
-* `messageLogs` - The channel for logging message deletion - Optional Channel
-* `memberLogs` - The channel for logging member join/leaves to -  Optional Channel
+* `enable-message-logs` - Whether to enable message delete logging or not - Boolean
+* `enable-member-logs` - Whether to enable logging of member joins and leaves - Boolean
+* `message-logs` - The channel for logging message deletion - Optional Channel
+* `member-logs` - The channel for logging member join/leaves to -  Optional Channel
 
 **Result**: The config is set for logging.
 
@@ -52,11 +53,12 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 
 ---
 
-### Name: `config miscellaneous`
+### Name: `config utility`
 **Arguments**:
-* `disableLogUploading - Whether to disable log uploading or not - Boolean
+* `disable-log-uploading - Whether to enable log uploading or not - Boolean
+* `utilityLogChannel` - The channel for logging utility functions. - Optional channel 
 
-**Result**: The config is set for miscellaneous settings.
+**Result**: The config is set for utility settings.
 
 **Required Permissions**: `Manage Guild`
 
@@ -66,7 +68,7 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 
 ### Name: `config clear`
 **Arguments**:
-* `configType` - The type of config to clear, 'support', 'moderation', 'logging', 'miscellaneous', 'all' - String Choice
+* `config-type` - The type of config to clear, 'support', 'moderation', 'logging', 'miscellaneous', 'all' - String Choice
 
 **Result**: Clears the config of the specified type.
 
@@ -94,10 +96,11 @@ These commands are for use by moderators. They utilize built-in permission check
 
 ### Name: `ban`
 **Arguments**:
-* `banUser` – Person to ban - User
+* `user` – Person to ban - User
 * `messages` - Number of days of messages to delete - Integer
 * `reason` - Reason for the ban - Optional String
 * `image` - The URL to an image to provide extra context for the action - Optional String
+* `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last `messages` day(s).
 
@@ -109,7 +112,7 @@ These commands are for use by moderators. They utilize built-in permission check
 
 ### Name: `unban`
 **Arguments**:
-* `unbanUserId ` - The Discord ID of the person to unban - User ID
+* `user ` - The Discord ID of the person to unban - User ID
 
 **Result**: The user with the ID `unbanUserId` is unbanned.
 
@@ -121,10 +124,11 @@ These commands are for use by moderators. They utilize built-in permission check
 
 ### Name: `soft-ban`
 **Arguments**:
-* `softBanUser` - Person to soft ban - User
+* `user` - Person to soft ban - User
 * `messages` - Number of days of messages to delete - Integer (default 3)
 * `reason` - Reason for the ban - Optional String
 * `image` - The URL to an image to provide extra context for the action - Optional String
+* `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Bans `softBanUser`, deletes the last `messages` days of messages from them, and unbans them.
 
@@ -136,9 +140,10 @@ These commands are for use by moderators. They utilize built-in permission check
 
 ### Name: `warn`
 **Arguments**:
-* `warnUser` - Person to warn - User
+* `user` - Person to warn - User
 * `reason` - Reason for warn - Optional String
 * `image` - The URL to an image to provide extra context for the action - Optional String
+* `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.
 
@@ -157,10 +162,11 @@ These commands are for use by moderators. They utilize built-in permission check
 
 ### Name: `timeout`
 **Arguments**:
-* `timeoutUser` - Person to timeout - User
+* `user` - Person to timeout - User
 * `duration` - Duration of timeout - Duration [e.g. 6h or 30s] (default 6h)
 * `reason` - Reason for timeout - Optional String
 * `image` - The URL to an image to provide extra context for the action - Optional String
+* `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function.
 
@@ -242,7 +248,7 @@ These commands are just handy to have around. Moderator only commands are at the
 ### Name: `role-menu add`
 **Arguments**:
 (Moderator only)
-* `menuId` - The message ID of the role menu to edit - Snowflake
+* `menu-id` - The message ID of the role menu to edit - Snowflake
 * `role` - The role to add to the menu - String
 
 **Result**: Adds the `role` to the menu associated with `menuId`.
@@ -256,7 +262,7 @@ These commands are just handy to have around. Moderator only commands are at the
 ### Name: `role-menu remove`
 **Arguments**:
 (Moderator only)
-* `menuId` - The message ID of the role menu to edit - Snowflake
+* `menu-id` - The message ID of the role menu to edit - Snowflake
 * `role` - The role to remove from the menu - String
 
 **Result**: Removes the `role` from the menu associated with `menuId`.
@@ -296,10 +302,10 @@ None
 ### Name: `edit-say`
 **Arguments**:
 (Moderators only)
-* `messageToEdit` - The ID of the message contain the embed you'd like to edit - Snowflake
-* `newContent` - The new content for the message - Optional String
-* `newColor` - The new color for the embed - Optional Color (default: Blurple)
-* `channelOfMessage` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)
+* `message-to-edit` - The ID of the message contain the embed you'd like to edit - Snowflake
+* `new-content` - The new content for the message - Optional String
+* `new-color` - The new color for the embed - Optional Color (default: Blurple)
+* `channel-of-message` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)
 * `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean (default: true)
 
 **Result**: Edited message/embed
@@ -336,7 +342,7 @@ None
 
 ### Name: `thread rename`
 **Arguments**:
-* `newName` - New name for the thread executed in - String
+* `new-name` - New name for the thread executed in - String
 
 **Result**: Renames the thread executed in **if executed by a moderator or the thread owner**.
 
@@ -348,7 +354,7 @@ None
 
 ### Name: `thread transfer`
 **Arguments**:
-* `newOwner` - The person you want to transfer ownership of the thread to - User
+* `new-owner` - The person you want to transfer ownership of the thread to - User
 
 **Result**: Transfers ownership of the thread executed in to `newOwner` **if executed by a moderator or the thread owner**. Creates a message in the executed thread noting this transfer.
 
@@ -397,9 +403,9 @@ None
 ### Name: `reminder set`
 **Arguments**:
 * `time` - The time until the bot should send the reminder - Coalescing Duration
-* `customMessage` - A custom message to attach to the reminder - Optional String
+* `custom-message` - A custom message to attach to the reminder - Optional String
 * `repeat` - Whether you'd like the reminder to repeat or not. Defaults to false - Optional Boolean
-* `repeatingInterval - The interval at which the reminder should be repeated - Optional Coalescing Duration
+* `repeating-interval - The interval at which the reminder should be repeated - Optional Coalescing Duration
 
 **Result**: Sets a reminder that will be sent in the channel the reminder was set in, once the set duration has passed
 
@@ -423,7 +429,7 @@ None
 
 ### Name: `remind mod-list`
 **Arguments**:
-* `userId` - The ID of the user to get the reminders for - Snowflake
+* `user-id` - The ID of the user to get the reminders for - Snowflake
 
 **Result**: Displays an embed containing all the reminders for the target user. If there are none, it returns a messages saying so.
 
@@ -447,8 +453,8 @@ None
 
 ### Name: `remind mod-remove`
 **Arguments**:
-* `userId` - The ID of the user to get the reminders for - Snowflake
-* `reminderId` - The ID of the reminder to remove - Snowflake
+* `user-id` - The ID of the user to get the reminders for - Snowflake
+* `reminder-id` - The ID of the reminder to remove - Snowflake
 
 **Result**: Deletes the reminder from the user
 
@@ -553,7 +559,7 @@ Tag commands are guild specific commands, that can be added at runtime. They are
 
 ### Name: `tag`
 **Arguments**:
-* `tagName` - The named identifier of the tag you wish to run - String
+* `tag-name` - The named identifier of the tag you wish to run - String
 
 **Result**: Posts the tag embed you requested
 
@@ -566,9 +572,10 @@ Tag commands are guild specific commands, that can be added at runtime. They are
 ### Name: `tag-create`
 **Arguments**:
 (Moderators only)
-* `tagName` - The named identifier of the tag you wish to create. - String
-* `tagTitle` - The tag embed title - String
-* `tagValue` - The tag embed description - String
+* `tag-name` - The named identifier of the tag you wish to create. - String
+* `tag-title` - The tag embed title - String
+* `tag-value` - The tag embed description - String
+* `appearance` - Whether the tag should appear as an embed or a message. Options: `embed`, `message` - String choice
 
 **Result**: Creates a tag for the guild you ran this command in
 
@@ -580,7 +587,7 @@ Tag commands are guild specific commands, that can be added at runtime. They are
 
 ### Name: `tag-delete`
 **Arguments**:
-* `tagName` - The named identifier of the tag you wish to delete - String
+* `tag-name` - The named identifier of the tag you wish to delete - String
 
 **Result**: Deletes the tag for the guild you ran this command in
 
@@ -592,10 +599,11 @@ Tag commands are guild specific commands, that can be added at runtime. They are
 
 ### Name: `tag-edit`
 **Arguments**:
-* `tagName` - The named identifier of the tag you wish to edit - String
-* `newName` - The new named identifier of the tag - Optional String
-* `newTitle` - The new embed title - Optional String
-* `newValue` - The new embed description - Optional String
+* `tag-name` - The named identifier of the tag you wish to edit - String
+* `new-name` - The new named identifier of the tag - Optional String
+* `new-title` - The new embed title - Optional String
+* `new-value` - The new embed description - Optional String
+* `new-appearance` - Whether the tag should appear as an embed or a message. Options: `embed`, `message` - String choice
 
 **Result**: Edits the tag for the guild you ran this command in
 
@@ -631,7 +639,7 @@ None
 
 ### Name: `tag-preview`
 **Arguments**:
-* `tagName` - The named identifier of the tag you wish to preview - String
+* `tag-name` - The named identifier of the tag you wish to preview - String
 
 **Result**: Displays a preview of the tag embed you requested.
 

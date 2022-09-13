@@ -35,7 +35,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 
 /**
@@ -68,7 +68,7 @@ class TerminalModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -134,6 +134,14 @@ class TerminalModeration : Extension() {
 					embed.image = null
 					actionLog.createMessage { embeds.add(embed) }
 				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Banned a user"
+						description = "${userArg.mention} has been banned!"
+						color = DISCORD_BLACK
+					}
+				}
 			}
 		}
 
@@ -156,7 +164,7 @@ class TerminalModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -216,7 +224,7 @@ class TerminalModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -283,6 +291,13 @@ class TerminalModeration : Extension() {
 					actionLog.createMessage { embeds.add(embed) }
 				}
 
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Soft-Banned a user"
+						description = "${userArg.mention} has been soft-banned!"
+					}
+				}
+
 				// Unban the user, as you're supposed to in soft-ban
 				guild?.unban(userArg.id)
 			}
@@ -307,7 +322,7 @@ class TerminalModeration : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
 						config.channel!!,
 						ConfigType.MODERATION,
@@ -357,6 +372,13 @@ class TerminalModeration : Extension() {
 				} catch (e: KtorRequestException) {
 					embed.image = null
 					actionLog.createMessage { embeds.add(embed) }
+				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Kicked a user"
+						description = "${userArg.mention} has been kicked!"
+					}
 				}
 			}
 		}

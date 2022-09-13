@@ -38,11 +38,13 @@ import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResp
 import dev.kord.core.event.channel.thread.ThreadUpdateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
+import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
-import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
+import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.configPresent
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 
 class ThreadControl : Extension() {
 
@@ -156,6 +158,14 @@ class ThreadControl : Extension() {
 				action {
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
+					val utilityLog =
+						getLoggingChannelWithPerms(
+							guild!!.asGuild(),
+							getUtilityLogOrFirst(guild)?.id,
+							ConfigType.UTILITY,
+							interactionResponse
+						)
+							?: return@action
 
 					val oldOwnerId = ThreadsCollection().getThread(threadChannel.id)?.ownerId ?: threadChannel.ownerId
 					val oldOwner = guild!!.getMember(oldOwnerId)
@@ -182,6 +192,28 @@ class ThreadControl : Extension() {
 					if (member != oldOwner) content += " Transferred by ${member.mention}"
 
 					threadChannel.createMessage(content)
+
+					utilityLog.createMessage {
+						embed {
+							title = "Thread ownership transfered"
+							field {
+								name = "Previous owner"
+								value = "${oldOwner.mention} ${oldOwner.tag}"
+							}
+							field {
+								name = "New owner"
+								value = "${arguments.newOwner.mention} ${arguments.newOwner.tag}"
+							}
+							if (member != oldOwner) {
+								footer {
+									text = "Transferred by ${member.mention}"
+									icon = member.avatar?.url
+								}
+							}
+							timestamp = Clock.System.now()
+							color = DISCORD_FUCHSIA
+						}
+					}
 				}
 			}
 
@@ -191,13 +223,20 @@ class ThreadControl : Extension() {
 
 				check {
 					isInThread()
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 					requireBotPermissions(Permission.ManageThreads)
 					botHasChannelPerms(Permissions(Permission.ManageThreads))
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
+					val utilityLog =
+						getLoggingChannelWithPerms(
+							guild!!.asGuild(),
+							getUtilityLogOrFirst(guild)?.id,
+							ConfigType.UTILITY,
+							interactionResponse
+						)
+							?: return@action
+
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
@@ -228,8 +267,7 @@ class ThreadControl : Extension() {
 									action {
 										ThreadsCollection().setThreadOwner(thread.threadId, thread.ownerId, false)
 										edit { content = "Thread archiving will no longer be prevented" }
-										guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
-											.createMessage {
+										utilityLog.createMessage {
 												embed {
 													title = "Thread archive prevention disabled"
 													color = DISCORD_FUCHSIA
@@ -262,7 +300,7 @@ class ThreadControl : Extension() {
 					} else if (thread?.preventArchiving == false) {
 						ThreadsCollection().setThreadOwner(thread.threadId, thread.ownerId, true)
 						try {
-							guild!!.getChannelOf<GuildMessageChannel>(config.channel!!).createMessage {
+							utilityLog.createMessage {
 								embed {
 									title = "Thread archive prevention enabled"
 									color = DISCORD_FUCHSIA
