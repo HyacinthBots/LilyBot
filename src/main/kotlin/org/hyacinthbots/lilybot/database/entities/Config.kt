@@ -7,12 +7,12 @@ import kotlinx.serialization.Serializable
  * The data for moderation configuration. The logging config stores where logs are sent to, and whether to enable or
  * disable certain configurations.
  *
- * @param guildId The ID of the guild the config is for
- * @param enableMessageDeleteLogs If deleted messages should be logged
- * @param enableMessageEditLogs If edited messages should be logged
- * @param messageChannel The channel to send message logs to
- * @param enableMemberLogs If users joining or leaving the guild should be logged
- * @param memberLog The channel to send member logs to
+ * @property guildId The ID of the guild the config is for
+ * @property enableMessageDeleteLogs If deleted messages should be logged
+ * @property enableMessageEditLogs If edited messages should be logged
+ * @property messageChannel The channel to send message logs to
+ * @property enableMemberLogs If users joining or leaving the guild should be logged
+ * @property memberLog The channel to send member logs to
  * @since 4.0.0
  */
 @Serializable
@@ -29,10 +29,10 @@ data class LoggingConfigData(
  * The data for moderation configuration. The moderation config is what stores the data for moderation actions. The
  * channel for logging and the team for pinging.
  *
- * @param guildId The ID of the guild the config is for
- * @param enabled If the support module is enabled or not
- * @param channel The ID of the action log for the guild
- * @param role The ID of the moderation role for the guild
+ * @property guildId The ID of the guild the config is for
+ * @property enabled If the support module is enabled or not
+ * @property channel The ID of the action log for the guild
+ * @property role The ID of the moderation role for the guild
  * @since 4.0.0
  */
 @Serializable
@@ -48,11 +48,11 @@ data class ModerationConfigData(
  * The data for support configuration. The support config stores the data for support functionality. Channel for the
  * place to create threads to and team for pinging into support threads.
  *
- * @param guildId The ID of the guild the config is for
- * @param enabled If the support module is enabled or not
- * @param channel The ID of the support channel for the guild
- * @param role The ID of the support team for the guild
- * @param message The support message as a string, nullable
+ * @property guildId The ID of the guild the config is for
+ * @property enabled If the support module is enabled or not
+ * @property channel The ID of the support channel for the guild
+ * @property role The ID of the support team for the guild
+ * @property message The support message as a string, nullable
  * @since 4.0.0
  */
 @Serializable
@@ -68,9 +68,9 @@ data class SupportConfigData(
  * The data for miscellaneous configuration. The miscellaneous config stores the data for enabling or disabling log
  * uploading.
  *
- * @param guildId The ID of the guild the config is for
- * @param disableLogUploading If log uploading is enabled or not
- * @param utilityLogChannel The channel to log various utility actions too
+ * @property guildId The ID of the guild the config is for
+ * @property disableLogUploading If log uploading is enabled or not
+ * @property utilityLogChannel The channel to log various utility actions too
  * @since 4.0.0
  */
 @Serializable
