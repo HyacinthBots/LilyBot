@@ -28,6 +28,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
@@ -152,14 +153,29 @@ class Tags : Extension() {
 
 				// Log when a message tag is sent to allow identification of tag spammers
 				if (tagFromDatabase.tagAppearance == "message") {
-					getModerationChannelWithPerms(
+					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						ModerationConfigCollection().getConfig(guild!!.id)!!.channel ?: guild!!.asGuild()
+						UtilityConfigCollection().getConfig(guild!!.id)!!.utilityLogChannel ?: guild!!.asGuild()
 							.getSystemChannel()!!.id,
-						ConfigType.MODERATION,
+						ConfigType.UTILITY,
 						interactionResponse
 					)?.createMessage {
-						content = "${tagFromDatabase.name} was used by ${user.asUser().tag} in ${channel.mention}"
+						embed {
+							author {
+								name = "Message Tag used"
+								icon = user.asUser().avatar?.url
+							}
+							description = "${user.asUser().mention} (${user.asUser().tag}) used a message tag"
+							field {
+								name = "Tag name"
+								value = "`${arguments.tagName}`"
+							}
+							field {
+								name = "Location"
+								value = "${channel.mention} ${channel.asChannel().data.name.value}"
+							}
+							timestamp = Clock.System.now()
+						}
 					}
 				}
 			}
