@@ -21,6 +21,7 @@ import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.response.FollowupPermittingInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.NewsChannel
@@ -170,13 +171,26 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				}
 			}
 
-			ConfigOptions.MESSAGE_LOGGING_ENABLED -> {
+			ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED -> {
 				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
 				if (loggingConfig == null) {
 					fail("Unable to access logging config for this guild! Please inform a member of staff.")
 					break
-				} else if (!loggingConfig.enableMessageLogs) {
-					fail("Message logging is disabled for this guild!")
+				} else if (!loggingConfig.enableMessageDeleteLogs) {
+					fail("Message delete logging is disabled for this guild!")
+					break
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED -> {
+				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
+				if (loggingConfig == null) {
+					fail("Unable to access logging config for this guild! Please inform a member of staff.")
+					break
+				} else if (!loggingConfig.enableMessageEditLogs) {
+					fail("Message edit logging is disabled for this guild!")
 					break
 				} else {
 					pass()
@@ -530,18 +544,55 @@ suspend inline fun getLoggingChannelWithPerms(
 	getLoggingChannelWithPerms(inputGuild, targetChannel, configType, null)
 
 /**
- * A small function to get the utility log of a guild or the first available channel.
+ * A small function to get a log of a guild or the first available channel.
  *
+ * @param configOption The option to get the channel of
  * @param guild The guild for the channel
  * @return The utility log or the first usable channel
+ * @throws IllegalArgumentException when the [configOption] is invalid
  * @author NoComment1105
  * @since 4.0.1
  */
-suspend inline fun getUtilityLogOrFirst(guild: GuildBehavior?): GuildMessageChannel? {
-	val config = UtilityConfigCollection().getConfig(guild!!.id)
-	return if (config?.utilityLogChannel != null) {
-		guild.getChannelOf(config.utilityLogChannel)
+suspend inline fun getChannelOrFirstUsable(configOption: ConfigOptions, guild: GuildBehavior?): GuildMessageChannel? {
+	val channel = when (configOption) {
+		ConfigOptions.ACTION_LOG -> ModerationConfigCollection().getConfig(guild!!.id)?.channel
+		ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().getConfig(guild!!.id)?.messageChannel
+		ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().getConfig(guild!!.id)?.memberLog
+		ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().getConfig(guild!!.id)?.utilityLogChannel
+		else -> throw IllegalArgumentException("Config Option $configOption does not point to a channel.")
+	}
+	return if (channel != null) {
+		guild.getChannelOf(channel)
 	} else {
 		guild.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild.asGuild())
 	}
+}
+
+/**
+ * Utility to get a string or a default value.
+ * Basically String.ifEmpty but works with nullable strings
+ *
+ * @return This, or defaultValue if this is null or empty
+ * @author trainb0y
+ * @since 4.1.0
+ * @see String.ifEmpty
+ */
+fun String?.ifNullOrEmpty(defaultValue: () -> String): String =
+	if (this.isNullOrEmpty()) {
+		defaultValue()
+	} else {
+		this
+	}
+
+/**
+ * Get this message's contents, trimmed to 1024 characters.
+ * If the message exceeds that length, it will be truncated and an ellipsis appended.
+ * @author trainb0y
+ * @since 4.1.0
+ */
+fun Message?.trimmedContents(): String? {
+	this ?: return null
+	return if (this.content.length > 1024) {
+		this.content.substring(0, 1020) + " ..."
+	} else this.content
 }

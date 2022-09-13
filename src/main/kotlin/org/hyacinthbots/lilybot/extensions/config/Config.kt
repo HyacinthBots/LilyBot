@@ -33,6 +33,7 @@ import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
+import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
@@ -75,7 +76,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			if (supportConfig != null) {
 				ackEphemeral()
 				respondEphemeral {
-					content = "You already have a moderation configuration set. " +
+					content = "You already have a support configuration set. " +
 							"Please clear it before attempting to set a new one."
 				}
 				return@action
@@ -305,16 +306,24 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			if (arguments.enableMemberLogging && arguments.memberLog == null) {
 				respond { content = "You must specify a channel to log members joining and leaving to!" }
 				return@action
-			} else if (arguments.enableMessageLogs && arguments.messageLogs == null) {
-				respond { content = "You must specify a channel to log deleted messages to!" }
+			} else if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) && arguments.messageLogs == null) {
+				respond { content = "You must specify a channel to log deleted/edited messages to!" }
 				return@action
 			}
 
 			suspend fun EmbedBuilder.loggingEmbed() {
 				title = "Configuration: Logging"
 				field {
-					name = "Message Logs"
-					value = if (arguments.enableMessageLogs && arguments.messageLogs?.mention != null) {
+					name = "Message Delete Logs"
+					value = if (arguments.enableMessageDeleteLogs && arguments.messageLogs?.mention != null) {
+						arguments.messageLogs!!.mention
+					} else {
+						"Disabled"
+					}
+				}
+				field {
+					name = "Message Edit Logs"
+					value = if (arguments.enableMessageEditLogs && arguments.messageLogs?.mention != null) {
 						arguments.messageLogs!!.mention
 					} else {
 						"Disabled"
@@ -343,7 +352,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			LoggingConfigCollection().setConfig(
 				LoggingConfigData(
 					guild!!.id,
-					arguments.enableMessageLogs,
+					arguments.enableMessageDeleteLogs,
+					arguments.enableMessageEditLogs,
 					arguments.messageLogs?.id,
 					arguments.enableMemberLogging,
 					arguments.memberLog?.id
@@ -399,7 +409,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				field {
 					name = "Utility Log"
 					value = if (arguments.utilityLogChannel != null) {
-						"Enabled"
+						"${arguments.utilityLogChannel!!.mention} ${arguments.utilityLogChannel!!.data.name.value}"
 					} else {
 						"Disabled"
 					}
@@ -458,7 +468,9 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					interactionResponse
 				)?.createMessage {
 					embed {
-						title = "Configuration Cleared: ${arguments.config}"
+						title = "Configuration Cleared: ${arguments.config[0]}${
+							arguments.config.substring(1, arguments.config.length).lowercase()
+						}"
 						ModerationConfigCollection().getConfig(guild!!.id) ?: run {
 							description = "Consider setting the moderation configuration to receive configuration " +
 									"updates where you want them!"
@@ -578,6 +590,172 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			}
 		}
 	}
+
+	ephemeralSubCommand(::ViewArgs) {
+		name = "view"
+		description = "View the current config that you have set"
+
+		check {
+			anyGuild()
+			hasPermission(Permission.ManageGuild)
+		}
+
+		action {
+			when (arguments.config) {
+				ConfigType.MODERATION.name -> {
+					val config = ModerationConfigCollection().getConfig(guild!!.id)
+					if (config == null) {
+						respond {
+							content = "There is no moderation config for this guild"
+						}
+						return@action
+					}
+
+					respond {
+						embed {
+							title = "Current moderation config"
+							description = "This is the current moderation config for this guild"
+							field {
+								name = "Enabled/Disabled"
+								value = if (config.enabled) "Enabled" else "Disabled"
+							}
+							field {
+								name = "Moderators"
+								value = config.role?.let { guild!!.getRoleOrNull(it)?.mention } ?: "Disabled"
+							}
+							field {
+								name = "Action log"
+								value = config.channel?.let { guild!!.getChannelOrNull(it)?.mention } ?: "Disabled"
+							}
+							field {
+								name = "Log publicly"
+								value = when (config.publicLogging) {
+									true -> "True"
+									false -> "Disabled"
+									null -> "Disabled"
+								}
+							}
+							timestamp = Clock.System.now()
+						}
+					}
+				}
+
+				ConfigType.LOGGING.name -> {
+					val config = LoggingConfigCollection().getConfig(guild!!.id)
+					if (config == null) {
+						respond {
+							content = "There is no logging config for this guild"
+						}
+						return@action
+					}
+
+					respond {
+						embed {
+							title = "Current logging config"
+							description = "This is the current logging config for this guild"
+							field {
+								name = "Message delete logs"
+								value = if (config.enableMessageDeleteLogs) {
+									"Enabled\n" +
+											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.mention }} " +
+											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.name }}"
+								} else {
+									"Disabled"
+								}
+							}
+							field {
+								name = "Message edit logs"
+								value = if (config.enableMessageEditLogs) {
+									"Enabled\n" +
+											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.mention }} " +
+											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.name }}"
+								} else {
+									"Disabled"
+								}
+							}
+							field {
+								name = "Member logs"
+								value = if (config.enableMemberLogs) {
+									"Enabled\n" +
+											"${config.memberLog?.let { guild!!.getChannelOrNull(it)?.mention }} " +
+											"${config.memberLog?.let { guild!!.getChannelOrNull(it)?.name }} "
+								} else {
+									"Disabled"
+								}
+							}
+							timestamp = Clock.System.now()
+						}
+					}
+				}
+
+				ConfigType.SUPPORT.name -> {
+					val config = SupportConfigCollection().getConfig(guild!!.id)
+					if (config == null) {
+						respond {
+							content = "There is no support config for this guild"
+						}
+						return@action
+					}
+
+					respond {
+						embed {
+							title = "Current support config"
+							description = "This is the current support config for this guild"
+							field {
+								name = "Enabled/Disabled"
+								value = if (config.enabled) "Enabled" else "Disabled"
+							}
+							field {
+								name = "Channel"
+								value = "${config.channel?.let { guild!!.getChannelOrNull(it)?.mention }} " +
+										"${config.channel?.let { guild!!.getChannelOrNull(it)?.name }}"
+							}
+							field {
+								name = "Role"
+								value = "${config.role?.let { guild!!.getRoleOrNull(it)?.mention }} " +
+										"${config.role?.let { guild!!.getRoleOrNull(it)?.name }}"
+							}
+							field {
+								name = "Custom message"
+								value =
+									if (config.message != null) "${config.message.substring(0, 500)} ..." else "Default"
+							}
+							timestamp = Clock.System.now()
+						}
+					}
+				}
+
+				ConfigType.UTILITY.name -> {
+					val config = UtilityConfigCollection().getConfig(guild!!.id)
+					if (config == null) {
+						respond {
+							content = "There is no utility config for this guild"
+						}
+						return@action
+					}
+
+					respond {
+						embed {
+							title = "Current utility config"
+							description = "This is the current utility config for this guild"
+							field {
+								name = "Log uploading"
+								value = if (config.disableLogUploading) "Disabled" else "Enabled"
+							}
+							field {
+								name = "Channel"
+								value =
+									"${
+										config.utilityLogChannel?.let { guild!!.getChannelOrNull(it)?.mention } ?: "None"
+									} ${config.utilityLogChannel?.let { guild!!.getChannelOrNull(it)?.name } ?: ""}"
+							}
+							timestamp = Clock.System.now()
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 class SupportArgs : Arguments() {
@@ -625,9 +803,14 @@ class ModerationArgs : Arguments() {
 }
 
 class LoggingArgs : Arguments() {
-	val enableMessageLogs by boolean {
-		name = "enable-message-logs"
+	val enableMessageDeleteLogs by boolean {
+		name = "enable-delete-logs"
 		description = "Enable logging of message deletions"
+	}
+
+	val enableMessageEditLogs by boolean {
+		name = "enable-edit-logs"
+		description = "Enable logging of message edits"
 	}
 
 	val enableMemberLogging by boolean {
@@ -671,6 +854,19 @@ class ClearArgs : Arguments() {
 	}
 }
 
+class ViewArgs : Arguments() {
+	val config by stringChoice {
+		name = "config-type"
+		description = "The type of config to clear"
+		choices = mutableMapOf(
+			"support" to ConfigType.SUPPORT.name,
+			"moderation" to ConfigType.MODERATION.name,
+			"logging" to ConfigType.LOGGING.name,
+			"utility" to ConfigType.UTILITY.name,
+		)
+	}
+}
+
 /**
  * Checks the moderation config and returns where the message needs to be sent.
  *
@@ -689,7 +885,7 @@ suspend inline fun checkChannel(
 	val toReturn: GuildMessageChannel?
 	if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
 		!ModerationConfigCollection().getConfig(guild.id)!!.enabled ||
-				channelIdToCheck == null
+		channelIdToCheck == null
 	) {
 		toReturn = getLoggingChannelWithPerms(
 			guild.asGuild(),

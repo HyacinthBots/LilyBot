@@ -1,12 +1,12 @@
 package org.hyacinthbots.lilybot.extensions.events
 
-import com.kotlindiscord.kord.extensions.DISCORD_PINK
+import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageDeleteEvent
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageDeleteEvent
+import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageUpdateEvent
+import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageUpdateEvent
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
@@ -22,73 +22,70 @@ import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
 import org.hyacinthbots.lilybot.utils.trimmedContents
 
 /**
- * The class for logging deletion of messages to the guild message log.
- *
- * @since 2.0
+ * The class for logging editing of messages to the guild message log.
+ * @since 4.1.0
  */
-class MessageDelete : Extension() {
-	override val name = "message-delete"
+class MessageEdit : Extension() {
+	override val name = "message-edit"
 
 	override suspend fun setup() {
 		/**
-		 * Logs proxied deleted messages in a guild to the message log channel designated in the config for that guild
-		 * @author NoComment1105
-		 * @see onMessageDelete
+		 * Logs edited messages to the message log channel.
+		 * @see onMessageEdit
+		 * @author trainb0y
 		 */
-		event<ProxiedMessageDeleteEvent> {
+		event<UnProxiedMessageUpdateEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				configPresent(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
-					event.message?.author?.id == kord.selfId
+					event.message.asMessage().author?.id == kord.selfId
 				}
 			}
-
 			action {
-				onMessageDelete(event.getMessage(), event.pkMessage)
+				onMessageEdit(event.getMessage(), event.old, null)
 			}
 		}
 
 		/**
-		 * Logs unproxied deleted messages in a guild to the message log channel designated in the config for that guild.
-		 * @author NoComment1105
-		 * @see onMessageDelete
+		 * Logs proxied edited messages to the message log channel.
+		 * @see onMessageEdit
+		 * @author trainb0y
 		 */
-		event<UnProxiedMessageDeleteEvent> {
+		event<ProxiedMessageUpdateEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				configPresent(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
-					event.message?.author?.id == kord.selfId ||
-							event.message?.author?.isBot == true
+					event.message.asMessage().author?.id == kord.selfId
 				}
 			}
-
 			action {
-				onMessageDelete(event.getMessage(), null)
+				onMessageEdit(event.getMessage(), event.old, event.pkMessage)
 			}
 		}
 	}
 
 	/**
-	 * If message logging is enabled, sends an embed describing the message deletion to the guild's message log channel.
+	 * If message logging is enabled, sends an embed describing the message edit to the guild's message log channel.
 	 *
-	 * @param message The deleted message
+	 * @param message The current message
+	 * @param old The original message
 	 * @param proxiedMessage Extra data for PluralKit proxied messages
 	 * @author trainb0y
 	 */
-	private suspend fun onMessageDelete(message: Message, proxiedMessage: PKMessage?) {
+	private suspend fun onMessageEdit(message: Message, old: Message?, proxiedMessage: PKMessage?) {
 		val guild = message.getGuild()
 		val config = LoggingConfigCollection().getConfig(guild.id) ?: return
 		val messageLog =
-			getLoggingChannelWithPerms(message.getGuild(), config.messageChannel!!, ConfigType.LOGGING)
+			getLoggingChannelWithPerms(guild, config.messageChannel!!, ConfigType.LOGGING)
 				?: return
 
 		messageLog.createMessage {
 			embed {
-				color = DISCORD_PINK
+				color = DISCORD_YELLOW
 				author {
-					name = "Message deleted"
+					name = "Message Edited"
 					icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.url
 				}
 				description =
@@ -97,8 +94,13 @@ class MessageDelete : Extension() {
 				timestamp = Clock.System.now()
 
 				field {
-					name = "Message contents"
-					value = message.trimmedContents().ifNullOrEmpty { "Failed to retrieve previous message contents" }
+					name = "Previous contents"
+					value = old?.trimmedContents().ifNullOrEmpty { "Failed to retrieve previous message contents" }
+					inline = false
+				}
+				field {
+					name = "New contents"
+					value = message.trimmedContents().ifNullOrEmpty { "Failed to retrieve new message contents" }
 					inline = false
 				}
 
@@ -109,7 +111,6 @@ class MessageDelete : Extension() {
 						inline = false
 					}
 				}
-
 				if (proxiedMessage != null) {
 					field {
 						name = "Message Author:"
@@ -118,7 +119,6 @@ class MessageDelete : Extension() {
 								guild.getMember(proxiedMessage.sender).mention
 						inline = true
 					}
-
 					field {
 						name = "Author ID:"
 						value = proxiedMessage.sender.toString()
@@ -130,7 +130,6 @@ class MessageDelete : Extension() {
 							"${message.author?.tag ?: "Failed to get author of message"} ${message.author?.mention ?: ""}"
 						inline = true
 					}
-
 					field {
 						name = "Author ID:"
 						value = message.author?.id.toString()

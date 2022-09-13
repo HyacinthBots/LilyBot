@@ -8,15 +8,15 @@ import kotlinx.serialization.Serializable
 /**
  * The data for reminders set by users.
  *
- * @param initialSetTime The time the reminder was set
- * @param guildId The ID of the guild the reminder was set in
- * @param userId The ID of the user that would like to be reminded
- * @param channelId The ID of the channel the reminder was set in
- * @param remindTime The time the user would like to be reminded at
- * @param originalMessageUrl The URL to the original message that set the reminder
- * @param customMessage A custom message to attach to the reminder
- * @param repeating Whether the reminder should repeat
- * @param id The numerical ID of the reminder
+ * @property initialSetTime The time the reminder was set
+ * @property guildId The ID of the guild the reminder was set in
+ * @property userId The ID of the user that would like to be reminded
+ * @property channelId The ID of the channel the reminder was set in
+ * @property remindTime The time the user would like to be reminded at
+ * @property originalMessageUrl The URL to the original message that set the reminder
+ * @property customMessage A custom message to attach to the reminder
+ * @property repeating Whether the reminder should repeat
+ * @property id The numerical ID of the reminder
  *
  * @since 3.3.2
  */

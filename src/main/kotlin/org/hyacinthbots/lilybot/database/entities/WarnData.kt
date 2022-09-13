@@ -6,9 +6,9 @@ import kotlinx.serialization.Serializable
 /**
  * The data for warnings in guilds.
  *.
- * @param userId The ID of the user with warnings
- * @param guildId The ID of the guild they received the warning in
- * @param strikes The amount of strikes they have received
+ * @property userId The ID of the user with warnings
+ * @property guildId The ID of the guild they received the warning in
+ * @property strikes The amount of strikes they have received
  * @since 3.0.0
  */
 @Serializable

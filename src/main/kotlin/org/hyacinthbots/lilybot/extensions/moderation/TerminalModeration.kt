@@ -16,6 +16,7 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
+import com.kotlindiscord.kord.extensions.utils.toDuration
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.createEmbed
@@ -28,6 +29,8 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.TimeZone
 import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -106,8 +109,8 @@ class TerminalModeration : Extension() {
 
 				// Run the ban task
 				guild?.ban(userArg.id, builder = {
-					this.reason = arguments.reason
-					this.deleteMessagesDays = arguments.messages
+					reason = arguments.reason
+					deleteMessageDuration = DateTimePeriod(days = arguments.messages).toDuration(TimeZone.UTC)
 				})
 
 				respond {
@@ -262,8 +265,8 @@ class TerminalModeration : Extension() {
 
 				// Ban the user, mark it as a soft-ban clearly
 				guild?.ban(userArg.id, builder = {
-					this.reason = "${arguments.reason} + **SOFT-BAN**"
-					this.deleteMessagesDays = arguments.messages
+					reason = "${arguments.reason} + **SOFT-BAN**"
+					deleteMessageDuration = DateTimePeriod(days = arguments.messages).toDuration(TimeZone.UTC)
 				})
 
 				respond {

@@ -27,8 +27,11 @@ enum class ConfigOptions {
 	/** The option that stores whether to log a moderation action publicly. */
 	LOG_PUBLICLY,
 
-	/** The option that stores whether the logging config is enabled or not. */
-	MESSAGE_LOGGING_ENABLED,
+	/** The option that stores whether message delete logging is enabled. */
+	MESSAGE_DELETE_LOGGING_ENABLED,
+
+	/** The option that stores whether message edit logging is enabled. */
+	MESSAGE_EDIT_LOGGING_ENABLED,
 
 	/** The options that stores the message logging channel. */
 	MESSAGE_LOG,
