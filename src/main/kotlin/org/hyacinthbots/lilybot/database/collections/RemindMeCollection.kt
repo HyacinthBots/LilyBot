@@ -106,4 +106,15 @@ class RemindMeCollection : KordExKoinComponent {
 			RemindMeData::userId eq inputUserId,
 			RemindMeData::id eq id
 		)
+
+	/**
+	 * Removes all reminders associated with a guild.
+	 *
+	 * @param inputGuildId The guild to remove reminders for
+	 *
+	 * @author NoComment1105
+	 * @since 4.1.0
+	 */
+	suspend inline fun removeGuildReminders(inputGuildId: Snowflake) =
+		collection.deleteMany(RemindMeData::guildId eq inputGuildId)
 }

@@ -60,6 +60,7 @@ import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.RemindMeCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
@@ -487,7 +488,9 @@ class ModUtilities : Extension() {
 				var response: EphemeralMessageInteractionResponse? = null
 
 				response = modalResponse.respond {
-					content = "Are you sure you want to reset the database? This action is **irreversible**."
+					content = "Are you sure you want to reset the database? This will remove all data associated with " +
+							"this guild from Lily's database. This includes configs, user-set reminders, tags and more." +
+							"This action is **irreversible** and the data **cannot** be recovered."
 
 					components {
 						ephemeralButton(0) {
@@ -506,7 +509,7 @@ class ModUtilities : Extension() {
 								)?.createMessage {
 									embed {
 										title = "Database Reset!"
-										description = "All data associated with this guild has been reset."
+										description = "All data associated with this guild has been removed."
 										timestamp = Clock.System.now()
 										color = DISCORD_BLACK
 									}
@@ -519,6 +522,7 @@ class ModUtilities : Extension() {
 								UtilityConfigCollection().clearConfig(guild!!.id)
 								GalleryChannelCollection().removeAll(guild!!.id)
 								LogUploadingBlacklistCollection().clearBlacklist(guild!!.id)
+								RemindMeCollection().removeGuildReminders(guild!!.id)
 								RoleMenuCollection().removeAllRoleMenus(guild!!.id)
 								TagsCollection().clearTags(guild!!.id)
 								for (it in ThreadsCollection().getAllThreads()) {
@@ -530,7 +534,7 @@ class ModUtilities : Extension() {
 						}
 
 						ephemeralButton(0) {
-							label = "Never-mind"
+							label = "Nevermind"
 							style = ButtonStyle.Secondary
 
 							action {
