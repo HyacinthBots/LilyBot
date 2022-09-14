@@ -70,12 +70,13 @@ class ThreadsCollection : KordExKoinComponent {
 	 * @since 3.2.0
 	 */
 	suspend inline fun setThreadOwner(
+		inputGuildId: Snowflake?,
 		inputThreadId: Snowflake,
 		newOwnerId: Snowflake,
 		preventArchiving: Boolean = false
 	) {
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
-		collection.insertOne(ThreadData(inputThreadId, newOwnerId, preventArchiving))
+		collection.insertOne(ThreadData(inputGuildId, inputThreadId, newOwnerId, preventArchiving))
 	}
 
 	/**
@@ -88,4 +89,15 @@ class ThreadsCollection : KordExKoinComponent {
 	 */
 	suspend inline fun removeThread(inputThreadId: Snowflake) =
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
+
+	/**
+	 * This function deletes the ownership data stored in database for the given [inputGuildId].
+	 *
+	 * @param inputGuildId The ID of the guild whose threads to delete
+	 *
+	 * @author NoComment1105
+	 * @since 4.1.0
+	 */
+	suspend inline fun removeGuildThreads(inputGuildId: Snowflake) =
+		collection.deleteMany(ThreadData::guildId eq inputGuildId)
 }
