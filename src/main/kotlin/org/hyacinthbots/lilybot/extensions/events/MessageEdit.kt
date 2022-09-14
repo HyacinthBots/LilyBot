@@ -89,7 +89,7 @@ class MessageEdit : Extension() {
 					icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.url
 				}
 				description =
-					"Location: ${message.channel.mention}" +
+					"Location: ${message.channel.mention} " +
 							"(${message.channel.asChannelOf<GuildMessageChannel>().name})"
 				timestamp = Clock.System.now()
 
