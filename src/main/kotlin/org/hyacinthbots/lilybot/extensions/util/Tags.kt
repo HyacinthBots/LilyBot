@@ -25,9 +25,12 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.getChannelOfOrNull
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
@@ -147,6 +150,33 @@ class Tags : Extension() {
 					} else {
 						content =
 							"${arguments.user?.mention ?: ""}\n**${tagFromDatabase.tagTitle}**\n${tagFromDatabase.tagValue}"
+					}
+				}
+
+				// Log when a message tag is sent to allow identification of tag spammers
+				if (tagFromDatabase.tagAppearance == "message") {
+					val utilityLog = UtilityConfigCollection().getConfig(guild!!.id)?.utilityLogChannel ?: return@action
+					guild!!.getChannelOfOrNull<GuildMessageChannel>(utilityLog)?.createMessage {
+						embed {
+							title = "Message Tag used"
+							field {
+								name = "User"
+								value = "${user.asUser().mention} (${user.asUser().tag})"
+							}
+							field {
+								name = "Tag name"
+								value = "`${arguments.tagName}`"
+							}
+							field {
+								name = "Location"
+								value = "${channel.mention} ${channel.asChannel().data.name.value}"
+							}
+							footer {
+								text = "User ID: ${user.asUser().id}"
+								icon = user.asUser().avatar?.url
+							}
+							timestamp = Clock.System.now()
+						}
 					}
 				}
 			}
