@@ -32,6 +32,7 @@ import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -401,6 +402,17 @@ suspend inline fun Extension.updateDefaultPresence() {
  * @since 3.4.5
  */
 suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.cacheWithRestFallback).guilds.count()
+
+/**
+ * Gets the member count for a given guild.
+ *
+ * @param guildId The target guild
+ * @return The number of members in that guild
+ * @author NoComment1105
+ * @since 4.1.0
+ */
+suspend inline fun Extension.getMemberCount(guildId: Snowflake) =
+	kord.with(EntitySupplyStrategy.rest).getGuild(guildId).members.map { }.count()
 
 /**
  * This function loads the database and checks if it is up-to-date. If it isn't, it will update the database via

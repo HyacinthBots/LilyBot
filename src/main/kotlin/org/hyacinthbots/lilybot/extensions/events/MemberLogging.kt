@@ -14,6 +14,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getMemberCount
 
 /**
  * Logs members joining and leaving a guild to the member log channel designated in the config for that guild.
@@ -52,6 +53,9 @@ class MemberLogging : Extension() {
 						value = event.member.id.toString()
 						inline = false
 					}
+					footer {
+						text = "Member Count: ${getMemberCount(event.guildId)}"
+					}
 					timestamp = Clock.System.now()
 					color = DISCORD_GREEN
 				}
@@ -83,7 +87,9 @@ class MemberLogging : Extension() {
 					field {
 						name = "ID:"
 						value = event.user.id.toString()
-						inline = false
+					}
+					footer {
+						text = "Member Count: ${getMemberCount(event.guildId)}"
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_RED
