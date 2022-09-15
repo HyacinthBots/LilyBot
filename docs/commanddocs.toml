@@ -156,7 +156,7 @@ permissions = "Moderate Members"
 [[command]]
 category = "Utility commands"
 name = "edit-say"
-args = "(Moderators only)\n* `message-to-edit` - The ID of the message contain the embed you'd like to edit - Snowflake\n* `new-content` - The new content for the message - Optional String\n* `new-color` - The new color for the embed - Optional Color (default: Blurple)\n* `channel-of-message` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)\n* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean (default: true)"
+args = "(Moderators only)\n* `message-to-edit` - The ID of the message contain the embed you'd like to edit - Snowflake\n* `new-content` - The new content for the message - Optional String\n* `new-color` - The new color for the embed - Optional Color (default: Blurple)\n* `channel-of-message` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)\n* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean"
 result = "Edited message/embed"
 permissions = "Moderate Members"
 

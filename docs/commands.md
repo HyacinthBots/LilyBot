@@ -306,7 +306,7 @@ None
 * `new-content` - The new content for the message - Optional String
 * `new-color` - The new color for the embed - Optional Color (default: Blurple)
 * `channel-of-message` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)
-* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean (default: true)
+* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean
 
 **Result**: Edited message/embed
 

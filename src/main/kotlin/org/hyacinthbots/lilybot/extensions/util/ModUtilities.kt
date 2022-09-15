@@ -10,6 +10,7 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalColour
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
@@ -300,7 +301,11 @@ class ModUtilities : Extension() {
 						embed {
 							description = arguments.newContent ?: oldContent
 							color = arguments.newColor ?: oldColor
-							timestamp = if (arguments.timestamp) message.timestamp else oldTimestamp
+							timestamp = when (arguments.timestamp) {
+								true -> message.timestamp
+								false -> null
+								null -> oldTimestamp
+							}
 						}
 					}
 
@@ -330,7 +335,11 @@ class ModUtilities : Extension() {
 							}
 							field {
 								name = "Has Timestamp"
-								value = arguments.timestamp.toString()
+								value = when (arguments.timestamp) {
+									true -> "True"
+									false -> "False"
+									else -> "Original"
+								}
 							}
 							footer {
 								text = "Edited by ${user.asUser().tag}"
@@ -486,9 +495,10 @@ class ModUtilities : Extension() {
 				var response: EphemeralMessageInteractionResponse? = null
 
 				response = modalResponse.respond {
-					content = "Are you sure you want to reset the database? This will remove all data associated with " +
-							"this guild from Lily's database. This includes configs, user-set reminders, tags and more." +
-							"This action is **irreversible** and the data **cannot** be recovered."
+					content =
+						"Are you sure you want to reset the database? This will remove all data associated with " +
+								"this guild from Lily's database. This includes configs, user-set reminders, tags and more." +
+								"This action is **irreversible** and the data **cannot** be recovered."
 
 					components {
 						ephemeralButton(0) {
@@ -644,10 +654,9 @@ class ModUtilities : Extension() {
 		}
 
 		/** Whether to add the timestamp of when the message was originally sent or not. */
-		val timestamp by defaultingBoolean {
+		val timestamp by optionalBoolean {
 			name = "timestamp"
 			description = "Whether to timestamp the embed or not. Embeds only"
-			defaultValue = true
 		}
 	}
 
