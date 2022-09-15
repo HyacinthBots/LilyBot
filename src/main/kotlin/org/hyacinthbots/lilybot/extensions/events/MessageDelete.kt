@@ -84,6 +84,10 @@ class MessageDelete : Extension() {
 			getLoggingChannelWithPerms(message.getGuild(), config.messageChannel!!, ConfigType.LOGGING)
 				?: return
 
+		if (message.content.startsWith("pk;e", 0, true)) {
+			return
+		}
+
 		messageLog.createMessage {
 			embed {
 				color = DISCORD_PINK
