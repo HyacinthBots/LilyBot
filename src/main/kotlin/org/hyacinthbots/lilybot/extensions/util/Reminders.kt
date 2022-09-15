@@ -761,6 +761,7 @@ class Reminders : Extension() {
 
 				// Remove the old reminder from the database
 				if (it.repeating) {
+					RemindMeCollection().removeReminder(it.guildId, it.userId, it.id)
 					RemindMeCollection().setReminder(
 						Clock.System.now(),
 						it.guildId,
@@ -773,7 +774,6 @@ class Reminders : Extension() {
 						it.repeatingInterval,
 						it.id
 					)
-					RemindMeCollection().removeReminder(it.guildId, it.userId, it.id)
 				} else {
 					RemindMeCollection().removeReminder(it.guildId, it.userId, it.id)
 				}
