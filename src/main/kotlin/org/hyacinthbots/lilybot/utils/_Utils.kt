@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import com.kotlindiscord.kord.extensions.utils.loadModule
@@ -29,6 +30,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.supplier.EntitySupplyStrategy
+import dev.kord.rest.builder.message.EmbedBuilder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
@@ -607,4 +609,50 @@ fun Message?.trimmedContents(): String? {
 	return if (this.content.length > 1024) {
 		this.content.substring(0, 1020) + " ..."
 	} else this.content
+}
+
+/**
+ * This function removed duplicated code from MessageDelete and MessageEdit.
+ * It holds attachment and PluralKit info fields for the logging embeds.
+ * @author tempest15
+ * @since 4.1.0
+ */
+suspend fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
+	guild: Guild,
+    message: Message,
+    proxiedMessage: PKMessage?
+) {
+	if (message.attachments.isNotEmpty()) {
+		field {
+			name = "Attachments"
+			value = message.attachments.map { it.url }.joinToString { "\n" }
+			inline = false
+		}
+	}
+	if (proxiedMessage != null) {
+		field {
+			name = "Message Author:"
+			value = "System Member: ${proxiedMessage.member.name}\n" +
+					"Account: ${guild.getMember(proxiedMessage.sender).tag} " +
+					guild.getMember(proxiedMessage.sender).mention
+			inline = true
+		}
+
+		field {
+			name = "Author ID:"
+			value = proxiedMessage.sender.toString()
+		}
+	} else {
+		field {
+			name = "Message Author:"
+			value =
+				"${message.author?.tag ?: "Failed to get author of message"} ${message.author?.mention ?: ""}"
+			inline = true
+		}
+
+		field {
+			name = "Author ID:"
+			value = message.author?.id.toString()
+		}
+	}
 }
