@@ -11,8 +11,8 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefa
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalAttachment
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -34,7 +34,6 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.supplier.EntitySupplyStrategy
-import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.map
@@ -263,24 +262,18 @@ class TemporaryModeration : Extension() {
 					}
 				}
 
-				val embed = EmbedBuilder()
-				embed.color = DISCORD_BLACK
-				embed.title = "Warning"
-				embed.image = arguments.image
-				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
-				embed.timestamp = Clock.System.now()
-				embed.field {
-					name = "Total Strikes:"
-					value = newStrikes.toString()
-					inline = false
-				}
-
-				try {
-					actionLog.createMessage { embeds.add(embed) }
-				} catch (e: KtorRequestException) {
-					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+				actionLog.createMessage {
+					embed {
+						title = "Warning"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, userArg, user)
+						dmNotificationStatusEmbedField(arguments.dm, dm)
+						timestamp = Clock.System.now()
+						field {
+							name = "Total strikes"
+							value = newStrikes.toString()
+						}
+					}
 				}
 
 				if (config.publicLogging != null && config.publicLogging == true) {
@@ -428,25 +421,20 @@ class TemporaryModeration : Extension() {
 					content = "Timed out ${userArg.id}"
 				}
 
-				val embed = EmbedBuilder()
-				embed.color = DISCORD_BLACK
-				embed.title = "Timeout"
-				embed.image = arguments.image
-				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
-				embed.timestamp = Clock.System.now()
-				embed.field {
-					name = "Duration:"
-					value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
-						.replace("PT", "") + ")"
-					inline = false
-				}
-
-				try {
-					actionLog.createMessage { embeds.add(embed) }
-				} catch (e: KtorRequestException) {
-					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+				actionLog.createMessage {
+					embed {
+						title = "Timeout"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, userArg, user)
+						dmNotificationStatusEmbedField(arguments.dm, dm)
+						timestamp = Clock.System.now()
+						field {
+							name = "Duration:"
+							value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
+								.replace("PT", "") + ")"
+							inline = false
+						}
+					}
 				}
 
 				if (config.publicLogging != null && config.publicLogging == true) {
@@ -825,9 +813,9 @@ class TemporaryModeration : Extension() {
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
-		val image by optionalString {
+		val image by optionalAttachment {
 			name = "image"
-			description = "The URL to an image you'd like to provide as extra context for the action"
+			description = "An image you'd like to provide as extra context for the action"
 		}
 
 		val dm by defaultingBoolean {
@@ -860,9 +848,9 @@ class TemporaryModeration : Extension() {
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
-		val image by optionalString {
+		val image by optionalAttachment {
 			name = "image"
-			description = "The URL to an image you'd like to provide as extra context for the action"
+			description = "An image you'd like to provide as extra context for the action"
 		}
 
 		val dm by defaultingBoolean {

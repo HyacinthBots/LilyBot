@@ -9,7 +9,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBool
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalAttachment
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -24,9 +24,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.exception.EntityNotFoundException
-import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
-import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
@@ -108,34 +106,29 @@ class TerminalModeration : Extension() {
 				}
 
 				// Run the ban task
-				guild?.ban(userArg.id, builder = {
+				guild?.ban(userArg.id) {
 					reason = arguments.reason
 					deleteMessageDuration = DateTimePeriod(days = arguments.messages).toDuration(TimeZone.UTC)
-				})
+				}
 
 				respond {
 					content = "Banned a user"
 				}
 
-				val embed = EmbedBuilder()
-				embed.color = DISCORD_BLACK
-				embed.title = "Banned a user"
-				embed.description = "${userArg.mention} has been banned!"
-				embed.image = arguments.image
-				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
-				embed.timestamp = Clock.System.now()
-				embed.field {
-					name = "Days of messages deleted:"
-					value = arguments.messages.toString()
-					inline = false
-				}
-
-				try {
-					actionLog.createMessage { embeds.add(embed) }
-				} catch (e: KtorRequestException) {
-					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+				actionLog.createMessage {
+					embed {
+						title = "Banned a user"
+						description = "${userArg.mention} has been banned!"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, userArg, user)
+						dmNotificationStatusEmbedField(arguments.dm, dm)
+						timestamp = Clock.System.now()
+						field {
+							name = "Days of messages deleted:"
+							value = arguments.messages.toString()
+							inline = false
+						}
+					}
 				}
 
 				if (config.publicLogging != null && config.publicLogging == true) {
@@ -264,34 +257,29 @@ class TerminalModeration : Extension() {
 				}
 
 				// Ban the user, mark it as a soft-ban clearly
-				guild?.ban(userArg.id, builder = {
+				guild?.ban(userArg.id) {
 					reason = "${arguments.reason} + **SOFT-BAN**"
 					deleteMessageDuration = DateTimePeriod(days = arguments.messages).toDuration(TimeZone.UTC)
-				})
+				}
 
 				respond {
 					content = "Soft-Banned User"
 				}
 
-				val embed = EmbedBuilder()
-				embed.color = DISCORD_BLACK
-				embed.title = "Soft-Banned a user"
-				embed.description = "${userArg.mention} has been soft-banned!"
-				embed.image = arguments.image
-				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
-				embed.timestamp = Clock.System.now()
-				embed.field {
-					name = "Days of messages deleted"
-					value = arguments.messages.toString()
-					inline = false
-				}
-
-				try {
-					actionLog.createMessage { embeds.add(embed) }
-				} catch (e: KtorRequestException) {
-					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+				actionLog.createMessage {
+					embed {
+						title = "Soft-Banned a user"
+						description = "${userArg.mention} has been soft-banned!"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, userArg, user)
+						dmNotificationStatusEmbedField(arguments.dm, dm)
+						timestamp = Clock.System.now()
+						field {
+							name = "Days of messages deleted"
+							value = arguments.messages.toString()
+							inline = false
+						}
+					}
 				}
 
 				if (config.publicLogging != null && config.publicLogging == true) {
@@ -361,20 +349,15 @@ class TerminalModeration : Extension() {
 					content = "Kicked User"
 				}
 
-				val embed = EmbedBuilder()
-				embed.color = DISCORD_BLACK
-				embed.title = "Kicked a user"
-				embed.description = "${userArg.mention} has been kicked!"
-				embed.image = arguments.image
-				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
-				embed.timestamp = Clock.System.now()
-
-				try {
-					actionLog.createMessage { embeds.add(embed) }
-				} catch (e: KtorRequestException) {
-					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+				actionLog.createMessage {
+					embed {
+						title = "Kicked a user"
+						description = "${userArg.mention} has been kicked!"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, userArg, user)
+						dmNotificationStatusEmbedField(arguments.dm, dm)
+						timestamp = Clock.System.now()
+					}
 				}
 
 				if (config.publicLogging != null && config.publicLogging == true) {
@@ -408,9 +391,9 @@ class TerminalModeration : Extension() {
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
-		val image by optionalString {
+		val image by optionalAttachment {
 			name = "image"
-			description = "The URL to an image you'd like to provide as extra context for the action"
+			description = "An image you'd like to provide as extra context for the action"
 		}
 	}
 
@@ -441,9 +424,9 @@ class TerminalModeration : Extension() {
 		}
 
 		/** An image that the user wishes to provide for context to the ban. */
-		val image by optionalString {
+		val image by optionalAttachment {
 			name = "image"
-			description = "The URL to an image you'd like to provide as extra context for the action"
+			description = "An image you'd like to provide as extra context for the action"
 		}
 	}
 
@@ -490,9 +473,9 @@ class TerminalModeration : Extension() {
 		}
 
 		/** An image that the user wishes to provide for context to the soft-ban. */
-		val image by optionalString {
+		val image by optionalAttachment {
 			name = "image"
-			description = "The URL to an image you'd like to provide as extra context for the action"
+			description = "An image you'd like to provide as extra context for the action"
 		}
 	}
 }

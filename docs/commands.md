@@ -99,7 +99,7 @@ These commands are for use by moderators. They utilize built-in permission check
 * `user` – Person to ban - User
 * `messages` - Number of days of messages to delete - Integer
 * `reason` - Reason for the ban - Optional String
-* `image` - The URL to an image to provide extra context for the action - Optional String
+* `image` - An image to provide extra context for the action - Optional Attachment
 * `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last `messages` day(s).
@@ -112,7 +112,7 @@ These commands are for use by moderators. They utilize built-in permission check
 
 ### Name: `unban`
 **Arguments**:
-* `user ` - The Discord ID of the person to unban - User ID
+* `user ` - The Discord ID (Snowflake) of the person to unban - User ID
 
 **Result**: The user with the ID `unbanUserId` is unbanned.
 
@@ -127,7 +127,7 @@ These commands are for use by moderators. They utilize built-in permission check
 * `user` - Person to soft ban - User
 * `messages` - Number of days of messages to delete - Integer (default 3)
 * `reason` - Reason for the ban - Optional String
-* `image` - The URL to an image to provide extra context for the action - Optional String
+* `image` - An image to provide extra context for the action - Optional Attachment
 * `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Bans `softBanUser`, deletes the last `messages` days of messages from them, and unbans them.
@@ -142,7 +142,7 @@ These commands are for use by moderators. They utilize built-in permission check
 **Arguments**:
 * `user` - Person to warn - User
 * `reason` - Reason for warn - Optional String
-* `image` - The URL to an image to provide extra context for the action - Optional String
+* `image` - An image to provide extra context for the action - Optional Attachment
 * `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.
@@ -165,7 +165,7 @@ These commands are for use by moderators. They utilize built-in permission check
 * `user` - Person to timeout - User
 * `duration` - Duration of timeout - Duration [e.g. 6h or 30s] (default 6h)
 * `reason` - Reason for timeout - Optional String
-* `image` - The URL to an image to provide extra context for the action - Optional String
+* `image` - An image to provide extra context for the action - Optional Attachment
 * `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function.
