@@ -12,9 +12,9 @@ import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
-import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.getMemberCount
+import org.hyacinthbots.lilybot.utils.requireConfigs
 
 /**
  * Logs members joining and leaving a guild to the member log channel designated in the config for that guild.
@@ -30,7 +30,7 @@ class MemberLogging : Extension() {
 		event<MemberJoinEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
+				requireConfigs(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
 				failIf { event.member.id == kord.selfId }
 			}
 			action {
@@ -66,7 +66,7 @@ class MemberLogging : Extension() {
 		event<MemberLeaveEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
+				requireConfigs(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
 				failIf { event.user.id == kord.selfId }
 			}
 			action {

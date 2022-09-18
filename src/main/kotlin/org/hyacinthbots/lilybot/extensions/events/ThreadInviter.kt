@@ -37,13 +37,15 @@ import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
-import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.requireConfigs
 import kotlin.time.Duration.Companion.seconds
 
 class ThreadInviter : Extension() {
 	override val name = "thread-inviter"
 
+	// note: the requireConfigs checks in this file are not perfect,
+	// but will be fully replaced with the thread inviting rewrite so it's ok
 	override suspend fun setup() {
 		/**
 		 * Thread inviting system for Support Channels
@@ -61,7 +63,7 @@ class ThreadInviter : Extension() {
 			 */
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
+				requireConfigs(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
 				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
@@ -169,7 +171,7 @@ class ThreadInviter : Extension() {
 			 */
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
+				requireConfigs(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
 				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
@@ -279,7 +281,7 @@ class ThreadInviter : Extension() {
 					event.channel.ownerId == kord.selfId ||
 							event.channel.member != null
 				}
-				configPresent(
+				requireConfigs(
 					ConfigOptions.SUPPORT_ENABLED,
 					ConfigOptions.SUPPORT_CHANNEL,
 					ConfigOptions.SUPPORT_ROLE,

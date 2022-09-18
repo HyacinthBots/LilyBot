@@ -20,7 +20,6 @@ import com.kotlindiscord.kord.extensions.utils.toDuration
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.exception.EntityNotFoundException
@@ -34,10 +33,11 @@ import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
-import org.hyacinthbots.lilybot.utils.configPresent
+import org.hyacinthbots.lilybot.utils.configIsUsable
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
+import org.hyacinthbots.lilybot.utils.requireConfigs
 
 /**
  * The class for permanent moderation actions, such as ban and kick.
@@ -61,7 +61,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requireConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
@@ -115,27 +115,26 @@ class TerminalModeration : Extension() {
 					content = "Banned a user"
 				}
 
-				actionLog.createMessage {
-					embed {
-						title = "Banned a user"
-						description = "${userArg.mention} has been banned!"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, userArg, user)
-						dmNotificationStatusEmbedField(arguments.dm, dm)
-						timestamp = Clock.System.now()
-						field {
-							name = "Days of messages deleted:"
-							value = arguments.messages.toString()
-							inline = false
-						}
-					}
-				}
-
 				if (config.publicLogging != null && config.publicLogging == true) {
 					channel.createEmbed {
 						title = "Banned a user"
 						description = "${userArg.mention} has been banned!"
 						color = DISCORD_BLACK
+					}
+				}
+
+				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
+				actionLog.createEmbed {
+					title = "Banned a user"
+					description = "${userArg.mention} has been banned!"
+					image = arguments.image?.url
+					baseModerationEmbed(arguments.reason, userArg, user)
+					dmNotificationStatusEmbedField(arguments.dm, dm)
+					timestamp = Clock.System.now()
+					field {
+						name = "Days of messages deleted:"
+						value = arguments.messages.toString()
+						inline = false
 					}
 				}
 			}
@@ -152,7 +151,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requireConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers)
 			}
@@ -184,6 +183,7 @@ class TerminalModeration : Extension() {
 					content = "Unbanned user"
 				}
 
+				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
 				actionLog.createEmbed {
 					title = "Unbanned a user"
 					description = "${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})"
@@ -212,7 +212,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requireConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
@@ -266,22 +266,6 @@ class TerminalModeration : Extension() {
 					content = "Soft-Banned User"
 				}
 
-				actionLog.createMessage {
-					embed {
-						title = "Soft-Banned a user"
-						description = "${userArg.mention} has been soft-banned!"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, userArg, user)
-						dmNotificationStatusEmbedField(arguments.dm, dm)
-						timestamp = Clock.System.now()
-						field {
-							name = "Days of messages deleted"
-							value = arguments.messages.toString()
-							inline = false
-						}
-					}
-				}
-
 				if (config.publicLogging != null && config.publicLogging == true) {
 					channel.createEmbed {
 						title = "Soft-Banned a user"
@@ -291,6 +275,21 @@ class TerminalModeration : Extension() {
 
 				// Unban the user, as you're supposed to in soft-ban
 				guild?.unban(userArg.id)
+
+				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
+				actionLog.createEmbed {
+					title = "Soft-Banned a user"
+					description = "${userArg.mention} has been soft-banned!"
+					image = arguments.image?.url
+					baseModerationEmbed(arguments.reason, userArg, user)
+					dmNotificationStatusEmbedField(arguments.dm, dm)
+					timestamp = Clock.System.now()
+					field {
+						name = "Days of messages deleted"
+						value = arguments.messages.toString()
+						inline = false
+					}
+				}
 			}
 		}
 
@@ -305,7 +304,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requireConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.KickMembers)
 				requireBotPermissions(Permission.KickMembers)
 			}
@@ -349,22 +348,21 @@ class TerminalModeration : Extension() {
 					content = "Kicked User"
 				}
 
-				actionLog.createMessage {
-					embed {
-						title = "Kicked a user"
-						description = "${userArg.mention} has been kicked!"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, userArg, user)
-						dmNotificationStatusEmbedField(arguments.dm, dm)
-						timestamp = Clock.System.now()
-					}
-				}
-
 				if (config.publicLogging != null && config.publicLogging == true) {
 					channel.createEmbed {
 						title = "Kicked a user"
 						description = "${userArg.mention} has been kicked!"
 					}
+				}
+
+				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
+				actionLog.createEmbed {
+					title = "Kicked a user"
+					description = "${userArg.mention} has been kicked!"
+					image = arguments.image?.url
+					baseModerationEmbed(arguments.reason, userArg, user)
+					dmNotificationStatusEmbedField(arguments.dm, dm)
+					timestamp = Clock.System.now()
 				}
 			}
 		}

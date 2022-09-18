@@ -43,7 +43,7 @@ import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.utils.configPresent
+import org.hyacinthbots.lilybot.utils.requireConfigs
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -74,7 +74,7 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 
 	check {
 		anyGuild()
-		configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+		requireConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 	}
 
 	action {
@@ -132,7 +132,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 
 	check {
 		anyGuild()
-		configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+		requireConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
 	}
 
 	action {

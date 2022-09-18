@@ -48,12 +48,15 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.configPresent
+import org.hyacinthbots.lilybot.utils.configIsUsable
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
+import org.hyacinthbots.lilybot.utils.requireConfigs
 import java.lang.Integer.min
 import kotlin.time.Duration
+
+// todo many of these commands require integration with public logging
 
 /**
  * The class for temporary moderation actions, such as timeouts and warnings.
@@ -75,7 +78,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requireConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ManageMessages)
 				requireBotPermissions(Permission.ManageMessages)
 				botHasChannelPerms(Permissions(Permission.ManageMessages))
@@ -106,6 +109,14 @@ class TemporaryModeration : Extension() {
 					content = "Messages cleared."
 				}
 
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "$messageAmount messages have been cleared."
+						color = DISCORD_BLACK
+					}
+				}
+
+				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
 				actionLog.createEmbed {
 					title = "$messageAmount messages have been cleared."
 					description = "Action occurred in ${textChannel.mention}"
@@ -114,13 +125,6 @@ class TemporaryModeration : Extension() {
 						icon = user.asUser().avatar?.url
 					}
 					color = DISCORD_BLACK
-				}
-
-				if (config.publicLogging != null && config.publicLogging == true) {
-					channel.createEmbed {
-						title = "$messageAmount messages have been cleared."
-						color = DISCORD_BLACK
-					}
 				}
 			}
 		}
@@ -136,7 +140,8 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				// todo this code doesn't actually hard require action log and needs a refactor to make it optional
+				requireConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -298,7 +303,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requireConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -342,6 +347,7 @@ class TemporaryModeration : Extension() {
 					}
 				}
 
+				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
 				actionLog.createEmbed {
 					title = "Warning Removal"
 					color = DISCORD_BLACK
@@ -370,7 +376,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requireConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -421,22 +427,6 @@ class TemporaryModeration : Extension() {
 					content = "Timed out ${userArg.id}"
 				}
 
-				actionLog.createMessage {
-					embed {
-						title = "Timeout"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, userArg, user)
-						dmNotificationStatusEmbedField(arguments.dm, dm)
-						timestamp = Clock.System.now()
-						field {
-							name = "Duration:"
-							value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
-								.replace("PT", "") + ")"
-							inline = false
-						}
-					}
-				}
-
 				if (config.publicLogging != null && config.publicLogging == true) {
 					channel.createEmbed {
 						title = "Timeout"
@@ -448,6 +438,21 @@ class TemporaryModeration : Extension() {
 								.replace("PT", "") + ")"
 							inline = false
 						}
+					}
+				}
+
+				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
+				actionLog.createEmbed {
+					title = "Timeout"
+					image = arguments.image?.url
+					baseModerationEmbed(arguments.reason, userArg, user)
+					dmNotificationStatusEmbedField(arguments.dm, dm)
+					timestamp = Clock.System.now()
+					field {
+						name = "Duration:"
+						value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
+							.replace("PT", "") + ")"
+						inline = false
 					}
 				}
 			}
@@ -465,7 +470,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requireConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -491,6 +496,7 @@ class TemporaryModeration : Extension() {
 					content = "Removed timeout on ${userArg.id}"
 				}
 
+				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
 				actionLog.createEmbed {
 					title = "Timeout Removed"
 					field {
@@ -524,10 +530,8 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(
-						ConfigOptions.MODERATION_ENABLED,
-						ConfigOptions.MODERATOR_ROLE,
-						ConfigOptions.ACTION_LOG
+					requireConfigs(
+						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
@@ -572,6 +576,9 @@ class TemporaryModeration : Extension() {
 						denied += Permission.UseApplicationCommands
 					}
 
+					respond { content = "${targetChannel.mention} has been locked." }
+
+					if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
 					actionLog.createEmbed {
 						title = "Channel Locked"
 						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
@@ -582,8 +589,6 @@ class TemporaryModeration : Extension() {
 						timestamp = Clock.System.now()
 						color = DISCORD_RED
 					}
-
-					respond { content = "${targetChannel.mention} has been locked." }
 				}
 			}
 
@@ -593,10 +598,8 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(
-						ConfigOptions.MODERATION_ENABLED,
-						ConfigOptions.MODERATOR_ROLE,
-						ConfigOptions.ACTION_LOG
+					requireConfigs(
+						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
@@ -627,6 +630,9 @@ class TemporaryModeration : Extension() {
 							.minus(Permission.UseApplicationCommands)
 					}
 
+					respond { content = "Server locked." }
+
+					if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
 					actionLog.createEmbed {
 						title = "Server locked"
 						description = "**Reason:** ${arguments.reason}"
@@ -637,8 +643,6 @@ class TemporaryModeration : Extension() {
 						timestamp = Clock.System.now()
 						color = DISCORD_RED
 					}
-
-					respond { content = "Server locked." }
 				}
 			}
 		}
@@ -659,10 +663,8 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(
-						ConfigOptions.MODERATION_ENABLED,
-						ConfigOptions.MODERATOR_ROLE,
-						ConfigOptions.ACTION_LOG
+					requireConfigs(
+						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
@@ -712,6 +714,9 @@ class TemporaryModeration : Extension() {
 						color = DISCORD_GREEN
 					}
 
+					respond { content = "${targetChannel.mention} has been unlocked." }
+
+					if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
 					actionLog.createEmbed {
 						title = "Channel Unlocked"
 						description = "${targetChannel.mention} has been unlocked."
@@ -722,8 +727,6 @@ class TemporaryModeration : Extension() {
 						timestamp = Clock.System.now()
 						color = DISCORD_GREEN
 					}
-
-					respond { content = "${targetChannel.mention} has been unlocked." }
 				}
 			}
 
@@ -733,10 +736,8 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(
-						ConfigOptions.MODERATION_ENABLED,
-						ConfigOptions.MODERATOR_ROLE,
-						ConfigOptions.ACTION_LOG
+					requireConfigs(
+						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
@@ -767,6 +768,9 @@ class TemporaryModeration : Extension() {
 							.plus(Permission.UseApplicationCommands)
 					}
 
+					respond { content = "Server unlocked." }
+
+					if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
 					actionLog.createEmbed {
 						title = "Server unlocked"
 						footer {
@@ -776,8 +780,6 @@ class TemporaryModeration : Extension() {
 						timestamp = Clock.System.now()
 						color = DISCORD_GREEN
 					}
-
-					respond { content = "Server unlocked." }
 				}
 			}
 		}

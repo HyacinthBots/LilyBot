@@ -44,12 +44,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
+import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.configPresent
+import org.hyacinthbots.lilybot.utils.configIsUsable
+import org.hyacinthbots.lilybot.utils.requireConfigs
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
@@ -81,9 +83,7 @@ class LogUploading : Extension() {
 					event.message.author.isNullOrBot()
 					event.message.getChannelOrNull() !is MessageChannel
 				}
-				configPresent(
-					ConfigOptions.SUPPORT_ENABLED,
-					ConfigOptions.SUPPORT_CHANNEL,
+				requireConfigs(
 					ConfigOptions.LOG_UPLOADS_ENABLED
 				)
 
@@ -100,10 +100,15 @@ class LogUploading : Extension() {
 					return@action
 				}
 
-				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)!!
 				var deferUploadUntilThread = false
-				if (supportConfig.enabled && event.message.channel.id == supportConfig.channel) {
-					deferUploadUntilThread = true
+				var supportConfig: SupportConfigData? = null
+				if (configIsUsable(ConfigOptions.SUPPORT_ENABLED, event.guildId!!) &&
+					configIsUsable(ConfigOptions.SUPPORT_CHANNEL, event.guildId!!)
+				) {
+					supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)!!
+					if (supportConfig.enabled && event.message.channel.id == supportConfig.channel) {
+						deferUploadUntilThread = true
+					}
 				}
 
 				val eventMessage = event.message.asMessageOrNull() // Get the message
@@ -114,7 +119,7 @@ class LogUploading : Extension() {
 					delay(4.seconds) // Delay to allow for thread creation
 					ThreadsCollection().getOwnerThreads(eventMember!!.id).forEach {
 						if (event.getGuild().getChannelOf<TextChannelThread>(it.threadId).parentId ==
-							supportConfig.channel
+							supportConfig?.channel
 						) {
 							uploadChannel = event.getGuild().getChannelOf<GuildMessageChannel>(it.threadId)
 							return@forEach
@@ -279,7 +284,6 @@ class LogUploading : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 			}
 
@@ -289,7 +293,7 @@ class LogUploading : Extension() {
 
 				action {
 					val blacklist = LogUploadingBlacklistCollection().isChannelInUploadBlacklist(guild!!.id, channel.id)
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
+					val utilityConfig = UtilityConfigCollection().getConfig(guild!!.id)!!
 
 					if (blacklist != null) {
 						respond {
@@ -304,15 +308,15 @@ class LogUploading : Extension() {
 						content = "Log uploading is now blocked in this channel!"
 					}
 
-					guild!!.getChannelOf<GuildMessageChannel>(config.channel!!).createMessage {
-						embed {
-							title = "Log uploading disabled"
-							description = "Log uploading was disabled in ${channel.mention}"
-							color = DISCORD_RED
-							footer {
-								text = "Disabled by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
-							}
+					if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
+
+					guild!!.getChannelOf<GuildMessageChannel>(utilityConfig.utilityLogChannel!!).createEmbed {
+						title = "Log uploading disabled"
+						description = "Log uploading was disabled in ${channel.mention}"
+						color = DISCORD_RED
+						footer {
+							text = "Disabled by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
 						}
 					}
 				}
@@ -330,7 +334,7 @@ class LogUploading : Extension() {
 						return@action
 					}
 
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
+					val utilityConfig = UtilityConfigCollection().getConfig(guild!!.id)!!
 
 					LogUploadingBlacklistCollection().removeLogUploadingBlacklist(guild!!.id, channel.id)
 
@@ -338,15 +342,15 @@ class LogUploading : Extension() {
 						content = "Log uploading is no longer blocked in this channel!"
 					}
 
-					guild!!.getChannelOf<GuildMessageChannel>(config.channel!!).createMessage {
-						embed {
-							title = "Log uploading re-enabled"
-							description = "Log uploading was re-enabled in ${channel.mention}"
-							color = DISCORD_GREEN
-							footer {
-								text = "Enabled by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
-							}
+					if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
+
+					guild!!.getChannelOf<GuildMessageChannel>(utilityConfig.utilityLogChannel!!).createEmbed {
+						title = "Log uploading re-enabled"
+						description = "Log uploading was re-enabled in ${channel.mention}"
+						color = DISCORD_GREEN
+						footer {
+							text = "Enabled by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
 						}
 					}
 				}

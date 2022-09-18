@@ -68,7 +68,7 @@ internal val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 3.2.0
  */
-suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOptions) {
+suspend inline fun CheckContext<*>.requireConfigs(vararg configOptions: ConfigOptions) {
 	if (!passed) {
 		return
 	}
@@ -264,6 +264,80 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 					pass()
 				}
 			}
+		}
+	}
+}
+
+suspend inline fun configIsUsable(option: ConfigOptions, guildId: Snowflake): Boolean {
+	when (option) {
+		ConfigOptions.SUPPORT_ENABLED -> {
+			val supportConfig = SupportConfigCollection().getConfig(guildId) ?: return false
+			return supportConfig.enabled
+		}
+
+		ConfigOptions.SUPPORT_CHANNEL -> {
+			val supportConfig = SupportConfigCollection().getConfig(guildId) ?: return false
+			return supportConfig.channel != null
+		}
+
+		ConfigOptions.SUPPORT_ROLE -> {
+			val supportConfig = SupportConfigCollection().getConfig(guildId) ?: return false
+			return supportConfig.role != null
+		}
+
+		ConfigOptions.MODERATION_ENABLED -> {
+			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
+			return moderationConfig.enabled
+		}
+
+		ConfigOptions.MODERATOR_ROLE -> {
+			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
+			return moderationConfig.role != null
+		}
+
+		ConfigOptions.ACTION_LOG -> {
+			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
+			return moderationConfig.channel != null
+		}
+
+		ConfigOptions.LOG_PUBLICLY -> {
+			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
+			return moderationConfig.publicLogging != null
+		}
+
+		ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED -> {
+			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
+			return loggingConfig.enableMessageDeleteLogs
+		}
+
+		ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED -> {
+			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
+			return loggingConfig.enableMessageDeleteLogs
+		}
+
+		ConfigOptions.MESSAGE_LOG -> {
+			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
+			return loggingConfig.messageChannel != null
+		}
+
+		ConfigOptions.MEMBER_LOGGING_ENABLED -> {
+			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
+			return loggingConfig.enableMemberLogs
+		}
+
+		ConfigOptions.MEMBER_LOG -> {
+			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
+			return loggingConfig.memberLog != null
+		}
+
+		ConfigOptions.LOG_UPLOADS_ENABLED -> {
+			val utilityConfig = UtilityConfigCollection().getConfig(guildId) ?: return false
+			return utilityConfig.disableLogUploading
+		}
+
+		ConfigOptions.UTILITY_LOG -> {
+			val utilityConfig = UtilityConfigCollection().getConfig(guildId) ?: return false
+			return utilityConfig.utilityLogChannel != null
 		}
 	}
 }

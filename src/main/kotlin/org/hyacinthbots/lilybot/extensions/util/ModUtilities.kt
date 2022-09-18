@@ -71,9 +71,10 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.configPresent
+import org.hyacinthbots.lilybot.utils.configIsUsable
 import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.requireConfigs
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 import kotlin.time.Duration.Companion.seconds
 
@@ -98,18 +99,17 @@ class ModUtilities : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
+				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
+				val utilityLog =
 					getLoggingChannelWithPerms(
 						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
+						config.utilityLogChannel!!,
+						ConfigType.UTILITY,
 						interactionResponse
 					)
 						?: return@action
@@ -149,7 +149,8 @@ class ModUtilities : Extension() {
 
 				respond { content = "Message sent." }
 
-				actionLog.createMessage {
+				if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
+				utilityLog.createMessage {
 					embed {
 						title = "Say command used"
 						description = "```${arguments.message}```"
@@ -377,7 +378,7 @@ class ModUtilities : Extension() {
 
 				check {
 					hasPermission(Permission.Administrator)
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+					requireConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				}
 
 				action {
@@ -414,7 +415,7 @@ class ModUtilities : Extension() {
 
 				check {
 					hasPermission(Permission.Administrator)
-					configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+					requireConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				}
 
 				action {
