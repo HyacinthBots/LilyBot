@@ -37,7 +37,7 @@ import org.hyacinthbots.lilybot.utils.configIsUsable
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
-import org.hyacinthbots.lilybot.utils.requireConfigs
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 
 /**
  * The class for permanent moderation actions, such as ban and kick.
@@ -61,7 +61,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MODERATION_ENABLED)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
@@ -151,7 +151,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MODERATION_ENABLED)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers)
 			}
@@ -212,7 +212,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MODERATION_ENABLED)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers, Permission.ManageMessages)
 			}
@@ -304,7 +304,7 @@ class TerminalModeration : Extension() {
 
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MODERATION_ENABLED)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.KickMembers)
 				requireBotPermissions(Permission.KickMembers)
 			}

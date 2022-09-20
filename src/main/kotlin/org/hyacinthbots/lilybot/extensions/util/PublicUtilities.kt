@@ -29,7 +29,7 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.utils.requireConfigs
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 
 /**
  * This class contains a few utility commands that can be used by the public in guilds, or that are often seen by the
@@ -85,7 +85,7 @@ class PublicUtilities : Extension() {
 
 				check {
 					anyGuild()
-					requireConfigs(ConfigOptions.UTILITY_LOG)
+					requiredConfigs(ConfigOptions.UTILITY_LOG)
 				}
 
 				action {
@@ -293,7 +293,7 @@ class PublicUtilities : Extension() {
 
 				check {
 					anyGuild()
-					requireConfigs(ConfigOptions.UTILITY_LOG)
+					requiredConfigs(ConfigOptions.UTILITY_LOG)
 				}
 
 				action {

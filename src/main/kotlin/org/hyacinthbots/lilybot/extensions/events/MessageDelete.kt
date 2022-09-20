@@ -18,7 +18,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
-import org.hyacinthbots.lilybot.utils.requireConfigs
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.trimmedContents
 
 /**
@@ -38,7 +38,7 @@ class MessageDelete : Extension() {
 		event<ProxiedMessageDeleteEvent> {
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				requiredConfigs(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message?.author?.id == kord.selfId
 				}
@@ -57,7 +57,7 @@ class MessageDelete : Extension() {
 		event<UnProxiedMessageDeleteEvent> {
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				requiredConfigs(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message?.author?.id == kord.selfId ||
 							event.message?.author?.isBot == true

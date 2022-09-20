@@ -18,7 +18,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
-import org.hyacinthbots.lilybot.utils.requireConfigs
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.trimmedContents
 
 /**
@@ -37,7 +37,7 @@ class MessageEdit : Extension() {
 		event<UnProxiedMessageUpdateEvent> {
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message.asMessage().author?.id == kord.selfId
 				}
@@ -55,7 +55,7 @@ class MessageEdit : Extension() {
 		event<ProxiedMessageUpdateEvent> {
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message.asMessage().author?.id == kord.selfId
 				}

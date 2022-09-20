@@ -52,7 +52,7 @@ import org.hyacinthbots.lilybot.utils.configIsUsable
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
-import org.hyacinthbots.lilybot.utils.requireConfigs
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 import java.lang.Integer.min
 import kotlin.time.Duration
 
@@ -78,7 +78,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MODERATION_ENABLED)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ManageMessages)
 				requireBotPermissions(Permission.ManageMessages)
 				botHasChannelPerms(Permissions(Permission.ManageMessages))
@@ -141,7 +141,7 @@ class TemporaryModeration : Extension() {
 			check {
 				anyGuild()
 				// todo this code doesn't actually hard require action log and needs a refactor to make it optional
-				requireConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -303,7 +303,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MODERATION_ENABLED)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -376,7 +376,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MODERATION_ENABLED)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -470,7 +470,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MODERATION_ENABLED)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
@@ -530,7 +530,7 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					requireConfigs(
+					requiredConfigs(
 						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
@@ -598,7 +598,7 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					requireConfigs(
+					requiredConfigs(
 						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
@@ -663,7 +663,7 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					requireConfigs(
+					requiredConfigs(
 						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
@@ -736,7 +736,7 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					requireConfigs(
+					requiredConfigs(
 						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)

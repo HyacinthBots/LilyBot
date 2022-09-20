@@ -74,7 +74,7 @@ import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configIsUsable
 import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.requireConfigs
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 import kotlin.time.Duration.Companion.seconds
 
@@ -378,7 +378,7 @@ class ModUtilities : Extension() {
 
 				check {
 					hasPermission(Permission.Administrator)
-					requireConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+					requiredConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				}
 
 				action {
@@ -415,7 +415,7 @@ class ModUtilities : Extension() {
 
 				check {
 					hasPermission(Permission.Administrator)
-					requireConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
+					requiredConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				}
 
 				action {

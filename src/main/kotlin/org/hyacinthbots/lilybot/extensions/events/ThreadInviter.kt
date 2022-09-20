@@ -38,7 +38,7 @@ import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.requireConfigs
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 import kotlin.time.Duration.Companion.seconds
 
 class ThreadInviter : Extension() {
@@ -63,7 +63,7 @@ class ThreadInviter : Extension() {
 			 */
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
+				requiredConfigs(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
 				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
@@ -171,7 +171,7 @@ class ThreadInviter : Extension() {
 			 */
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
+				requiredConfigs(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
 				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
@@ -281,7 +281,7 @@ class ThreadInviter : Extension() {
 					event.channel.ownerId == kord.selfId ||
 							event.channel.member != null
 				}
-				requireConfigs(
+				requiredConfigs(
 					ConfigOptions.SUPPORT_ENABLED,
 					ConfigOptions.SUPPORT_CHANNEL,
 					ConfigOptions.SUPPORT_ROLE,

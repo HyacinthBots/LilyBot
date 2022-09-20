@@ -68,7 +68,7 @@ internal val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 3.2.0
  */
-suspend inline fun CheckContext<*>.requireConfigs(vararg configOptions: ConfigOptions) {
+suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigOptions) {
 	if (!passed) {
 		return
 	}
@@ -268,12 +268,17 @@ suspend inline fun CheckContext<*>.requireConfigs(vararg configOptions: ConfigOp
 	}
 }
 
+/**
+ * This function checks if a single config exists and is valid. Returns true if it is or false otherwise.
+ *
+ * @param option The config option to check the database for. Only takes a single option.
+ * @return True if the selected [option] is valid and enabled and false if it isn't
+ * @author NoComment1105
+ * @since 3.2.0
+ */
 suspend inline fun configIsUsable(option: ConfigOptions, guildId: Snowflake): Boolean {
 	when (option) {
-		ConfigOptions.SUPPORT_ENABLED -> {
-			val supportConfig = SupportConfigCollection().getConfig(guildId) ?: return false
-			return supportConfig.enabled
-		}
+		ConfigOptions.SUPPORT_ENABLED -> return SupportConfigCollection().getConfig(guildId)?.enabled ?: false
 
 		ConfigOptions.SUPPORT_CHANNEL -> {
 			val supportConfig = SupportConfigCollection().getConfig(guildId) ?: return false
@@ -285,10 +290,7 @@ suspend inline fun configIsUsable(option: ConfigOptions, guildId: Snowflake): Bo
 			return supportConfig.role != null
 		}
 
-		ConfigOptions.MODERATION_ENABLED -> {
-			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
-			return moderationConfig.enabled
-		}
+		ConfigOptions.MODERATION_ENABLED -> return ModerationConfigCollection().getConfig(guildId)?.enabled ?: false
 
 		ConfigOptions.MODERATOR_ROLE -> {
 			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
@@ -305,25 +307,18 @@ suspend inline fun configIsUsable(option: ConfigOptions, guildId: Snowflake): Bo
 			return moderationConfig.publicLogging != null
 		}
 
-		ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED -> {
-			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
-			return loggingConfig.enableMessageDeleteLogs
-		}
+		ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED ->
+			return LoggingConfigCollection().getConfig(guildId)?.enableMessageDeleteLogs ?: false
 
-		ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED -> {
-			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
-			return loggingConfig.enableMessageDeleteLogs
-		}
+		ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED ->
+			return LoggingConfigCollection().getConfig(guildId)?.enableMessageEditLogs ?: false
 
 		ConfigOptions.MESSAGE_LOG -> {
 			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
 			return loggingConfig.messageChannel != null
 		}
 
-		ConfigOptions.MEMBER_LOGGING_ENABLED -> {
-			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
-			return loggingConfig.enableMemberLogs
-		}
+		ConfigOptions.MEMBER_LOGGING_ENABLED -> return LoggingConfigCollection().getConfig(guildId)?.enableMemberLogs ?: false
 
 		ConfigOptions.MEMBER_LOG -> {
 			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false

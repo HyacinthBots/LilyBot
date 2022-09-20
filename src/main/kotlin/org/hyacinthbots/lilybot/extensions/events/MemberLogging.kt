@@ -14,7 +14,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.getMemberCount
-import org.hyacinthbots.lilybot.utils.requireConfigs
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 
 /**
  * Logs members joining and leaving a guild to the member log channel designated in the config for that guild.
@@ -30,7 +30,7 @@ class MemberLogging : Extension() {
 		event<MemberJoinEvent> {
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
+				requiredConfigs(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
 				failIf { event.member.id == kord.selfId }
 			}
 			action {
@@ -66,7 +66,7 @@ class MemberLogging : Extension() {
 		event<MemberLeaveEvent> {
 			check {
 				anyGuild()
-				requireConfigs(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
+				requiredConfigs(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
 				failIf { event.user.id == kord.selfId }
 			}
 			action {

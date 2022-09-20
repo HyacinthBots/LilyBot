@@ -51,7 +51,7 @@ import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configIsUsable
-import org.hyacinthbots.lilybot.utils.requireConfigs
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
@@ -83,9 +83,7 @@ class LogUploading : Extension() {
 					event.message.author.isNullOrBot()
 					event.message.getChannelOrNull() !is MessageChannel
 				}
-				requireConfigs(
-					ConfigOptions.LOG_UPLOADS_ENABLED
-				)
+				requiredConfigs(ConfigOptions.LOG_UPLOADS_ENABLED)
 
 				// I hate NullPointerExceptions. This is to prevent a null pointer exception if the message is a Pk one.
 				if (channelFor(event) == null) return@check
