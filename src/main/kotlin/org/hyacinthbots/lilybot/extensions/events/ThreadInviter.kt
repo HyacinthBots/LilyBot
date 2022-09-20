@@ -41,6 +41,8 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import kotlin.time.Duration.Companion.seconds
 
+// todo This is rewritten in another branch, but said branch should take care of making sure that the target roles are
+//  ping able by Lily. Should/Could be done in a similar fashion to the method in extensions/config/Config.kt
 class ThreadInviter : Extension() {
 	override val name = "thread-inviter"
 
