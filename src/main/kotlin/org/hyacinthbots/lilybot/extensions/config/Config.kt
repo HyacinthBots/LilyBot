@@ -42,6 +42,7 @@ import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
+import org.hyacinthbots.lilybot.utils.canPingRole
 import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import kotlin.time.Duration.Companion.seconds
@@ -78,6 +79,16 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				respondEphemeral {
 					content = "You already have a support configuration set. " +
 							"Please clear it before attempting to set a new one."
+				}
+				return@action
+			}
+
+			if (canPingRole(arguments.role)) {
+				ackEphemeral()
+				respondEphemeral {
+					content =
+						"I cannot use the role: ${arguments.role!!.mention}, because it is not mentionable by" +
+								"regular users. Please enable this in the role settings, or use a different role."
 				}
 				return@action
 			}
@@ -220,6 +231,15 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				respond {
 					content =
 						"You must set both the moderator role and the action log channel to use the moderation configuration."
+				}
+				return@action
+			}
+
+			if (canPingRole(arguments.moderatorRole)) {
+				respond {
+					content =
+						"I cannot use the role: ${arguments.moderatorRole!!.mention}, because it is not mentionable by" +
+								"regular users. Please enable this in the role settings, or use a different role."
 				}
 				return@action
 			}
