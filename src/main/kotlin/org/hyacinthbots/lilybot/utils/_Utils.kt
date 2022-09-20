@@ -15,6 +15,7 @@ import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.GuildBehavior
+import dev.kord.core.behavior.RoleBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.getChannelOf
@@ -619,8 +620,8 @@ fun Message?.trimmedContents(): String? {
  */
 suspend fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
 	guild: Guild,
-    message: Message,
-    proxiedMessage: PKMessage?
+	message: Message,
+	proxiedMessage: PKMessage?
 ) {
 	if (message.attachments.isNotEmpty()) {
 		field {
@@ -656,3 +657,14 @@ suspend fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
 		}
 	}
 }
+
+/**
+ * Check if a role is mentionable by Lily.
+ *
+ * @param role The role to check
+ * @return A Boolean of whether it is pingable or not
+ *
+ * @author NoComment1105
+ * @since 4.1.0
+ */
+suspend fun canPingRole(role: RoleBehavior?) = role != null && role.guild.getRole(role.id).mentionable
