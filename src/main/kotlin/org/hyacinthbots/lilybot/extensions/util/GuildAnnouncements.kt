@@ -75,7 +75,23 @@ class GuildAnnouncements : Extension() {
 
 				val title = interaction.textInputs["title"]!!.value!!
 				val body = interaction.textInputs["body"]!!.value!!
+				val footer = "Sent by ${user.asUser().tag}" // Useless, just needed for length calculations
 				val modalResponse = interaction.deferEphemeralResponse()
+
+				if (title.length + body.length + footer.length > 2048) {
+					modalResponse.respond {
+						content = "Your announcement is just too long! I can only make announcements up to 2048 " +
+								"characters. Please try again with a small announcement, or make two separate " +
+								"announcements"
+					}
+					return@action
+				}
+
+				if (title.isEmpty() && body.isEmpty()) {
+					modalResponse.respond {
+						content = "Your announcement cannot be completely empty!"
+					}
+				}
 
 				var response: EphemeralMessageInteractionResponse? = null
 
@@ -128,6 +144,7 @@ class GuildAnnouncements : Extension() {
 		announcementBody: String,
 		user: UserBehavior
 	) {
+		val footer = "Sent by ${user.asUser().tag}"
 		event.kord.guilds.toList().chunked(15).forEach { chunk ->
 			for (it in chunk) {
 				val channel = it.getSystemChannel()
@@ -137,12 +154,48 @@ class GuildAnnouncements : Extension() {
 					continue
 				}
 
-				channel?.createEmbed {
-					title = announcementTitle
-					description = announcementBody
-					color = Color(0x7B52AE)
-					footer {
-						text = "Sent by ${user.asUser().tag}"
+				if (announcementTitle.isEmpty() && announcementBody.isEmpty()) {
+					return // This case should theoretically never be possible, but just in case, catch it
+				} else if (announcementTitle.isEmpty()) {
+					channel?.createEmbed {
+						description = announcementBody
+						color = Color(0x7B52AE)
+						footer {
+							text = footer
+						}
+					}
+				} else if (announcementBody.isEmpty()) {
+					channel?.createEmbed {
+						title = announcementTitle
+						color = Color(0x7B52AE)
+						footer {
+							text = footer
+						}
+					}
+				} else if (announcementTitle.length + announcementBody.length + footer.length >= 1000) {
+					channel?.createEmbed {
+						title = announcementTitle
+						description = announcementBody.substring(0, announcementBody.length - announcementTitle.length)
+						color = Color(0x7B52AE)
+					}
+					channel?.createEmbed {
+						description = announcementBody.substring(
+							announcementBody.length - announcementTitle.length,
+							announcementBody.length
+						)
+						color = Color(0x7B52AE)
+						footer {
+							text = footer
+						}
+					}
+				} else {
+					channel?.createEmbed {
+						title = announcementTitle
+						description = announcementBody
+						color = Color(0x7B52AE)
+						footer {
+							text = footer
+						}
 					}
 				}
 			}
