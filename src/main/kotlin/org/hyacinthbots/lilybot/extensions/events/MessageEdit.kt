@@ -12,13 +12,11 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import kotlinx.datetime.Clock
-import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
-import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.trimmedContents
 
 /**
@@ -37,7 +35,7 @@ class MessageEdit : Extension() {
 		event<UnProxiedMessageUpdateEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message.asMessage().author?.id == kord.selfId
 				}
@@ -55,7 +53,7 @@ class MessageEdit : Extension() {
 		event<ProxiedMessageUpdateEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message.asMessage().author?.id == kord.selfId
 				}
@@ -76,10 +74,8 @@ class MessageEdit : Extension() {
 	 */
 	private suspend fun onMessageEdit(message: Message, old: Message?, proxiedMessage: PKMessage?) {
 		val guild = message.getGuild()
-		val config = LoggingConfigCollection().getConfig(guild.id) ?: return
-		val messageLog =
-			getLoggingChannelWithPerms(guild, config.messageChannel!!, ConfigType.LOGGING)
-				?: return
+
+		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, guild) ?: return
 
 		messageLog.createEmbed {
 			color = DISCORD_YELLOW

@@ -42,9 +42,7 @@ import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 class ThreadControl : Extension() {
@@ -159,14 +157,6 @@ class ThreadControl : Extension() {
 				action {
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
-					val utilityLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
-							ConfigType.UTILITY,
-							interactionResponse
-						)
-							?: return@action
 
 					val oldOwnerId = ThreadsCollection().getThread(threadChannel.id)?.ownerId ?: threadChannel.ownerId
 					val oldOwner = guild!!.getMember(oldOwnerId)
@@ -194,6 +184,8 @@ class ThreadControl : Extension() {
 
 					threadChannel.createMessage(content)
 
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
 					utilityLog.createMessage {
 						embed {
 							title = "Thread ownership transferred"
@@ -229,15 +221,6 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val utilityLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
-							ConfigType.UTILITY,
-							interactionResponse
-						)
-							?: return@action
-
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
@@ -265,24 +248,28 @@ class ThreadControl : Extension() {
 									label = "Yes"
 									style = ButtonStyle.Primary
 
-									action {
+									action button@{
 										ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, false)
 										edit { content = "Thread archiving will no longer be prevented" }
+										val utilityLog = getLoggingChannelWithPerms(
+											ConfigOptions.UTILITY_LOG,
+											this.getGuild()!!
+										) ?: return@button
 										utilityLog.createMessage {
-												embed {
-													title = "Thread archive prevention disabled"
-													color = DISCORD_FUCHSIA
+											embed {
+												title = "Thread archive prevention disabled"
+												color = DISCORD_FUCHSIA
 
-													field {
-														name = "User"
-														value = user.asUser().tag
-													}
-													field {
-														name = "Thread"
-														value = threadChannel.mention
-													}
+												field {
+													name = "User"
+													value = user.asUser().tag
+												}
+												field {
+													name = "Thread"
+													value = threadChannel.mention
 												}
 											}
+										}
 										message!!.edit { components { removeAll() } }
 									}
 								}
@@ -301,6 +288,8 @@ class ThreadControl : Extension() {
 					} else if (thread?.preventArchiving == false) {
 						ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, true)
 						try {
+							val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+								?: return@action
 							utilityLog.createMessage {
 								embed {
 									title = "Thread archive prevention enabled"

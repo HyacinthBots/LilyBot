@@ -19,16 +19,12 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.Permission
-import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.TextInputStyle
-import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.respondEphemeral
-import dev.kord.core.behavior.interaction.response.FollowupPermittingInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.behavior.interaction.response.respond
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
@@ -43,7 +39,6 @@ import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.hyacinthbots.lilybot.utils.canPingRole
-import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import kotlin.time.Duration.Companion.seconds
 
@@ -175,30 +170,22 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			}
 
-			if (ModerationConfigCollection().getConfig(guild!!.id) == null) {
-				getLoggingChannelWithPerms(
-					guild!!.asGuild(),
-					guild!!.asGuild().getSystemChannel()?.id ?: getFirstUsableChannel(guild!!.asGuild())!!.id,
-					ConfigType.MODERATION,
-					interactionResponse
-				)
-			} else {
-				getLoggingChannelWithPerms(
-					guild!!.asGuild(),
-					ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!,
-					ConfigType.MODERATION,
-					interactionResponse
-				)
-			}?.createMessage {
+			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+
+			if (utilityLog == null) {
+				ackEphemeral()
+				respondEphemeral {
+					content = "Consider setting a utility config to log changes to configurations."
+				}
+				return@action
+			}
+
+			utilityLog.createMessage {
 				embed {
 					supportEmbed()
 					field {
 						name = "Message"
 						value = SupportConfigCollection().getConfig(guild!!.id)?.message ?: "default"
-					}
-					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
-						description = "Consider setting the moderation configuration to receive configuration " +
-								"updates where you want them!"
 					}
 				}
 			}
@@ -273,15 +260,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			if (getLoggingChannelWithPerms(
-					guild!!.asGuild(),
-					arguments.modActionLog?.id,
-					ConfigType.MODERATION
-				)?.id != arguments.modActionLog?.id
-			) {
-				return@action
-			}
-
 			ModerationConfigCollection().setConfig(
 				ModerationConfigData(
 					guild!!.id,
@@ -292,11 +270,16 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			)
 
-			checkChannel(
-				guild,
-				arguments.modActionLog?.id,
-				interactionResponse
-			)?.createMessage {
+			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+
+			if (utilityLog == null) {
+				respond {
+					content = "Consider setting a utility config to log changes to configurations."
+				}
+				return@action
+			}
+
+			utilityLog.createMessage {
 				embed {
 					moderationEmbed()
 				}
@@ -380,17 +363,18 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			)
 
-			checkChannel(
-				guild,
-				ModerationConfigCollection().getConfig(guild!!.id)?.channel,
-				interactionResponse
-			)?.createMessage {
+			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+
+			if (utilityLog == null) {
+				respond {
+					content = "Consider setting a utility config to log changes to configurations."
+				}
+				return@action
+			}
+
+			utilityLog.createMessage {
 				embed {
 					loggingEmbed()
-					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
-						description = "Consider setting the moderation configuration to receive configuration " +
-								"updates where you want them!"
-					}
 				}
 			}
 		}
@@ -455,17 +439,18 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			)
 
-			checkChannel(
-				guild,
-				ModerationConfigCollection().getConfig(guild!!.id)?.channel,
-				interactionResponse
-			)?.createMessage {
+			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+
+			if (utilityLog == null) {
+				respond {
+					content = "Consider setting a utility config to log changes to configurations."
+				}
+				return@action
+			}
+
+			utilityLog.createMessage {
 				embed {
 					utilityEmbed()
-					ModerationConfigCollection().getConfig(guild!!.id) ?: run {
-						description = "Consider setting the moderation configuration to receive configuration " +
-								"updates where you want them!"
-					}
 				}
 			}
 		}
@@ -482,19 +467,20 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		action {
 			suspend fun logClear() {
-				checkChannel(
-					guild,
-					ModerationConfigCollection().getConfig(guild!!.id)?.channel,
-					interactionResponse
-				)?.createMessage {
+				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+
+				if (utilityLog == null) {
+					respond {
+						content = "Consider setting a utility config to log changes to configurations."
+					}
+					return
+				}
+
+				utilityLog.createMessage {
 					embed {
 						title = "Configuration Cleared: ${arguments.config[0]}${
 							arguments.config.substring(1, arguments.config.length).lowercase()
 						}"
-						ModerationConfigCollection().getConfig(guild!!.id) ?: run {
-							description = "Consider setting the moderation configuration to receive configuration " +
-									"updates where you want them!"
-						}
 						footer {
 							text = "Config cleared by ${user.asUser().tag}"
 							icon = user.asUser().avatar?.url
@@ -677,8 +663,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								name = "Message delete logs"
 								value = if (config.enableMessageDeleteLogs) {
 									"Enabled\n" +
-											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.mention }} " +
-											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.name }}"
+											"${guild!!.getChannel(config.messageChannel!!).mention} " +
+											"${guild!!.getChannel(config.messageChannel).name }}"
 								} else {
 									"Disabled"
 								}
@@ -687,8 +673,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								name = "Message edit logs"
 								value = if (config.enableMessageEditLogs) {
 									"Enabled\n" +
-											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.mention }} " +
-											"${config.messageChannel?.let { guild!!.getChannelOrNull(it)?.name }}"
+											"${guild!!.getChannel(config.messageChannel!!).mention }} " +
+											"${guild!!.getChannel(config.messageChannel).name }}"
 								} else {
 									"Disabled"
 								}
@@ -697,8 +683,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								name = "Member logs"
 								value = if (config.enableMemberLogs) {
 									"Enabled\n" +
-											"${config.memberLog?.let { guild!!.getChannelOrNull(it)?.mention }} " +
-											"${config.memberLog?.let { guild!!.getChannelOrNull(it)?.name }} "
+											"${guild!!.getChannel(config.memberLog!!).mention }} " +
+											"${guild!!.getChannel(config.memberLog).name }} "
 								} else {
 									"Disabled"
 								}
@@ -885,41 +871,4 @@ class ViewArgs : Arguments() {
 			"utility" to ConfigType.UTILITY.name,
 		)
 	}
-}
-
-/**
- * Checks the moderation config and returns where the message needs to be sent.
- *
- * @param guild The guild the event is in
- * @param channelIdToCheck The id of the channel to check
- * @param interactionResponse The response for the interaction
- * @return the channel to send the message to
- * @since 4.0.0
- * @author NoComment
- */
-suspend inline fun checkChannel(
-	guild: GuildBehavior?,
-	channelIdToCheck: Snowflake?,
-	interactionResponse: FollowupPermittingInteractionResponseBehavior
-): GuildMessageChannel? {
-	val toReturn: GuildMessageChannel?
-	if (ModerationConfigCollection().getConfig(guild!!.id) == null ||
-		!ModerationConfigCollection().getConfig(guild.id)!!.enabled ||
-		channelIdToCheck == null
-	) {
-		toReturn = getLoggingChannelWithPerms(
-			guild.asGuild(),
-			guild.asGuild().getSystemChannel()?.id ?: getFirstUsableChannel(guild.asGuild())!!.id,
-			ConfigType.MODERATION,
-			interactionResponse
-		)
-	} else {
-		toReturn = getLoggingChannelWithPerms(
-			guild.asGuild(),
-			channelIdToCheck,
-			ConfigType.MODERATION,
-			interactionResponse
-		)
-	}
-	return toReturn
 }

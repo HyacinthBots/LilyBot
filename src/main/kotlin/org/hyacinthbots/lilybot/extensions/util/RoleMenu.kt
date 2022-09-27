@@ -39,9 +39,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.utilsLogger
 
@@ -119,14 +117,8 @@ class RoleMenu : Extension() {
 						mutableListOf(arguments.initialRole.id)
 					)
 
-					val utilityLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
-							ConfigType.UTILITY,
-							interactionResponse
-						)
-							?: return@action
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
 
 					utilityLog.createMessage {
 						embed {
@@ -216,14 +208,8 @@ class RoleMenu : Extension() {
 						data.roles
 					)
 
-					val utilityLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
-							ConfigType.UTILITY,
-							interactionResponse
-						)
-							?: return@action
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
 					utilityLog.createMessage {
 						embed {
 							title = "Role Added to Role Menu"
@@ -285,15 +271,9 @@ class RoleMenu : Extension() {
 					}
 
 					RoleMenuCollection().removeRoleFromMenu(menuMessage!!.id, arguments.role.id)
-					val utilityLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
-							ConfigType.UTILITY,
-							interactionResponse
-						)
-							?: return@action
 
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
 					utilityLog.createMessage {
 						embed {
 							title = "Role Removed from Role Menu"
@@ -392,15 +372,8 @@ class RoleMenu : Extension() {
 						roles
 					)
 
-					val utilityLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
-							ConfigType.UTILITY,
-							interactionResponse
-						)
-							?: return@action
-
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
 					utilityLog.createMessage {
 						embed {
 							title = "Pronoun Role Menu Created"
