@@ -37,6 +37,12 @@ name = "config clear"
 args = "* `config-type` - The type of config to clear, 'support', 'moderation', 'logging', 'miscellaneous', 'all' - String Choice"
 result = "Clears the config of the specified type."
 permissions = "Manage Guild"
+
+[[command]]
+category = "Administration commands"
+name = "announcement"
+result = "Produces a modal for inputting the announcement content, then sends it to every guild the bot is in. Only works in the bots `TEST_GUILD_ID`"
+permissions = "Administrator"
 # End administration commands
 
 # Moderation commands

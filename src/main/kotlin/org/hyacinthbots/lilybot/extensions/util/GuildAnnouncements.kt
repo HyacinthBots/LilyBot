@@ -50,7 +50,9 @@ class GuildAnnouncements : Extension() {
 						textInput(TextInputStyle.Short, "title", "Announcement Title") {
 							placeholder = "Version 5.0.0!"
 						}
+					}
 
+					actionRow {
 						textInput(TextInputStyle.Paragraph, "body", "Announcement Body") {
 							placeholder = "This is a big update!"
 						}
@@ -71,10 +73,7 @@ class GuildAnnouncements : Extension() {
 					return@action
 				}
 
-				@Suppress("UnusedPrivateMember")
 				val title = interaction.textInputs["title"]!!.value!!
-
-				@Suppress("UnusedPrivateMember")
 				val body = interaction.textInputs["body"]!!.value!!
 				val modalResponse = interaction.deferEphemeralResponse()
 
@@ -91,9 +90,9 @@ class GuildAnnouncements : Extension() {
 								response?.edit {
 									content = "Message sent!"
 									components { removeAll() }
-
-									sendMessage(title, body, user)
 								}
+
+								sendMessage(title, body, user)
 							}
 						}
 
@@ -114,24 +113,36 @@ class GuildAnnouncements : Extension() {
 		}
 	}
 
-	@Suppress("UnusedPrivateMember")
+	/**
+	 * Sends a message to each guild containing a given body and title.
+	 *
+	 * @param announcementTitle The title of the announcement embed
+	 * @param announcementBody The title of the announcement body
+	 * @param user The user who sent the announcement
+	 *
+	 * @author NoComment1105
+	 * @since 4.1.0
+	 */
 	private suspend fun UnsafeInteractionContext.sendMessage(
-        announcementTitle: String,
-        announcementBody: String,
-        user: UserBehavior
-    ) {
-		event.kord.guilds.toList().chunked(20).forEach { chunk ->
-			chunk.forEach {
+		announcementTitle: String,
+		announcementBody: String,
+		user: UserBehavior
+	) {
+		event.kord.guilds.toList().chunked(15).forEach { chunk ->
+			for (it in chunk) {
 				val channel = it.getSystemChannel()
-				channel?.getEffectivePermissions(event.kord.selfId)
-					?.contains(Permissions(Permission.SendMessages, Permission.EmbedLinks)) ?: return
+				if (channel?.getEffectivePermissions(event.kord.selfId)
+						?.contains(Permissions(Permission.SendMessages, Permission.EmbedLinks)) == false
+				) {
+					continue
+				}
 
-				channel.createEmbed {
+				channel?.createEmbed {
 					title = announcementTitle
 					description = announcementBody
 					color = Color(0x7B52AE)
 					footer {
-						text = "This announcement was sent by ${user.asUser().tag}"
+						text = "Sent by ${user.asUser().tag}"
 					}
 				}
 			}
