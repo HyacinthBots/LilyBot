@@ -36,7 +36,6 @@ import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import kotlin.time.Duration.Companion.seconds
@@ -95,8 +94,7 @@ class ThreadInviter : Extension() {
 					return@action
 				}
 
-				val supportChannel =
-					getLoggingChannelWithPerms(event.getGuild(), config.channel, ConfigType.SUPPORT) ?: return@action
+				val supportChannel = getLoggingChannelWithPerms(ConfigOptions.SUPPORT_CHANNEL, guild) ?: return@action
 
 				if (textChannel != supportChannel) return@action
 
@@ -197,9 +195,8 @@ class ThreadInviter : Extension() {
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
 				val guild = event.getGuild()
-				val supportChannel =
-					getLoggingChannelWithPerms(event.getGuild(), config.channel!!, ConfigType.SUPPORT)
-						?: return@action
+
+				val supportChannel = getLoggingChannelWithPerms(ConfigOptions.SUPPORT_CHANNEL, guild) ?: return@action
 
 				if (textChannel != supportChannel) return@action
 

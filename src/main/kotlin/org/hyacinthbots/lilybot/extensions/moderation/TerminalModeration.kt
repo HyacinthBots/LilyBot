@@ -31,9 +31,7 @@ import kotlinx.datetime.TimeZone
 import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
-import org.hyacinthbots.lilybot.utils.configIsUsable
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
@@ -67,15 +65,6 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
-						interactionResponse
-					)
-						?: return@action
 				val userArg = arguments.userArgument
 
 				// Clarify the user is not a bot or moderator
@@ -115,6 +104,7 @@ class TerminalModeration : Extension() {
 					content = "Banned a user"
 				}
 
+				val config = ModerationConfigCollection().getConfig(guild!!.id) ?: return@action
 				if (config.publicLogging != null && config.publicLogging == true) {
 					channel.createEmbed {
 						title = "Banned a user"
@@ -123,7 +113,7 @@ class TerminalModeration : Extension() {
 					}
 				}
 
-				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
 					title = "Banned a user"
 					description = "${userArg.mention} has been banned!"
@@ -157,15 +147,6 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
-						interactionResponse
-					)
-						?: return@action
 				val userArg = arguments.userArgument
 				// Get all the bans into a list
 				val bans = guild!!.bans.toList().map { it.userId }
@@ -183,7 +164,7 @@ class TerminalModeration : Extension() {
 					content = "Unbanned user"
 				}
 
-				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
 					title = "Unbanned a user"
 					description = "${userArg.mention} has been unbanned!\n${userArg.id} (${userArg.tag})"
@@ -218,15 +199,6 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
-						interactionResponse
-					)
-						?: return@action
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "soft-ban") ?: return@action
@@ -266,6 +238,7 @@ class TerminalModeration : Extension() {
 					content = "Soft-Banned User"
 				}
 
+				val config = ModerationConfigCollection().getConfig(guild!!.id) ?: return@action
 				if (config.publicLogging != null && config.publicLogging == true) {
 					channel.createEmbed {
 						title = "Soft-Banned a user"
@@ -276,7 +249,7 @@ class TerminalModeration : Extension() {
 				// Unban the user, as you're supposed to in soft-ban
 				guild?.unban(userArg.id)
 
-				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
 					title = "Soft-Banned a user"
 					description = "${userArg.mention} has been soft-banned!"
@@ -310,15 +283,6 @@ class TerminalModeration : Extension() {
 			}
 
 			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
-						interactionResponse
-					)
-						?: return@action
 				val userArg = arguments.userArgument
 
 				// Clarify the user isn't a bot or a moderator
@@ -348,6 +312,7 @@ class TerminalModeration : Extension() {
 					content = "Kicked User"
 				}
 
+				val config = ModerationConfigCollection().getConfig(guild!!.id) ?: return@action
 				if (config.publicLogging != null && config.publicLogging == true) {
 					channel.createEmbed {
 						title = "Kicked a user"
@@ -355,7 +320,7 @@ class TerminalModeration : Extension() {
 					}
 				}
 
-				if (!configIsUsable(ConfigOptions.ACTION_LOG, guild!!.id)) return@action
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
 					title = "Kicked a user"
 					description = "${userArg.mention} has been kicked!"

@@ -9,9 +9,7 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.datetime.Clock
-import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.getMemberCount
 import org.hyacinthbots.lilybot.utils.requiredConfigs
@@ -34,9 +32,7 @@ class MemberLogging : Extension() {
 				failIf { event.member.id == kord.selfId }
 			}
 			action {
-				val config = LoggingConfigCollection().getConfig(event.guildId)!!
-				val memberLog = getLoggingChannelWithPerms(event.getGuild(), config.memberLog!!, ConfigType.LOGGING)
-					?: return@action
+				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild) ?: return@action
 
 				memberLog.createEmbed {
 					author {
@@ -70,9 +66,7 @@ class MemberLogging : Extension() {
 				failIf { event.user.id == kord.selfId }
 			}
 			action {
-				val config = LoggingConfigCollection().getConfig(event.guildId)!!
-				val memberLog = getLoggingChannelWithPerms(event.getGuild(), config.memberLog!!, ConfigType.LOGGING)
-					?: return@action
+				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild) ?: return@action
 
 				memberLog.createEmbed {
 					author {

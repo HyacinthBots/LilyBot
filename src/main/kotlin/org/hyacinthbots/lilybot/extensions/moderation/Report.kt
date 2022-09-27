@@ -27,7 +27,6 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.ModalParentInteractionBehavior
 import dev.kord.core.behavior.interaction.modal
-import dev.kord.core.behavior.interaction.response.DeferredEphemeralMessageInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.behavior.interaction.response.respond
@@ -41,8 +40,8 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
-import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import kotlin.time.Duration.Companion.seconds
 
@@ -78,8 +77,6 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 	}
 
 	action {
-		val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
-		val modLog = guild?.getChannelOf<GuildMessageChannel>(moderationConfig.channel!!)
 		val reportedMessage: Message
 
 		try {
@@ -106,11 +103,13 @@ suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
 			return@action
 		}
 
+		val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
+		val config = ModerationConfigCollection().getConfig(guild!!.id) ?: return@action
 		createReportModal(
 			event.interaction as ModalParentInteractionBehavior,
 			user,
-			moderationConfig,
-			modLog,
+			config.role!!,
+			actionLog,
 			reportedMessage,
 		)
 	}
@@ -180,7 +179,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 		createReportModal(
 			event.interaction as ModalParentInteractionBehavior,
 			user,
-			moderationConfig,
+			moderationConfig.role!!,
 			modLog,
 			reportedMessage,
 		)
@@ -192,7 +191,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
  *
  * @param inputInteraction The interaction to create a modal in response to
  * @param user The user who created the [inputInteraction]
- * @param config The configuration from the database for the guild
+ * @param moderatorRoleId The ID of the configured moderator role for the guild
  * @param modLog The channel for the guild that deleted messages are logged to
  * @param reportedMessage The message that was reported
  * @author tempest15
@@ -201,7 +200,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 suspend fun createReportModal(
 	inputInteraction: ModalParentInteractionBehavior,
 	user: UserBehavior,
-	config: ModerationConfigData,
+	moderatorRoleId: Snowflake,
 	modLog: GuildMessageChannel?,
 	reportedMessage: Message,
 ) {
@@ -229,36 +228,6 @@ suspend fun createReportModal(
 	val reason = interaction.textInputs["reason"]!!.value!!
 	val modalResponse = interaction.deferEphemeralResponse()
 
-	createReport(
-		user,
-		modLog,
-		reportedMessage,
-		config.role!!,
-		reason,
-		modalResponse
-	)
-}
-
-/**
- * Create an embed in the [modLog] for moderators to respond to with appropriate action.
- *
- * @param user The user that reported the message
- * @param modLog The channel to send the report embed to
- * @param reportedMessage The message being reported
- * @param moderatorRole The role to ping when a report is submitted
- * @param reportReason The reason provided from the modal for the report
- * @param modalResponse The modal interaction for the message
- * @author MissCorruption
- * @since 2.0
- */
-private suspend inline fun createReport(
-	user: UserBehavior,
-	modLog: GuildMessageChannel?,
-	reportedMessage: Message,
-	moderatorRole: Snowflake,
-	reportReason: String?,
-	modalResponse: DeferredEphemeralMessageInteractionResponseBehavior
-) {
 	var reportResponse: EphemeralMessageInteractionResponse? = null
 
 	reportResponse = modalResponse.respond {
@@ -274,7 +243,7 @@ private suspend inline fun createReport(
 						content = "Message reported to staff"
 						components { removeAll() }
 
-						modLog?.createMessage { content = "<@&$moderatorRole>" }
+						modLog?.createMessage { content = "<@&$moderatorRoleId>" }
 
 						modLog?.createMessage {
 							embed {
@@ -295,7 +264,7 @@ private suspend inline fun createReport(
 								}
 								field {
 									name = "Report reason:"
-									value = reportReason ?: "No reason provided"
+									value = reason
 								}
 								footer {
 									text = "Reported by: ${user.asUser().tag}"

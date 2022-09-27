@@ -12,9 +12,7 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import kotlinx.datetime.Clock
-import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
@@ -79,14 +77,12 @@ class MessageDelete : Extension() {
 	 */
 	private suspend fun onMessageDelete(message: Message, proxiedMessage: PKMessage?) {
 		val guild = message.getGuild()
-		val config = LoggingConfigCollection().getConfig(guild.id) ?: return
-		val messageLog =
-			getLoggingChannelWithPerms(message.getGuild(), config.messageChannel!!, ConfigType.LOGGING)
-				?: return
 
 		if (message.content.startsWith("pk;e", 0, true)) {
 			return
 		}
+
+		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, guild) ?: return
 
 		messageLog.createEmbed {
 			author {

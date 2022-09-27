@@ -68,11 +68,8 @@ import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.configIsUsable
-import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
@@ -104,16 +101,6 @@ class ModUtilities : Extension() {
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 			action {
-				val config = UtilityConfigCollection().getConfig(guild!!.id)!!
-				val utilityLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						config.utilityLogChannel!!,
-						ConfigType.UTILITY,
-						interactionResponse
-					)
-						?: return@action
-
 				val targetChannel: GuildMessageChannel?
 				try {
 					targetChannel =
@@ -149,7 +136,7 @@ class ModUtilities : Extension() {
 
 				respond { content = "Message sent." }
 
-				if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
+				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createMessage {
 					embed {
 						title = "Say command used"
@@ -213,16 +200,6 @@ class ModUtilities : Extension() {
 				} else {
 					channel
 				}
-
-				val utilityLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
-						ConfigType.UTILITY,
-						interactionResponse
-					)
-						?: return@action
-
 				val message: Message
 
 				try {
@@ -262,6 +239,8 @@ class ModUtilities : Extension() {
 
 					respond { content = "Message edited" }
 
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
 					utilityLog.createMessage {
 						embed {
 							title = "Say message edited"
@@ -312,6 +291,8 @@ class ModUtilities : Extension() {
 
 					respond { content = "Embed updated" }
 
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
 					utilityLog.createMessage {
 						embed {
 							title = "Say message edited"
@@ -425,19 +406,11 @@ class ModUtilities : Extension() {
 					updateDefaultPresence()
 					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size
 
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							config.channel!!,
-							ConfigType.MODERATION,
-							interactionResponse
-						)
-							?: return@action
-
 					respond { content = "Presence set to default" }
 
-					actionLog.createEmbed {
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
+					utilityLog.createEmbed {
 						title = "Presence changed"
 						description = "Lily's presence has been set to default."
 						field {
