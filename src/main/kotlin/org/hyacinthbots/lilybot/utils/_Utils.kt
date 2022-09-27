@@ -387,12 +387,10 @@ suspend inline fun getLoggingChannelWithPerms(channelType: ConfigOptions, guild:
  * @author tempest15
  * @since 3.5.4
  */
-suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessageChannel? {
-	val channelWithPerms = inputGuild.channels.first {
+suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessageChannel? =
+	inputGuild.channels.first {
 		it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)
-	}.asChannelOfOrNull<GuildMessageChannel>()
-	return channelWithPerms
-}
+	}.asChannelOfOrNull()
 
 /**
  * Gets the channel of the event and checks that the bot has the required [permissions].
