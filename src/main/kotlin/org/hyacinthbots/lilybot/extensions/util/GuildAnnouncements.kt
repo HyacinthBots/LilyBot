@@ -9,10 +9,12 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCo
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.UnsafeInteractionContext
 import com.kotlindiscord.kord.extensions.utils.waitFor
+import dev.kord.common.Color
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.TextInputStyle
+import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
@@ -90,7 +92,7 @@ class GuildAnnouncements : Extension() {
 									content = "Message sent!"
 									components { removeAll() }
 
-									// sendMessage()
+									sendMessage(title, body, user)
 								}
 							}
 						}
@@ -111,18 +113,27 @@ class GuildAnnouncements : Extension() {
 			}
 		}
 	}
-}
 
-@OptIn(UnsafeAPI::class)
-@Suppress("UnusedPrivateMember")
-suspend fun UnsafeInteractionContext.sendMessage(title: String, body: String) {
-	event.kord.guilds.toList().chunked(20).forEach { chunk ->
-		chunk.forEach {
-			val channel = it.getSystemChannel()
-			channel?.getEffectivePermissions(event.kord.selfId)
-				?.contains(Permissions(Permission.SendMessages, Permission.EmbedLinks)) ?: return
+	@Suppress("UnusedPrivateMember")
+	private suspend fun UnsafeInteractionContext.sendMessage(
+        announcementTitle: String,
+        announcementBody: String,
+        user: UserBehavior
+    ) {
+		event.kord.guilds.toList().chunked(20).forEach { chunk ->
+			chunk.forEach {
+				val channel = it.getSystemChannel()
+				channel?.getEffectivePermissions(event.kord.selfId)
+					?.contains(Permissions(Permission.SendMessages, Permission.EmbedLinks)) ?: return
 
-			channel.createEmbed {
+				channel.createEmbed {
+					title = announcementTitle
+					description = announcementBody
+					color = Color(0x7B52AE)
+					footer {
+						text = "This announcement was sent by ${user.asUser().tag}"
+					}
+				}
 			}
 		}
 	}
