@@ -39,7 +39,6 @@ import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.hyacinthbots.lilybot.utils.canPingRole
-import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import kotlin.time.Duration.Companion.seconds
 
@@ -172,7 +171,14 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			}
 
 			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
-				?: getFirstUsableChannel(guild!!) ?: return@action
+
+			if (utilityLog == null) {
+				ackEphemeral()
+				respondEphemeral {
+					content = "Consider setting a utility config to log changes to configurations."
+				}
+				return@action
+			}
 
 			utilityLog.createMessage {
 				embed {
@@ -265,7 +271,13 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			)
 
 			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
-				?: getFirstUsableChannel(guild!!) ?: return@action
+
+			if (utilityLog == null) {
+				respond {
+					content = "Consider setting a utility config to log changes to configurations."
+				}
+				return@action
+			}
 
 			utilityLog.createMessage {
 				embed {
@@ -352,7 +364,13 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			)
 
 			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
-				?: getFirstUsableChannel(guild!!) ?: return@action
+
+			if (utilityLog == null) {
+				respond {
+					content = "Consider setting a utility config to log changes to configurations."
+				}
+				return@action
+			}
 
 			utilityLog.createMessage {
 				embed {
@@ -422,7 +440,13 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			)
 
 			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
-				?: getFirstUsableChannel(guild!!) ?: return@action
+
+			if (utilityLog == null) {
+				respond {
+					content = "Consider setting a utility config to log changes to configurations."
+				}
+				return@action
+			}
 
 			utilityLog.createMessage {
 				embed {
@@ -444,7 +468,13 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		action {
 			suspend fun logClear() {
 				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
-					?: getFirstUsableChannel(guild!!) ?: return
+
+				if (utilityLog == null) {
+					respond {
+						content = "Consider setting a utility config to log changes to configurations."
+					}
+					return
+				}
 
 				utilityLog.createMessage {
 					embed {
