@@ -345,10 +345,8 @@ suspend inline fun configIsUsable(option: ConfigOptions, guildId: Snowflake): Bo
 suspend inline fun getLoggingChannelWithPerms(channelType: ConfigOptions, guild: GuildBehavior): GuildMessageChannel? {
 	val guildId = guild.id
 
-	// check if the requested config is present
 	if (!configIsUsable(channelType, guildId)) return null
 
-	// if it is, try and get the channel
 	val channelId = when (channelType) {
 		ConfigOptions.SUPPORT_CHANNEL -> SupportConfigCollection().getConfig(guildId)?.channel ?: return null
 		ConfigOptions.ACTION_LOG -> ModerationConfigCollection().getConfig(guildId)?.channel ?: return null
@@ -359,8 +357,22 @@ suspend inline fun getLoggingChannelWithPerms(channelType: ConfigOptions, guild:
 	}
 	val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return null
 
-	// check if the bot has the right permissions for the channel
 	if (!channel.botHasPermissions(Permission.ViewChannel) || !channel.botHasPermissions(Permission.SendMessages)) {
+		when (channelType) {
+			ConfigOptions.SUPPORT_CHANNEL -> SupportConfigCollection().clearConfig(guildId)
+			ConfigOptions.ACTION_LOG -> ModerationConfigCollection().clearConfig(guildId)
+			ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().clearConfig(guildId)
+			ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().clearConfig(guildId)
+			ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().clearConfig(guildId)
+			else -> throw IllegalArgumentException("$channelType does not point to a channel.")
+		}
+		getFirstUsableChannel(guild)?.createMessage(
+			"Lily is unable to send messages in the configured " +
+					"${channelType.toString().lowercase()} for this guild. " +
+					"As a result, the corresponding config has been reset. \n\n" +
+					"*Note:* this channel has been used to send this message because it's the first channel " +
+					"in the guild Lily could use. Please inform this guild's staff about this message."
+		)
 		return null
 	}
 
@@ -379,10 +391,6 @@ suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessag
 	val channelWithPerms = inputGuild.channels.first {
 		it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)
 	}.asChannelOfOrNull<GuildMessageChannel>()
-	channelWithPerms?.createMessage(
-		"Messages are being sent to this channel because Lily has not been properly " +
-				"configured for this guild. Please ask server staff to fix this."
-	)
 	return channelWithPerms
 }
 
