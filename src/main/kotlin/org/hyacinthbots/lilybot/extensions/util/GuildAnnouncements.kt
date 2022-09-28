@@ -7,14 +7,11 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
 import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.UnsafeInteractionContext
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.Color
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
-import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.TextInputStyle
-import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
@@ -24,7 +21,11 @@ import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResp
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.toList
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
+import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getSystemChannelWithPerms
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnsafeAPI::class)
@@ -45,16 +46,13 @@ class GuildAnnouncements : Extension() {
 			}
 
 			action {
+				val footer = "Sent by ${user.asUser().tag}" // Useless, just needed for length calculations
+
 				val modal = event.interaction.modal("Send an announcement", "announcementModal") {
 					actionRow {
-						textInput(TextInputStyle.Short, "title", "Announcement Title") {
-							placeholder = "Version 5.0.0!"
-						}
-					}
-
-					actionRow {
 						textInput(TextInputStyle.Paragraph, "body", "Announcement Body") {
-							placeholder = "This is a big update!"
+							placeholder = "We're happy to announce Lily is now written in Rust!"
+							allowedLength = IntRange(1, 2048 - footer.length)
 						}
 					}
 				}
@@ -73,24 +71,14 @@ class GuildAnnouncements : Extension() {
 					return@action
 				}
 
-				val title = interaction.textInputs["title"]!!.value!!
-				val body = interaction.textInputs["body"]!!.value!!
-				val footer = "Sent by ${user.asUser().tag}" // Useless, just needed for length calculations
+				val body = interaction.textInputs["body"]!!.value
 				val modalResponse = interaction.deferEphemeralResponse()
 
-				if (title.length + body.length + footer.length > 2048) {
-					modalResponse.respond {
-						content = "Your announcement is just too long! I can only make announcements up to 2048 " +
-								"characters. Please try again with a small announcement, or make two separate " +
-								"announcements"
-					}
-					return@action
-				}
-
-				if (title.isEmpty() && body.isEmpty()) {
+				if (body.isNullOrEmpty()) {
 					modalResponse.respond {
 						content = "Your announcement cannot be completely empty!"
 					}
+					return@action
 				}
 
 				var response: EphemeralMessageInteractionResponse? = null
@@ -108,7 +96,24 @@ class GuildAnnouncements : Extension() {
 									components { removeAll() }
 								}
 
-								sendMessage(title, body, user)
+								event.kord.guilds.toList().chunked(15).forEach { chunk ->
+									for (it in chunk) {
+										val channel =
+											getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, it)
+												?: getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, it)
+												?: getSystemChannelWithPerms(it)
+												?: getFirstUsableChannel(it)
+												?: return@forEach
+
+										channel.createEmbed {
+											description = body
+											color = Color(0x7B52AE)
+											footer {
+												text = footer
+											}
+										}
+									}
+								}
 							}
 						}
 
@@ -122,79 +127,6 @@ class GuildAnnouncements : Extension() {
 									components { removeAll() }
 								}
 							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Sends a message to each guild containing a given body and title.
-	 *
-	 * @param announcementTitle The title of the announcement embed
-	 * @param announcementBody The title of the announcement body
-	 * @param user The user who sent the announcement
-	 *
-	 * @author NoComment1105
-	 * @since 4.1.0
-	 */
-	private suspend fun UnsafeInteractionContext.sendMessage(
-		announcementTitle: String,
-		announcementBody: String,
-		user: UserBehavior
-	) {
-		val footer = "Sent by ${user.asUser().tag}"
-		event.kord.guilds.toList().chunked(15).forEach { chunk ->
-			for (it in chunk) {
-				val channel = it.getSystemChannel()
-				if (channel?.getEffectivePermissions(event.kord.selfId)
-						?.contains(Permissions(Permission.SendMessages, Permission.EmbedLinks)) == false
-				) {
-					continue
-				}
-
-				if (announcementTitle.isEmpty() && announcementBody.isEmpty()) {
-					return // This case should theoretically never be possible, but just in case, catch it
-				} else if (announcementTitle.isEmpty()) {
-					channel?.createEmbed {
-						description = announcementBody
-						color = Color(0x7B52AE)
-						footer {
-							text = footer
-						}
-					}
-				} else if (announcementBody.isEmpty()) {
-					channel?.createEmbed {
-						title = announcementTitle
-						color = Color(0x7B52AE)
-						footer {
-							text = footer
-						}
-					}
-				} else if (announcementTitle.length + announcementBody.length + footer.length >= 1000) {
-					channel?.createEmbed {
-						title = announcementTitle
-						description = announcementBody.substring(0, announcementBody.length - announcementTitle.length)
-						color = Color(0x7B52AE)
-					}
-					channel?.createEmbed {
-						description = announcementBody.substring(
-							announcementBody.length - announcementTitle.length,
-							announcementBody.length
-						)
-						color = Color(0x7B52AE)
-						footer {
-							text = footer
-						}
-					}
-				} else {
-					channel?.createEmbed {
-						title = announcementTitle
-						description = announcementBody
-						color = Color(0x7B52AE)
-						footer {
-							text = footer
 						}
 					}
 				}
