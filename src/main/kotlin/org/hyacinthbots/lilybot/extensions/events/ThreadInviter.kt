@@ -36,9 +36,8 @@ import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
-import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 import kotlin.time.Duration.Companion.seconds
 
 // todo This is rewritten in another branch, but said branch should take care of making sure that the target roles are
@@ -46,6 +45,8 @@ import kotlin.time.Duration.Companion.seconds
 class ThreadInviter : Extension() {
 	override val name = "thread-inviter"
 
+	// note: the requireConfigs checks in this file are not perfect,
+	// but will be fully replaced with the thread inviting rewrite so it's ok
 	override suspend fun setup() {
 		/**
 		 * Thread inviting system for Support Channels
@@ -63,7 +64,7 @@ class ThreadInviter : Extension() {
 			 */
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
+				requiredConfigs(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
 				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
@@ -93,8 +94,7 @@ class ThreadInviter : Extension() {
 					return@action
 				}
 
-				val supportChannel =
-					getLoggingChannelWithPerms(event.getGuild(), config.channel, ConfigType.SUPPORT) ?: return@action
+				val supportChannel = getLoggingChannelWithPerms(ConfigOptions.SUPPORT_CHANNEL, guild) ?: return@action
 
 				if (textChannel != supportChannel) return@action
 
@@ -171,7 +171,7 @@ class ThreadInviter : Extension() {
 			 */
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
+				requiredConfigs(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
 				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
@@ -195,9 +195,8 @@ class ThreadInviter : Extension() {
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
 				val guild = event.getGuild()
-				val supportChannel =
-					getLoggingChannelWithPerms(event.getGuild(), config.channel!!, ConfigType.SUPPORT)
-						?: return@action
+
+				val supportChannel = getLoggingChannelWithPerms(ConfigOptions.SUPPORT_CHANNEL, guild) ?: return@action
 
 				if (textChannel != supportChannel) return@action
 
@@ -281,7 +280,7 @@ class ThreadInviter : Extension() {
 					event.channel.ownerId == kord.selfId ||
 							event.channel.member != null
 				}
-				configPresent(
+				requiredConfigs(
 					ConfigOptions.SUPPORT_ENABLED,
 					ConfigOptions.SUPPORT_CHANNEL,
 					ConfigOptions.SUPPORT_ROLE,

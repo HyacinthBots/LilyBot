@@ -32,10 +32,7 @@ import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.configPresent
-import org.hyacinthbots.lilybot.utils.getChannelOrFirstUsable
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 /**
@@ -246,15 +243,6 @@ class Tags : Extension() {
 			}
 
 			action {
-				val utilityLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
-						ConfigType.UTILITY,
-						interactionResponse
-					)
-						?: return@action
-
 				if (TagsCollection().getTag(guild!!.id, arguments.tagName) != null) {
 					respond { content = "A tag with that name already exists in this guild." }
 					return@action
@@ -276,6 +264,7 @@ class Tags : Extension() {
 					arguments.tagAppearance
 				)
 
+				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createEmbed {
 					title = "Tag created!"
 					description = "The tag `${arguments.tagName}` has been created"
@@ -333,17 +322,9 @@ class Tags : Extension() {
 					return@action
 				}
 
-				val utilityLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
-						ConfigType.UTILITY,
-						interactionResponse
-					)
-						?: return@action
-
 				TagsCollection().removeTag(guild!!.id, arguments.tagName)
 
+				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createEmbed {
 					title = "Tag deleted!"
 					description = "The tag ${arguments.tagName} was deleted"
@@ -365,22 +346,12 @@ class Tags : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.UTILITY_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 
 			action {
-				val utilityLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						getChannelOrFirstUsable(ConfigOptions.UTILITY_LOG, guild)?.id,
-						ConfigType.UTILITY,
-						interactionResponse
-					)
-						?: return@action
-
 				if (TagsCollection().getTag(guild!!.id, arguments.tagName) == null) {
 					respond { content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?" }
 					return@action
@@ -410,53 +381,52 @@ class Tags : Extension() {
 					arguments.newAppearance ?: originalAppearance
 				)
 
-				utilityLog.createMessage {
-					embed {
-						title = "Tag Edited"
-						description = "The tag `${arguments.tagName}` was edited"
-						field {
-							name = "Name"
-							value = if (arguments.newName.isNullOrEmpty()) {
-								originalName
-							} else {
-								"$originalName -> ${arguments.newName!!}"
-							}
-						}
-						field {
-							name = "Title"
-							value = if (arguments.newTitle.isNullOrEmpty()) {
-								originalTitle
-							} else {
-								"${arguments.newTitle} -> ${arguments.newTitle!!}"
-							}
-						}
-						field {
-							name = "Value"
-							value = if (arguments.newValue.isNullOrEmpty()) {
-								originalValue
-							} else {
-								"$originalValue -> ${arguments.newValue!!}"
-							}
-						}
-						field {
-							name = "Tag appearance"
-							value = if (arguments.newAppearance.isNullOrEmpty()) {
-								originalAppearance
-							} else {
-								"$originalAppearance -> ${arguments.newAppearance}"
-							}
-						}
-						footer {
-							text = "Edited by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
-						}
-						timestamp = Clock.System.now()
-						color = DISCORD_YELLOW
-					}
-				}
-
 				respond {
 					content = "Tag edited!"
+				}
+
+				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
+				utilityLog.createEmbed {
+					title = "Tag Edited"
+					description = "The tag `${arguments.tagName}` was edited"
+					field {
+						name = "Name"
+						value = if (arguments.newName.isNullOrEmpty()) {
+							originalName
+						} else {
+							"$originalName -> ${arguments.newName!!}"
+						}
+					}
+					field {
+						name = "Title"
+						value = if (arguments.newTitle.isNullOrEmpty()) {
+							originalTitle
+						} else {
+							"${arguments.newTitle} -> ${arguments.newTitle!!}"
+						}
+					}
+					field {
+						name = "Value"
+						value = if (arguments.newValue.isNullOrEmpty()) {
+							originalValue
+						} else {
+							"$originalValue -> ${arguments.newValue!!}"
+						}
+					}
+					field {
+						name = "Tag appearance"
+						value = if (arguments.newAppearance.isNullOrEmpty()) {
+							originalAppearance
+						} else {
+							"$originalAppearance -> ${arguments.newAppearance}"
+						}
+					}
+					footer {
+						text = "Edited by ${user.asUser().tag}"
+						icon = user.asUser().avatar?.url
+					}
+					timestamp = Clock.System.now()
+					color = DISCORD_YELLOW
 				}
 			}
 		}
