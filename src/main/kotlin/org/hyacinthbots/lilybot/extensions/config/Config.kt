@@ -17,14 +17,17 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashComman
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.behavior.interaction.response.respond
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
@@ -87,6 +90,20 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 				return@action
 			}
+
+			var supportChannel: TextChannel? = null
+			if (arguments.enable && arguments.channel != null) {
+				supportChannel = guild!!.getChannelOfOrNull(arguments.channel!!.id)
+				if (supportChannel?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
+					ackEphemeral()
+					respondEphemeral {
+						content = "The mod action log you've selected is invalid, or I can't view it. " +
+								"Please attempt to resolve this and try again."
+					}
+					return@action
+				}
+			}
+			supportChannel ?: return@action
 
 			suspend fun EmbedBuilder.supportEmbed() {
 				title = "Configuration: Support"
@@ -231,6 +248,19 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
+			var modActionLog: TextChannel? = null
+			if (arguments.enabled && arguments.modActionLog != null) {
+				modActionLog = guild!!.getChannelOfOrNull(arguments.modActionLog!!.id)
+				if (modActionLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
+					respond {
+						content = "The mod action log you've selected is invalid, or I can't view it. " +
+								"Please attempt to resolve this and try again."
+					}
+					return@action
+				}
+			}
+			modActionLog ?: return@action
+
 			suspend fun EmbedBuilder.moderationEmbed() {
 				title = "Configuration: Moderation"
 				field {
@@ -313,6 +343,32 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				respond { content = "You must specify a channel to log deleted/edited messages to!" }
 				return@action
 			}
+
+			var memberLog: TextChannel? = null
+			if (arguments.enableMemberLogging && arguments.memberLog != null) {
+				memberLog = guild!!.getChannelOfOrNull(arguments.memberLog!!.id)
+				if (memberLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
+					respond {
+						content = "The member log you've selected is invalid, or I can't view it. " +
+								"Please attempt to resolve this and try again."
+					}
+					return@action
+				}
+			}
+			memberLog ?: return@action
+
+			var messageLog: TextChannel? = null
+			if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) && arguments.memberLog != null) {
+				messageLog = guild!!.getChannelOfOrNull(arguments.messageLogs!!.id)
+				if (messageLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
+					respond {
+						content = "The message log you've selected is invalid, or I can't view it. " +
+								"Please attempt to resolve this and try again."
+					}
+					return@action
+				}
+			}
+			messageLog ?: return@action
 
 			suspend fun EmbedBuilder.loggingEmbed() {
 				title = "Configuration: Logging"
@@ -400,6 +456,19 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
+			var utilityLog: TextChannel? = null
+			if (arguments.utilityLogChannel != null) {
+				utilityLog = guild!!.getChannelOfOrNull(arguments.utilityLogChannel!!.id)
+				if (utilityLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
+					respond {
+						content = "The utility log you've selected is invalid, or I can't view it. " +
+								"Please attempt to resolve this and try again."
+					}
+					return@action
+				}
+			}
+			utilityLog ?: return@action
+
 			suspend fun EmbedBuilder.utilityEmbed() {
 				title = "Configuration: Utility"
 				field {
@@ -438,15 +507,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					arguments.utilityLogChannel?.id
 				)
 			)
-
-			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
-
-			if (utilityLog == null) {
-				respond {
-					content = "Consider setting a utility config to log changes to configurations."
-				}
-				return@action
-			}
 
 			utilityLog.createMessage {
 				embed {
