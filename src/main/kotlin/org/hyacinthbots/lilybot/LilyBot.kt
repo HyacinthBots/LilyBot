@@ -5,7 +5,6 @@ package org.hyacinthbots.lilybot
 import cc.ekblad.toml.decode
 import cc.ekblad.toml.tomlMapper
 import com.kotlindiscord.kord.extensions.ExtensibleBot
-import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
@@ -107,8 +106,6 @@ suspend fun main() {
 				logChannelName = "anti-phishing-logs"
 				requiredCommandPermission = null
 			}
-
-			extMappings { } // Enable the mappings extension
 
 			extPluralKit()
 
