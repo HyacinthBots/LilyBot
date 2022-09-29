@@ -1,11 +1,11 @@
 [versions]
 kotlin = "1.7.10"  # Note: Plugin versions must be updated in the settings.gradle.kts too
 
-groovy = "3.0.12"
+groovy = "3.0.13"
 kord-extensions = "1.5.5-20220925.092000-32"
-logging = "2.1.23"
+logging = "2.1.23" # Cannot be updated to 3.0.0 because we need newer logback, which requires an XML file, which throws errors I cannot fix
 logback = "1.2.8"
-github-api = "1.308"
+github-api = "1.313"
 kmongo = "4.7.1"
 detekt = "1.21.0"
 koma = "1.1.0"
