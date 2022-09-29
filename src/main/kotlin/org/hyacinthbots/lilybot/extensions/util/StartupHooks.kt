@@ -50,7 +50,7 @@ class StartupHooks : Extension() {
 					collection.find(ThreadData::guildId eq null).toList().forEach {
 						updateOne(
 							ThreadData::threadId eq it.threadId,
-							setValue(ThreadData::guildId, kord.getChannelOf<ThreadChannel>(it.threadId)!!.guildId)
+							setValue(ThreadData::guildId, kord.getChannelOf<ThreadChannel>(it.threadId)?.guildId)
 						)
 					}
 				}
