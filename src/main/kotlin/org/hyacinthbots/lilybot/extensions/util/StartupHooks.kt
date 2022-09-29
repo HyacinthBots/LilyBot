@@ -9,7 +9,7 @@ import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.gateway.ReadyEvent
@@ -63,13 +63,15 @@ class StartupHooks : Extension() {
 				 * @since v2.0
 				 */
 				// The channel specifically for sending online notifications to
-				val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannelOf<NewsChannel>(ONLINE_STATUS_CHANNEL)
-				onlineLog?.createEmbed {
+				val homeGuild = kord.getGuild(TEST_GUILD_ID)!!
+				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL)!!
+				val onlineMessage = onlineLog.createEmbed {
 					title = "Lily is now online!"
 					description =
 						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
 					color = DISCORD_GREEN
-				}?.publish()
+				}
+				onlineMessage.publish()
 
 				/**
 				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
