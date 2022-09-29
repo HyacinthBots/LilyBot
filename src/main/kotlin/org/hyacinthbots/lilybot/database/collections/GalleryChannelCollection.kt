@@ -58,4 +58,14 @@ class GalleryChannelCollection : KordExKoinComponent {
 			GalleryChannelData::channelId eq inputChannelId,
 			GalleryChannelData::guildId eq inputGuildId
 		)
+
+	/**
+	 * Removes all gallery channels from this guild.
+	 *
+	 * @param inputGuildId The guild to clear the gallery channels from
+	 * @author NoComment1105
+	 * @since 4.1.0
+	 */
+	suspend inline fun removeAll(inputGuildId: Snowflake) =
+		collection.deleteMany(GalleryChannelData::guildId eq inputGuildId)
 }

@@ -11,8 +11,8 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefa
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalAttachment
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -34,7 +34,6 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.supplier.EntitySupplyStrategy
-import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.map
@@ -46,13 +45,12 @@ import kotlinx.datetime.plus
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.configPresent
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 import java.lang.Integer.min
 import kotlin.time.Duration
 
@@ -76,7 +74,7 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ManageMessages)
 				requireBotPermissions(Permission.ManageMessages)
 				botHasChannelPerms(Permissions(Permission.ManageMessages))
@@ -84,15 +82,6 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-
-				val actionLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
-						interactionResponse
-					)
-						?: return@action
 				val messageAmount = arguments.messages
 				val textChannel = channel.asChannelOf<GuildMessageChannel>()
 
@@ -107,6 +96,14 @@ class TemporaryModeration : Extension() {
 					content = "Messages cleared."
 				}
 
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "$messageAmount messages have been cleared."
+						color = DISCORD_BLACK
+					}
+				}
+
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
 					title = "$messageAmount messages have been cleared."
 					description = "Action occurred in ${textChannel.mention}"
@@ -115,13 +112,6 @@ class TemporaryModeration : Extension() {
 						icon = user.asUser().avatar?.url
 					}
 					color = DISCORD_BLACK
-				}
-
-				if (config.publicLogging != null && config.publicLogging == true) {
-					channel.createEmbed {
-						title = "$messageAmount messages have been cleared."
-						color = DISCORD_BLACK
-					}
 				}
 			}
 		}
@@ -137,21 +127,15 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				// todo this code doesn't actually hard require action log and needs a refactor to make it optional
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.ACTION_LOG)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
-						interactionResponse
-					)
-						?: return@action
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				val userArg = arguments.userArgument
 
 				isBotOrModerator(userArg, "warn") ?: return@action
@@ -263,24 +247,18 @@ class TemporaryModeration : Extension() {
 					}
 				}
 
-				val embed = EmbedBuilder()
-				embed.color = DISCORD_BLACK
-				embed.title = "Warning"
-				embed.image = arguments.image
-				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
-				embed.timestamp = Clock.System.now()
-				embed.field {
-					name = "Total Strikes:"
-					value = newStrikes.toString()
-					inline = false
-				}
-
-				try {
-					actionLog.createMessage { embeds.add(embed) }
-				} catch (e: KtorRequestException) {
-					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
+				actionLog.createMessage {
+					embed {
+						title = "Warning"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, userArg, user)
+						dmNotificationStatusEmbedField(arguments.dm, dm)
+						timestamp = Clock.System.now()
+						field {
+							name = "Total strikes"
+							value = newStrikes.toString()
+						}
+					}
 				}
 
 				if (config.publicLogging != null && config.publicLogging == true) {
@@ -305,23 +283,13 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
-						interactionResponse
-					)
-						?: return@action
 				val userArg = arguments.userArgument
-
 				val targetUser = guild?.getMember(userArg.id)
 				val userStrikes = WarnCollection().getWarn(targetUser!!.id, guild!!.id)?.strikes
 				if (userStrikes == 0 || userStrikes == null) {
@@ -349,6 +317,7 @@ class TemporaryModeration : Extension() {
 					}
 				}
 
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
 					title = "Warning Removal"
 					color = DISCORD_BLACK
@@ -377,21 +346,12 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
-						interactionResponse
-					)
-						?: return@action
 				val userArg = arguments.userArgument
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
 
@@ -428,27 +388,7 @@ class TemporaryModeration : Extension() {
 					content = "Timed out ${userArg.id}"
 				}
 
-				val embed = EmbedBuilder()
-				embed.color = DISCORD_BLACK
-				embed.title = "Timeout"
-				embed.image = arguments.image
-				embed.baseModerationEmbed(arguments.reason, userArg, user)
-				embed.dmNotificationStatusEmbedField(arguments.dm, dm)
-				embed.timestamp = Clock.System.now()
-				embed.field {
-					name = "Duration:"
-					value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
-						.replace("PT", "") + ")"
-					inline = false
-				}
-
-				try {
-					actionLog.createMessage { embeds.add(embed) }
-				} catch (e: KtorRequestException) {
-					embed.image = null
-					actionLog.createMessage { embeds.add(embed) }
-				}
-
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				if (config.publicLogging != null && config.publicLogging == true) {
 					channel.createEmbed {
 						title = "Timeout"
@@ -460,6 +400,21 @@ class TemporaryModeration : Extension() {
 								.replace("PT", "") + ")"
 							inline = false
 						}
+					}
+				}
+
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
+				actionLog.createEmbed {
+					title = "Timeout"
+					image = arguments.image?.url
+					baseModerationEmbed(arguments.reason, userArg, user)
+					dmNotificationStatusEmbedField(arguments.dm, dm)
+					timestamp = Clock.System.now()
+					field {
+						name = "Duration:"
+						value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
+							.replace("PT", "") + ")"
+						inline = false
 					}
 				}
 			}
@@ -477,21 +432,12 @@ class TemporaryModeration : Extension() {
 
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
+				requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog =
-					getLoggingChannelWithPerms(
-						guild!!.asGuild(),
-						config.channel!!,
-						ConfigType.MODERATION,
-						interactionResponse
-					)
-						?: return@action
 				val userArg = arguments.userArgument
 
 				// Set timeout to null, or no timeout
@@ -503,6 +449,7 @@ class TemporaryModeration : Extension() {
 					content = "Removed timeout on ${userArg.id}"
 				}
 
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
 					title = "Timeout Removed"
 					field {
@@ -536,10 +483,8 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(
-						ConfigOptions.MODERATION_ENABLED,
-						ConfigOptions.MODERATOR_ROLE,
-						ConfigOptions.ACTION_LOG
+					requiredConfigs(
+						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
@@ -548,16 +493,6 @@ class TemporaryModeration : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							config.channel!!,
-							ConfigType.MODERATION,
-							interactionResponse
-						)
-							?: return@action
-
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
 					if (channelArg is TextChannelThread) {
@@ -584,6 +519,9 @@ class TemporaryModeration : Extension() {
 						denied += Permission.UseApplicationCommands
 					}
 
+					respond { content = "${targetChannel.mention} has been locked." }
+
+					val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 					actionLog.createEmbed {
 						title = "Channel Locked"
 						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
@@ -594,8 +532,6 @@ class TemporaryModeration : Extension() {
 						timestamp = Clock.System.now()
 						color = DISCORD_RED
 					}
-
-					respond { content = "${targetChannel.mention} has been locked." }
 				}
 			}
 
@@ -605,25 +541,14 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(
-						ConfigOptions.MODERATION_ENABLED,
-						ConfigOptions.MODERATOR_ROLE,
-						ConfigOptions.ACTION_LOG
+					requiredConfigs(
+						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							config.channel!!,
-							ConfigType.MODERATION,
-							interactionResponse
-						)
-							?: return@action
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -639,6 +564,9 @@ class TemporaryModeration : Extension() {
 							.minus(Permission.UseApplicationCommands)
 					}
 
+					respond { content = "Server locked." }
+
+					val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 					actionLog.createEmbed {
 						title = "Server locked"
 						description = "**Reason:** ${arguments.reason}"
@@ -649,8 +577,6 @@ class TemporaryModeration : Extension() {
 						timestamp = Clock.System.now()
 						color = DISCORD_RED
 					}
-
-					respond { content = "Server locked." }
 				}
 			}
 		}
@@ -671,10 +597,8 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(
-						ConfigOptions.MODERATION_ENABLED,
-						ConfigOptions.MODERATOR_ROLE,
-						ConfigOptions.ACTION_LOG
+					requiredConfigs(
+						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
@@ -683,16 +607,6 @@ class TemporaryModeration : Extension() {
 
 				@Suppress("DuplicatedCode")
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							config.channel!!,
-							ConfigType.MODERATION,
-							interactionResponse
-						)
-							?: return@action
-
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
 					if (channelArg is TextChannelThread) {
@@ -724,6 +638,9 @@ class TemporaryModeration : Extension() {
 						color = DISCORD_GREEN
 					}
 
+					respond { content = "${targetChannel.mention} has been unlocked." }
+
+					val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 					actionLog.createEmbed {
 						title = "Channel Unlocked"
 						description = "${targetChannel.mention} has been unlocked."
@@ -734,8 +651,6 @@ class TemporaryModeration : Extension() {
 						timestamp = Clock.System.now()
 						color = DISCORD_GREEN
 					}
-
-					respond { content = "${targetChannel.mention} has been unlocked." }
 				}
 			}
 
@@ -745,25 +660,14 @@ class TemporaryModeration : Extension() {
 
 				check {
 					anyGuild()
-					configPresent(
-						ConfigOptions.MODERATION_ENABLED,
-						ConfigOptions.MODERATOR_ROLE,
-						ConfigOptions.ACTION_LOG
+					requiredConfigs(
+						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
 					requireBotPermissions(Permission.ManageChannels)
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-					val actionLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							config.channel!!,
-							ConfigType.MODERATION,
-							interactionResponse
-						)
-							?: return@action
 					val everyoneRole = guild!!.getRole(guild!!.id)
 
 					if (everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -779,6 +683,9 @@ class TemporaryModeration : Extension() {
 							.plus(Permission.UseApplicationCommands)
 					}
 
+					respond { content = "Server unlocked." }
+
+					val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 					actionLog.createEmbed {
 						title = "Server unlocked"
 						footer {
@@ -788,8 +695,6 @@ class TemporaryModeration : Extension() {
 						timestamp = Clock.System.now()
 						color = DISCORD_GREEN
 					}
-
-					respond { content = "Server unlocked." }
 				}
 			}
 		}
@@ -825,9 +730,9 @@ class TemporaryModeration : Extension() {
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
-		val image by optionalString {
+		val image by optionalAttachment {
 			name = "image"
-			description = "The URL to an image you'd like to provide as extra context for the action"
+			description = "An image you'd like to provide as extra context for the action"
 		}
 
 		val dm by defaultingBoolean {
@@ -860,9 +765,9 @@ class TemporaryModeration : Extension() {
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
-		val image by optionalString {
+		val image by optionalAttachment {
 			name = "image"
-			description = "The URL to an image you'd like to provide as extra context for the action"
+			description = "An image you'd like to provide as extra context for the action"
 		}
 
 		val dm by defaultingBoolean {

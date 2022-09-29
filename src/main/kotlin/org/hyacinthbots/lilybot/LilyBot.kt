@@ -18,12 +18,14 @@ import org.hyacinthbots.lilybot.extensions.config.GuildLogging
 import org.hyacinthbots.lilybot.extensions.events.LogUploading
 import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
+import org.hyacinthbots.lilybot.extensions.events.MessageEdit
 import org.hyacinthbots.lilybot.extensions.events.ThreadInviter
 import org.hyacinthbots.lilybot.extensions.moderation.Report
 import org.hyacinthbots.lilybot.extensions.moderation.TemporaryModeration
 import org.hyacinthbots.lilybot.extensions.moderation.TerminalModeration
 import org.hyacinthbots.lilybot.extensions.util.GalleryChannel
 import org.hyacinthbots.lilybot.extensions.util.Github
+import org.hyacinthbots.lilybot.extensions.util.GuildAnnouncements
 import org.hyacinthbots.lilybot.extensions.util.InfoCommands
 import org.hyacinthbots.lilybot.extensions.util.ModUtilities
 import org.hyacinthbots.lilybot.extensions.util.PublicUtilities
@@ -76,10 +78,12 @@ suspend fun main() {
 			add(::Github)
 			add(::GalleryChannel)
 			add(::InfoCommands)
+			add(::GuildAnnouncements)
 			add(::GuildLogging)
 			add(::LogUploading)
 			add(::MemberLogging)
 			add(::MessageDelete)
+			add(::MessageEdit)
 			add(::ModUtilities)
 			add(::PublicUtilities)
 			add(::Reminders)

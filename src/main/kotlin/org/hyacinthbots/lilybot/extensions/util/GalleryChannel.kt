@@ -22,10 +22,9 @@ import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -60,15 +59,6 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val utilityLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
-							ConfigType.UTILITY,
-							interactionResponse
-						)
-							?: return@action
-
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
 						if (channel.asChannel().id == it.channelId) {
 							respond {
@@ -84,6 +74,8 @@ class GalleryChannel : Extension() {
 						content = "Set channel as gallery channel."
 					}
 
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
 					utilityLog.createEmbed {
 						title = "New Gallery channel"
 						description = "${channel.mention} was added as a Gallery channel"
@@ -111,15 +103,6 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val utilityLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
-							ConfigType.UTILITY,
-							interactionResponse
-						)
-							?: return@action
-
 					var channelFound = false
 
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
@@ -134,6 +117,8 @@ class GalleryChannel : Extension() {
 							content = "Unset channel as gallery channel."
 						}
 
+						val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+							?: return@action
 						utilityLog.createEmbed {
 							title = "Removed Gallery channel"
 							description = "${channel.mention} was removed as a Gallery channel"

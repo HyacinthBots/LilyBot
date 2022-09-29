@@ -41,10 +41,9 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.getUtilityLogOrFirst
 
 class ThreadControl : Extension() {
 
@@ -100,7 +99,7 @@ class ThreadControl : Extension() {
 						if (it.threadId == threadChannel.id) {
 							val preventingArchiving = ThreadsCollection().getThread(it.threadId)?.preventArchiving
 							ThreadsCollection().removeThread(it.threadId)
-							ThreadsCollection().setThreadOwner(it.threadId, it.ownerId, false)
+							ThreadsCollection().setThreadOwner(it.guildId, it.threadId, it.ownerId, false)
 							if (preventingArchiving == true) {
 								guild!!.getChannelOf<GuildMessageChannel>(
 									ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!
@@ -158,14 +157,6 @@ class ThreadControl : Extension() {
 				action {
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
-					val utilityLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
-							ConfigType.UTILITY,
-							interactionResponse
-						)
-							?: return@action
 
 					val oldOwnerId = ThreadsCollection().getThread(threadChannel.id)?.ownerId ?: threadChannel.ownerId
 					val oldOwner = guild!!.getMember(oldOwnerId)
@@ -182,7 +173,7 @@ class ThreadControl : Extension() {
 						return@action
 					}
 
-					ThreadsCollection().setThreadOwner(threadChannel.id, arguments.newOwner.id)
+					ThreadsCollection().setThreadOwner(guild!!.id, threadChannel.id, arguments.newOwner.id)
 
 					respond { content = "Ownership transferred." }
 
@@ -193,9 +184,11 @@ class ThreadControl : Extension() {
 
 					threadChannel.createMessage(content)
 
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
 					utilityLog.createMessage {
 						embed {
-							title = "Thread ownership transfered"
+							title = "Thread ownership transferred"
 							field {
 								name = "Previous owner"
 								value = "${oldOwner.mention} ${oldOwner.tag}"
@@ -228,15 +221,6 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val utilityLog =
-						getLoggingChannelWithPerms(
-							guild!!.asGuild(),
-							getUtilityLogOrFirst(guild)?.id,
-							ConfigType.UTILITY,
-							interactionResponse
-						)
-							?: return@action
-
 					val threadChannel = channel.asChannelOf<ThreadChannel>()
 					val member = user.asMember(guild!!.id)
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
@@ -252,7 +236,7 @@ class ThreadControl : Extension() {
 					var message: EphemeralMessageInteractionResponse? = null
 					var thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					if (thread == null) {
-						ThreadsCollection().setThreadOwner(threadChannel.id, threadChannel.ownerId, false)
+						ThreadsCollection().setThreadOwner(threadChannel.guildId, threadChannel.id, threadChannel.ownerId, false)
 						thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					}
 					if (thread?.preventArchiving == true) {
@@ -264,24 +248,28 @@ class ThreadControl : Extension() {
 									label = "Yes"
 									style = ButtonStyle.Primary
 
-									action {
-										ThreadsCollection().setThreadOwner(thread.threadId, thread.ownerId, false)
+									action button@{
+										ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, false)
 										edit { content = "Thread archiving will no longer be prevented" }
+										val utilityLog = getLoggingChannelWithPerms(
+											ConfigOptions.UTILITY_LOG,
+											this.getGuild()!!
+										) ?: return@button
 										utilityLog.createMessage {
-												embed {
-													title = "Thread archive prevention disabled"
-													color = DISCORD_FUCHSIA
+											embed {
+												title = "Thread archive prevention disabled"
+												color = DISCORD_FUCHSIA
 
-													field {
-														name = "User"
-														value = user.asUser().tag
-													}
-													field {
-														name = "Thread"
-														value = threadChannel.mention
-													}
+												field {
+													name = "User"
+													value = user.asUser().tag
+												}
+												field {
+													name = "Thread"
+													value = threadChannel.mention
 												}
 											}
+										}
 										message!!.edit { components { removeAll() } }
 									}
 								}
@@ -298,8 +286,10 @@ class ThreadControl : Extension() {
 						}
 						return@action
 					} else if (thread?.preventArchiving == false) {
-						ThreadsCollection().setThreadOwner(thread.threadId, thread.ownerId, true)
+						ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, true)
 						try {
+							val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+								?: return@action
 							utilityLog.createMessage {
 								embed {
 									title = "Thread archive prevention enabled"

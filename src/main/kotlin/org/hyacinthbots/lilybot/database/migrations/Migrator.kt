@@ -18,6 +18,7 @@ import org.hyacinthbots.lilybot.database.entities.ConfigMetaData
 import org.hyacinthbots.lilybot.database.entities.MainMetaData
 import org.hyacinthbots.lilybot.database.migrations.config.configV1
 import org.hyacinthbots.lilybot.database.migrations.main.mainV1
+import org.hyacinthbots.lilybot.database.migrations.main.mainV2
 import org.koin.core.component.inject
 
 object Migrator : KordExKoinComponent {
@@ -50,6 +51,7 @@ object Migrator : KordExKoinComponent {
 				@Suppress("UseIfInsteadOfWhen")
 				when (nextVersion) {
 					1 -> ::mainV1
+					2 -> ::mainV2
 					else -> break
 				}(db.mainDatabase)
 
@@ -75,6 +77,9 @@ object Migrator : KordExKoinComponent {
 	suspend fun migrateConfig() {
 		logger.info { "Starting config database migration" }
 
+		// TODO Remove this line once the migration is done because nc is an absolute clown and got versions out of sync
+		db.configDatabase.dropCollection("configMetaData")
+		// ^
 		var meta = configMetaCollection.get()
 
 		if (meta == null) {
