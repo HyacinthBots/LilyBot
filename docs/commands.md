@@ -78,6 +78,18 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 
 ---
 
+### Name: `announcement`
+**Arguments**:
+None
+
+**Result**: Produces a modal for inputting the announcement content, then sends it to every guild the bot is in. Only works in the bots `TEST_GUILD_ID`
+
+**Required Permissions**: `Administrator`
+
+**Command category**: `Administration commands`
+
+---
+
 
 ## Moderation commands
 These commands are for use by moderators. They utilize built-in permission checks. All moderation commands are logged to the modActionLog established in the config. A Direct Message is sent to the target user containing the sanction they received and the provided reason. If Lily fails to DM them, this failure will be noted in the logging embed.

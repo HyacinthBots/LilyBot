@@ -338,11 +338,17 @@ suspend inline fun configIsUsable(option: ConfigOptions, guildId: Snowflake): Bo
  *
  * @param channelType The type of logging channel desired
  * @param guild The guild the desired channel is in
+ * @param resetConfig If configured channels should be reset if invalid.
+ * Should only be passed as false, and defaults to true.
  * @return The logging channel of [channelType] for the [guild] or null if it doesn't exist
  * @author tempest15
  * @since 4.1.0
  */
-suspend inline fun getLoggingChannelWithPerms(channelType: ConfigOptions, guild: GuildBehavior): GuildMessageChannel? {
+suspend inline fun getLoggingChannelWithPerms(
+	channelType: ConfigOptions,
+	guild: GuildBehavior,
+	resetConfig: Boolean? = null
+): GuildMessageChannel? {
 	val guildId = guild.id
 
 	if (!configIsUsable(channelType, guildId)) return null
@@ -358,21 +364,24 @@ suspend inline fun getLoggingChannelWithPerms(channelType: ConfigOptions, guild:
 	val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return null
 
 	if (!channel.botHasPermissions(Permission.ViewChannel) || !channel.botHasPermissions(Permission.SendMessages)) {
-		when (channelType) {
-			ConfigOptions.SUPPORT_CHANNEL -> SupportConfigCollection().clearConfig(guildId)
-			ConfigOptions.ACTION_LOG -> ModerationConfigCollection().clearConfig(guildId)
-			ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().clearConfig(guildId)
-			ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().clearConfig(guildId)
-			ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().clearConfig(guildId)
-			else -> throw IllegalArgumentException("$channelType does not point to a channel.")
+		if (resetConfig == true) {
+			when (channelType) {
+				ConfigOptions.SUPPORT_CHANNEL -> SupportConfigCollection().clearConfig(guildId)
+				ConfigOptions.ACTION_LOG -> ModerationConfigCollection().clearConfig(guildId)
+				ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().clearConfig(guildId)
+				ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().clearConfig(guildId)
+				ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().clearConfig(guildId)
+				else -> throw IllegalArgumentException("$channelType does not point to a channel.")
+			}
+			val informChannel = getSystemChannelWithPerms(guild as Guild) ?: getFirstUsableChannel(guild)
+			informChannel?.createMessage(
+				"Lily is unable to send messages in the configured " +
+						"${channelType.toString().lowercase()} for this guild. " +
+						"As a result, the corresponding config has been reset. \n\n" +
+						"*Note:* this channel has been used to send this message because it's the first channel " +
+						"in the guild Lily could use. Please inform this guild's staff about this message."
+			)
 		}
-		getFirstUsableChannel(guild)?.createMessage(
-			"Lily is unable to send messages in the configured " +
-					"${channelType.toString().lowercase()} for this guild. " +
-					"As a result, the corresponding config has been reset. \n\n" +
-					"*Note:* this channel has been used to send this message because it's the first channel " +
-					"in the guild Lily could use. Please inform this guild's staff about this message."
-		)
 		return null
 	}
 
@@ -391,6 +400,22 @@ suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessag
 	inputGuild.channels.first {
 		it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)
 	}.asChannelOfOrNull()
+
+/**
+ * Gets a guild's system channel as designated by Discord, or null if said channel is invalid or doesn't exist.
+ *
+ * @param inputGuild The guild in which to get the channel.
+ * @return The guild's system channel or null if it's invalid
+ * @author tempest15
+ * @since 4.1.0
+ */
+suspend inline fun getSystemChannelWithPerms(inputGuild: Guild): GuildMessageChannel? {
+	val systemChannel = inputGuild.getSystemChannel() ?: return null
+	if (!systemChannel.botHasPermissions(Permission.ViewChannel) ||
+		!systemChannel.botHasPermissions(Permission.SendMessages)
+	) return null
+	return systemChannel
+}
 
 /**
  * Gets the channel of the event and checks that the bot has the required [permissions].
