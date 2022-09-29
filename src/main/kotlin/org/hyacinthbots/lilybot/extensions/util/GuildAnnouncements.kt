@@ -50,9 +50,18 @@ class GuildAnnouncements : Extension() {
 
 				val modal = event.interaction.modal("Send an announcement", "announcementModal") {
 					actionRow {
+						textInput(TextInputStyle.Short, "header", "Announcement Header") {
+							placeholder = "Version 7.6.5!"
+							allowedLength = IntRange(1, 250)
+							required = false
+						}
+					}
+					actionRow {
 						textInput(TextInputStyle.Paragraph, "body", "Announcement Body") {
-							placeholder = "We're happy to announce Lily is now written in Rust!"
-							allowedLength = IntRange(1, 2048 - footer.length)
+							placeholder = "We're happy to announce Lily is now written in Rust! " +
+									"It turns out we really like crabs."
+							allowedLength = IntRange(1, 1750 - footer.length)
+							required = false
 						}
 					}
 				}
@@ -72,9 +81,10 @@ class GuildAnnouncements : Extension() {
 				}
 
 				val body = interaction.textInputs["body"]!!.value
+				val header = interaction.textInputs["header"]!!.value
 				val modalResponse = interaction.deferEphemeralResponse()
 
-				if (body.isNullOrEmpty()) {
+				if (body.isNullOrEmpty() && header.isNullOrEmpty()) {
 					modalResponse.respond {
 						content = "Your announcement cannot be completely empty!"
 					}
@@ -106,6 +116,7 @@ class GuildAnnouncements : Extension() {
 												?: return@forEach
 
 										channel.createEmbed {
+											title = header
 											description = body
 											color = Color(0x7B52AE)
 											footer {
