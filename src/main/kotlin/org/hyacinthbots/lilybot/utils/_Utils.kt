@@ -12,7 +12,6 @@ import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import com.kotlindiscord.kord.extensions.utils.loadModule
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
-import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.RoleBehavior
@@ -540,7 +539,6 @@ suspend inline fun Extension.updateDefaultPresence() {
 	}
 
 	kord.editPresence {
-		status = PresenceStatus.Online
 		watching("${getGuildCount()} servers")
 	}
 }
