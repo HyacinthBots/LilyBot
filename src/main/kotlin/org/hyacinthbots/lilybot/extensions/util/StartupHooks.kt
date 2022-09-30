@@ -7,23 +7,17 @@ import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
-import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.NewsChannel
-import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.Cleanups
-import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
-import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
-import org.litote.kmongo.coroutine.toList
-import org.litote.kmongo.eq
-import org.litote.kmongo.setValue
+import org.hyacinthbots.lilybot.utils.utilsLogger
 import kotlin.time.Duration.Companion.days
 
 /**
@@ -42,19 +36,11 @@ class StartupHooks : Extension() {
 	private lateinit var cleanupTask: Task
 
 	override suspend fun setup() {
+		cleanupTask = cleanupScheduler.schedule(1.days, repeat = true, callback = ::cleanup)
+
 		event<ReadyEvent> {
 			action {
-				// TODO Remove this once the migration is done, because of the fact we cannot access kord in the
-				//  migration we need to do this to apply the guild IDs
-				with(Database().mainDatabase.getCollection<ThreadData>("threadData")) {
-					collection.find(ThreadData::guildId eq null).toList().forEach {
-						updateOne(
-							ThreadData::threadId eq it.threadId,
-							setValue(ThreadData::guildId, kord.getChannelOf<ThreadChannel>(it.threadId)!!.guildId)
-						)
-					}
-				}
-
+				utilsLogger.info { "This is the online notification event" } // To try and pinpoint errors
 				val now = Clock.System.now()
 
 				/**
@@ -63,30 +49,33 @@ class StartupHooks : Extension() {
 				 * @since v2.0
 				 */
 				// The channel specifically for sending online notifications to
-				val onlineLog = kord.getGuild(TEST_GUILD_ID)?.getChannelOf<NewsChannel>(ONLINE_STATUS_CHANNEL)
-				onlineLog?.createEmbed {
-					title = "Lily is now online!"
-					description =
-						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
-					color = DISCORD_GREEN
-				}?.publish()
-
-				/**
-				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
-				 * else the database value.
-				 */
-				if (StatusCollection().getStatus() == null) {
-					updateDefaultPresence()
-				} else {
-					this@event.kord.editPresence {
-						status = PresenceStatus.Online
-						playing(StatusCollection().getStatus()!!)
+ 				val homeGuild = kord.getGuild(TEST_GUILD_ID)!!
+ 				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
+ 				val onlineMessage = onlineLog.createEmbed {
+ 					title = "Lily is now online!"
+ 					description =
+ 						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
+ 					color = DISCORD_GREEN
+ 				}
+ 				onlineMessage.publish()
+			}
+			event<ReadyEvent> {
+				utilsLogger.info { "This is the status ready event" }
+				action {
+					/**
+					 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
+					 * else the database value.
+					 */
+					if (StatusCollection().getStatus() == null) {
+						updateDefaultPresence()
+					} else {
+						event.kord.editPresence {
+							playing(StatusCollection().getStatus()!!)
+						}
 					}
 				}
 			}
 		}
-
-		cleanupTask = cleanupScheduler.schedule(1.days, callback = ::cleanup)
 	}
 
 	/**
@@ -96,6 +85,7 @@ class StartupHooks : Extension() {
 	 * @since 4.1.0
 	 */
 	private suspend fun cleanup() {
+		utilsLogger.info { "This is the cleanup function+" }
 		Cleanups.cleanupThreadData(kord)
 		Cleanups.cleanupGuildData()
 	}

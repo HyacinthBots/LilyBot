@@ -75,7 +75,7 @@ class MessageEdit : Extension() {
 	private suspend fun onMessageEdit(message: Message, old: Message?, proxiedMessage: PKMessage?) {
 		val guild = message.getGuild()
 
-		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, guild) ?: return
+		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, guild) ?: return
 
 		messageLog.createEmbed {
 			color = DISCORD_YELLOW
