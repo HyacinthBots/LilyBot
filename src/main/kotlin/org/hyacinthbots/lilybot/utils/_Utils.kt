@@ -647,7 +647,7 @@ suspend fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
 	if (message.attachments.isNotEmpty()) {
 		field {
 			name = "Attachments"
-			value = message.attachments.map { it.url }.joinToString { "\n" }
+			value = message.attachments.joinToString(separator = "\n") { it.url }
 			inline = false
 		}
 	}

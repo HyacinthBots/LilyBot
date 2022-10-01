@@ -12,7 +12,6 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.delete
 import com.kotlindiscord.kord.extensions.utils.respond
-import com.soywiz.klock.seconds
 import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -25,6 +24,7 @@ import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -187,7 +187,7 @@ class GalleryChannel : Extension() {
 					// If there are no attachments to the message and the channel we're in is an image channel
 					if (event.message.channelId == it.channelId && event.message.attachments.isEmpty()) {
 						// We delay to give the message a chance to populate with an embed, if it is a link to imgur etc.
-						delay(0.25.seconds.millisecondsLong)
+						delay(0.25.seconds.inWholeMilliseconds)
 						if (event.message.embeds.isEmpty()) { // If there is still no embed, we delete the message
 							// and explain why
 							if (event.message.type != MessageType.Default && event.message.type != MessageType.Reply) {
@@ -204,7 +204,7 @@ class GalleryChannel : Extension() {
 							try {
 								// Delete the explanation after 3 seconds. If an exception is thrown, the
 								// message has already been deleted
-								response.delete(2.5.seconds.millisecondsLong)
+								response.delete(2.5.seconds.inWholeMilliseconds)
 							} catch (e: EntityNotFoundException) {
 								// The message that we're attempting to delete has already been deleted.
 							}
