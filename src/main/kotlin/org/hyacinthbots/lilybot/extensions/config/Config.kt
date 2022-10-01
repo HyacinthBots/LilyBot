@@ -358,7 +358,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			memberLog ?: return@action
 
 			var messageLog: TextChannel? = null
-			if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) && arguments.memberLog != null) {
+			if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) && arguments.messageLogs != null) {
 				messageLog = guild!!.getChannelOfOrNull(arguments.messageLogs!!.id)
 				if (messageLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
 					respond {
