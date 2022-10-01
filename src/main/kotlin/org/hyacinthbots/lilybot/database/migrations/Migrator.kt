@@ -52,6 +52,7 @@ object Migrator : KordExKoinComponent {
 				when (nextVersion) {
 					1 -> ::mainV1
 					2 -> ::mainV2
+					// 3 -> ::mainV3
 					else -> break
 				}(db.mainDatabase)
 

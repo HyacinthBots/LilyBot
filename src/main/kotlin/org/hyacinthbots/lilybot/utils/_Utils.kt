@@ -41,7 +41,6 @@ import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
-import org.hyacinthbots.lilybot.database.collections.RemindMeCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
@@ -587,7 +586,6 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
 				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
-				single { RemindMeCollection() } bind RemindMeCollection::class
 				single { RoleMenuCollection() } bind RoleMenuCollection::class
 				single { StatusCollection() } bind StatusCollection::class
 				single { TagsCollection() } bind TagsCollection::class
