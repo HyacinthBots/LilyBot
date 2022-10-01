@@ -2,15 +2,19 @@ package org.hyacinthbots.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageUpdateEvent
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageUpdateEvent
+import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.core.behavior.channel.asChannelOf
-import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
@@ -37,7 +41,8 @@ class MessageEdit : Extension() {
 				anyGuild()
 				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
-					event.message.asMessage().author?.id == kord.selfId
+					val message = event.message.asMessage()
+					message.author?.isBot == true || event.old?.content == message.content
 				}
 			}
 			action {
@@ -55,7 +60,7 @@ class MessageEdit : Extension() {
 				anyGuild()
 				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
-					event.message.asMessage().author?.id == kord.selfId
+					event.old?.content == event.message.asMessage().content
 				}
 			}
 			action {
@@ -77,28 +82,36 @@ class MessageEdit : Extension() {
 
 		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, guild) ?: return
 
-		messageLog.createEmbed {
-			color = DISCORD_YELLOW
-			author {
-				name = "Message Edited"
-				icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.url
-			}
-			description =
-				"Location: ${message.channel.mention} " +
-						"(${message.channel.asChannelOf<GuildMessageChannel>().name})"
-			timestamp = Clock.System.now()
+		messageLog.createMessage {
+			embed {
+				color = DISCORD_YELLOW
+				author {
+					name = "Message Edited"
+					icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.url
+				}
+				description =
+					"Location: ${message.channel.mention} " +
+							"(${message.channel.asChannelOf<GuildMessageChannel>().name})"
+				timestamp = Clock.System.now()
 
-			field {
-				name = "Previous contents"
-				value = old?.trimmedContents().ifNullOrEmpty { "Failed to retrieve previous message contents" }
-				inline = false
+				field {
+					name = "Previous contents"
+					value = old?.trimmedContents().ifNullOrEmpty { "Failed to retrieve previous message contents" }
+					inline = false
+				}
+				field {
+					name = "New contents"
+					value = message.trimmedContents().ifNullOrEmpty { "Failed to retrieve new message contents" }
+					inline = false
+				}
+				attachmentsAndProxiedMessageInfo(guild, message, proxiedMessage)
 			}
-			field {
-				name = "New contents"
-				value = message.trimmedContents().ifNullOrEmpty { "Failed to retrieve new message contents" }
-				inline = false
+			components {
+				linkButton {
+					label = "Jump"
+					url = message.getJumpUrl()
+				}
 			}
-			attachmentsAndProxiedMessageInfo(guild, message, proxiedMessage)
 		}
 	}
 }
