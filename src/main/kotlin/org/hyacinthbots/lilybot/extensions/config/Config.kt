@@ -91,7 +91,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
-			var supportChannel: TextChannel? = null
+			val supportChannel: TextChannel?
 			if (arguments.enable && arguments.channel != null) {
 				supportChannel = guild!!.getChannelOfOrNull(arguments.channel!!.id)
 				if (supportChannel?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
@@ -103,7 +103,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					return@action
 				}
 			}
-			supportChannel ?: return@action
 
 			suspend fun EmbedBuilder.supportEmbed() {
 				title = "Configuration: Support"
@@ -248,7 +247,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
-			var modActionLog: TextChannel? = null
+			val modActionLog: TextChannel?
 			if (arguments.enabled && arguments.modActionLog != null) {
 				modActionLog = guild!!.getChannelOfOrNull(arguments.modActionLog!!.id)
 				if (modActionLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
@@ -259,7 +258,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					return@action
 				}
 			}
-			modActionLog ?: return@action
 
 			suspend fun EmbedBuilder.moderationEmbed() {
 				title = "Configuration: Moderation"
@@ -344,7 +342,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
-			var memberLog: TextChannel? = null
+			val memberLog: TextChannel?
 			if (arguments.enableMemberLogging && arguments.memberLog != null) {
 				memberLog = guild!!.getChannelOfOrNull(arguments.memberLog!!.id)
 				if (memberLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
@@ -355,9 +353,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					return@action
 				}
 			}
-			memberLog ?: return@action
 
-			var messageLog: TextChannel? = null
+			val messageLog: TextChannel?
 			if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) && arguments.messageLogs != null) {
 				messageLog = guild!!.getChannelOfOrNull(arguments.messageLogs!!.id)
 				if (messageLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
@@ -368,7 +365,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					return@action
 				}
 			}
-			messageLog ?: return@action
 
 			suspend fun EmbedBuilder.loggingEmbed() {
 				title = "Configuration: Logging"
@@ -467,7 +463,6 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					return@action
 				}
 			}
-			utilityLog ?: return@action
 
 			suspend fun EmbedBuilder.utilityEmbed() {
 				title = "Configuration: Utility"
@@ -508,7 +503,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			)
 
-			utilityLog.createMessage {
+			utilityLog?.createMessage {
 				embed {
 					utilityEmbed()
 				}
