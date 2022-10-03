@@ -6,7 +6,6 @@ import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingEnum
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -35,11 +34,11 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.configPresent
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 // This code solves the following issues:
 // Customize support message - https://github.com/IrisShaders/LilyBot/issues/138
@@ -63,7 +62,6 @@ class AutoThreading : Extension() {
 
 				check {
 					anyGuild()
-					configPresent()
 					hasPermission(Permission.ManageChannels)
 					requireBotPermissions(Permission.SendMessages)
 					botHasChannelPerms(Permissions(Permission.SendMessages))
@@ -93,7 +91,7 @@ class AutoThreading : Extension() {
 							roleId = arguments.role?.id,
 							allowDuplicates = arguments.allowDuplicates,
 							archive = arguments.archive,
-							namingScheme = arguments.namingScheme,
+							smartNaming = arguments.smartNaming,
 							mention = arguments.mention,
 							creationMessage = arguments.message
 						)
@@ -105,11 +103,9 @@ class AutoThreading : Extension() {
 					}
 
 					// Log the change
-					// todo make usage of logging channels more nuanced
-					val config = ModerationConfigCollection().getConfig(guild!!.id) ?: return@action
-					val modActionLog = guild!!.getChannelOfOrNull<TextChannel>(config.channel!!)
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!) ?: return@action
 
-					modActionLog?.createEmbed {
+					utilityLog.createEmbed {
 						title = "Auto-threading Enabled"
 						description = null
 						field {
@@ -133,8 +129,8 @@ class AutoThreading : Extension() {
 							inline = true
 						}
 						field {
-							name = "Naming Scheme:"
-							value = arguments.namingScheme.toString()
+							name = "Smart Naming Enabled:"
+							value = arguments.smartNaming.toString()
 							inline = true
 						}
 						field {
@@ -163,7 +159,6 @@ class AutoThreading : Extension() {
 
 				check {
 					anyGuild()
-					configPresent()
 					hasPermission(Permission.ManageChannels)
 					requireBotPermissions(Permission.SendMessages)
 					botHasChannelPerms(Permissions(Permission.SendMessages))
@@ -186,11 +181,9 @@ class AutoThreading : Extension() {
 					}
 
 					// Log the change
-					// todo make usage of logging channels more nuanced
-					val config = ModerationConfigCollection().getConfig(guild!!.id) ?: return@action
-					val modActionLog = guild!!.getChannelOfOrNull<TextChannel>(config.channel!!)
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!) ?: return@action
 
-					modActionLog?.createEmbed {
+					utilityLog.createEmbed {
 						title = "Auto-threading Disabled"
 						description = null
 
@@ -248,7 +241,6 @@ class AutoThreading : Extension() {
 		event<MessageCreateEvent> {
 			check {
 				anyGuild()
-				configPresent()
 				failIf {
 					event.message.author?.id == kord.selfId ||
 							listOf(
@@ -272,11 +264,7 @@ class AutoThreading : Extension() {
 				val options = AutoThreadingCollection().getSingleAutoThread(channel.id) ?: return@action
 
 				// todo Implement naming schemes properly
-				val threadName = when (options.namingScheme) {
-					ThreadNamingSchemes.SUPPORT -> "support"
-					ThreadNamingSchemes.CONTENT -> "content"
-					ThreadNamingSchemes.USERNAME -> eventMessage.author?.username ?: "username"
-				}
+				val threadName = "foo"
 
 				if (!options.allowDuplicates) {
 					var previousUserThread: TextChannelThread? = null
@@ -307,7 +295,7 @@ class AutoThreading : Extension() {
 					channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 				)
 
-				ThreadsCollection().setThreadOwner(thread.id, authorId)
+				ThreadsCollection().setThreadOwner(event.guildId, thread.id, authorId)
 
 				val threadMessage = thread.createMessage(
 					if (options.mention) {
@@ -334,7 +322,6 @@ class AutoThreading : Extension() {
 		event<ThreadChannelCreateEvent> {
 			check {
 				anyGuild()
-				configPresent()
 				failIf {
 					event.channel.ownerId == kord.selfId
 				}
@@ -386,12 +373,10 @@ class AutoThreading : Extension() {
 			defaultValue = false
 		}
 
-		// todo make this auto-complete options
-		val namingScheme by defaultingEnum<ThreadNamingSchemes> {
-			name = "naming-scheme"
-			description = "The method for naming threads in this channel."
-			defaultValue = ThreadNamingSchemes.USERNAME
-			typeName = "foo" // todo what does this do?
+		val smartNaming by defaultingBoolean {
+			name = "smart-naming"
+			description = "If Lily should use content-aware thread titles."
+			defaultValue = false
 		}
 
 		val mention by defaultingBoolean {
@@ -403,11 +388,8 @@ class AutoThreading : Extension() {
 		val message by optionalString {
 			name = "message"
 			description = "The message, if any, to send at the beginning of new threads in this channel."
-		} // todo trim this so as not to go over message size limits
-	}
-
-	enum class ThreadNamingSchemes {
-		SUPPORT, USERNAME, CONTENT
+			maxLength = 1000 // todo make sure this is adequate
+		}
 	}
 
 	private suspend inline fun messageAndArchive(

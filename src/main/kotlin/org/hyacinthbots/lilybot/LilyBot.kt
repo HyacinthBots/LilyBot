@@ -14,6 +14,7 @@ import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
 import org.hyacinthbots.lilybot.extensions.config.Config
 import org.hyacinthbots.lilybot.extensions.config.GuildLogging
+import org.hyacinthbots.lilybot.extensions.events.AutoThreading
 import org.hyacinthbots.lilybot.extensions.events.LogUploading
 import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
@@ -93,6 +94,7 @@ suspend fun main() {
 			add(::TerminalModeration)
 			add(::ThreadControl)
 			add(::ThreadInviter)
+			add(::AutoThreading)
 
 			/*
 			The anti-phishing extension automatically deletes and logs scam links. It also allows users to check links
