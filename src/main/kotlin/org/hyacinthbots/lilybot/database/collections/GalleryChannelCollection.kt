@@ -10,12 +10,13 @@ import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with the [Gallery Channel Database][GalleryChannelData]. This
- * object contains functions for getting, setting and removing gallery channels.
+ * class contains functions for getting, setting and removing gallery channels.
  *
  * @since 4.0.0
  * @see getChannels
  * @see setChannel
  * @see removeChannel
+ * @see removeAll
  */
 class GalleryChannelCollection : KordExKoinComponent {
 	private val db: Database by inject()
