@@ -8,7 +8,7 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This class contains the functions for interacting with the [Tags Database][TagsData]. This object has functions for
+ * This class contains the functions for interacting with the [Tags Database][TagsData]. This class has functions for
  * getting tags, getting all tags, adding tags, and removing a tag or tags.
  *
  * @since 4.0.0

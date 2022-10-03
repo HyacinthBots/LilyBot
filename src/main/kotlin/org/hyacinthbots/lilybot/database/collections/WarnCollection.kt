@@ -8,13 +8,13 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This class stores all the functions for interacting with the [Warn Database][WarnData]. The object contains the
+ * This class stores all the functions for interacting with the [Warn Database][WarnData]. The class contains the
  * functions for querying, adding and removal of warnings for a user.
  *
+ * @since 4.0.0
  * @see getWarn
  * @see setWarn
  * @see clearWarns
- * @since 4.0.0
  */
 class WarnCollection : KordExKoinComponent {
 	private val db: Database by inject()

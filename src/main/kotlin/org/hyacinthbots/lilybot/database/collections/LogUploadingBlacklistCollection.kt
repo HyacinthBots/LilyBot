@@ -7,6 +7,18 @@ import org.hyacinthbots.lilybot.database.entities.LogUploadingBlacklistData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
+/**
+ * This class contains functions for interaction with the [log uploading blacklist database][LogUploadingBlacklistData].
+ * This class contains functions for setting the blacklist, removing the blacklist, getting, clearing and checking for
+ * presence in the blacklist.
+ *
+ * @since 4.0.0
+ * @see setLogUploadingBlacklist
+ * @see removeLogUploadingBlacklist
+ * @see getLogUploadingBlacklist
+ * @see clearBlacklist
+ * @see isChannelInUploadBlacklist
+ */
 class LogUploadingBlacklistCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
