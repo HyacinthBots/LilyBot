@@ -41,6 +41,7 @@ import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
@@ -586,6 +587,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
 				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
+				single { ReminderCollection() } bind ReminderCollection::class
 				single { RoleMenuCollection() } bind RoleMenuCollection::class
 				single { StatusCollection() } bind StatusCollection::class
 				single { TagsCollection() } bind TagsCollection::class
@@ -629,6 +631,18 @@ fun Message?.trimmedContents(): String? {
 	return if (this.content.length > 1024) {
 		this.content.substring(0, 1020) + " ..."
 	} else this.content
+}
+
+/**
+ * Checks a string to see if it fits the in a discord embed field.
+ *
+ * @return True, if the given string fits and embed, false if not
+ * @author NoComment1105
+ * @since 4.2.0
+ */
+fun String?.fitsEmbed(): Boolean? {
+	this ?: return null
+	return this.length <= 1024
 }
 
 /**

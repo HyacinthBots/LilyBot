@@ -1,17 +1,53 @@
 package org.hyacinthbots.lilybot.extensions.util
 
+import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
+import com.kotlindiscord.kord.extensions.commands.application.slash.publicSubCommand
+import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOptionalDuration
-import com.kotlindiscord.kord.extensions.commands.converters.impl.int
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.long
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
+import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.pagination.EphemeralResponsePaginator
+import com.kotlindiscord.kord.extensions.pagination.pages.Page
+import com.kotlindiscord.kord.extensions.pagination.pages.Pages
+import com.kotlindiscord.kord.extensions.time.TimestampType
+import com.kotlindiscord.kord.extensions.time.toDiscord
+import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
+import com.kotlindiscord.kord.extensions.utils.toDuration
+import dev.kord.common.Locale
+import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.interaction.followup.edit
+import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.behavior.interaction.response.EphemeralMessageInteractionResponseBehavior
+import dev.kord.core.behavior.interaction.response.edit
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.rest.builder.message.create.embed
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.TimeZone
+import org.hyacinthbots.lilybot.database.collections.ReminderCollection
+import org.hyacinthbots.lilybot.database.entities.ReminderData
+import org.hyacinthbots.lilybot.utils.botHasChannelPerms
+import org.hyacinthbots.lilybot.utils.fitsEmbed
 
 class Reminders : Extension() {
 	override val name = "reminders"
@@ -25,40 +61,475 @@ class Reminders : Extension() {
 	override suspend fun setup() {
 		reminderTask = reminderScheduler.schedule(30, repeat = true, callback = ::postReminders)
 
-		/*
-		Reminder Set
-		 */
-		ephemeralSlashCommand(::ReminderSetArgs) { }
+		publicSlashCommand {
+			name = "reminder"
+			description = "The parent command for all reminder commands"
 
-		/*
-		Reminder List
-		 */
-		ephemeralSlashCommand { }
+			/*
+			Reminder set
+			 */
+			publicSubCommand(::ReminderSetArgs) {
+				name = "set"
+				description = "Set a reminder for some time in the future!"
 
-		/*
-		Reminder Remove
-		 */
-		ephemeralSlashCommand(::ReminderRemoveArgs) { }
+				check {
+					requirePermission(Permission.SendMessages, Permission.EmbedLinks)
+					botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
+				}
 
-		/*
-		Reminder Removal all
-		 */
-		ephemeralSlashCommand(::ReminderRemoveAllArgs) { }
+				action {
+					val setTime = Clock.System.now()
+					val remindTime = Clock.System.now().plus(arguments.time.toDuration(TimeZone.UTC))
 
-		/*
-		Reminder Mod List
-		 */
-		ephemeralSlashCommand(::ReminderModListArgs) { }
+					if (arguments.customMessage != null && arguments.customMessage.fitsEmbed() == false) {
+						respond { content = "Custom Message is too long. Message must be 1024 characters or fewer." }
+						return@action
+					}
 
-		/*
-		Reminder Mod Remove
-		 */
-		ephemeralSlashCommand(::ReminderModRemoveArgs) { }
+					if (arguments.repeating && arguments.repeatingInterval == null) {
+						respond {
+							content = "You must specify a repeating interval if you are setting a repeating reminder."
+						}
+						return@action
+					}
 
-		/*
-		Reminder Mod Remove All
-		 */
-		ephemeralSlashCommand(::ReminderModRemoveAllArgs) { }
+					if (arguments.repeatingInterval != null && arguments.repeatingInterval!!.toDuration(TimeZone.UTC) <=
+						DateTimePeriod(hours = 1).toDuration(TimeZone.UTC)
+					) {
+						respond {
+							content = "The Repeating interval cannot be less than one hour!\n\n" +
+									"This is to prevent spam and/or abuse of reminders."
+						}
+						return@action
+					}
+
+					val reminderEmbed = respond {
+						embed {
+							if (arguments.customMessage.isNullOrEmpty() && !arguments.repeating) {
+								title = "Reminder Set!"
+								description =
+									"I will remind you at ${remindTime.toDiscord(TimestampType.LongDateTime)} (${
+										remindTime.toDiscord(TimestampType.RelativeTime)
+									})"
+							} else if (arguments.customMessage.isNullOrEmpty() && arguments.repeating) {
+								title = "Repeating Reminder Set!"
+								description =
+									"I will remind you at ${remindTime.toDiscord(TimestampType.LongDateTime)} (${
+										remindTime.toDiscord(TimestampType.RelativeTime)
+									})"
+								field {
+									name = "Repeating Interval"
+									value = arguments.repeatingInterval.toString().lowercase()
+										.replace("pt", "")
+										.replace("p", "")
+								}
+							} else if (arguments.customMessage != null && !arguments.repeating) {
+								title = "Reminder Set!"
+								description =
+									"I will remind you at ${remindTime.toDiscord(TimestampType.LongDateTime)} (${
+										remindTime.toDiscord(TimestampType.RelativeTime)
+									})"
+								field {
+									name = "Custom Message"
+									value = arguments.customMessage!!
+								}
+							} else if (arguments.customMessage != null && arguments.repeating) {
+								title = "Repeating Reminder Set!"
+								description =
+									"I will remind you at ${remindTime.toDiscord(TimestampType.LongDateTime)} (${
+										remindTime.toDiscord(TimestampType.RelativeTime)
+									})"
+								field {
+									name = "Custom Message"
+									value = arguments.customMessage!!
+								}
+								field {
+									name = "Repeating Interval"
+									value = arguments.repeatingInterval.toString().lowercase()
+										.replace("pt", "")
+										.replace("p", "")
+								}
+							}
+
+							if (arguments.dm) {
+								field {
+									value = "Reminder will be send via DM to all participants"
+								}
+							}
+
+							field {
+								name = "Subscribers"
+								value = user.asUser().mention
+							}
+
+							footer {
+								text = "Use `/reminder remove` to cancel"
+							}
+						}
+					}
+
+					reminderEmbed.edit {
+						val components = components {
+							ephemeralButton {
+								label = "Subscribe!"
+								style = ButtonStyle.Secondary
+
+								id = "reminder-subscribe-${reminderEmbed.message.asMessage().id}"
+
+								action { }
+							}
+						}
+
+						components.removeAll()
+					}
+
+					val id = (ReminderCollection().getAllReminders().lastOrNull()?.id ?: 0) + 1
+
+					ReminderCollection().setReminder(
+						ReminderData(
+							guild!!.id,
+							remindTime,
+							setTime,
+							user.id,
+							mutableListOf(user.id),
+							channel.id,
+							reminderEmbed.message.asMessage().id,
+							arguments.dm,
+							arguments.customMessage,
+							arguments.repeating,
+							arguments.repeatingInterval,
+							id
+						)
+					)
+				}
+			}
+
+			/*
+			Reminder List
+		 	*/
+			ephemeralSubCommand {
+				name = "list"
+				description = "List your reminders for this guild"
+
+				action {
+					val reminders = userReminders(event)
+
+					val paginator = EphemeralResponsePaginator(
+						pages = reminders,
+						owner = event.interaction.user,
+						timeoutSeconds = 500,
+						locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
+						interaction = interactionResponse
+					)
+
+					paginator.send()
+				}
+			}
+
+			/*
+			Reminder Remove
+		 	*/
+			// TODO Implement editing of the original embed? maybe?
+			ephemeralSubCommand(::ReminderRemoveArgs) {
+				name = "remove"
+				description = "Remove a reminder you have set from this guild"
+
+				check {
+					anyGuild()
+				}
+
+				action {
+					val reminders = ReminderCollection().getRemindersForUser(user.id)
+
+					val reminder = reminders.find { it.id == arguments.reminder }
+
+					if (reminder == null) {
+						respond {
+							content = "Reminder not found. Please use `/reminder list` to find out the correct " +
+									"reminder number"
+						}
+						return@action
+					}
+
+					respond {
+						embed {
+							title = "Reminder cancelled"
+							field {
+								name = "Reminder"
+								value = reminder.getContent()!!
+							}
+						}
+					}
+
+					ReminderCollection().removeReminder(arguments.reminder)
+				}
+			}
+
+			/*
+			Reminder Remove all
+		 	*/
+			ephemeralSubCommand(::ReminderRemoveAllArgs) {
+				name = "remove-all"
+				description = "Remove all a specific type of reminder from this guild"
+
+				check {
+					anyGuild()
+				}
+
+				action {
+					val reminders = ReminderCollection().getRemindersForUserInGuild(user.id, guild!!.id)
+
+					if (reminders.isEmpty()) {
+						respond {
+							content = "You do not have any reminders for this guild!"
+						}
+						return@action
+					}
+
+					when (arguments.type) {
+						"all" -> {
+							reminders.forEach {
+								ReminderCollection().removeReminder(it.id)
+							}
+
+							respond {
+								content = "Removed all reminders for this guild."
+							}
+						}
+
+						"repeating" -> {
+							reminders.forEach {
+								if (it.repeating) ReminderCollection().removeReminder(it.id)
+							}
+
+							respond {
+								content = "Removed all repeating reminders for this guild."
+							}
+						}
+
+						"non-repeating" -> {
+							reminders.forEach {
+								if (!it.repeating) ReminderCollection().removeReminder(it.id)
+							}
+
+							respond {
+								content = "Removed all non-repeating reminders for this guild."
+							}
+						}
+					}
+				}
+			}
+
+			/*
+			Reminder Mod List
+		 	*/
+			ephemeralSubCommand(::ReminderModListArgs) {
+				name = "mod-list"
+				description = "List all reminders for a user, if you're a moderator"
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
+
+				action {
+					val reminders = userReminders(event, arguments.user.id)
+
+					val paginator = EphemeralResponsePaginator(
+						pages = reminders,
+						owner = event.interaction.user,
+						timeoutSeconds = 500,
+						locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
+						interaction = interactionResponse
+					)
+
+					paginator.send()
+				}
+			}
+
+			/*
+			Reminder Mod Remove
+		 	*/
+			ephemeralSubCommand(::ReminderModRemoveArgs) {
+				name = "mod-remove"
+				description = "Remove a reminder for a user, if you're a moderator"
+
+				action {
+					val reminders = ReminderCollection().getRemindersForUser(arguments.user.id)
+
+					val reminder = reminders.find { it.id == arguments.reminder }
+
+					if (reminder == null) {
+						respond {
+							content = "Reminder not found. Please use `/reminder mod-list` to find out the correct " +
+									"reminder number"
+						}
+						return@action
+					}
+
+					respond {
+						embed {
+							title = "Reminder cancelled by moderator"
+							field {
+								name = "Reminder"
+								value = reminder.getContent()!!
+							}
+						}
+					}
+
+					ReminderCollection().removeReminder(arguments.reminder)
+				}
+			}
+
+			/*
+			Reminder Mod Remove All
+		 	*/
+			ephemeralSubCommand(::ReminderModRemoveAllArgs) {
+				name = "mod-remove-all"
+				description = "Remove all a specific type of reminder for a user, if you're a moderator"
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
+
+				action {
+					val reminders = ReminderCollection().getRemindersForUserInGuild(arguments.user.id, guild!!.id)
+
+					if (reminders.isEmpty()) {
+						respond {
+							content = "${user.asUser().username} does not have any reminders for this guild!"
+						}
+						return@action
+					}
+
+					when (arguments.type) {
+						"all" -> {
+							reminders.forEach {
+								ReminderCollection().removeReminder(it.id)
+							}
+
+							respond {
+								content = "Removed all ${
+									guild!!.getMember(arguments.user.id).mention
+								}'s reminders for this guild."
+							}
+						}
+
+						"repeating" -> {
+							reminders.forEach {
+								if (it.repeating) ReminderCollection().removeReminder(it.id)
+							}
+
+							respond {
+								content = "Removed all ${
+									guild!!.getMember(arguments.user.id).mention
+								}'s repeating reminders for this guild."
+							}
+						}
+
+						"non-repeating" -> {
+							reminders.forEach {
+								if (!it.repeating) ReminderCollection().removeReminder(it.id)
+							}
+
+							respond {
+								content = "Removed all ${
+									guild!!.getMember(arguments.user.id).mention
+								}'s non-repeating reminders for this guild."
+							}
+						}
+					}
+				}
+			}
+		}
+
+		event<ButtonInteractionCreateEvent> {
+			check {
+				failIfNot(event.interaction.componentId.contains("reminder-subscribe"))
+			}
+
+			action {
+				val reminder = ReminderCollection().getReminderFromMessageId(
+					event.interaction.message.id
+				)
+
+				if (reminder == null) {
+					event.interaction.respondEphemeral {
+						content =
+							"This reminder seems to be broken. Please inform the creator of the reminder and ask " +
+									"them to recreate it.\nIf this isn't a reminder, or if the issue persists, open an " +
+									"issue report at <https://github.com/HyacinthBots/LilyBot/issues>"
+					}
+					return@action
+				}
+
+				if (reminder.subscribers.contains(event.interaction.user.id)) {
+					var response: EphemeralMessageInteractionResponseBehavior? = null
+					response = event.interaction.respondEphemeral {
+						content = "You are currently subscribed to this reminder, would you like to unsubscribe?"
+						components {
+							ephemeralButton {
+								label = "Yes"
+								style = ButtonStyle.Primary
+
+								action {
+									val newSubscribers = mutableListOf<Snowflake>()
+									newSubscribers.addAll(reminder.subscribers)
+									newSubscribers.remove(event.interaction.user.id)
+									ReminderCollection().updateReminder(
+										event.interaction.message.id,
+										reminder,
+										newSubscribers
+									)
+
+									response?.edit {
+										content = "Unsubscribed from reminder"
+										components { removeAll() }
+									}
+								}
+							}
+
+							ephemeralButton {
+								label = "No"
+								style = ButtonStyle.Danger
+
+								action {
+									response?.edit {
+										content = "You will remain subscribed to the reminder"
+										components { removeAll() }
+									}
+								}
+							}
+						}
+					}
+				} else {
+					val newSubscribers = mutableListOf<Snowflake>()
+					newSubscribers.addAll(reminder.subscribers)
+					newSubscribers.add(event.interaction.user.id)
+
+					ReminderCollection().updateReminder(
+						event.interaction.message.id,
+						reminder,
+						newSubscribers
+					)
+
+					// TODO Update the original reminder embed to reflect the new subscribers to the reminder
+
+					event.interaction.respondEphemeral {
+						content = "You have subscribed to the reminder"
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -69,6 +540,71 @@ class Reminders : Extension() {
 	 */
 	@Suppress("EmptyFunctionBlock")
 	private suspend fun postReminders() {
+		// TODO Write this. Make it not bad like last time
+	}
+
+	/**
+	 * Gets all a users reminders and formats them into a Page for a paginator.
+	 *
+	 * @param event The event that requires this information
+	 * @param userId The user that is being looked for, or null to use the integration
+	 *
+	 * @return A [Pages] object of containing reminder information
+	 * @author NoComment1105
+	 * @since 4.2.0
+	 */
+	private suspend inline fun userReminders(
+		event: ChatInputCommandInteractionCreateEvent,
+		userId: Snowflake? = null
+	): Pages {
+		val pagesObj = Pages()
+		val userReminders =
+			ReminderCollection().getRemindersForUserInGuild(userId ?: event.interaction.user.id, guildFor(event)!!.id)
+
+		if (userReminders.isEmpty()) {
+			pagesObj.addPage(
+				Page {
+					description = "There are no reminders set for this guild."
+				}
+			)
+		} else {
+			userReminders.chunked(4).forEach { reminder ->
+				var response = ""
+				reminder.forEach {
+					response += it.getContent()
+				}
+
+				pagesObj.addPage(
+					Page {
+						title = "Reminders for ${guildFor(event)?.asGuild()?.name ?: "this guild"}"
+						description = response
+					}
+				)
+			}
+		}
+
+		return pagesObj
+	}
+
+	/**
+	 * Gets the content of a reminder and formats it for display.
+	 *
+	 * @return The formatted string of the Reminder data
+	 * @author NoComment1105
+	 * @since 4.2.0
+	 */
+	private fun ReminderData?.getContent(): String? {
+		this ?: return null
+		return "Reminder ID: ${this.id}\nTime set: ${this.setTime.toDiscord(TimestampType.ShortDateTime)},\n" +
+				"Time until reminder: ${this.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+					this.remindTime.toDiscord(TimestampType.ShortDateTime)
+				}),\nCustom Message: ${
+					if (this.customMessage != null && this.customMessage.length >= 150) {
+						this.customMessage.substring(0..150)
+					} else {
+						this.customMessage ?: "none"
+					}
+				}\n---\n"
 	}
 
 	inner class ReminderSetArgs : Arguments() {
@@ -78,6 +614,11 @@ class Reminders : Extension() {
 			description = "How long until reminding? Format: 1d12h30m / 3d / 26m30s"
 		}
 
+		val dm by boolean {
+			name = "remind-in-dm"
+			description = "Whether to remind in DMs or not"
+		}
+
 		/** An optional message to attach to the reminder. */
 		val customMessage by optionalString {
 			name = "custom-message"
@@ -85,9 +626,10 @@ class Reminders : Extension() {
 		}
 
 		/** Whether to repeat the reminder or have it run once. */
-		val repeating by optionalBoolean {
+		val repeating by defaultingBoolean {
 			name = "repeat"
 			description = "Whether to repeat the reminder or not"
+			defaultValue = false
 		}
 
 		/** The interval for the repeating reminder to run at. */
@@ -99,7 +641,7 @@ class Reminders : Extension() {
 
 	inner class ReminderRemoveArgs : Arguments() {
 		/** The number of the reminder to remove. */
-		val reminder by int {
+		val reminder by long {
 			name = "reminder-number"
 			description = "The number of the reminder to remove. Use '/reminder list' to get this"
 		}
@@ -134,7 +676,7 @@ class Reminders : Extension() {
 		}
 
 		/** The number of the reminder to remove. */
-		val reminder by int {
+		val reminder by long {
 			name = "reminder-number"
 			description = "The number of the reminder to remove. Use '/reminder mod-list' to get this"
 		}
