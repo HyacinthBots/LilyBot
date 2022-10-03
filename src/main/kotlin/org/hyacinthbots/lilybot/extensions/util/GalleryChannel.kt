@@ -12,23 +12,19 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.delete
 import com.kotlindiscord.kord.extensions.utils.respond
-import com.soywiz.klock.seconds
 import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * The class the holds the systems that allow a guild to set a channel as a gallery channel.
@@ -63,22 +59,6 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)
-					val logChannel: GuildMessageChannel? =
-						if (config?.channel != null) {
-							guild!!.getChannelOf(config.channel)
-						} else {
-							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
-						}
-					val actionLog =
-						getModerationChannelWithPerms(
-							guild!!.asGuild(),
-							logChannel!!.id,
-							ConfigType.MODERATION,
-							interactionResponse
-						)
-							?: return@action
-
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
 						if (channel.asChannel().id == it.channelId) {
 							respond {
@@ -94,16 +74,11 @@ class GalleryChannel : Extension() {
 						content = "Set channel as gallery channel."
 					}
 
-					val descriptionAddon = if (config == null) {
-						"\n\nConsider setting the moderation configuration to receive configuration updates where you" +
-								" want them!"
-					} else {
-						""
-					}
-
-					actionLog.createEmbed {
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+						?: return@action
+					utilityLog.createEmbed {
 						title = "New Gallery channel"
-						description = "${channel.mention} was added as a Gallery channel$descriptionAddon"
+						description = "${channel.mention} was added as a Gallery channel"
 						footer {
 							text = "Requested by ${user.asUser().tag}"
 							icon = user.asUser().avatar?.url
@@ -128,21 +103,6 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guild!!.id)
-					val logChannel: GuildMessageChannel? =
-						if (config?.channel != null) {
-							guild!!.getChannelOf(config.channel)
-						} else {
-							guild!!.asGuild().getSystemChannel() ?: getFirstUsableChannel(guild!!.asGuild())
-						}
-					val actionLog =
-						getModerationChannelWithPerms(
-							guild!!.asGuild(),
-							logChannel?.id!!,
-							ConfigType.MODERATION,
-							interactionResponse
-						)
-							?: return@action
 					var channelFound = false
 
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
@@ -157,7 +117,9 @@ class GalleryChannel : Extension() {
 							content = "Unset channel as gallery channel."
 						}
 
-						actionLog.createEmbed {
+						val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+							?: return@action
+						utilityLog.createEmbed {
 							title = "Removed Gallery channel"
 							description = "${channel.mention} was removed as a Gallery channel"
 							footer {
@@ -225,7 +187,7 @@ class GalleryChannel : Extension() {
 					// If there are no attachments to the message and the channel we're in is an image channel
 					if (event.message.channelId == it.channelId && event.message.attachments.isEmpty()) {
 						// We delay to give the message a chance to populate with an embed, if it is a link to imgur etc.
-						delay(0.25.seconds.millisecondsLong)
+						delay(0.25.seconds.inWholeMilliseconds)
 						if (event.message.embeds.isEmpty()) { // If there is still no embed, we delete the message
 							// and explain why
 							if (event.message.type != MessageType.Default && event.message.type != MessageType.Reply) {
@@ -242,7 +204,7 @@ class GalleryChannel : Extension() {
 							try {
 								// Delete the explanation after 3 seconds. If an exception is thrown, the
 								// message has already been deleted
-								response.delete(2.5.seconds.millisecondsLong)
+								response.delete(2.5.seconds.inWholeMilliseconds)
 							} catch (e: EntityNotFoundException) {
 								// The message that we're attempting to delete has already been deleted.
 							}

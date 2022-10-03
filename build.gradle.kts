@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "4.0.0-alpha"
+version = "4.1.1"
 
 repositories {
     mavenCentral()
@@ -53,14 +53,12 @@ dependencies {
 
     implementation(libs.kord.extensions)
     implementation(libs.kord.extensions.phishing)
-    implementation(libs.kord.extensions.mappings)
     implementation(libs.kord.extensions.pluralkit)
     implementation(libs.kord.extensions.unsafe)
 
     implementation(libs.kotlin.stdlib)
 
     // Logging dependencies
-    implementation(libs.groovy)
     implementation(libs.logback)
     implementation(libs.logging)
 

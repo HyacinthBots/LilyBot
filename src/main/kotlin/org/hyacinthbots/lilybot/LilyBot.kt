@@ -5,7 +5,6 @@ package org.hyacinthbots.lilybot
 import cc.ekblad.toml.decode
 import cc.ekblad.toml.tomlMapper
 import com.kotlindiscord.kord.extensions.ExtensibleBot
-import com.kotlindiscord.kord.extensions.modules.extra.mappings.extMappings
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
@@ -18,16 +17,17 @@ import org.hyacinthbots.lilybot.extensions.config.GuildLogging
 import org.hyacinthbots.lilybot.extensions.events.LogUploading
 import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
+import org.hyacinthbots.lilybot.extensions.events.MessageEdit
 import org.hyacinthbots.lilybot.extensions.events.ThreadInviter
 import org.hyacinthbots.lilybot.extensions.moderation.Report
 import org.hyacinthbots.lilybot.extensions.moderation.TemporaryModeration
 import org.hyacinthbots.lilybot.extensions.moderation.TerminalModeration
 import org.hyacinthbots.lilybot.extensions.util.GalleryChannel
 import org.hyacinthbots.lilybot.extensions.util.Github
+import org.hyacinthbots.lilybot.extensions.util.GuildAnnouncements
 import org.hyacinthbots.lilybot.extensions.util.InfoCommands
 import org.hyacinthbots.lilybot.extensions.util.ModUtilities
 import org.hyacinthbots.lilybot.extensions.util.PublicUtilities
-import org.hyacinthbots.lilybot.extensions.util.Reminders
 import org.hyacinthbots.lilybot.extensions.util.RoleMenu
 import org.hyacinthbots.lilybot.extensions.util.StartupHooks
 import org.hyacinthbots.lilybot.extensions.util.Tags
@@ -76,13 +76,15 @@ suspend fun main() {
 			add(::Github)
 			add(::GalleryChannel)
 			add(::InfoCommands)
+			add(::GuildAnnouncements)
 			add(::GuildLogging)
 			add(::LogUploading)
 			add(::MemberLogging)
 			add(::MessageDelete)
+			add(::MessageEdit)
 			add(::ModUtilities)
 			add(::PublicUtilities)
-			add(::Reminders)
+			// add(::Reminders)
 			add(::Report)
 			add(::RoleMenu)
 			add(::StartupHooks)
@@ -103,8 +105,6 @@ suspend fun main() {
 				logChannelName = "anti-phishing-logs"
 				requiredCommandPermission = null
 			}
-
-			extMappings { } // Enable the mappings extension
 
 			extPluralKit()
 

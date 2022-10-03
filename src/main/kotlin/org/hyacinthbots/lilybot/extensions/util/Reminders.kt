@@ -73,7 +73,7 @@ class Reminders : Extension() {
 
 	override suspend fun setup() {
 		/** Set the task to run every 30 seconds. */
-		task = scheduler.schedule(30, pollingSeconds = 30, repeat = true, callback = ::postReminders)
+		task = scheduler.schedule(30, pollingSeconds = 1, repeat = true, callback = ::postReminders)
 
 		/**
 		 * The command for reminders
@@ -575,9 +575,9 @@ class Reminders : Extension() {
 	private suspend fun postReminders() {
 		val reminders = RemindMeCollection().getReminders()
 
-		reminders.forEach {
+		for (it in reminders) {
 			if (it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0) {
-				var channel: GuildMessageChannel? = null
+				var channel: GuildMessageChannel?
 				try {
 					channel = kord.getGuild(it.guildId)!!.getChannelOf(it.channelId)
 				} catch (e: EntityNotFoundException) {
@@ -602,12 +602,14 @@ class Reminders : Extension() {
 							}
 						}
 					}
+					updateReminderDb(it)
+					continue
 				}
 
-				val message = channel?.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
+				val message = channel.getMessageOrNull(Snowflake(it.originalMessageUrl.split("/")[6]))
 				if (it.customMessage.isNullOrEmpty()) {
 					try {
-						channel?.createMessage {
+						channel.createMessage {
 							content = if (it.repeating) {
 								"Repeating reminder for <@${it.userId}>\n" +
 										"This reminder will repeat every `${
@@ -664,6 +666,8 @@ class Reminders : Extension() {
 								}
 							}
 						}
+						updateReminderDb(it)
+						continue
 					}
 
 					if (!it.repeating) {
@@ -673,7 +677,7 @@ class Reminders : Extension() {
 					// FIXME Maybe duplicaten't?
 					@Suppress("DuplicatedCode")
 					try {
-						channel?.createMessage {
+						channel.createMessage {
 							content = if (it.repeating) {
 								"Repeating reminder for <@${it.userId}>\n> ${
 									if (it.customMessage.length >= 1024) {
@@ -752,6 +756,8 @@ class Reminders : Extension() {
 								content += "\nOriginal message not found."
 							}
 						}
+						updateReminderDb(it)
+						continue
 					}
 
 					if (!it.repeating) {
@@ -760,24 +766,36 @@ class Reminders : Extension() {
 				}
 
 				// Remove the old reminder from the database
-				if (it.repeating) {
-					RemindMeCollection().setReminder(
-						Clock.System.now(),
-						it.guildId,
-						it.userId,
-						it.channelId,
-						it.remindTime.plus(it.repeatingInterval!!.toDuration(TimeZone.UTC)),
-						it.originalMessageUrl,
-						it.customMessage,
-						true,
-						it.repeatingInterval,
-						it.id
-					)
-					RemindMeCollection().removeReminder(it.guildId, it.userId, it.id)
-				} else {
-					RemindMeCollection().removeReminder(it.guildId, it.userId, it.id)
-				}
+				updateReminderDb(it)
 			}
+		}
+	}
+
+	/**
+	 * Removes or updates a reminder in the database.
+	 *
+	 * @param reminder The reminder to update
+	 *
+	 * @since 4.2.0
+	 * @author NoComment1105
+	 */
+	private suspend inline fun updateReminderDb(reminder: RemindMeData) {
+		if (reminder.repeating) {
+			RemindMeCollection().removeReminder(reminder.guildId, reminder.userId, reminder.id)
+			RemindMeCollection().setReminder(
+				Clock.System.now(),
+				reminder.guildId,
+				reminder.userId,
+				reminder.channelId,
+				reminder.remindTime.plus(reminder.repeatingInterval!!.toDuration(TimeZone.UTC)),
+				reminder.originalMessageUrl,
+				reminder.customMessage,
+				true,
+				reminder.repeatingInterval,
+				reminder.id
+			)
+		} else {
+			RemindMeCollection().removeReminder(reminder.guildId, reminder.userId, reminder.id)
 		}
 	}
 
@@ -831,7 +849,7 @@ class Reminders : Extension() {
 
 		/** The interval at which you want the reminder to repeat. */
 		val repeatingInterval by coalescingOptionalDuration {
-			name = "repeatingInterval"
+			name = "repeating-interval"
 			description = "How often should the reminder repeat?"
 		}
 	}

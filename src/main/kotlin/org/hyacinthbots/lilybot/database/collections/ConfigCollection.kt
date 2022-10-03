@@ -6,9 +6,9 @@ import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
-import org.hyacinthbots.lilybot.database.entities.MiscConfigData
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.database.entities.SupportConfigData
+import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
@@ -160,50 +160,50 @@ class SupportConfigCollection : KordExKoinComponent {
 }
 
 /**
- * This class contains the functions for interacting with the [Miscellaneous Config Database][MiscConfigData].
- * This class contains functions for getting, setting and removing miscellaneous config.
+ * This class contains the functions for interacting with the [Utility Config Database][UtilityConfigData].
+ * This class contains functions for getting, setting and removing Utility config.
  *
  * @since 4.0.0
  * @see getConfig
  * @see setConfig
  * @see clearConfig
  */
-class MiscConfigCollection : KordExKoinComponent {
+class UtilityConfigCollection : KordExKoinComponent {
 	private val configDb: Database by inject()
 
 	@PublishedApi
-	internal val collection = configDb.configDatabase.getCollection<MiscConfigData>()
+	internal val collection = configDb.configDatabase.getCollection<UtilityConfigData>()
 
 	/**
-	 * Gets the Miscellaneous config for the given guild using the [guildId][inputGuildId].
+	 * Gets the Utility config for the given guild using the [guildId][inputGuildId].
 	 *
 	 * @param inputGuildId The guild id to get the config for.
-	 * @return The Miscellaneous config for the given guild.
+	 * @return The Utility config for the given guild.
 	 * @author NoComment1105
 	 * @since 4.0.0
 	 */
-	suspend inline fun getConfig(inputGuildId: Snowflake): MiscConfigData? =
-		collection.findOne(MiscConfigData::guildId eq inputGuildId)
+	suspend inline fun getConfig(inputGuildId: Snowflake): UtilityConfigData? =
+		collection.findOne(UtilityConfigData::guildId eq inputGuildId)
 
 	/**
-	 * Adds the given [miscellaneousConfig] to the database.
+	 * Adds the given [utilityConfig] to the database.
 	 *
-	 * @param miscellaneousConfig The new config values for the miscellaneous config you want to set.
+	 * @param utilityConfig The new config values for the Utility config you want to set.
 	 * @author NoComment1105
 	 * @since 4.0.0
 	 */
-	suspend inline fun setConfig(miscellaneousConfig: MiscConfigData) {
-		collection.deleteOne(MiscConfigData::guildId eq miscellaneousConfig.guildId)
-		collection.insertOne(miscellaneousConfig)
+	suspend inline fun setConfig(utilityConfig: UtilityConfigData) {
+		collection.deleteOne(UtilityConfigData::guildId eq utilityConfig.guildId)
+		collection.insertOne(utilityConfig)
 	}
 
 	/**
-	 * Clears the miscellaneous config for the given guild using the [guildId][inputGuildId].
+	 * Clears the Utility config for the given guild using the [guildId][inputGuildId].
 	 *
 	 * @param inputGuildId The guild id to clear the config for.
 	 * @author NoComment1105
 	 * @since 4.0.0
 	 */
 	suspend inline fun clearConfig(inputGuildId: Snowflake) =
-		collection.deleteOne(MiscConfigData::guildId eq inputGuildId)
+		collection.deleteOne(UtilityConfigData::guildId eq inputGuildId)
 }

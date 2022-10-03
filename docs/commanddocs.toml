@@ -26,9 +26,9 @@ permissions = "Manage Guild"
 
 [[command]]
 category = "Administration commands"
-name = "config miscellaneous"
-args = "* `enable-log-uploading - Whether to enable log uploading or not - Boolean"
-result = "The config is set for miscellaneous settings."
+name = "config utility"
+args = "* `disable-log-uploading - Whether to enable log uploading or not - Boolean\n* `utilityLogChannel` - The channel for logging utility functions. - Optional channel "
+result = "The config is set for utility settings."
 permissions = "Manage Guild"
 
 [[command]]
@@ -37,6 +37,12 @@ name = "config clear"
 args = "* `config-type` - The type of config to clear, 'support', 'moderation', 'logging', 'miscellaneous', 'all' - String Choice"
 result = "Clears the config of the specified type."
 permissions = "Manage Guild"
+
+[[command]]
+category = "Administration commands"
+name = "announcement"
+result = "Produces a modal for inputting the announcement content, then sends it to every guild the bot is in. Only works in the bots `TEST_GUILD_ID`"
+permissions = "Administrator"
 # End administration commands
 
 # Moderation commands
@@ -54,35 +60,35 @@ permissions = "Manage Messages"
 [[command]]
 category = "Moderation commands"
 name = "ban"
-args = "* `user` – Person to ban - User\n* `messages` - Number of days of messages to delete - Integer\n* `reason` - Reason for the ban - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
+args = "* `user` – Person to ban - User\n* `messages` - Number of days of messages to delete - Integer\n* `reason` - Reason for the ban - Optional String\n* `image` - An image to provide extra context for the action - Optional Attachment\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
 result = "Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last `messages` day(s)."
 permissions = "Ban Members"
 
 [[command]]
 category = "Moderation commands"
 name = "unban"
-args = "* `user ` - The Discord ID of the person to unban - User ID"
+args = "* `user ` - The Discord ID (Snowflake) of the person to unban - User ID"
 result = "The user with the ID `unbanUserId` is unbanned."
 permissions = "Ban Members"
 
 [[command]]
 category = "Moderation commands"
 name = "soft-ban"
-args = "* `user` - Person to soft ban - User\n* `messages` - Number of days of messages to delete - Integer (default 3)\n* `reason` - Reason for the ban - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
+args = "* `user` - Person to soft ban - User\n* `messages` - Number of days of messages to delete - Integer (default 3)\n* `reason` - Reason for the ban - Optional String\n* `image` - An image to provide extra context for the action - Optional Attachment\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
 result = "Bans `softBanUser`, deletes the last `messages` days of messages from them, and unbans them."
 permissions = "Ban Members"
 
 [[command]]
 category = "Moderation commands"
 name = "warn"
-args = "* `user` - Person to warn - User\n* `reason` - Reason for warn - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
+args = "* `user` - Person to warn - User\n* `reason` - Reason for warn - Optional String\n* `image` - An image to provide extra context for the action - Optional Attachment\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
 result = "Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.\n\n| Points |     Sanction     |\n|:------:|:----------------:|\n|   1    |      None.       |\n|   2    | 3 hour timeout.  |\n|   3    | 12 hour timeout. |\n|   3+   |  3 day timeout.  |"
 permissions = "Moderate Members"
 
 [[command]]
 category = "Moderation commands"
 name = "timeout"
-args = "* `user` - Person to timeout - User\n* `duration` - Duration of timeout - Duration [e.g. 6h or 30s] (default 6h)\n* `reason` - Reason for timeout - Optional String\n* `image` - The URL to an image to provide extra context for the action - Optional String\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
+args = "* `user` - Person to timeout - User\n* `duration` - Duration of timeout - Duration [e.g. 6h or 30s] (default 6h)\n* `reason` - Reason for timeout - Optional String\n* `image` - An image to provide extra context for the action - Optional Attachment\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
 result = "Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function."
 permissions = "Moderate Members"
 
@@ -156,7 +162,7 @@ permissions = "Moderate Members"
 [[command]]
 category = "Utility commands"
 name = "edit-say"
-args = "(Moderators only)\n* `message-to-edit` - The ID of the message contain the embed you'd like to edit - Snowflake\n* `new-content` - The new content for the message - Optional String\n* `new-color` - The new color for the embed - Optional Color (default: Blurple)\n* `channel-of-message` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)\n* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean (default: true)"
+args = "(Moderators only)\n* `message-to-edit` - The ID of the message contain the embed you'd like to edit - Snowflake\n* `new-content` - The new content for the message - Optional String\n* `new-color` - The new color for the embed - Optional Color (default: Blurple)\n* `channel-of-message` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)\n* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean"
 result = "Edited message/embed"
 permissions = "Moderate Members"
 

@@ -8,13 +8,11 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
-import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
-import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
-import org.hyacinthbots.lilybot.utils.configPresent
-import org.hyacinthbots.lilybot.utils.getModerationChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getMemberCount
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 
 /**
  * Logs members joining and leaving a guild to the member log channel designated in the config for that guild.
@@ -30,14 +28,11 @@ class MemberLogging : Extension() {
 		event<MemberJoinEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
+				requiredConfigs(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
 				failIf { event.member.id == kord.selfId }
 			}
 			action {
-				val config = LoggingConfigCollection().getConfig(event.guildId)!!
-				val memberLog = getModerationChannelWithPerms(event.getGuild(), config.memberLog!!, ConfigType.LOGGING)
-					?: return@action
-				val guildMemberCount = event.guild.members.count()
+				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild) ?: return@action
 
 				memberLog.createEmbed {
 					author {
@@ -55,7 +50,7 @@ class MemberLogging : Extension() {
 						inline = false
 					}
 					footer {
-						text = "Member Count: $guildMemberCount"
+						text = "Member Count: ${getMemberCount(event.guildId)}"
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_GREEN
@@ -67,14 +62,11 @@ class MemberLogging : Extension() {
 		event<MemberLeaveEvent> {
 			check {
 				anyGuild()
-				configPresent(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
+				requiredConfigs(ConfigOptions.MEMBER_LOGGING_ENABLED, ConfigOptions.MEMBER_LOG)
 				failIf { event.user.id == kord.selfId }
 			}
 			action {
-				val config = LoggingConfigCollection().getConfig(event.guildId)!!
-				val memberLog = getModerationChannelWithPerms(event.getGuild(), config.memberLog!!, ConfigType.LOGGING)
-					?: return@action
-				val guildMemberCount = event.guild.members.count()
+				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild) ?: return@action
 
 				memberLog.createEmbed {
 					author {
@@ -89,10 +81,9 @@ class MemberLogging : Extension() {
 					field {
 						name = "ID:"
 						value = event.user.id.toString()
-						inline = false
 					}
 					footer {
-						text = "Member count: $guildMemberCount"
+						text = "Member Count: ${getMemberCount(event.guildId)}"
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_RED

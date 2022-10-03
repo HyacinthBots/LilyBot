@@ -53,11 +53,12 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 
 ---
 
-### Name: `config miscellaneous`
+### Name: `config utility`
 **Arguments**:
-* `enable-log-uploading - Whether to enable log uploading or not - Boolean
+* `disable-log-uploading - Whether to enable log uploading or not - Boolean
+* `utilityLogChannel` - The channel for logging utility functions. - Optional channel 
 
-**Result**: The config is set for miscellaneous settings.
+**Result**: The config is set for utility settings.
 
 **Required Permissions**: `Manage Guild`
 
@@ -72,6 +73,18 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 **Result**: Clears the config of the specified type.
 
 **Required Permissions**: `Manage Guild`
+
+**Command category**: `Administration commands`
+
+---
+
+### Name: `announcement`
+**Arguments**:
+None
+
+**Result**: Produces a modal for inputting the announcement content, then sends it to every guild the bot is in. Only works in the bots `TEST_GUILD_ID`
+
+**Required Permissions**: `Administrator`
 
 **Command category**: `Administration commands`
 
@@ -98,7 +111,7 @@ These commands are for use by moderators. They utilize built-in permission check
 * `user` – Person to ban - User
 * `messages` - Number of days of messages to delete - Integer
 * `reason` - Reason for the ban - Optional String
-* `image` - The URL to an image to provide extra context for the action - Optional String
+* `image` - An image to provide extra context for the action - Optional Attachment
 * `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Bans `banUser` from the server with reason `reason` and deletes any messages they sent in the last `messages` day(s).
@@ -111,7 +124,7 @@ These commands are for use by moderators. They utilize built-in permission check
 
 ### Name: `unban`
 **Arguments**:
-* `user ` - The Discord ID of the person to unban - User ID
+* `user ` - The Discord ID (Snowflake) of the person to unban - User ID
 
 **Result**: The user with the ID `unbanUserId` is unbanned.
 
@@ -126,7 +139,7 @@ These commands are for use by moderators. They utilize built-in permission check
 * `user` - Person to soft ban - User
 * `messages` - Number of days of messages to delete - Integer (default 3)
 * `reason` - Reason for the ban - Optional String
-* `image` - The URL to an image to provide extra context for the action - Optional String
+* `image` - An image to provide extra context for the action - Optional Attachment
 * `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Bans `softBanUser`, deletes the last `messages` days of messages from them, and unbans them.
@@ -141,7 +154,7 @@ These commands are for use by moderators. They utilize built-in permission check
 **Arguments**:
 * `user` - Person to warn - User
 * `reason` - Reason for warn - Optional String
-* `image` - The URL to an image to provide extra context for the action - Optional String
+* `image` - An image to provide extra context for the action - Optional Attachment
 * `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.
@@ -164,7 +177,7 @@ These commands are for use by moderators. They utilize built-in permission check
 * `user` - Person to timeout - User
 * `duration` - Duration of timeout - Duration [e.g. 6h or 30s] (default 6h)
 * `reason` - Reason for timeout - Optional String
-* `image` - The URL to an image to provide extra context for the action - Optional String
+* `image` - An image to provide extra context for the action - Optional Attachment
 * `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
 **Result**: Times `timeoutUser` out for `duration`. A timeout is Discord's built-in mute function.
@@ -305,7 +318,7 @@ None
 * `new-content` - The new content for the message - Optional String
 * `new-color` - The new color for the embed - Optional Color (default: Blurple)
 * `channel-of-message` - The channel the embed was originally sent in - Optional channel (default: Channel command was executed in)
-* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean (default: true)
+* `timestamp` - Whether to add the timestamp of when the message was originally sent or not - Optional boolean
 
 **Result**: Edited message/embed
 

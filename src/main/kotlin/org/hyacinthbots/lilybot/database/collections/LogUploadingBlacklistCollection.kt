@@ -69,4 +69,14 @@ class LogUploadingBlacklistCollection : KordExKoinComponent {
 	 */
 	suspend inline fun getLogUploadingBlacklist(inputGuildId: Snowflake): List<LogUploadingBlacklistData> =
 		collection.find(LogUploadingBlacklistData::guildId eq inputGuildId).toList()
+
+	/**
+	 * Removes all data of the log upload blacklist for a given guild.
+	 *
+	 * @param inputGuildId The guild to clear the data from
+	 * @author NoComment1105
+	 * @since 4.1.0
+	 */
+	suspend inline fun clearBlacklist(inputGuildId: Snowflake) =
+		collection.deleteMany(LogUploadingBlacklistData::guildId eq inputGuildId)
 }

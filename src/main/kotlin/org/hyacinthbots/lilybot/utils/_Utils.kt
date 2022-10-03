@@ -6,19 +6,20 @@ import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import com.kotlindiscord.kord.extensions.utils.loadModule
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
-import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.GuildBehavior
+import dev.kord.core.behavior.RoleBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.getChannelOfOrNull
-import dev.kord.core.behavior.interaction.response.FollowupPermittingInteractionResponseBehavior
-import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.NewsChannel
@@ -26,9 +27,10 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.supplier.EntitySupplyStrategy
-import kotlinx.coroutines.delay
+import dev.kord.rest.builder.message.EmbedBuilder
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -38,7 +40,6 @@ import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
-import org.hyacinthbots.lilybot.database.collections.MiscConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.RemindMeCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
@@ -46,9 +47,9 @@ import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
+import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.koin.dsl.bind
 
 @PublishedApi
@@ -62,7 +63,7 @@ internal val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 3.2.0
  */
-suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOptions) {
+suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigOptions) {
 	if (!passed) {
 		return
 	}
@@ -168,13 +169,26 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 				}
 			}
 
-			ConfigOptions.MESSAGE_LOGGING_ENABLED -> {
+			ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED -> {
 				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
 				if (loggingConfig == null) {
 					fail("Unable to access logging config for this guild! Please inform a member of staff.")
 					break
-				} else if (!loggingConfig.enableMessageLogs) {
-					fail("Message logging is disabled for this guild!")
+				} else if (!loggingConfig.enableMessageDeleteLogs) {
+					fail("Message delete logging is disabled for this guild!")
+					break
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED -> {
+				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
+				if (loggingConfig == null) {
+					fail("Unable to access logging config for this guild! Please inform a member of staff.")
+					break
+				} else if (!loggingConfig.enableMessageEditLogs) {
+					fail("Message edit logging is disabled for this guild!")
 					break
 				} else {
 					pass()
@@ -221,12 +235,25 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 			}
 
 			ConfigOptions.LOG_UPLOADS_ENABLED -> {
-				val miscConfig = MiscConfigCollection().getConfig(guildFor(event)!!.id)
-				if (miscConfig == null) {
-					fail("Unable to access misc config for this guild! Please inform a member of staff.")
+				val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
+				if (utilityConfig == null) {
+					fail("Unable to access utility config for this guild! Please inform a member of staff.")
 					break
-				} else if (miscConfig.disableLogUploading) {
+				} else if (utilityConfig.disableLogUploading) {
 					fail("Log uploads are disabled for this guild!")
+					break
+				} else {
+					pass()
+				}
+			}
+
+			ConfigOptions.UTILITY_LOG -> {
+				val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
+				if (utilityConfig == null) {
+					fail("Unable to access utility config for this guild! Please inform a member of staff.")
+					break
+				} else if (utilityConfig.utilityLogChannel == null) {
+					fail("A utility log has not been set for this guild")
 					break
 				} else {
 					pass()
@@ -234,6 +261,159 @@ suspend inline fun CheckContext<*>.configPresent(vararg configOptions: ConfigOpt
 			}
 		}
 	}
+}
+
+/**
+ * This function checks if a single config exists and is valid. Returns true if it is or false otherwise.
+ *
+ * @param option The config option to check the database for. Only takes a single option.
+ * @return True if the selected [option] is valid and enabled and false if it isn't
+ * @author NoComment1105
+ * @since 3.2.0
+ */
+suspend inline fun configIsUsable(option: ConfigOptions, guildId: Snowflake): Boolean {
+	when (option) {
+		ConfigOptions.SUPPORT_ENABLED -> return SupportConfigCollection().getConfig(guildId)?.enabled ?: false
+
+		ConfigOptions.SUPPORT_CHANNEL -> {
+			val supportConfig = SupportConfigCollection().getConfig(guildId) ?: return false
+			return supportConfig.channel != null
+		}
+
+		ConfigOptions.SUPPORT_ROLE -> {
+			val supportConfig = SupportConfigCollection().getConfig(guildId) ?: return false
+			return supportConfig.role != null
+		}
+
+		ConfigOptions.MODERATION_ENABLED -> return ModerationConfigCollection().getConfig(guildId)?.enabled ?: false
+
+		ConfigOptions.MODERATOR_ROLE -> {
+			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
+			return moderationConfig.role != null
+		}
+
+		ConfigOptions.ACTION_LOG -> {
+			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
+			return moderationConfig.channel != null
+		}
+
+		ConfigOptions.LOG_PUBLICLY -> {
+			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
+			return moderationConfig.publicLogging != null
+		}
+
+		ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED ->
+			return LoggingConfigCollection().getConfig(guildId)?.enableMessageDeleteLogs ?: false
+
+		ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED ->
+			return LoggingConfigCollection().getConfig(guildId)?.enableMessageEditLogs ?: false
+
+		ConfigOptions.MESSAGE_LOG -> {
+			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
+			return loggingConfig.messageChannel != null
+		}
+
+		ConfigOptions.MEMBER_LOGGING_ENABLED -> return LoggingConfigCollection().getConfig(guildId)?.enableMemberLogs ?: false
+
+		ConfigOptions.MEMBER_LOG -> {
+			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
+			return loggingConfig.memberLog != null
+		}
+
+		ConfigOptions.LOG_UPLOADS_ENABLED -> {
+			val utilityConfig = UtilityConfigCollection().getConfig(guildId) ?: return false
+			return utilityConfig.disableLogUploading
+		}
+
+		ConfigOptions.UTILITY_LOG -> {
+			val utilityConfig = UtilityConfigCollection().getConfig(guildId) ?: return false
+			return utilityConfig.utilityLogChannel != null
+		}
+	}
+}
+
+/**
+ * This function checks if a single config exists and is valid. Returns true if it is or false otherwise.
+ *
+ * @param channelType The type of logging channel desired
+ * @param guild The guild the desired channel is in
+ * @param resetConfig If configured channels should be reset if invalid.
+ * Should only be passed as false, and defaults to true.
+ * @return The logging channel of [channelType] for the [guild] or null if it doesn't exist
+ * @author tempest15
+ * @since 4.1.0
+ */
+suspend inline fun getLoggingChannelWithPerms(
+	channelType: ConfigOptions,
+	guild: GuildBehavior,
+	resetConfig: Boolean? = null
+): GuildMessageChannel? {
+	val guildId = guild.id
+
+	if (!configIsUsable(channelType, guildId)) return null
+
+	val channelId = when (channelType) {
+		ConfigOptions.SUPPORT_CHANNEL -> SupportConfigCollection().getConfig(guildId)?.channel ?: return null
+		ConfigOptions.ACTION_LOG -> ModerationConfigCollection().getConfig(guildId)?.channel ?: return null
+		ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().getConfig(guildId)?.utilityLogChannel ?: return null
+		ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().getConfig(guildId)?.messageChannel ?: return null
+		ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().getConfig(guildId)?.memberLog ?: return null
+		else -> throw IllegalArgumentException("$channelType does not point to a channel.")
+	}
+	val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return null
+
+	if (!channel.botHasPermissions(Permission.ViewChannel) || !channel.botHasPermissions(Permission.SendMessages)) {
+		if (resetConfig == true) {
+			when (channelType) {
+				ConfigOptions.SUPPORT_CHANNEL -> SupportConfigCollection().clearConfig(guildId)
+				ConfigOptions.ACTION_LOG -> ModerationConfigCollection().clearConfig(guildId)
+				ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().clearConfig(guildId)
+				ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().clearConfig(guildId)
+				ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().clearConfig(guildId)
+				else -> throw IllegalArgumentException("$channelType does not point to a channel.")
+			}
+			val informChannel = getSystemChannelWithPerms(guild as Guild) ?: getFirstUsableChannel(guild)
+			informChannel?.createMessage(
+				"Lily is unable to send messages in the configured " +
+						"${channelType.toString().lowercase()} for this guild. " +
+						"As a result, the corresponding config has been reset. \n\n" +
+						"*Note:* this channel has been used to send this message because it's the first channel " +
+						"in the guild Lily could use. Please inform this guild's staff about this message."
+			)
+		}
+		return null
+	}
+
+	return channel
+}
+
+/**
+ * Get the first text channel the bot can send a message in.
+ *
+ * @param inputGuild The guild in which to get the channel.
+ * @return The first text channel the bot can send a message in or null if there isn't one.
+ * @author tempest15
+ * @since 3.5.4
+ */
+suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessageChannel? =
+	inputGuild.channels.first {
+		it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)
+	}.asChannelOfOrNull()
+
+/**
+ * Gets a guild's system channel as designated by Discord, or null if said channel is invalid or doesn't exist.
+ *
+ * @param inputGuild The guild in which to get the channel.
+ * @return The guild's system channel or null if it's invalid
+ * @author tempest15
+ * @since 4.1.0
+ */
+suspend inline fun getSystemChannelWithPerms(inputGuild: Guild): GuildMessageChannel? {
+	val systemChannel = inputGuild.getSystemChannel() ?: return null
+	if (!systemChannel.botHasPermissions(Permission.ViewChannel) ||
+		!systemChannel.botHasPermissions(Permission.SendMessages)
+	) return null
+	return systemChannel
 }
 
 /**
@@ -359,7 +539,6 @@ suspend inline fun Extension.updateDefaultPresence() {
 	}
 
 	kord.editPresence {
-		status = PresenceStatus.Online
 		watching("${getGuildCount()} servers")
 	}
 }
@@ -372,6 +551,17 @@ suspend inline fun Extension.updateDefaultPresence() {
  * @since 3.4.5
  */
 suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.cacheWithRestFallback).guilds.count()
+
+/**
+ * Gets the member count for a given guild.
+ *
+ * @param guildId The target guild
+ * @return The number of members in that guild
+ * @author NoComment1105
+ * @since 4.1.0
+ */
+suspend inline fun Extension.getMemberCount(guildId: Snowflake) =
+	kord.with(EntitySupplyStrategy.rest).getGuild(guildId).members.map { }.count()
 
 /**
  * This function loads the database and checks if it is up-to-date. If it isn't, it will update the database via
@@ -392,7 +582,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { ModerationConfigCollection() } bind ModerationConfigCollection::class
 				single { SupportConfigCollection() } bind SupportConfigCollection::class
 				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
-				single { MiscConfigCollection() } bind MiscConfigCollection::class
+				single { UtilityConfigCollection() } bind UtilityConfigCollection::class
 				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
@@ -415,101 +605,87 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 }
 
 /**
- * Get the first text channel the bot can send a message in.
+ * Utility to get a string or a default value.
+ * Basically String.ifEmpty but works with nullable strings
  *
- * @param inputGuild The guild in which to get the channel.
- * @return The first text channel the bot can send a message in or null if there isn't one.
- * @author tempest15
- * @since 3.5.4
+ * @return This, or defaultValue if this is null or empty
+ * @author trainb0y
+ * @since 4.1.0
+ * @see String.ifEmpty
  */
-suspend inline fun getFirstUsableChannel(inputGuild: Guild): GuildMessageChannel? = inputGuild.channels.first {
-	it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)
-}.fetchChannelOrNull()?.asChannelOfOrNull()
-
-/**
- * Check if the bot can send messages in a guild's configured logging channel.
- * If the bot can't, reset a config and send a message in the top usable channel saying that the config was reset or
- * if this function is in a command, an [interactionResponse] is provided, allowing a response to be given on the
- * command.
- * If the bot can, return the channel.
- *
- * **DO NOT USE THIS FUNCTION ON NON-MODERATION CHANNELS!** Use the [botHasChannelPerms] check instead.
- *
- * @param inputGuild The guild to check in.
- * @param targetChannel The channel to check permissions for
- * @param configType The config the channel will be in
- * @param interactionResponse The interactionResponse to respond to if this function is in a command.
- * @return The channel or null if it does not have the correct permissions.
- * @author tempest15
- * @since 3.5.4
- */
-suspend inline fun <T : FollowupPermittingInteractionResponseBehavior?> getModerationChannelWithPerms(
-	inputGuild: Guild,
-	targetChannel: Snowflake?,
-	configType: ConfigType,
-	interactionResponse: T? = null
-): GuildMessageChannel? {
-	val channel = targetChannel?.let { inputGuild.getChannelOfOrNull<GuildMessageChannel>(it) }
-
-	// Check each permission in a separate check because all in one expects all to be there or not. This allows for
-	// some permissions to be false and some to be true while still producing the correct result.
-	if (channel?.botHasPermissions(Permission.ViewChannel) != true ||
-		!channel.botHasPermissions(Permission.SendMessages) ||
-		!channel.botHasPermissions(Permission.EmbedLinks)
-	) {
-		val usableChannel = getFirstUsableChannel(inputGuild) ?: return null
-
-		if (interactionResponse == null) {
-			usableChannel.createMessage(
-				"Lily cannot send messages in ${channel?.mention}. " +
-						"As a result, your config has been reset. " +
-						"Please fix the permissions before setting a new config."
-			)
-		} else {
-			interactionResponse.createEphemeralFollowup {
-				content = "Lily cannot send messages in ${channel?.mention}. " +
-						"As a result, your config has been reset. " +
-						"Please fix the permissions before setting a new config."
-			}
-		}
-
-		delay(3000) // So that other events may finish firing
-		when (configType) {
-			ConfigType.MODERATION -> ModerationConfigCollection().clearConfig(usableChannel.guildId)
-			ConfigType.LOGGING -> LoggingConfigCollection().clearConfig(usableChannel.guildId)
-			ConfigType.SUPPORT -> SupportConfigCollection().clearConfig(usableChannel.guildId)
-			ConfigType.MISC -> MiscConfigCollection().clearConfig(usableChannel.guildId)
-			ConfigType.ALL -> {
-				ModerationConfigCollection().clearConfig(usableChannel.guildId)
-				LoggingConfigCollection().clearConfig(usableChannel.guildId)
-				SupportConfigCollection().clearConfig(usableChannel.guildId)
-				MiscConfigCollection().clearConfig(usableChannel.guildId)
-			}
-		}
-
-		return null
+fun String?.ifNullOrEmpty(defaultValue: () -> String): String =
+	if (this.isNullOrEmpty()) {
+		defaultValue()
+	} else {
+		this
 	}
 
-	return channel
+/**
+ * Get this message's contents, trimmed to 1024 characters.
+ * If the message exceeds that length, it will be truncated and an ellipsis appended.
+ * @author trainb0y
+ * @since 4.1.0
+ */
+fun Message?.trimmedContents(): String? {
+	this ?: return null
+	return if (this.content.length > 1024) {
+		this.content.substring(0, 1020) + " ..."
+	} else this.content
 }
 
 /**
- * Overload function for [getModerationChannelWithPerms] that does not take an interaction response allowing the type
- * variable not be specified in the function.
- *
- * **DO NOT USE THIS FUNCTION ON NON-MODERATION CHANNELS!** Use the [botHasChannelPerms] check instead.
- *
- * @see getModerationChannelWithPerms
- *
- * @param inputGuild The guild to check in.
- * @param targetChannel The channel to check permissions for
- * @param configType The config the channel will be in
- * @return The channel or null if it does not have the correct permissions.
- * @author NoComment1105
+ * This function removed duplicated code from MessageDelete and MessageEdit.
+ * It holds attachment and PluralKit info fields for the logging embeds.
+ * @author tempest15
+ * @since 4.1.0
  */
-suspend inline fun getModerationChannelWithPerms(
-	inputGuild: Guild,
-	targetChannel: Snowflake?,
-	configType: ConfigType
-): GuildMessageChannel? =
-	getModerationChannelWithPerms(inputGuild, targetChannel, configType, null)
+suspend fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
+	guild: Guild,
+	message: Message,
+	proxiedMessage: PKMessage?
+) {
+	if (message.attachments.isNotEmpty()) {
+		field {
+			name = "Attachments"
+			value = message.attachments.joinToString(separator = "\n") { it.url }
+			inline = false
+		}
+	}
+	if (proxiedMessage != null) {
+		field {
+			name = "Message Author:"
+			value = "System Member: ${proxiedMessage.member.name}\n" +
+					"Account: ${guild.getMember(proxiedMessage.sender).tag} " +
+					guild.getMember(proxiedMessage.sender).mention
+			inline = true
+		}
+
+		field {
+			name = "Author ID:"
+			value = proxiedMessage.sender.toString()
+		}
+	} else {
+		field {
+			name = "Message Author:"
+			value =
+				"${message.author?.tag ?: "Failed to get author of message"} ${message.author?.mention ?: ""}"
+			inline = true
+		}
+
+		field {
+			name = "Author ID:"
+			value = message.author?.id.toString()
+		}
+	}
+}
+
+/**
+ * Check if a role is mentionable by Lily.
+ *
+ * @param role The role to check
+ * @return A Boolean of whether it is pingable or not
+ *
+ * @author NoComment1105
+ * @since 4.1.0
+ */
+suspend fun canPingRole(role: RoleBehavior?) = role != null && role.guild.getRole(role.id).mentionable
