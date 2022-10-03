@@ -13,6 +13,7 @@ import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
@@ -78,6 +79,7 @@ object Cleanups : KordExKoinComponent {
 				TagsCollection().clearTags(it.guildId)
 				WarnCollection().clearWarns(it.guildId)
 				RoleMenuCollection().removeAllRoleMenus(it.guildId)
+				ReminderCollection().removeGuildReminders(it.guildId)
 				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
 			}

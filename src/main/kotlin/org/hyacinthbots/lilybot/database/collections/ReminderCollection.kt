@@ -23,6 +23,7 @@ import org.litote.kmongo.setValue
  * @see getRemindersForUserInGuild
  * @see setReminder
  * @see removeReminder
+ * @see removeGuildReminders
  * @see repeatReminder
  */
 class ReminderCollection : KordExKoinComponent {
@@ -80,6 +81,15 @@ class ReminderCollection : KordExKoinComponent {
 	 * @since 4.2.0
 	 */
 	suspend fun removeReminder(number: Long) = collection.deleteOne(ReminderData::id eq number)
+
+	/**
+	 * Removes all the reminders for a given guild.
+	 *
+	 * @param guildId The guild to remove reminders for
+	 * @author NoComment1105
+	 * @since 4.2.0
+	 */
+	suspend fun removeGuildReminders(guildId: Snowflake) = collection.deleteMany(ReminderData::guildId eq guildId)
 
 	/**
 	 * Updates a repeating reminder to be extended by the given [repeatingInterval].
