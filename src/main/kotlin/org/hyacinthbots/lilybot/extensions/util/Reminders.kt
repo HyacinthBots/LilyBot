@@ -14,10 +14,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBool
 import com.kotlindiscord.kord.extensions.commands.converters.impl.long
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
-import com.kotlindiscord.kord.extensions.components.components
-import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.pagination.EphemeralResponsePaginator
 import com.kotlindiscord.kord.extensions.pagination.pages.Page
@@ -25,21 +22,19 @@ import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import com.kotlindiscord.kord.extensions.utils.toDuration
 import dev.kord.common.Locale
-import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.interaction.followup.edit
-import dev.kord.core.behavior.interaction.respondEphemeral
-import dev.kord.core.behavior.interaction.response.EphemeralMessageInteractionResponseBehavior
-import dev.kord.core.behavior.interaction.response.edit
-import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.getChannelOfOrNull
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
@@ -73,7 +68,8 @@ class Reminders : Extension() {
 				description = "Set a reminder for some time in the future!"
 
 				check {
-					requirePermission(Permission.SendMessages, Permission.EmbedLinks)
+					anyGuild()
+					requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
 					botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 				}
 
@@ -145,9 +141,7 @@ class Reminders : Extension() {
 								}
 								field {
 									name = "Repeating Interval"
-									value = arguments.repeatingInterval.toString().lowercase()
-										.replace("pt", "")
-										.replace("p", "")
+									value = arguments.repeatingInterval.interval()!!
 								}
 							}
 
@@ -168,21 +162,6 @@ class Reminders : Extension() {
 						}
 					}
 
-					reminderEmbed.edit {
-						val components = components {
-							ephemeralButton {
-								label = "Subscribe!"
-								style = ButtonStyle.Secondary
-
-								id = "reminder-subscribe-${reminderEmbed.message.asMessage().id}"
-
-								action { }
-							}
-						}
-
-						components.removeAll()
-					}
-
 					val id = (ReminderCollection().getAllReminders().lastOrNull()?.id ?: 0) + 1
 
 					ReminderCollection().setReminder(
@@ -191,7 +170,6 @@ class Reminders : Extension() {
 							remindTime,
 							setTime,
 							user.id,
-							mutableListOf(user.id),
 							channel.id,
 							reminderEmbed.message.asMessage().id,
 							arguments.dm,
@@ -210,6 +188,10 @@ class Reminders : Extension() {
 			ephemeralSubCommand {
 				name = "list"
 				description = "List your reminders for this guild"
+
+				check {
+					anyGuild()
+				}
 
 				action {
 					val reminders = userReminders(event)
@@ -451,85 +433,6 @@ class Reminders : Extension() {
 				}
 			}
 		}
-
-		event<ButtonInteractionCreateEvent> {
-			check {
-				failIfNot(event.interaction.componentId.contains("reminder-subscribe"))
-			}
-
-			action {
-				val reminder = ReminderCollection().getReminderFromMessageId(
-					event.interaction.message.id
-				)
-
-				if (reminder == null) {
-					event.interaction.respondEphemeral {
-						content =
-							"This reminder seems to be broken. Please inform the creator of the reminder and ask " +
-									"them to recreate it.\nIf this isn't a reminder, or if the issue persists, open an " +
-									"issue report at <https://github.com/HyacinthBots/LilyBot/issues>"
-					}
-					return@action
-				}
-
-				if (reminder.subscribers.contains(event.interaction.user.id)) {
-					var response: EphemeralMessageInteractionResponseBehavior? = null
-					response = event.interaction.respondEphemeral {
-						content = "You are currently subscribed to this reminder, would you like to unsubscribe?"
-						components {
-							ephemeralButton {
-								label = "Yes"
-								style = ButtonStyle.Primary
-
-								action {
-									val newSubscribers = mutableListOf<Snowflake>()
-									newSubscribers.addAll(reminder.subscribers)
-									newSubscribers.remove(event.interaction.user.id)
-									ReminderCollection().updateReminder(
-										event.interaction.message.id,
-										reminder,
-										newSubscribers
-									)
-
-									response?.edit {
-										content = "Unsubscribed from reminder"
-										components { removeAll() }
-									}
-								}
-							}
-
-							ephemeralButton {
-								label = "No"
-								style = ButtonStyle.Danger
-
-								action {
-									response?.edit {
-										content = "You will remain subscribed to the reminder"
-										components { removeAll() }
-									}
-								}
-							}
-						}
-					}
-				} else {
-					val newSubscribers = mutableListOf<Snowflake>()
-					newSubscribers.addAll(reminder.subscribers)
-					newSubscribers.add(event.interaction.user.id)
-
-					ReminderCollection().updateReminder(
-						event.interaction.message.id,
-						reminder,
-						newSubscribers
-					)
-
-					// TODO Update the original reminder embed to reflect the new subscribers to the reminder
-
-					event.interaction.respondEphemeral {
-						content = "You have subscribed to the reminder"
-					}
-				}
-			}
-		}
 	}
 
 	/**
@@ -538,9 +441,55 @@ class Reminders : Extension() {
 	 * @author NoComment1105
 	 * @since 4.2.0
 	 */
-	@Suppress("EmptyFunctionBlock")
 	private suspend fun postReminders() {
-		// TODO Write this. Make it not bad like last time
+		val reminders = ReminderCollection().getAllReminders()
+		val dueReminders =
+			reminders.filter { it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0 }
+
+		dueReminders.forEach {
+			val channel = kord.getGuild(it.guildId)?.getChannelOfOrNull<GuildMessageChannel>(it.channelId)
+
+			if (channel == null || it.dm) {
+				kord.getUser(it.userId)?.dm {
+					content =
+						"I was unable to find/access the channel from ${kord.getGuild(it.guildId)} that this" +
+								"reminder was set in."
+					reminderEmbed(it)
+				}
+			} else {
+				channel.createMessage {
+					content = kord.getUser(it.userId)?.mention
+					reminderEmbed(it)
+				}
+			}
+
+			if (it.repeating) {
+				ReminderCollection().repeatReminder(it.setTime, it.repeatingInterval!!, it.id)
+			} else {
+				ReminderCollection().removeReminder(it.id)
+			}
+		}
+	}
+
+	private fun MessageCreateBuilder.reminderEmbed(data: ReminderData) {
+		embed {
+			title = "Reminder"
+			if (data.customMessage != null) description = data.customMessage
+			field {
+				name = "Set time"
+				value = data.setTime.toDiscord(TimestampType.LongDateTime)
+			}
+			if (data.repeating) {
+				field {
+					name = "Repeating Interval"
+					value = "This reminder repeats every ${data.repeatingInterval.interval()}"
+				}
+
+				footer {
+					text = "Use `/reminder remove` to cancel this reminder"
+				}
+			}
+		}
 	}
 
 	/**
@@ -558,8 +507,10 @@ class Reminders : Extension() {
 		userId: Snowflake? = null
 	): Pages {
 		val pagesObj = Pages()
-		val userReminders =
-			ReminderCollection().getRemindersForUserInGuild(userId ?: event.interaction.user.id, guildFor(event)!!.id)
+		val userReminders = ReminderCollection().getRemindersForUserInGuild(
+			userId ?: event.interaction.user.id,
+			guildFor(event)!!.id
+		)
 
 		if (userReminders.isEmpty()) {
 			pagesObj.addPage(
@@ -605,6 +556,18 @@ class Reminders : Extension() {
 						this.customMessage ?: "none"
 					}
 				}\n---\n"
+	}
+
+	/**
+	 * Converts a [DateTimePeriod] into a [String] interval at which it repeats at.
+	 *
+	 * @return The string interval the DateTimePeriod repeats at
+	 * @author NoComment1105
+	 * @since 4.2.0
+	 */
+	private fun DateTimePeriod?.interval(): String? {
+		this ?: return null
+		return this.toString().lowercase().replace("pt", "").replace("p", "")
 	}
 
 	inner class ReminderSetArgs : Arguments() {

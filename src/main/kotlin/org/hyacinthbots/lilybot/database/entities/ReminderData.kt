@@ -11,8 +11,7 @@ import kotlinx.serialization.Serializable
  * @property guildId The ID of the guild the reminder was set in
  * @property remindTime The time the reminder will be sent
  * @property setTime The time the reminder was set
- * @property owner The user that set the reminder
- * @property subscribers Users that have subscribed to a reminder
+ * @property userId The user that set the reminder
  * @property channelId The ID of the channel the reminder was set in
  * @property messageId The ID of the message
  * @property dm Whether to DM the reminder or not
@@ -28,8 +27,7 @@ data class ReminderData(
 	val guildId: Snowflake,
 	val remindTime: Instant,
 	val setTime: Instant,
-	val owner: Snowflake,
-	val subscribers: MutableList<Snowflake>,
+	val userId: Snowflake,
 	val channelId: Snowflake,
 	val messageId: Snowflake,
 	val dm: Boolean,
