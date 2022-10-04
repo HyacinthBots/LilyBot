@@ -212,7 +212,6 @@ class Reminders : Extension() {
 			/*
 			Reminder Remove
 		 	*/
-			// TODO Implement editing of the original embed? maybe?
 			ephemeralSubCommand(::ReminderRemoveArgs) {
 				name = "remove"
 				description = "Remove a reminder you have set from this guild"
@@ -245,6 +244,7 @@ class Reminders : Extension() {
 					}
 
 					ReminderCollection().removeReminder(arguments.reminder)
+					markReminderCompleteOrCancelled(reminder.guildId, reminder.channelId, reminder.messageId, true)
 				}
 			}
 
@@ -273,6 +273,7 @@ class Reminders : Extension() {
 						"all" -> {
 							reminders.forEach {
 								ReminderCollection().removeReminder(it.id)
+								markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, true)
 							}
 
 							respond {
@@ -282,7 +283,10 @@ class Reminders : Extension() {
 
 						"repeating" -> {
 							reminders.forEach {
-								if (it.repeating) ReminderCollection().removeReminder(it.id)
+								if (it.repeating) {
+									ReminderCollection().removeReminder(it.id)
+									markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, true)
+								}
 							}
 
 							respond {
@@ -292,7 +296,10 @@ class Reminders : Extension() {
 
 						"non-repeating" -> {
 							reminders.forEach {
-								if (!it.repeating) ReminderCollection().removeReminder(it.id)
+								if (!it.repeating) {
+									ReminderCollection().removeReminder(it.id)
+									markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, true)
+								}
 							}
 
 							respond {
@@ -368,6 +375,11 @@ class Reminders : Extension() {
 					}
 
 					ReminderCollection().removeReminder(arguments.reminder)
+					markReminderCompleteOrCancelled(
+						reminder.guildId, reminder.channelId, reminder.messageId,
+						wasCancelled = true,
+						byModerator = true
+					)
 				}
 			}
 
@@ -398,6 +410,11 @@ class Reminders : Extension() {
 						"all" -> {
 							reminders.forEach {
 								ReminderCollection().removeReminder(it.id)
+								markReminderCompleteOrCancelled(
+									it.guildId, it.channelId, it.messageId,
+									wasCancelled = true,
+									byModerator = true
+								)
 							}
 
 							respond {
@@ -409,7 +426,14 @@ class Reminders : Extension() {
 
 						"repeating" -> {
 							reminders.forEach {
-								if (it.repeating) ReminderCollection().removeReminder(it.id)
+								if (it.repeating) {
+									ReminderCollection().removeReminder(it.id)
+									markReminderCompleteOrCancelled(
+										it.guildId, it.channelId, it.messageId,
+										wasCancelled = true,
+										byModerator = true
+									)
+								}
 							}
 
 							respond {
@@ -421,7 +445,14 @@ class Reminders : Extension() {
 
 						"non-repeating" -> {
 							reminders.forEach {
-								if (!it.repeating) ReminderCollection().removeReminder(it.id)
+								if (!it.repeating) {
+									ReminderCollection().removeReminder(it.id)
+									markReminderCompleteOrCancelled(
+										it.guildId, it.channelId, it.messageId,
+										wasCancelled = true,
+										byModerator = true
+									)
+								}
 							}
 
 							respond {
@@ -464,7 +495,7 @@ class Reminders : Extension() {
 					content = kord.getUser(it.userId)?.mention
 					reminderEmbed(it)
 				}
-				markReminderComplete(it.guildId, it.channelId, it.messageId)
+				markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, false)
 			}
 
 			if (it.repeating) {
@@ -475,6 +506,14 @@ class Reminders : Extension() {
 		}
 	}
 
+	/**
+	 * Creates an embed for a reminder based on the provided [data].
+	 *
+	 * @param data The data for the reminder
+	 *
+	 * @author NoComment1105
+	 * @since 4.2.0
+	 */
 	private fun MessageCreateBuilder.reminderEmbed(data: ReminderData) {
 		embed {
 			title = "Reminder"
@@ -496,12 +535,36 @@ class Reminders : Extension() {
 		}
 	}
 
-	private suspend fun markReminderComplete(guildId: Snowflake, channelId: Snowflake, messageId: Snowflake) {
+	/**
+	 * Edits an original reminder message to state whether it was completed or cancelled and whether the cancellation
+	 * was carried out by a moderator.
+	 *
+	 * @param guildId The ID of the guild the reminder was in
+	 * @param channelId THe ID of the channel the reminder was in
+	 * @param messageId The ID of the message for the reminder
+	 * @param wasCancelled Whether the reminder was cancelled or not
+	 * @param byModerator Whether the reminder was cancelled by a moderator, defaults false
+	 *
+	 * @author NoComment1105
+	 * @since 4.2.0
+	 */
+	private suspend fun markReminderCompleteOrCancelled(
+		guildId: Snowflake,
+		channelId: Snowflake,
+		messageId: Snowflake,
+		wasCancelled: Boolean,
+		byModerator: Boolean = false
+	) {
 		val guild = kord.getGuild(guildId) ?: return
 		val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return
 		val message = channel.getMessageOrNull(messageId) ?: return
 		message.edit {
-			content = "${message.content} **Reminder Completed**"
+			content = "${message.content} **Reminder " +
+					"${
+						if (wasCancelled) {
+							"cancelled ${if (byModerator) "by moderator" else ""}."
+						} else "completed."
+					}**"
 		}
 	}
 
