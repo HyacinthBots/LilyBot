@@ -11,7 +11,6 @@ import dev.kord.core.event.guild.MemberLeaveEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.getMemberCount
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 
 /**
@@ -49,9 +48,6 @@ class MemberLogging : Extension() {
 						value = event.member.id.toString()
 						inline = false
 					}
-					footer {
-						text = "Member Count: ${getMemberCount(event.guildId)}"
-					}
 					timestamp = Clock.System.now()
 					color = DISCORD_GREEN
 				}
@@ -81,9 +77,6 @@ class MemberLogging : Extension() {
 					field {
 						name = "ID:"
 						value = event.user.id.toString()
-					}
-					footer {
-						text = "Member Count: ${getMemberCount(event.guildId)}"
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_RED

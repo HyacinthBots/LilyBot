@@ -17,7 +17,6 @@ import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
-import org.hyacinthbots.lilybot.utils.utilsLogger
 import kotlin.time.Duration.Companion.days
 
 /**
@@ -40,7 +39,6 @@ class StartupHooks : Extension() {
 
 		event<ReadyEvent> {
 			action {
-				utilsLogger.info { "This is the online notification event" } // To try and pinpoint errors
 				val now = Clock.System.now()
 
 				/**
@@ -49,29 +47,25 @@ class StartupHooks : Extension() {
 				 * @since v2.0
 				 */
 				// The channel specifically for sending online notifications to
- 				val homeGuild = kord.getGuild(TEST_GUILD_ID)!!
- 				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
- 				val onlineMessage = onlineLog.createEmbed {
- 					title = "Lily is now online!"
- 					description =
- 						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
- 					color = DISCORD_GREEN
- 				}
- 				onlineMessage.publish()
-			}
-			event<ReadyEvent> {
-				utilsLogger.info { "This is the status ready event" }
-				action {
-					/**
-					 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
-					 * else the database value.
-					 */
-					if (StatusCollection().getStatus() == null) {
-						updateDefaultPresence()
-					} else {
-						event.kord.editPresence {
-							playing(StatusCollection().getStatus()!!)
-						}
+				val homeGuild = kord.getGuild(TEST_GUILD_ID)!!
+				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
+				val onlineMessage = onlineLog.createEmbed {
+					title = "Lily is now online!"
+					description =
+						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
+					color = DISCORD_GREEN
+				}
+				onlineMessage.publish()
+
+				/**
+				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
+				 * else the database value.
+				 */
+				if (StatusCollection().getStatus() == null) {
+					updateDefaultPresence()
+				} else {
+					event.kord.editPresence {
+						playing(StatusCollection().getStatus()!!)
 					}
 				}
 			}
@@ -85,7 +79,6 @@ class StartupHooks : Extension() {
 	 * @since 4.1.0
 	 */
 	private suspend fun cleanup() {
-		utilsLogger.info { "This is the cleanup function+" }
 		Cleanups.cleanupThreadData(kord)
 		Cleanups.cleanupGuildData()
 	}

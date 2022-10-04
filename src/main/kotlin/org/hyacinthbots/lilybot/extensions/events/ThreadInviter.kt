@@ -23,6 +23,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
@@ -40,13 +41,13 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import kotlin.time.Duration.Companion.seconds
 
-// todo This is rewritten in another branch, but said branch should take care of making sure that the target roles are
+// This is rewritten in another branch, but said branch should take care of making sure that the target roles are
 //  ping able by Lily. Should/Could be done in a similar fashion to the method in extensions/config/Config.kt
 class ThreadInviter : Extension() {
 	override val name = "thread-inviter"
 
 	// note: the requireConfigs checks in this file are not perfect,
-	// but will be fully replaced with the thread inviting rewrite so it's ok
+	// but will be fully replaced with the thread inviting rewrite, so it's ok
 	override suspend fun setup() {
 		/**
 		 * Thread inviting system for Support Channels
@@ -205,8 +206,8 @@ class ThreadInviter : Extension() {
 
 				ThreadsCollection().getOwnerThreads(userId).forEach {
 					try {
-						val thread = guild.getChannel(it.threadId) as TextChannelThread
-						if (thread.parent == supportChannel && !thread.isArchived) {
+						val thread = guild.getChannelOfOrNull<TextChannelThread>(it.threadId)
+						if (thread?.parent == supportChannel && !thread.isArchived) {
 							userThreadExists = true
 							existingUserThread = thread
 						}
