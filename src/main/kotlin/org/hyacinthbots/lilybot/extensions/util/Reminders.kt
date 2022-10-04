@@ -31,6 +31,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -451,9 +452,11 @@ class Reminders : Extension() {
 
 			if (channel == null || it.dm) {
 				kord.getUser(it.userId)?.dm {
-					content =
-						"I was unable to find/access the channel from ${kord.getGuild(it.guildId)} that this" +
-								"reminder was set in."
+					if (!it.dm) {
+						content =
+							"I was unable to find/access the channel from ${kord.getGuild(it.guildId)} that this" +
+									"reminder was set in."
+					}
 					reminderEmbed(it)
 				}
 			} else {
@@ -461,6 +464,7 @@ class Reminders : Extension() {
 					content = kord.getUser(it.userId)?.mention
 					reminderEmbed(it)
 				}
+				markReminderComplete(it.guildId, it.channelId, it.messageId)
 			}
 
 			if (it.repeating) {
@@ -489,6 +493,15 @@ class Reminders : Extension() {
 					text = "Use `/reminder remove` to cancel this reminder"
 				}
 			}
+		}
+	}
+
+	private suspend fun markReminderComplete(guildId: Snowflake, channelId: Snowflake, messageId: Snowflake) {
+		val guild = kord.getGuild(guildId) ?: return
+		val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return
+		val message = channel.getMessageOrNull(messageId) ?: return
+		message.edit {
+			content = "${message.content} **Reminder Completed**"
 		}
 	}
 
