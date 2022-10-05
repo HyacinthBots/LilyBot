@@ -26,7 +26,6 @@ import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import com.kotlindiscord.kord.extensions.utils.toDuration
-import dev.kord.common.Locale
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
@@ -201,7 +200,6 @@ class Reminders : Extension() {
 						pages = reminders,
 						owner = event.interaction.user,
 						timeoutSeconds = 500,
-						locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
 						interaction = interactionResponse
 					)
 
@@ -336,7 +334,6 @@ class Reminders : Extension() {
 						pages = reminders,
 						owner = event.interaction.user,
 						timeoutSeconds = 500,
-						locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
 						interaction = interactionResponse
 					)
 

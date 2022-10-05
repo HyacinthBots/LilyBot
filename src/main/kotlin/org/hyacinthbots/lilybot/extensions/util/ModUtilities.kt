@@ -59,6 +59,7 @@ import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
@@ -503,7 +504,7 @@ class ModUtilities : Extension() {
 								UtilityConfigCollection().clearConfig(guild!!.id)
 								GalleryChannelCollection().removeAll(guild!!.id)
 								LogUploadingBlacklistCollection().clearBlacklist(guild!!.id)
-								// RemindMeCollection().removeGuildReminders(guild!!.id)
+								ReminderCollection().removeGuildReminders(guild!!.id)
 								RoleMenuCollection().removeAllRoleMenus(guild!!.id)
 								TagsCollection().clearTags(guild!!.id)
 								ThreadsCollection().removeGuildThreads(guild!!.id)
