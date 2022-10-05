@@ -22,6 +22,7 @@ import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
@@ -69,8 +70,13 @@ class Reminders : Extension() {
 
 				check {
 					anyGuild()
-					requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
-					botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
+					requireBotPermissions(Permission.ViewChannel, Permission.SendMessages, Permission.EmbedLinks)
+					botHasChannelPerms(
+						Permissions(
+							Permission.ViewChannel, Permission.SendMessages,
+							Permission.EmbedLinks
+						)
+					)
 				}
 
 				action {
@@ -478,7 +484,11 @@ class Reminders : Extension() {
 		dueReminders.forEach {
 			val channel = kord.getGuild(it.guildId)?.getChannelOfOrNull<GuildMessageChannel>(it.channelId)
 
-			if (channel == null || it.dm) {
+			val hasPerms =
+				channel?.botHasPermissions(Permission.ViewChannel, Permission.EmbedLinks, Permission.SendMessages)
+					?: false
+
+			if (channel == null || it.dm || !hasPerms) {
 				kord.getUser(it.userId)?.dm {
 					if (!it.dm) {
 						content =
