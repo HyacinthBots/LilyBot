@@ -94,15 +94,15 @@ class ReminderCollection : KordExKoinComponent {
 	/**
 	 * Updates a repeating reminder to be extended by the given [repeatingInterval].
 	 *
-	 * @param originalTime The original time the reminder was set
+	 * @param originalRemindTime The original time the reminder was supposed to send
 	 * @param repeatingInterval The repeating interval to extend the reminder by
 	 * @param number The ID of the reminder to update
 	 * @author NoComment1105
 	 * @since 4.2.0
 	 */
-	suspend fun repeatReminder(originalTime: Instant, repeatingInterval: DateTimePeriod, number: Long) =
+	suspend fun repeatReminder(originalRemindTime: Instant, repeatingInterval: DateTimePeriod, number: Long) =
 		collection.updateOne(
 			ReminderData::id eq number,
-			setValue(ReminderData::remindTime, originalTime.plus(repeatingInterval.toDuration(TimeZone.UTC)))
+			setValue(ReminderData::remindTime, originalRemindTime.plus(repeatingInterval.toDuration(TimeZone.UTC)))
 		)
 }

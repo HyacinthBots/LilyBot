@@ -268,7 +268,13 @@ class Reminders : Extension() {
 
 					if (reminders.isEmpty()) {
 						respond {
-							content = "You do not have any reminders for this guild!"
+							content = when (arguments.type) {
+								"all" -> "You do not have any reminders for this guild!"
+								"repeating" -> "You do not have any repeating reminders for this guild"
+								"non-repeating" -> "You do not have any regular reminders for this guild"
+								// This is impossible but the compiler complains otherwise
+								else -> "You do not have any reminders for this guild"
+							}
 						}
 						return@action
 					}
@@ -404,7 +410,13 @@ class Reminders : Extension() {
 
 					if (reminders.isEmpty()) {
 						respond {
-							content = "${user.asUser().username} does not have any reminders for this guild!"
+							content = when (arguments.type) {
+								"all" -> "${user.asUser().username} does not have any reminders for this guild!"
+								"repeating" -> "${user.asUser().username} does not have any repeating reminders for this guild"
+								"non-repeating" -> "${user.asUser().username} does not have any regular reminders for this guild"
+								// This is impossible but the compiler complains otherwise
+								else -> "You do not have any reminders for this guild"
+							}
 						}
 						return@action
 					}
@@ -506,7 +518,7 @@ class Reminders : Extension() {
 			}
 
 			if (it.repeating) {
-				ReminderCollection().repeatReminder(it.setTime, it.repeatingInterval!!, it.id)
+				ReminderCollection().repeatReminder(it.remindTime, it.repeatingInterval!!, it.id)
 			} else {
 				ReminderCollection().removeReminder(it.id)
 			}
@@ -598,7 +610,11 @@ class Reminders : Extension() {
 		if (userReminders.isEmpty()) {
 			pagesObj.addPage(
 				Page {
-					description = "There are no reminders set for this guild."
+					description = if (userId == null) {
+						"You have no reminders set for this guild."
+					} else {
+						"<@$userId> has no reminders set for this guild"
+					}
 				}
 			)
 		} else {
