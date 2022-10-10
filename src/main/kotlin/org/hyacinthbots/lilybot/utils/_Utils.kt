@@ -622,6 +622,48 @@ fun Message?.trimmedContents(): String? {
 }
 
 /**
+ * @see trimmedContents
+ * @author trainb0y
+ * @since 4.2.0
+ */
+fun String?.trimmedContents(): String? {
+	this ?: return null
+	return if (this.length > 1024) {
+		this.substring(0, 1020) + " ..."
+	} else this
+}
+
+/**
+ * Get this message's contents, trimmed to the [desiredLength] of characters.
+ * If the message exceeds that length, it will be truncated and an ellipsis appended.
+ * If the message is smaller than the [desiredLength], the content length is used and an elipsis appended
+ *
+ * @param desiredLength The desired length to limit the string too
+ * @author NoComment1105
+ * @since 4.2.0
+ */
+fun Message?.trimmedContents(desiredLength: Int): String? {
+	this ?: return null
+	val useRegularLength = this.content.length < desiredLength.coerceIn(1, 1020)
+	return if (this.content.length > desiredLength.coerceIn(1, 1020)) {
+		this.content.substring(0, if (useRegularLength) this.content.length else desiredLength) + "..."
+	} else this.content
+}
+
+/**
+ * @see trimmedContents
+ * @author NoComment1105
+ * @since 4.2.0
+ */
+fun String?.trimmedContents(desiredLength: Int): String? {
+	this ?: return null
+	val useRegularLength = this.length < desiredLength.coerceIn(1, 1020)
+	return if (this.length > desiredLength.coerceIn(1, 1020)) {
+		this.substring(0, if (useRegularLength) this.length else desiredLength) + "..."
+	} else this
+}
+
+/**
  * This function removed duplicated code from MessageDelete and MessageEdit.
  * It holds attachment and PluralKit info fields for the logging embeds.
  * @author tempest15

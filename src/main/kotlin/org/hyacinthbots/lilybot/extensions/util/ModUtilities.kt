@@ -72,6 +72,7 @@ import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
+import org.hyacinthbots.lilybot.utils.trimmedContents
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 import kotlin.time.Duration.Companion.seconds
 
@@ -246,11 +247,11 @@ class ModUtilities : Extension() {
 							title = "Say message edited"
 							field {
 								name = "Original Content"
-								value = "```$originalContent```"
+								value = "```${originalContent.trimmedContents(500)}```"
 							}
 							field {
 								name = "New Content"
-								value = "```${arguments.newContent}```"
+								value = "```${arguments.newContent.trimmedContents(500)}```"
 							}
 							footer {
 								text = "Edited by ${user.asUser().tag}"
