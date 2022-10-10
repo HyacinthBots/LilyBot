@@ -8,11 +8,17 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.pagination.PublicResponsePaginator
 import com.kotlindiscord.kord.extensions.pagination.pages.Page
 import com.kotlindiscord.kord.extensions.pagination.pages.Pages
+import com.kotlindiscord.kord.extensions.time.TimestampType
+import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.Locale
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.hyacinthbots.lilybot.commandDocs
+import org.hyacinthbots.lilybot.database.collections.UptimeCollection
+import java.util.*
 
 /**
  * This class contains the info commands that allow users to get a better idea of how to use the bot.
@@ -21,6 +27,12 @@ import org.hyacinthbots.lilybot.commandDocs
  */
 class InfoCommands : Extension() {
 	override val name = "info-commands"
+
+	private val versionProperties = Properties()
+
+	init {
+		versionProperties.load(this.javaClass.getResourceAsStream("/version.properties"))
+	}
 
 	override suspend fun setup() {
 		val pagesObj = Pages()
@@ -67,7 +79,7 @@ class InfoCommands : Extension() {
 		 * @since 3.3.0
 		 */
 		publicSlashCommand {
-			name = "help"
+			name = "command-help"
 			description = "Help for Lily's commands!"
 
 			action {
@@ -99,10 +111,10 @@ class InfoCommands : Extension() {
 					embed {
 						title = "LilyBot"
 						description =
-						"LilyBot is a bot designed initially for [The Iris Project](https://irisshaders.net) " +
-								"Discord server, but has since expanded out to be used across servers!\nLily " +
-								"provides various moderation and utility commands to a server, as well as built in " +
-								"anti-phishing to keep users safe from those pesky phishermen."
+							"LilyBot is a bot designed initially for [The Iris Project](https://irisshaders.net) " +
+									"Discord server, but has since expanded out to be used across servers!\nLily " +
+									"provides various moderation and utility commands to a server, as well as built in " +
+									"anti-phishing to keep users safe from those pesky phishermen."
 
 						field {
 							name = "How do I configure LilyBot?"
@@ -160,6 +172,42 @@ class InfoCommands : Extension() {
 						linkButton(0) {
 							label = "Privacy Policy"
 							url = "https://github.com/HyacinthBots/LilyBot/blob/main/docs/privacy-policy.md"
+						}
+					}
+				}
+			}
+		}
+
+		publicSlashCommand {
+			name = "info"
+			description = "Find out a brief summary of LilyBot!"
+
+			action {
+				respond {
+					embed {
+						title = "LilyBot!"
+						thumbnail {
+							url = event.kord.getSelf().avatar!!.url
+						}
+						description = "Lily is a multi-purpose bot for Discord, written using Kotlin and the " +
+								"Kord/KordEx libraries. She is developed in the free time of NoComment and " +
+								"tempest and hosted free of charge by gdude, of whom we thank greatly for his support!"
+
+						field {
+							name = "Version"
+							value =
+								"${versionProperties.getProperty("version") ?: "??"} (${System.getenv("SHORT_SHA") ?: "unknown"})"
+							inline = true
+						}
+						field {
+							name = "Up Since"
+							value = """
+								${UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)
+									?.time.toString().split(".")[0]} 
+								${UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)?.date} UTC
+								(${UptimeCollection().get()?.onTime?.toDiscord(TimestampType.RelativeTime) ?: "??"})
+							""".replace("\n", " ").trimIndent()
+							inline = true
 						}
 					}
 				}

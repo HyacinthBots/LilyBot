@@ -10,7 +10,9 @@ import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import kotlinx.datetime.Clock
 import mu.KotlinLogging
+import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
 import org.hyacinthbots.lilybot.extensions.config.Config
 import org.hyacinthbots.lilybot.extensions.config.GuildLogging
@@ -125,6 +127,12 @@ suspend fun main() {
 
 	DocsGenerator.clearDocs(ENVIRONMENT)
 	DocsGenerator.writeNewDocs(ENVIRONMENT)
+
+	if (UptimeCollection().get() == null) {
+		UptimeCollection().set(Clock.System.now())
+	} else {
+		UptimeCollection().update(Clock.System.now())
+	}
 
 	bot.start()
 }
