@@ -29,10 +29,12 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
+import dev.kord.core.entity.Member
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
+import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
@@ -290,7 +292,16 @@ class TemporaryModeration : Extension() {
 
 			action {
 				val userArg = arguments.userArgument
-				val targetUser = guild?.getMember(userArg.id)
+				val targetUser: Member?
+				try {
+					targetUser = guild?.getMember(userArg.id)
+				} catch (e: EntityNotFoundException) {
+					respond {
+						content = "I was unable to find the member in this guild! Please try again!"
+					}
+					return@action
+				}
+
 				val userStrikes = WarnCollection().getWarn(targetUser!!.id, guild!!.id)?.strikes
 				if (userStrikes == 0 || userStrikes == null) {
 					respond {

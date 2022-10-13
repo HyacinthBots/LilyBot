@@ -118,7 +118,8 @@ object Cleanups : KordExKoinComponent {
 					category = "cleanupThreadData"
 					message = "Cleaning thread ${it.threadId}"
 				}
-				val thread = kordInstance.getGuild(it.guildId!!)?.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: continue
+				val guild = kordInstance.getGuild(it.guildId!!) ?: return
+				val thread = guild.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: continue
 				val latestMessage = thread.getLastMessage() ?: continue
 				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 				if (timeSinceLatestMessage.inWholeDays > 7) {
