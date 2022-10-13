@@ -40,7 +40,7 @@ import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
-import org.hyacinthbots.lilybot.database.collections.RemindMeCollection
+import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
@@ -575,7 +575,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
 				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
-				single { RemindMeCollection() } bind RemindMeCollection::class
+				single { ReminderCollection() } bind ReminderCollection::class
 				single { RoleMenuCollection() } bind RoleMenuCollection::class
 				single { StatusCollection() } bind StatusCollection::class
 				single { TagsCollection() } bind TagsCollection::class
@@ -619,6 +619,60 @@ fun Message?.trimmedContents(): String? {
 	return if (this.content.length > 1024) {
 		this.content.substring(0, 1020) + " ..."
 	} else this.content
+}
+
+/**
+ * @see trimmedContents
+ * @author trainb0y
+ * @since 4.2.0
+ */
+fun String?.trimmedContents(): String? {
+	this ?: return null
+	return if (this.length > 1024) {
+		this.substring(0, 1020) + " ..."
+	} else this
+}
+
+/**
+ * Get this message's contents, trimmed to the [desiredLength] of characters.
+ * If the message exceeds that length, it will be truncated and an ellipsis appended.
+ * If the message is smaller than the [desiredLength], the content length is used and an elipsis appended
+ *
+ * @param desiredLength The desired length to limit the string too
+ * @author NoComment1105
+ * @since 4.2.0
+ */
+fun Message?.trimmedContents(desiredLength: Int): String? {
+	this ?: return null
+	val useRegularLength = this.content.length < desiredLength.coerceIn(1, 1020)
+	return if (this.content.length > desiredLength.coerceIn(1, 1020)) {
+		this.content.substring(0, if (useRegularLength) this.content.length else desiredLength) + "..."
+	} else this.content
+}
+
+/**
+ * @see trimmedContents
+ * @author NoComment1105
+ * @since 4.2.0
+ */
+fun String?.trimmedContents(desiredLength: Int): String? {
+	this ?: return null
+	val useRegularLength = this.length < desiredLength.coerceIn(1, 1020)
+	return if (this.length > desiredLength.coerceIn(1, 1020)) {
+		this.substring(0, if (useRegularLength) this.length else desiredLength) + "..."
+	} else this
+}
+
+/**
+ * Checks a string to see if it fits the in a discord embed field.
+ *
+ * @return True, if the given string fits and embed, false if not
+ * @author NoComment1105
+ * @since 4.2.0
+ */
+fun String?.fitsEmbed(): Boolean? {
+	this ?: return null
+	return this.length <= 1024
 }
 
 /**

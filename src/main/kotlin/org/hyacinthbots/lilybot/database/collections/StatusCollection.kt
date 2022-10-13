@@ -6,12 +6,12 @@ import org.hyacinthbots.lilybot.database.entities.StatusData
 import org.koin.core.component.inject
 
 /**
- * This class contains the functions for interacting with the [Status Database][StatusData]. This object contains the
+ * This class contains the functions for interacting with the [Status Database][StatusData]. This class contains the
  * function for getting and setting the status.
  *
  * @since 4.0.0
  * @see getStatus
- * @see setStatus(String?)
+ * @see setStatus
  */
 class StatusCollection : KordExKoinComponent {
 	private val db: Database by inject()

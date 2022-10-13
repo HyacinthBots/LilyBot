@@ -10,7 +10,7 @@ import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with the [Guild Leave Time Database][GuildLeaveTimeData]. This
- * object contains functions for setting and removing leave time.
+ * class contains functions for setting and removing leave time.
  *
  * @since 4.0.0
  * @see setLeaveTime
