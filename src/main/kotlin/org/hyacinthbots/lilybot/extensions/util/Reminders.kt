@@ -157,11 +157,6 @@ class Reminders : Extension() {
 								}
 							}
 
-							field {
-								name = "Subscribers"
-								value = user.asUser().mention
-							}
-
 							footer {
 								text = "Use `/reminder remove` to cancel"
 							}
