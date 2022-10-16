@@ -300,6 +300,9 @@ class PublicUtilities : Extension() {
 		val newNick by string {
 			name = "nickname"
 			description = "The new nickname you would like"
+
+			minLength = 1
+			maxLength = 32
 		}
 	}
 }
