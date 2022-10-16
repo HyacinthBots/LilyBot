@@ -18,7 +18,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.hyacinthbots.lilybot.commandDocs
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
-import java.util.*
+import java.util.Properties
 
 /**
  * This class contains the info commands that allow users to get a better idea of how to use the bot.
