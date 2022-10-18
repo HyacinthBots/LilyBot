@@ -8,9 +8,13 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This class contains all the functions for updating and retrieving data from the main meta database.
+ * This class contains the functions for interacting with the [main meta database][MainMetaData]. This class
+ * contains functions for getting, setting and updating meta.
  *
  * @since 4.0.0
+ * @see get
+ * @see set
+ * @see update
  */
 class MainMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()
@@ -51,9 +55,13 @@ class MainMetaCollection : KordExKoinComponent {
 }
 
 /**
- * This class contains all the functions for updating and retrieving data from the config meta database.
+ * This class contains the functions for interacting with the [config meta database][ConfigMetaData]. This class
+ * contains functions for getting, setting and updating meta.
  *
  * @since 4.0.0
+ * @see get
+ * @see set
+ * @see update
  */
 class ConfigMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()

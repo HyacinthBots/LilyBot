@@ -409,11 +409,12 @@ class LogUploading : Extension() {
 	 */
 	private suspend fun postToMCLogs(text: String): String {
 		val client = HttpClient()
+		val cleanText = text.replace("\r\n", "\n", true).replace("\r", "\n", true)
 		val response = client.post("https://api.mclo.gs/1/log") {
 			setBody(
 				FormDataContent(
 					Parameters.build {
-						append("content", text)
+						append("content", cleanText)
 					}
 				)
 			)

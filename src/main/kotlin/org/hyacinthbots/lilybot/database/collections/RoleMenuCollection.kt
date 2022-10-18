@@ -8,13 +8,14 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This class contains the functions for interacting with the [Role Menu Database][RoleMenuData]. This object contains
+ * This class contains the functions for interacting with the [Role Menu Database][RoleMenuData]. This class contains
  * the functions for getting a menu, setting a menu and removing a role from a menu.
  *
  * @since 4.0.0
  * @see getRoleData
  * @see setRoleMenu
  * @see removeRoleFromMenu
+ * @see removeAllRoleMenus
  */
 class RoleMenuCollection : KordExKoinComponent {
 	private val db: Database by inject()

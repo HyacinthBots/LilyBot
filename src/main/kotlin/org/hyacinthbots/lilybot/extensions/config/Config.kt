@@ -81,7 +81,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
-			if (canPingRole(arguments.role)) {
+			if (!canPingRole(arguments.role)) {
 				ackEphemeral()
 				respondEphemeral {
 					content =
@@ -238,7 +238,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
-			if (canPingRole(arguments.moderatorRole)) {
+			if (!canPingRole(arguments.moderatorRole)) {
 				respond {
 					content =
 						"I cannot use the role: ${arguments.moderatorRole!!.mention}, because it is not mentionable by" +
@@ -718,8 +718,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								name = "Message delete logs"
 								value = if (config.enableMessageDeleteLogs) {
 									"Enabled\n" +
-											"${guild!!.getChannel(config.messageChannel!!).mention} " +
-											"${guild!!.getChannel(config.messageChannel).name }}"
+											"${guild!!.getChannel(config.messageChannel!!).mention} (" +
+											"${guild!!.getChannel(config.messageChannel).name })"
 								} else {
 									"Disabled"
 								}
@@ -728,8 +728,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								name = "Message edit logs"
 								value = if (config.enableMessageEditLogs) {
 									"Enabled\n" +
-											"${guild!!.getChannel(config.messageChannel!!).mention }} " +
-											"${guild!!.getChannel(config.messageChannel).name }}"
+											"${guild!!.getChannel(config.messageChannel!!).mention } (" +
+											"${guild!!.getChannel(config.messageChannel).name })"
 								} else {
 									"Disabled"
 								}
@@ -738,8 +738,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								name = "Member logs"
 								value = if (config.enableMemberLogs) {
 									"Enabled\n" +
-											"${guild!!.getChannel(config.memberLog!!).mention }} " +
-											"${guild!!.getChannel(config.memberLog).name }} "
+											"${guild!!.getChannel(config.memberLog!!).mention } (" +
+											"${guild!!.getChannel(config.memberLog).name })"
 								} else {
 									"Disabled"
 								}

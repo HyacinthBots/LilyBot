@@ -10,7 +10,6 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSub
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
-import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
@@ -185,91 +184,47 @@ class PublicUtilities : Extension() {
 										label = "Deny"
 										style = ButtonStyle.Danger
 
-										// Declare the reason outside the action to allow us to reference it in the action
-										var reason: String? = null
-
 										action {
+											requester.dm {
+												embed {
+													title = "Nickname Request Denied"
+													description = "Moderators have reviewed your nickname request (`${
+														arguments.newNick
+													}`) and rejected it.\nPlease try a different nickname"
+												}
+											}
+
 											actionLogEmbed!!.edit {
-												components {
-													removeAll()
+												components { removeAll() }
+												embed {
+													title = "Nickname Request Denied"
 
-													ephemeralSelectMenu(row = 1) {
-														placeholder = "Why are you denying this nickname?"
-
-														option("Inappropriate", "inappropriate") {
-															description = "This nickname is inappropriate"
-														}
-														option("Impersonates Others", "impersonation") {
-															description = "This nickname impersonates someone"
-														}
-														option("Hoisting", "hoisting") {
-															description = "This nickname deliberately hoists the user"
-														}
-
-														action {
-															when (this.selected[0]) {
-																"inappropriate" ->
-																	reason = "is inappropriate for this server."
-																"impersonation" ->
-																	reason = "impersonates another user."
-																"hoisting" ->
-																	reason = "deliberately hoists you up the user " +
-																			"ladder, which is not allowed."
-															}
-
-															requester.dm {
-																embed {
-																	title =
-																		"Nickname Change Denied in ${guild!!.asGuild().name}"
-																	description =
-																		"Staff have reviewed your nickname request (" +
-																				"`${arguments.newNick}`) and rejected it," +
-																				" because it $reason"
-																	color = DISCORD_RED
-																}
-															}
-
-															actionLogEmbed!!.edit {
-																components { removeAll() }
-																embed {
-																	title = "Nickname Request Denied"
-
-																	field {
-																		name = "User:"
-																		value = "${requester.mention}\n" +
-																				"${requester.asUser().tag}\n${requester.id}"
-																		inline = false
-																	}
-
-																	field {
-																		name = "Current Nickname:"
-																		value = "`${requesterAsMember.nickname}`"
-																		inline = false
-																	}
-
-																	field {
-																		name = "Rejected Nickname:"
-																		value = "`${arguments.newNick}`"
-																		inline = false
-																	}
-
-																	field {
-																		name = "Reason:"
-																		value = selected[0]
-																		inline = false
-																	}
-
-																	footer {
-																		text = "Nickname denied by ${user.asUser().tag}"
-																		icon = user.asUser().avatar?.url
-																	}
-
-																	timestamp = Clock.System.now()
-																	color = DISCORD_RED
-																}
-															}
-														}
+													field {
+														name = "User:"
+														value = "${requester.mention}\n" +
+																"${requester.asUser().tag}\n${requester.id}"
+														inline = false
 													}
+
+													field {
+														name = "Current Nickname:"
+														value = "`${requesterAsMember.nickname}`"
+														inline = false
+													}
+
+													field {
+														name = "Rejected Nickname:"
+														value = "`${arguments.newNick}`"
+														inline = false
+													}
+
+													footer {
+														text = "Nickname denied by ${user.asUser().tag}"
+														icon = user.asUser().avatar?.url
+													}
+
+													timestamp = Clock.System.now()
+													color = DISCORD_RED
 												}
 											}
 										}
@@ -279,8 +234,8 @@ class PublicUtilities : Extension() {
 					} catch (e: KtorRequestException) {
 						// Avoid hard failing on permission error, since the public won't know what it means
 						respond {
-						    content = "Error sending message to moderators. Please ask the moderators to check" +
-								"the `UTILITY` config."
+							content = "Error sending message to moderators. Please ask the moderators to check" +
+									"the `UTILITY` config."
 						}
 						return@action
 					}
@@ -329,8 +284,8 @@ class PublicUtilities : Extension() {
 					} catch (_: KtorRequestException) {
 						// Avoid hard failing on permission error, since the public won't know what it means
 						respond {
-						    content = "Error sending message to moderators. Please " +
-								"ask the moderators to check the `UTILITY` config."
+							content = "Error sending message to moderators. Please " +
+									"ask the moderators to check the `UTILITY` config."
 						}
 						return@action
 					}
@@ -345,6 +300,9 @@ class PublicUtilities : Extension() {
 		val newNick by string {
 			name = "nickname"
 			description = "The new nickname you would like"
+
+			minLength = 1
+			maxLength = 32
 		}
 	}
 }

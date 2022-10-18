@@ -13,6 +13,7 @@ import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
@@ -78,6 +79,7 @@ object Cleanups : KordExKoinComponent {
 				TagsCollection().clearTags(it.guildId)
 				WarnCollection().clearWarns(it.guildId)
 				RoleMenuCollection().removeAllRoleMenus(it.guildId)
+				ReminderCollection().removeGuildReminders(it.guildId)
 				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
 			}
@@ -116,7 +118,13 @@ object Cleanups : KordExKoinComponent {
 					category = "cleanupThreadData"
 					message = "Cleaning thread ${it.threadId}"
 				}
-				val thread = kordInstance.getGuild(it.guildId!!)?.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: continue
+				if (it.guildId == null) {
+					ThreadsCollection().removeThread(it.threadId)
+					deletedThreads++
+					return
+				}
+				val guild = kordInstance.getGuild(it.guildId) ?: return
+				val thread = guild.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: continue
 				val latestMessage = thread.getLastMessage() ?: continue
 				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp
 				if (timeSinceLatestMessage.inWholeDays > 7) {
