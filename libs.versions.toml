@@ -2,7 +2,7 @@
 kotlin = "1.7.20"  # Note: Plugin versions must be updated in the settings.gradle.kts too
 
 kord-extensions = "1.5.5-20220925.092000-32"
-logging = "3.0.1"
+logging = "3.0.2"
 logback = "1.4.4"
 github-api = "1.313"
 kmongo = "4.7.1"
