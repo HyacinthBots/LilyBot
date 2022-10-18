@@ -70,6 +70,9 @@ dependencies {
 
     // TOML Reader
     implementation(libs.koma)
+
+	// Cozy's welcome module
+	implementation(libs.cozy.welcome)
 }
 
 application {
