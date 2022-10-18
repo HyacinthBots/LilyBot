@@ -490,7 +490,7 @@ class TemporaryModeration : Extension() {
 
 			ephemeralSubCommand(::LockChannelArgs) {
 				name = "channel"
-				description = "Lock a channel so only mods can send messages"
+				description = "Lock a channel so those with default permissions cannot send messages"
 
 				check {
 					anyGuild()
@@ -498,11 +498,14 @@ class TemporaryModeration : Extension() {
 						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(Permission.ManageChannels)
+					requireBotPermissions(
+						Permission.ManageChannels,
+						Permission.ManageRoles,
+						Permission.SendMessages
+					)
 					botHasChannelPerms(Permissions(Permission.ManageChannels))
 				}
 
-				@Suppress("DuplicatedCode")
 				action {
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -514,6 +517,12 @@ class TemporaryModeration : Extension() {
 					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
 					if (channelPerms != null && channelPerms.denied.contains(Permission.SendMessages)) {
 						respond { content = "This channel is already locked!" }
+						return@action
+					}
+
+					val everyoneRole = guild!!.getRole(guild!!.id)
+					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
+						respond { content = "The server is locked, so I cannot lock this channel." }
 						return@action
 					}
 
@@ -548,7 +557,7 @@ class TemporaryModeration : Extension() {
 
 			ephemeralSubCommand(::LockServerArgs) {
 				name = "server"
-				description = "Lock the server so only mods can send messages"
+				description = "Lock the server so those with default permissions cannot send messages"
 
 				check {
 					anyGuild()
@@ -556,7 +565,11 @@ class TemporaryModeration : Extension() {
 						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(Permission.ManageChannels)
+					requireBotPermissions(
+						Permission.ManageChannels,
+						Permission.ManageRoles,
+						Permission.SendMessages
+					)
 				}
 
 				action {
@@ -604,19 +617,20 @@ class TemporaryModeration : Extension() {
 
 			ephemeralSubCommand(::UnlockChannelArgs) {
 				name = "channel"
-				description = "Unlock a channel so everyone can send messages"
+				description = "Unlock a channel so everyone can send messages again"
 
 				check {
 					anyGuild()
-					requiredConfigs(
-						ConfigOptions.MODERATION_ENABLED
-					)
+					requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(Permission.ManageChannels)
+					requireBotPermissions(
+						Permission.ManageChannels,
+						Permission.ManageRoles,
+						Permission.SendMessages
+					)
 					botHasChannelPerms(Permissions(Permission.ManageChannels))
 				}
 
-				@Suppress("DuplicatedCode")
 				action {
 					val channelArg = arguments.channel ?: event.interaction.getChannel()
 					var channelParent: TextChannel? = null
@@ -624,6 +638,12 @@ class TemporaryModeration : Extension() {
 						channelParent = channelArg.getParent()
 					}
 					val targetChannel = channelParent ?: channelArg.asChannelOf()
+
+					val everyoneRole = guild!!.getRole(guild!!.id)
+					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
+						respond { content = "Please unlock the server to unlock this channel." }
+						return@action
+					}
 
 					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
 					if (channelPerms == null) {
@@ -636,10 +656,10 @@ class TemporaryModeration : Extension() {
 					}
 
 					targetChannel.editRolePermission(guild!!.id) {
-						allowed += Permission.SendMessages
-						allowed += Permission.SendMessagesInThreads
-						allowed += Permission.AddReactions
-						allowed += Permission.UseApplicationCommands
+						denied -= Permission.SendMessages
+						denied -= Permission.SendMessagesInThreads
+						denied -= Permission.AddReactions
+						denied -= Permission.UseApplicationCommands
 					}
 
 					targetChannel.createEmbed {
@@ -667,7 +687,7 @@ class TemporaryModeration : Extension() {
 
 			ephemeralSubCommand {
 				name = "server"
-				description = "Unlock the server so everyone can send messages"
+				description = "Unlock the server so everyone can send messages again"
 
 				check {
 					anyGuild()
@@ -675,7 +695,11 @@ class TemporaryModeration : Extension() {
 						ConfigOptions.MODERATION_ENABLED
 					)
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(Permission.ManageChannels)
+					requireBotPermissions(
+						Permission.ManageChannels,
+						Permission.ManageRoles,
+						Permission.SendMessages
+					)
 				}
 
 				action {
