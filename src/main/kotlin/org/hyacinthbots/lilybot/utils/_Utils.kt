@@ -696,7 +696,7 @@ suspend fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
 	if (proxiedMessage != null) {
 		field {
 			name = "Message Author:"
-			value = "System Member: ${proxiedMessage.member.name}\n" +
+			value = "System Member: ${proxiedMessage.member?.name}\n" +
 					"Account: ${guild.getMember(proxiedMessage.sender).tag} " +
 					guild.getMember(proxiedMessage.sender).mention
 			inline = true

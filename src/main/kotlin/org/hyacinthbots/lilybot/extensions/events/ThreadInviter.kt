@@ -65,7 +65,11 @@ class ThreadInviter : Extension() {
 			 */
 			check {
 				anyGuild()
-				requiredConfigs(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
+				requiredConfigs(
+					ConfigOptions.SUPPORT_ENABLED,
+					ConfigOptions.SUPPORT_CHANNEL,
+					ConfigOptions.SUPPORT_ROLE
+				)
 				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
@@ -127,7 +131,9 @@ class ThreadInviter : Extension() {
 					val thread =
 						textChannel.startPublicThreadWithMessage(
 							event.pkMessage.id,
-							"Support thread for ${event.pkMessage.member.name}",
+							"Support thread for ${
+								event.pkMessage.member?.name ?: event.kord.getUser(event.pkMessage.sender)?.username
+							}",
 							event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 						)
 
@@ -172,7 +178,11 @@ class ThreadInviter : Extension() {
 			 */
 			check {
 				anyGuild()
-				requiredConfigs(ConfigOptions.SUPPORT_ENABLED, ConfigOptions.SUPPORT_CHANNEL, ConfigOptions.SUPPORT_ROLE)
+				requiredConfigs(
+					ConfigOptions.SUPPORT_ENABLED,
+					ConfigOptions.SUPPORT_CHANNEL,
+					ConfigOptions.SUPPORT_ROLE
+				)
 				failIf {
 					event.message.type == MessageType.ChatInputCommand ||
 							event.message.type == MessageType.ThreadCreated ||
