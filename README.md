@@ -41,7 +41,7 @@ Lily makes use of the following tools and frameworks.
 * [Github-API](https://github.com/hub4j/github-api), the API utilized by the GitHub commands
 * [Shadow Gradle Plugin](https://github.com/johnrengelman/shadow), a tool which allows us to make a big fatjar containing all dependencies
 * [detekt](https://detekt.dev/index.html), a static code analysis tool for the Kotlin programming language. This helps us keep our code clean and nicely formatted.
-* [Cozy](https://github.com/quiltmc/cozy-discord)'s welcome module made by our friends at [QuiltMC](https://quiltmc.org/)
+* [Cozy's Welcome channel module](hhttps://github.com/QuiltMC/cozy-discord/tree/root/module-welcome) made by our friends at [QuiltMC](https://quiltmc.org/)
 
 #### Contributing
 This repository is open to contributions by the community. If you plan on contributing, please check our
