@@ -56,6 +56,7 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
+import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
@@ -505,6 +506,7 @@ class ModUtilities : Extension() {
 								SupportConfigCollection().clearConfig(guild!!.id)
 								UtilityConfigCollection().clearConfig(guild!!.id)
 								GalleryChannelCollection().removeAll(guild!!.id)
+								GithubCollection().removeDefaultRepo(guild!!.id)
 								LogUploadingBlacklistCollection().clearBlacklist(guild!!.id)
 								ReminderCollection().removeGuildReminders(guild!!.id)
 								RoleMenuCollection().removeAllRoleMenus(guild!!.id)

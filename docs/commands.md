@@ -530,8 +530,8 @@ The GitHub commands allow users to query GitHub for things such as issues, pull 
 
 ### Name: `github issue`
 **Arguments**:
-* `repository` - GitHub repository the issue is in, by the format 'USER-NAME/REPO-NAME' or URL - String
 * `issue-number` - Number of the issue to be searched for - Integer
+* `repository` - GitHub repository the issue is in, by the format 'USER-NAME/REPO-NAME' or URL - Optional String
 
 **Result**: An embed containing the information about the queryed issue.
 
@@ -543,7 +543,7 @@ The GitHub commands allow users to query GitHub for things such as issues, pull 
 
 ### Name: `github repo`
 **Arguments**:
-* `repository` - GitHub repository to be searched for, by the format 'USER-NAME/REPO-NAME' or URL - String
+* `repository` - GitHub repository to be searched for, by the format 'USER-NAME/REPO-NAME' or URL - Optional String
 
 **Result**: An embed containing the information about the queryed repository
 
@@ -562,6 +562,30 @@ The GitHub commands allow users to query GitHub for things such as issues, pull 
 **Required Permissions**: `None`
 
 **Command category**: `Github commands`
+
+---
+
+### Name: `github default-repo`
+**Arguments**:
+* `default-repo` - GitHub repository to be searched for by default, by the format 'USER-NAME/REPO-NAME' or URL - String
+
+**Result**: Stores the default repo and searches that in the other commands when a repository is not provided
+
+**Required Permissions**: `Moderate Members`
+
+**Command category**: `Github Commands`
+
+---
+
+### Name: `github remove-default-repo`
+**Arguments**:
+None
+
+**Result**: Removes the default repo for searches using the GitHub commands
+
+**Required Permissions**: `Moderate Members`
+
+**Command category**: `Github Commands`
 
 ---
 

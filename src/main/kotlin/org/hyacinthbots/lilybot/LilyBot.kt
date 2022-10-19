@@ -51,7 +51,7 @@ import java.io.IOException
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
-var github: GitHub? = null
+lateinit var github: GitHub
 private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
 
 var commandDocs: CommandDocs? = null
