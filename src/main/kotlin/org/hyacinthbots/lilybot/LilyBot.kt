@@ -19,9 +19,9 @@ import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
 import org.hyacinthbots.lilybot.extensions.events.MessageEdit
 import org.hyacinthbots.lilybot.extensions.events.ThreadInviter
+import org.hyacinthbots.lilybot.extensions.moderation.LockingCommands
+import org.hyacinthbots.lilybot.extensions.moderation.ModerationCommands
 import org.hyacinthbots.lilybot.extensions.moderation.Report
-import org.hyacinthbots.lilybot.extensions.moderation.TemporaryModeration
-import org.hyacinthbots.lilybot.extensions.moderation.TerminalModeration
 import org.hyacinthbots.lilybot.extensions.util.GalleryChannel
 import org.hyacinthbots.lilybot.extensions.util.Github
 import org.hyacinthbots.lilybot.extensions.util.GuildAnnouncements
@@ -79,10 +79,12 @@ suspend fun main() {
 			add(::InfoCommands)
 			add(::GuildAnnouncements)
 			add(::GuildLogging)
+			add(::LockingCommands)
 			add(::LogUploading)
 			add(::MemberLogging)
 			add(::MessageDelete)
 			add(::MessageEdit)
+			add(::ModerationCommands)
 			add(::ModUtilities)
 			add(::PublicUtilities)
 			add(::Reminders)
@@ -90,8 +92,6 @@ suspend fun main() {
 			add(::RoleMenu)
 			add(::StartupHooks)
 			add(::Tags)
-			add(::TemporaryModeration)
-			add(::TerminalModeration)
 			add(::ThreadControl)
 			add(::ThreadInviter)
 
