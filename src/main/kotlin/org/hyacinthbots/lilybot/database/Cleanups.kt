@@ -20,6 +20,7 @@ import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
+import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.entities.GuildLeaveTimeData
 import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.koin.core.component.inject
@@ -78,6 +79,7 @@ object Cleanups : KordExKoinComponent {
 				UtilityConfigCollection().clearConfig(it.guildId)
 				TagsCollection().clearTags(it.guildId)
 				WarnCollection().clearWarns(it.guildId)
+				WelcomeChannelCollection().removeWelcomeChannelForGuild(it.guildId)
 				RoleMenuCollection().removeAllRoleMenus(it.guildId)
 				ReminderCollection().removeGuildReminders(it.guildId)
 				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)

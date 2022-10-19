@@ -13,7 +13,6 @@ import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.WelcomeChannelData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
-import org.quiltmc.community.cozy.modules.welcome.data.WelcomeChannelData as CosyWelcomeChannelData
 
 /**
  * This class contains the functions for interacting with the [Welcome channel database][WelcomeChannelData]. This class
@@ -25,7 +24,7 @@ import org.quiltmc.community.cozy.modules.welcome.data.WelcomeChannelData as Cos
  * @see setUrlForChannel
  * @see removeChannel
  */
-class WelcomeChannelCollection : KordExKoinComponent, CosyWelcomeChannelData {
+class WelcomeChannelCollection : KordExKoinComponent, CozyWelcomeChannelData {
 	private val db: Database by inject()
 
 	@PublishedApi
@@ -39,8 +38,8 @@ class WelcomeChannelCollection : KordExKoinComponent, CosyWelcomeChannelData {
 		collection.findOne(WelcomeChannelData::channelId eq channelId)
 			?.url
 
-	override suspend fun setUrlForChannel(channelId: Snowflake, url: String) {
-		collection.save(WelcomeChannelData(channelId, url))
+	override suspend fun setUrlForChannel(guildId: Snowflake, channelId: Snowflake, url: String) {
+		collection.save(WelcomeChannelData(guildId, channelId, url))
 	}
 
 	override suspend fun removeChannel(channelId: Snowflake): String? {
@@ -51,4 +50,16 @@ class WelcomeChannelCollection : KordExKoinComponent, CosyWelcomeChannelData {
 
 		return url
 	}
+
+	suspend fun removeWelcomeChannelForGuild(guildId: Snowflake) {
+		collection.deleteOne(WelcomeChannelData::guildId eq guildId)
+	}
+}
+
+interface CozyWelcomeChannelData {
+	suspend fun getChannelURLs(): Map<Snowflake, String>
+	suspend fun getUrlForChannel(channelId: Snowflake): String?
+
+	suspend fun setUrlForChannel(guildId: Snowflake, channelId: Snowflake, url: String)
+	suspend fun removeChannel(channelId: Snowflake): String?
 }
