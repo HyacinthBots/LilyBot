@@ -11,6 +11,7 @@ import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
+import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
@@ -80,6 +81,7 @@ object Cleanups : KordExKoinComponent {
 				WarnCollection().clearWarns(it.guildId)
 				RoleMenuCollection().removeAllRoleMenus(it.guildId)
 				ReminderCollection().removeGuildReminders(it.guildId)
+				GithubCollection().removeDefaultRepo(it.guildId)
 				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
 			}

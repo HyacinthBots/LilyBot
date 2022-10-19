@@ -44,7 +44,7 @@ import org.kohsuke.github.GitHubBuilder
 import java.io.IOException
 import kotlin.io.path.Path
 
-var github: GitHub? = null
+lateinit var github: GitHub
 private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
 
 var commandDocs: CommandDocs? = null
