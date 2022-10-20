@@ -80,6 +80,6 @@ class StartupHooks : Extension() {
 	 */
 	private suspend fun cleanup() {
 		Cleanups.cleanupThreadData(kord)
-		Cleanups.cleanupGuildData()
+		Cleanups.cleanupGuildData(kord)
 	}
 }

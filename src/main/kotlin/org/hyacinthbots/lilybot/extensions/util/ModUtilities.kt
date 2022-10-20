@@ -513,7 +513,7 @@ class ModUtilities : Extension() {
 								TagsCollection().clearTags(guild!!.id)
 								ThreadsCollection().removeGuildThreads(guild!!.id)
 								WarnCollection().clearWarns(guild!!.id)
-								WelcomeChannelCollection().removeWelcomeChannelForGuild(guild!!.id)
+								WelcomeChannelCollection().removeWelcomeChannelsForGuild(guild!!.id, kord)
 							}
 						}
 

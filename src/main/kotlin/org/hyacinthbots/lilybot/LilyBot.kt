@@ -102,7 +102,10 @@ suspend fun main() {
 			add(::ThreadControl)
 			add(::ThreadInviter)
 
-			// todo doc
+			/*
+			The welcome channel extension allows users to designate a YAML file to create a channel with
+			a variety of pre-built blocks.
+			 */
 			welcomeChannel(WelcomeChannelCollection()) {
 				staffCommandCheck {
 					hasPermission(Permission.BanMembers)

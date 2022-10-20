@@ -9,10 +9,12 @@ package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.WelcomeChannelData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
+import org.quiltmc.community.cozy.modules.welcome.data.WelcomeChannelData as CozyWelcomeChannelData
 
 /**
  * This class contains the functions for interacting with the [Welcome channel database][WelcomeChannelData]. This class
@@ -38,8 +40,8 @@ class WelcomeChannelCollection : KordExKoinComponent, CozyWelcomeChannelData {
 		collection.findOne(WelcomeChannelData::channelId eq channelId)
 			?.url
 
-	override suspend fun setUrlForChannel(guildId: Snowflake, channelId: Snowflake, url: String) {
-		collection.save(WelcomeChannelData(guildId, channelId, url))
+	override suspend fun setUrlForChannel(channelId: Snowflake, url: String) {
+		collection.save(WelcomeChannelData(channelId, url))
 	}
 
 	override suspend fun removeChannel(channelId: Snowflake): String? {
@@ -51,15 +53,10 @@ class WelcomeChannelCollection : KordExKoinComponent, CozyWelcomeChannelData {
 		return url
 	}
 
-	suspend fun removeWelcomeChannelForGuild(guildId: Snowflake) {
-		collection.deleteOne(WelcomeChannelData::guildId eq guildId)
+	suspend fun removeWelcomeChannelsForGuild(guildId: Snowflake, kord: Kord) {
+		val guild = kord.getGuild(guildId) ?: return
+		guild.channels.collect {
+			collection.deleteOne(WelcomeChannelData::channelId eq it.id)
+		}
 	}
-}
-
-interface CozyWelcomeChannelData {
-	suspend fun getChannelURLs(): Map<Snowflake, String>
-	suspend fun getUrlForChannel(channelId: Snowflake): String?
-
-	suspend fun setUrlForChannel(guildId: Snowflake, channelId: Snowflake, url: String)
-	suspend fun removeChannel(channelId: Snowflake): String?
 }
