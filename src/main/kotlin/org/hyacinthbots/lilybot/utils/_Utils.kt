@@ -49,6 +49,7 @@ import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
+import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.koin.dsl.bind
 
@@ -583,6 +584,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { TagsCollection() } bind TagsCollection::class
 				single { ThreadsCollection() } bind ThreadsCollection::class
 				single { WarnCollection() } bind WarnCollection::class
+				single { WelcomeChannelCollection() } bind WelcomeChannelCollection::class
 			}
 
 			if (migrate) {
