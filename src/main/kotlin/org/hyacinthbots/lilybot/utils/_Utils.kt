@@ -36,6 +36,7 @@ import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
+import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
@@ -48,6 +49,7 @@ import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
+import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.koin.dsl.bind
 
@@ -572,6 +574,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
 				single { UtilityConfigCollection() } bind UtilityConfigCollection::class
 				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
+				single { GithubCollection() } bind GithubCollection::class
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
 				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
@@ -581,6 +584,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { TagsCollection() } bind TagsCollection::class
 				single { ThreadsCollection() } bind ThreadsCollection::class
 				single { WarnCollection() } bind WarnCollection::class
+				single { WelcomeChannelCollection() } bind WelcomeChannelCollection::class
 			}
 
 			if (migrate) {

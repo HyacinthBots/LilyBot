@@ -11,6 +11,7 @@ import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
+import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
@@ -20,6 +21,7 @@ import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
+import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.entities.GuildLeaveTimeData
 import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.koin.core.component.inject
@@ -51,7 +53,7 @@ object Cleanups : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 3.2.0
 	 */
-	suspend fun cleanupGuildData() {
+	suspend fun cleanupGuildData(kord: Kord) {
 		SentryContext().breadcrumb(BreadcrumbType.Info) {
 			category = "cleanupGuildData"
 			message = "Starting cleanup of guilds"
@@ -78,8 +80,10 @@ object Cleanups : KordExKoinComponent {
 				UtilityConfigCollection().clearConfig(it.guildId)
 				TagsCollection().clearTags(it.guildId)
 				WarnCollection().clearWarns(it.guildId)
+				WelcomeChannelCollection().removeWelcomeChannelsForGuild(it.guildId, kord)
 				RoleMenuCollection().removeAllRoleMenus(it.guildId)
 				ReminderCollection().removeGuildReminders(it.guildId)
+				GithubCollection().removeDefaultRepo(it.guildId)
 				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
 			}

@@ -2,12 +2,13 @@
 kotlin = "1.7.20"  # Note: Plugin versions must be updated in the settings.gradle.kts too
 
 kord-extensions = "1.5.5-20221019.205922-33"
-logging = "3.0.0"
-logback = "1.4.3"
+logging = "3.0.2"
+logback = "1.4.4"
 github-api = "1.313"
 kmongo = "4.7.1"
 detekt = "1.21.0"
 koma = "1.1.0"
+cozy-welcome = "1.0-SNAPSHOT"
 
 [libraries]
 kord-extensions = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
@@ -21,3 +22,4 @@ github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
 kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
 detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
 koma = { module = "cc.ekblad:4koma", version.ref = "koma" }
+cozy-welcome = {module = "org.quiltmc.community:module-welcome", version.ref = "cozy-welcome"}
