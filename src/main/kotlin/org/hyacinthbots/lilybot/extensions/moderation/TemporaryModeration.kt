@@ -311,7 +311,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				WarnCollection().setWarn(userArg.id, guild!!.id, true)
-				val newStrikes = WarnCollection().getWarn(userArg.id, guild!!.id)
+				val newStrikes = WarnCollection().getWarn(userArg.id, guild!!.id).strikes
 
 				respond {
 					content = "Removed strike from user"
@@ -580,7 +580,7 @@ class TemporaryModeration : Extension() {
 						return@action
 					}
 
-					everyoneRole.edit {
+					everyofneRole.edit {
 						permissions = everyoneRole.permissions
 							.minus(Permission.SendMessages)
 							.minus(Permission.SendMessagesInThreads)
