@@ -580,7 +580,7 @@ class TemporaryModeration : Extension() {
 						return@action
 					}
 
-					everyofneRole.edit {
+					everyoneRole.edit {
 						permissions = everyoneRole.permissions
 							.minus(Permission.SendMessages)
 							.minus(Permission.SendMessagesInThreads)
