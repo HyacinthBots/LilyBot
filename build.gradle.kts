@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "4.2.0"
+version = "4.3.0"
 
 repositories {
     mavenCentral()
@@ -70,6 +70,9 @@ dependencies {
 
     // TOML Reader
     implementation(libs.koma)
+
+	// Cozy's welcome module
+	implementation(libs.cozy.welcome)
 }
 
 application {

@@ -68,6 +68,7 @@ import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
+import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
@@ -512,6 +513,7 @@ class ModUtilities : Extension() {
 								TagsCollection().clearTags(guild!!.id)
 								ThreadsCollection().removeGuildThreads(guild!!.id)
 								WarnCollection().clearWarns(guild!!.id)
+								WelcomeChannelCollection().removeWelcomeChannelsForGuild(guild!!.id, kord)
 							}
 						}
 
