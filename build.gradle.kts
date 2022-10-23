@@ -73,6 +73,8 @@ dependencies {
 
 	// Cozy's welcome module
 	implementation(libs.cozy.welcome)
+
+    implementation("com.github.NoComment1105:discord-moderator-actions:main-SNAPSHOT") // TODO Use version catalog
 }
 
 application {

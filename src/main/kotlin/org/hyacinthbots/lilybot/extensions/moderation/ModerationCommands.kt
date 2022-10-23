@@ -1,20 +1,36 @@
 package org.hyacinthbots.lilybot.extensions.moderation
 
+import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalAttachment
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.time.TimestampType
+import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
+import io.github.nocomment1105.discordmoderationactions.builder.ban
+import io.github.nocomment1105.discordmoderationactions.builder.kick
+import io.github.nocomment1105.discordmoderationactions.builder.softban
+import io.github.nocomment1105.discordmoderationactions.builder.timeout
+import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
+import org.hyacinthbots.lilybot.utils.baseModerationEmbed
+import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.isBotOrModerator
 
 class ModerationCommands : Extension() {
 	override val name = "moderation"
@@ -90,6 +106,52 @@ class ModerationCommands : Extension() {
 
 			action {
 				// TODO ban function and functions in said ban function that do the other stuff
+
+				isBotOrModerator(arguments.userArgument, "ban") ?: return@action
+
+				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
+				if (arguments.messages > 7 || arguments.messages < 0) {
+					respond { content = "Invalid `messages` parameter! This number must be between 0 and 7!" }
+					return@action
+				}
+
+				ban(arguments.userArgument) {
+					reason = arguments.reason
+					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
+					sendActionLog = true
+					sendDm = arguments.dm
+					removeTimeout = true
+					deleteMessageDuration = DateTimePeriod(days = arguments.messages)
+					this.loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
+					actionEmbed {
+						title = "Banned a user"
+						description = "${arguments.userArgument.mention} has been banned!"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+						dmNotificationStatusEmbedField(dmResult)
+						timestamp = Clock.System.now()
+						field {
+							name = "Days of messages deleted:"
+							value = arguments.messages.toString()
+							inline = false
+						}
+					}
+
+					publicActionEmbed {
+						title = "Banned a user"
+						description = "${arguments.userArgument.mention} has been banned!"
+						color = DISCORD_BLACK
+					}
+
+					dmEmbed {
+						title = "You have been banned from ${guild?.asGuild()?.name}"
+						description = "**Reason:**\n${arguments.reason}"
+					}
+				}
+
+				respond {
+					content = "Banned a user"
+				}
 			}
 		}
 
@@ -99,7 +161,53 @@ class ModerationCommands : Extension() {
 
 			check { }
 
-			action { }
+			action {
+				isBotOrModerator(arguments.userArgument, "ban") ?: return@action
+
+				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
+				if (arguments.messages != null && (arguments.messages!! > 7 || arguments.messages!! < 0)) {
+					respond { content = "Invalid `messages` parameter! This number must be between 0 and 7!" }
+					return@action
+				}
+
+				softban(arguments.userArgument) {
+					reason = arguments.reason
+					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
+					sendActionLog = true
+					sendDm = arguments.dm
+					removeTimeout = true
+					if (arguments.messages != null) deleteMessageDuration = DateTimePeriod(days = arguments.messages!!)
+					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
+					actionEmbed {
+						title = "Soft-Banned a user"
+						description = "${arguments.userArgument.mention} has been soft-banned!"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+						dmNotificationStatusEmbedField(dmResult)
+						timestamp = Clock.System.now()
+						field {
+							name = "Days of messages deleted"
+							value = arguments.messages.toString()
+							inline = false
+						}
+					}
+
+					publicActionEmbed {
+						title = "Soft-Banned a user"
+						description = "${arguments.userArgument.mention} has been soft-banned!"
+					}
+
+					dmEmbed {
+						title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
+						description = "**Reason:**\n${arguments.reason}\n\n" +
+								"You are free to rejoin without the need to be unbanned"
+					}
+				}
+
+				respond {
+					content = "Soft-banned user"
+				}
+			}
 		}
 
 		ephemeralSlashCommand(::UnbanArgs) {
@@ -117,7 +225,37 @@ class ModerationCommands : Extension() {
 
 			check { }
 
-			action { }
+			action {
+				isBotOrModerator(arguments.userArgument, "kick") ?: return@action
+
+				kick(arguments.userArgument) {
+					reason = arguments.reason
+					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
+					sendActionLog = true
+					sendDm = arguments.dm
+					removeTimeout = true
+					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
+
+					actionEmbed {
+						title = "Kicked a user"
+						description = "${arguments.userArgument.mention} has been kicked!"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+						dmNotificationStatusEmbedField(dmResult)
+						timestamp = Clock.System.now()
+					}
+
+					publicActionEmbed {
+						title = "Kicked a user"
+						description = "${arguments.userArgument.mention} has been kicked!"
+					}
+
+					dmEmbed {
+						title = "You have been kicked from ${guild?.fetchGuild()?.name}"
+						description = "**Reason:**\n${arguments.reason}"
+					}
+				}
+			}
 		}
 
 		ephemeralSlashCommand(::ClearArgs) {
@@ -135,7 +273,50 @@ class ModerationCommands : Extension() {
 
 			check { }
 
-			action { }
+			action {
+				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
+
+				isBotOrModerator(arguments.userArgument, "timeout") ?: return@action
+
+				timeout(arguments.userArgument) {
+					reason = arguments.reason
+					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
+					timeoutDuration = duration
+					sendDm = arguments.dm
+					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
+					actionEmbed {
+						title = "Timeout"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+						dmNotificationStatusEmbedField(dmResult)
+						timestamp = Clock.System.now()
+						field {
+							name = "Duration:"
+							value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
+								.replace("PT", "") + ")"
+							inline = false
+						}
+					}
+					publicActionEmbed {
+						title = "Timeout"
+						description = "${arguments.userArgument.mention} was timed out by a moderator"
+						color = DISCORD_BLACK
+						field {
+							name = "Duration:"
+							value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
+								.replace("PT", "") + ")"
+							inline = false
+						}
+					}
+					dmEmbed {
+						title = "You have been timed out in ${guild?.fetchGuild()?.name}"
+						description = "**Duration:**\n${
+							duration.toDiscord(TimestampType.Default) + "(" + arguments.duration.toString()
+								.replace("PT", "") + ")"
+						}\n**Reason:**\n${arguments.reason}"
+					}
+				}
+			}
 		}
 
 		ephemeralSlashCommand(::RemoveTimeoutArgs) {
@@ -208,10 +389,9 @@ class ModerationCommands : Extension() {
 		}
 
 		/** The number of days worth of messages to delete, defaults to 3 days. */
-		val messages by defaultingInt {
+		val messages by optionalInt {
 			name = "messages"
 			description = "Messages"
-			defaultValue = 3
 		}
 
 		/** The reason for the soft-ban. */
