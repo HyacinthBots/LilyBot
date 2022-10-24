@@ -2,6 +2,7 @@ package org.hyacinthbots.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
@@ -21,19 +22,36 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.dm
+import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.edit
+import dev.kord.core.entity.Message
+import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.supplier.EntitySupplyStrategy
+import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.builder.message.create.embed
 import io.github.nocomment1105.discordmoderationactions.builder.ban
 import io.github.nocomment1105.discordmoderationactions.builder.kick
 import io.github.nocomment1105.discordmoderationactions.builder.removeTimeout
 import io.github.nocomment1105.discordmoderationactions.builder.softban
 import io.github.nocomment1105.discordmoderationactions.builder.timeout
 import io.github.nocomment1105.discordmoderationactions.builder.unban
+import io.github.nocomment1105.discordmoderationactions.enums.DmResult
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
@@ -41,9 +59,15 @@ import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 import org.hyacinthbots.lilybot.utils.requiredConfigs
+import kotlin.math.min
+import kotlin.time.Duration
 
 class ModerationCommands : Extension() {
 	override val name = "moderation"
+
+	private val warnSuffix = "Please consider your actions carefully.\n\n" +
+			"For more information about the warn system, please see [this document]" +
+			"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md)"
 
 	override suspend fun setup() {
 		ephemeralMessageCommand {
@@ -260,6 +284,10 @@ class ModerationCommands : Extension() {
 						color = DISCORD_GREEN
 					}
 				}
+
+				respond {
+					content = "Unbanned user."
+				}
 			}
 		}
 
@@ -302,6 +330,10 @@ class ModerationCommands : Extension() {
 						description = "**Reason:**\n${arguments.reason}"
 					}
 				}
+
+				respond {
+					content = "Kicked user."
+				}
 			}
 		}
 
@@ -315,7 +347,40 @@ class ModerationCommands : Extension() {
 				botHasChannelPerms(Permissions(Permission.ManageMessages))
 			}
 
-			action { }
+			action {
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
+				val messageAmount = arguments.messages
+				val textChannel = channel.asChannelOf<GuildMessageChannel>()
+
+				// Get the specified amount of messages into an array list of Snowflakes and delete them
+				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
+					Snowflake.max, min(messageAmount, 100)
+				).map { it.id }.toList()
+
+				textChannel.bulkDelete(messages)
+
+				respond {
+					content = "Messages cleared."
+				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "$messageAmount messages have been cleared."
+						color = DISCORD_BLACK
+					}
+				}
+
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
+				actionLog.createEmbed {
+					title = "$messageAmount messages have been cleared."
+					description = "Action occurred in ${textChannel.mention}"
+					footer {
+						text = user.asUser().tag
+						icon = user.asUser().avatar?.url
+					}
+					color = DISCORD_BLACK
+				}
+			}
 		}
 
 		ephemeralSlashCommand(::TimeoutArgs) {
@@ -370,6 +435,10 @@ class ModerationCommands : Extension() {
 						}\n**Reason:**\n${arguments.reason}"
 					}
 				}
+
+				respond {
+					content = "Timed-out user."
+				}
 			}
 		}
 
@@ -406,6 +475,10 @@ class ModerationCommands : Extension() {
 						description = "Your timeout has been manually removed in this guild."
 					}
 				}
+
+				respond {
+					content = "Removed timeout from user."
+				}
 			}
 		}
 
@@ -418,7 +491,116 @@ class ModerationCommands : Extension() {
 				requireBotPermissions(Permission.ModerateMembers)
 			}
 
-			action { }
+			action {
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
+				val guildName = guild?.asGuild()?.name
+
+				isBotOrModerator(arguments.userArgument, "warn")
+
+				WarnCollection().setWarn(arguments.userArgument.id, guild!!.id, false)
+				val strikes = WarnCollection().getWarn(arguments.userArgument.id, guild!!.id)?.strikes
+
+				respond {
+					content = "Warned user."
+				}
+
+				var dm: Message? = null
+
+				when (strikes) {
+					1 -> if (arguments.dm) {
+						dm = arguments.userArgument.dm {
+							embed {
+								title = "1st warning in $guildName"
+								description = "**Reason:** ${arguments.reason}\n\n" +
+										"No moderation action has been take. $warnSuffix"
+							}
+						}
+					}
+
+					2 -> {
+						if (arguments.dm) {
+							dm = arguments.userArgument.dm {
+								embed {
+									title = "2nd warning in $guildName"
+									description = "**Reason:** ${arguments.reason}\n\n" +
+											"You have been timed out for 3 hours. $warnSuffix"
+								}
+							}
+						}
+
+						guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+						}
+					}
+
+					3 -> {
+						if (arguments.dm) {
+							dm = arguments.userArgument.dm {
+								embed {
+									title = "3rd warning in $guildName"
+									description = "**Reason:** ${arguments.reason}\n\n" +
+											"You have been timed-out for 12 hours. $warnSuffix"
+									color = DISCORD_RED
+								}
+							}
+						}
+
+						guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+						}
+					}
+
+					else -> {
+						if (arguments.dm) {
+							dm = arguments.userArgument.dm {
+								embed {
+									title = "Warning $strikes in $guildName"
+									description = "**Reason:** ${arguments.reason}\n\n" +
+											"You have been timed-out for 3 days. $warnSuffix"
+								}
+							}
+						}
+
+						guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3D"))
+						}
+					}
+				}
+
+				val dmResult = if (arguments.dm && dm != null) {
+					DmResult.DM_SUCCESS
+				} else if (arguments.dm && dm == null) {
+					DmResult.DM_FAIL
+				} else {
+					DmResult.DM_NOT_SENT
+				}
+
+				actionLog.createMessage {
+					embed {
+						title = "Warning"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+						dmNotificationStatusEmbedField(dmResult)
+						timestamp = Clock.System.now()
+						field {
+							name = "Total strikes"
+							value = strikes.toString()
+						}
+					}
+					embed {
+						warnTimeoutLog(strikes!!, user.asUser(), arguments.userArgument, arguments.reason)
+					}
+				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Warning"
+						description = "${arguments.userArgument.mention} has been warned by a moderator"
+						color = DISCORD_BLACK
+					}
+				}
+			}
 		}
 
 		ephemeralSlashCommand(::RemoveWarnArgs) {
@@ -430,7 +612,62 @@ class ModerationCommands : Extension() {
 				requireBotPermissions(Permission.ModerateMembers)
 			}
 
-			action { }
+			action {
+				val targetUser = guild?.getMemberOrNull(arguments.userArgument.id) ?: run {
+					respond {
+						content = "I was unable to find the member in this guild! Please try again!"
+					}
+					return@action
+				}
+
+				var userStrikes = WarnCollection().getWarn(targetUser.id, guild!!.id)?.strikes
+				if (userStrikes == 0 || userStrikes == null) {
+					respond {
+						content = "This user does not have any warning strikes!"
+					}
+					return@action
+				}
+
+				WarnCollection().setWarn(targetUser.id, guild!!.id, true)
+				userStrikes = WarnCollection().getWarn(targetUser.id, guild!!.id)?.strikes
+
+				respond {
+					content = "Removed strike from user"
+				}
+
+				var dm: Message? = null
+				if (arguments.dm) {
+					dm = targetUser.dm {
+						embed {
+							title = "Warn strike removal in ${guild?.fetchGuild()?.name}"
+							description = "You have had a warn strike removed. You now have $userStrikes strikes."
+							color = DISCORD_GREEN
+						}
+					}
+				}
+
+				val dmResult = if (arguments.dm && dm != null) {
+					DmResult.DM_SUCCESS
+				} else if (arguments.dm && dm == null) {
+					DmResult.DM_FAIL
+				} else {
+					DmResult.DM_NOT_SENT
+				}
+
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
+				actionLog.createEmbed {
+					title = "Warning Removal"
+					color = DISCORD_BLACK
+					timestamp = Clock.System.now()
+					baseModerationEmbed(null, targetUser, user)
+					dmNotificationStatusEmbedField(dmResult)
+					field {
+						name = "Total Strikes:"
+						value = userStrikes.toString()
+						inline = false
+					}
+				}
+			}
 		}
 	}
 
@@ -658,4 +895,31 @@ private suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: 
 	anyGuild()
 	requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 	hasPermission(actionPermission)
+}
+
+private fun EmbedBuilder.warnTimeoutLog(timeoutNumber: Int, moderator: User, targetUser: User, reason: String) {
+	when (timeoutNumber) {
+		1 -> {}
+		2 ->
+		    description = "${targetUser.mention} has been timed-out for 3 hours due to 2 warn strikes\n" +
+				"${targetUser.id} (${targetUser.tag})\nReason: $reason"
+
+		3 ->
+		    description = "${targetUser.mention} has been timed-out for 12 hours due to 3 warn strikes\n" +
+				"${targetUser.id} (${targetUser.tag}\nReason: $reason"
+
+		else ->
+		    description = "${targetUser.mention} has been timed-out for 3 days due to $targetUser warn " +
+				"strike\n${targetUser.id} (${targetUser.tag})\nIt might be time to consider other " +
+				"action. Reason: $reason"
+	}
+
+	if (timeoutNumber != 1) {
+		title = "Timeout"
+		footer {
+			text = moderator.tag
+			icon = moderator.avatar?.url
+		}
+		color = DISCORD_BLACK
+	}
 }
