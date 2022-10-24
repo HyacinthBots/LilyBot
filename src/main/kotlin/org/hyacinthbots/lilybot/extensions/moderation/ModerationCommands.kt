@@ -1,6 +1,10 @@
 package org.hyacinthbots.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
+import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.hasPermission
+import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
@@ -17,10 +21,14 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import io.github.nocomment1105.discordmoderationactions.builder.ban
 import io.github.nocomment1105.discordmoderationactions.builder.kick
+import io.github.nocomment1105.discordmoderationactions.builder.removeTimeout
 import io.github.nocomment1105.discordmoderationactions.builder.softban
 import io.github.nocomment1105.discordmoderationactions.builder.timeout
+import io.github.nocomment1105.discordmoderationactions.builder.unban
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
@@ -28,9 +36,11 @@ import kotlinx.datetime.plus
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
+import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
+import org.hyacinthbots.lilybot.utils.requiredConfigs
 
 class ModerationCommands : Extension() {
 	override val name = "moderation"
@@ -69,8 +79,11 @@ class ModerationCommands : Extension() {
 							}
 
 							action SelectMenu@{
-								val option = event.interaction.values.firstOrNull() // Get the first because there can only be one
-								if (option == null) { respond { content = "You did not select an option!" } }
+								// Get the first because there can only be one
+								val option = event.interaction.values.firstOrNull()
+								if (option == null) {
+									respond { content = "You did not select an option!" }
+								}
 
 								when (option) {
 									ModerationActions.BAN.name -> {
@@ -102,6 +115,8 @@ class ModerationCommands : Extension() {
 
 			check {
 				// TODO make a function for all the general checks?
+				modCommandChecks(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers)
 			}
 
 			action {
@@ -159,7 +174,10 @@ class ModerationCommands : Extension() {
 			name = "soft-ban"
 			description = "Soft-bans a user."
 
-			check { }
+			check {
+				modCommandChecks(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers)
+			}
 
 			action {
 				isBotOrModerator(arguments.userArgument, "ban") ?: return@action
@@ -214,16 +232,45 @@ class ModerationCommands : Extension() {
 			name = "unban"
 			description = "Unbans a user."
 
-			check { }
+			check {
+				modCommandChecks(Permission.BanMembers)
+				requireBotPermissions(Permission.BanMembers)
+			}
 
-			action { }
+			action {
+				unban(arguments.userArgument) {
+					reason = arguments.reason
+					sendActionLog = true
+					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
+
+					actionEmbed {
+						title = "Unbanned a user"
+						description = "${arguments.userArgument.mention} has been unbanned!\n${
+							arguments.userArgument.id
+						} (${arguments.userArgument.tag})"
+						field {
+							name = "Reason:"
+							value = arguments.reason
+						}
+						footer {
+							text = user.asUser().tag
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_GREEN
+					}
+				}
+			}
 		}
 
 		ephemeralSlashCommand(::KickArgs) {
 			name = "kick"
 			description = "Kicks a user."
 
-			check { }
+			check {
+				modCommandChecks(Permission.KickMembers)
+				requireBotPermissions(Permission.KickMembers)
+			}
 
 			action {
 				isBotOrModerator(arguments.userArgument, "kick") ?: return@action
@@ -262,7 +309,11 @@ class ModerationCommands : Extension() {
 			name = "clear"
 			description = "Clears messages from a channel."
 
-			check { }
+			check {
+				modCommandChecks(Permission.ManageMessages)
+				requireBotPermissions(Permission.ManageMessages)
+				botHasChannelPerms(Permissions(Permission.ManageMessages))
+			}
 
 			action { }
 		}
@@ -271,7 +322,10 @@ class ModerationCommands : Extension() {
 			name = "timeout"
 			description = "Times out a user."
 
-			check { }
+			check {
+				modCommandChecks(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
+			}
 
 			action {
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
@@ -323,16 +377,46 @@ class ModerationCommands : Extension() {
 			name = "remove-timeout"
 			description = "Removes a timeout from a user"
 
-			check { }
+			check {
+				modCommandChecks(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
+			}
 
-			action { }
+			action {
+				removeTimeout(arguments.userArgument) {
+					sendDm = arguments.dm
+					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
+					actionEmbed {
+						title = "Timeout Removed"
+						dmNotificationStatusEmbedField(dmResult)
+						field {
+							name = "User:"
+							value = "${arguments.userArgument.tag} \n${arguments.userArgument.id}"
+							inline = false
+						}
+						footer {
+							text = "Requested by ${user.asUser().tag}"
+							icon = user.asUser().avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_BLACK
+					}
+					dmEmbed {
+						title = "Timeout removed in ${guild!!.asGuild().name}"
+						description = "Your timeout has been manually removed in this guild."
+					}
+				}
+			}
 		}
 
 		ephemeralSlashCommand(::WarnArgs) {
 			name = "warn"
 			description = "Warns a user."
 
-			check { }
+			check {
+				modCommandChecks(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
+			}
 
 			action { }
 		}
@@ -341,7 +425,10 @@ class ModerationCommands : Extension() {
 			name = "remove-warn"
 			description = "Removes a user's warnings"
 
-			check { }
+			check {
+				modCommandChecks(Permission.ModerateMembers)
+				requireBotPermissions(Permission.ModerateMembers)
+			}
 
 			action { }
 		}
@@ -507,6 +594,13 @@ class ModerationCommands : Extension() {
 			name = "user"
 			description = "Person to remove timeout from"
 		}
+
+		/** Whether to DM the user about the timeout removal or not. */
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to dm the user about this or not"
+			defaultValue = true
+		}
 	}
 
 	inner class WarnArgs : Arguments() {
@@ -551,4 +645,17 @@ class ModerationCommands : Extension() {
 			defaultValue = true
 		}
 	}
+}
+
+/**
+ * Performs the common checks for a command.
+ *
+ * @param actionPermission The permission to check the user has.
+ * @author NoComment1105
+ * @since 4.4.0
+ */
+private suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: Permission) {
+	anyGuild()
+	requiredConfigs(ConfigOptions.MODERATION_ENABLED)
+	hasPermission(actionPermission)
 }
