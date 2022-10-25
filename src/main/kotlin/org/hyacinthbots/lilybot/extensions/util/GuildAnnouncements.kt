@@ -113,7 +113,7 @@ class GuildAnnouncements : Extension() {
 												?: getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, it)
 												?: getSystemChannelWithPerms(it)
 												?: getFirstUsableChannel(it)
-												?: return@forEach
+												?: continue
 
 										channel.createEmbed {
 											title = header
