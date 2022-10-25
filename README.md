@@ -14,7 +14,7 @@
 LilyBot, or Lily, is a multipurpose Discord bot. Lily handles moderation, utility, link filtering, and much, much more. Lily is canonically transfem and uses she/her or it/its pronouns.
 
 ## Usage
-**If you're looking to add Lily to your server, you don't need any of this and can simply click [this link](https://discord.com/api/oauth2/authorize?client_id=876278900836139008&permissions=1428479371270&scope=bot%20applications.commands).**
+**If you're looking to add Lily to your server, you don't need any of this and can simply click [this link](https://discord.com/api/oauth2/authorize?client_id=876278900836139008&permissions=1151990787078&scope=bot%20applications.commands).**
 
 If you need additional instruction using up the public instance of Lily, try our
 [usage guide](https://github.com/HyacinthBots/LilyBot/blob/main/docs/usage-guide.md).
