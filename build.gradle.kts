@@ -1,7 +1,7 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileOutputStream
-import java.util.*
+import java.util.Properties
 
 plugins {
     application
