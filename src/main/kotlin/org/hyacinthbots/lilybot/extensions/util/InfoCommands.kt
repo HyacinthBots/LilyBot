@@ -160,6 +160,13 @@ class InfoCommands : Extension() {
 			}
 		}
 
+		/**
+		 * A command that creates an embed providing basic info about Lily and uptime data.
+		 *
+		 * @author NoComment1105
+		 * @author tempest15
+		 * @since 4.4.0
+		 */
 		publicSlashCommand {
 			name = "info"
 			description = "Learn about Lily, and get uptime data!"
@@ -201,7 +208,7 @@ class InfoCommands : Extension() {
 		 * A command that creates an embed providing a list of links relevant to Lily.
 		 *
 		 * @author tempest15
-		 * @since 3.4.0
+		 * @since 4.4.0
 		 */
 		publicSlashCommand {
 			name = "links"
