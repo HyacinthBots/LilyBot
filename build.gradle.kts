@@ -1,4 +1,7 @@
+
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileOutputStream
+import java.util.Properties
 
 plugins {
     application
@@ -85,6 +88,17 @@ gitHooks {
     )
 }
 
+val generatedVersionDir = "$buildDir/generated-version"
+
+sourceSets {
+    main {
+        kotlin {
+            output.dir(generatedVersionDir)
+        }
+    }
+}
+
+
 tasks {
     withType<KotlinCompile> {
         kotlinOptions {
@@ -120,6 +134,20 @@ tasks {
          */
         gradleVersion = "7.5.1"
         distributionType = Wrapper.DistributionType.BIN
+    }
+
+    register("generateVersionProperties") {
+        doLast {
+            val propertiesFile = file("$generatedVersionDir/version.properties")
+            propertiesFile.parentFile.mkdirs()
+            val properties = Properties()
+            properties.setProperty("version", "$version")
+            properties.store(FileOutputStream(propertiesFile), null)
+        }
+    }
+
+    named("processResources") {
+        dependsOn("generateVersionProperties")
     }
 }
 
