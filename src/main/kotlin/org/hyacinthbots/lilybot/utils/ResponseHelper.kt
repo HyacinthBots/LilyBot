@@ -15,10 +15,10 @@ import io.github.nocomment1105.discordmoderationactions.enums.DmResult
  * @author NoComment1105
  * @since 3.0.0
  */
-suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User, commandUser: UserBehavior) {
+suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User?, commandUser: UserBehavior) {
 	field {
 		name = "User:"
-		value = "${targetUser.tag}\n${targetUser.id}"
+		value = "${targetUser?.tag ?: "Unable to get user"}\n${targetUser?.id ?: ""}"
 		inline = false
 	}
 	field {

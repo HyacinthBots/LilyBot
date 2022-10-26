@@ -28,6 +28,7 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.EmbedBuilder
+import io.github.nocomment1105.discordmoderationactions.enums.DmResult
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
@@ -734,4 +735,15 @@ suspend fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
  * @author NoComment1105
  * @since 4.1.0
  */
-suspend fun canPingRole(role: RoleBehavior?) = role != null && role.guild.getRole(role.id).mentionable
+suspend inline fun canPingRole(role: RoleBehavior?) = role != null && role.guild.getRole(role.id).mentionable
+
+fun getDmResult(shouldDm: Boolean, dm: Message?): DmResult {
+	@Suppress("KotlinConstantConditions") // Yes, but I want to be 100% sure
+	return if (shouldDm && dm != null) {
+		DmResult.DM_SUCCESS
+	} else if (shouldDm && dm == null) {
+		DmResult.DM_FAIL
+	} else {
+		DmResult.DM_NOT_SENT
+	}
+}

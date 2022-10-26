@@ -1,6 +1,7 @@
 package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
+import kotlinx.datetime.DateTimePeriod
 import kotlinx.serialization.Serializable
 
 /**
@@ -41,6 +42,7 @@ data class ModerationConfigData(
 	val enabled: Boolean,
 	val channel: Snowflake?,
 	val role: Snowflake?,
+	val quickTimeoutLength: DateTimePeriod?,
 	val publicLogging: Boolean?,
 )
 

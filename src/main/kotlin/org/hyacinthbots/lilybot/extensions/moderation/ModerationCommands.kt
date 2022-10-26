@@ -3,6 +3,7 @@ package org.hyacinthbots.lilybot.extensions.moderation
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.annotations.DoNotChain
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
@@ -19,18 +20,23 @@ import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PluralKit
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.dm
+import com.kotlindiscord.kord.extensions.utils.isNullOrBot
+import com.kotlindiscord.kord.extensions.utils.timeout
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.GuildMessageChannel
@@ -43,7 +49,6 @@ import io.github.nocomment1105.discordmoderationactions.builder.removeTimeout
 import io.github.nocomment1105.discordmoderationactions.builder.softban
 import io.github.nocomment1105.discordmoderationactions.builder.timeout
 import io.github.nocomment1105.discordmoderationactions.builder.unban
-import io.github.nocomment1105.discordmoderationactions.enums.DmResult
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
@@ -56,6 +61,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
+import org.hyacinthbots.lilybot.utils.getDmResult
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 import org.hyacinthbots.lilybot.utils.requiredConfigs
@@ -69,12 +75,22 @@ class ModerationCommands : Extension() {
 			"For more information about the warn system, please see [this document]" +
 			"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md)"
 
+	@OptIn(DoNotChain::class)
 	override suspend fun setup() {
 		ephemeralMessageCommand {
 			name = "moderate"
 			locking = true
 
+			check {
+				hasPermission(Permission.BanMembers) // TODO Go make a `hasPermissions` in KordEx
+				hasPermission(Permission.KickMembers)
+				hasPermission(Permission.ModerateMembers)
+				requireBotPermissions(Permission.BanMembers, Permission.KickMembers, Permission.ModerateMembers)
+			}
+
 			action {
+				val messageEvent = event
+				val loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!) ?: return@action
 				respond {
 					content = "How would you like to moderate this message?"
 					components {
@@ -107,23 +123,232 @@ class ModerationCommands : Extension() {
 								val option = event.interaction.values.firstOrNull()
 								if (option == null) {
 									respond { content = "You did not select an option!" }
+									return@SelectMenu
 								}
+
+								val targetMessage = messageEvent.interaction.getTarget()
+								val senderId: Snowflake
+								if (targetMessage.author.isNullOrBot()) {
+									val sender = PluralKit().getMessageOrNull(targetMessage.author!!.id)
+									sender ?: run { respond { content = "Unable to find user" }; return@SelectMenu }
+									senderId = sender.sender
+								} else {
+									senderId = targetMessage.author!!.id
+								}
+
+								val reasonSuffix = "for sending the following message: `${targetMessage.content}`"
+								val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
 
 								when (option) {
 									ModerationActions.BAN.name -> {
-										// TODO ban function and functions in said ban function that do the other stuff
+										val dm = guild!!.getMemberOrNull(senderId)?.dm {
+											embed {
+												title = "You have been banned from ${guild?.asGuild()?.name}"
+												description =
+													"Quick banned $reasonSuffix"
+												color = DISCORD_GREEN
+											}
+										}
+
+										val dmResult = getDmResult(true, dm)
+
+										guild!!.getMemberOrNull(senderId)?.ban {
+											reason =
+												"Quick banned $reasonSuffix"
+										}
+
+										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
+											targetMessage.reply {
+												embed {
+													title = "Banned."
+													description = "${targetMessage.author!!.mention} user was banned " +
+															"for sending this message."
+												}
+											}
+										}
+
+										loggingChannel.createEmbed {
+											title = "Banned a user"
+											description = "${
+												guild!!.getMemberOrNull(senderId)?.mention
+											} has been banned!"
+											baseModerationEmbed(
+												"Quick banned via moderate menu $reasonSuffix",
+												guild!!.getMemberOrNull(senderId),
+												user
+											)
+											dmNotificationStatusEmbedField(dmResult)
+											timestamp = Clock.System.now()
+										}
 									}
 
 									ModerationActions.SOFT_BAN.name -> {
+										val dm = guild!!.getMemberOrNull(senderId)?.dm {
+											embed {
+												title = "You have been soft-banned from ${guild?.asGuild()?.name}"
+												description =
+													"Quick soft-banned $reasonSuffix. This is a soft-ban, you are " +
+															"free to rejoin at any time"
+											}
+										}
+
+										val dmResult = getDmResult(true, dm)
+
+										guild!!.getMemberOrNull(senderId)?.ban {
+											reason =
+												"Quick soft-banned $reasonSuffix"
+										}
+
+										guild!!.unban(senderId, "Quick soft-ban unban")
+
+										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
+											targetMessage.reply {
+												embed {
+													title = "Soft-Banned."
+													description = "${targetMessage.author!!.mention} user was soft-" +
+															"banned for sending this message."
+												}
+											}
+										}
+
+										loggingChannel.createEmbed {
+											title = "Soft-Banned a user"
+											description = "${
+												guild!!.getMemberOrNull(senderId)?.mention
+											} has been soft-banned!"
+											baseModerationEmbed(
+												"Quick soft-banned via moderate menu $reasonSuffix",
+												guild!!.getMemberOrNull(senderId),
+												user
+											)
+											dmNotificationStatusEmbedField(dmResult)
+											timestamp = Clock.System.now()
+										}
 									}
 
 									ModerationActions.KICK.name -> {
+										val dm = guild!!.getMemberOrNull(senderId)?.dm {
+											embed {
+												title = "You have been kicked from ${guild?.asGuild()?.name}"
+												description = "Quick kicked $reasonSuffix."
+											}
+										}
+
+										val dmResult = getDmResult(true, dm)
+
+										guild!!.kick(senderId, "Quick kicked ")
+
+										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
+											targetMessage.reply {
+												embed {
+													title = "Kicked."
+													description = "${targetMessage.author!!.mention} user was kicked " +
+															"for sending this message."
+												}
+											}
+										}
+
+										loggingChannel.createEmbed {
+											title = "Kicked a user"
+											description = "${
+												guild!!.getMemberOrNull(senderId)?.mention
+											} has been kicked!"
+											baseModerationEmbed(
+												"Quick kicked via moderate menu $reasonSuffix",
+												guild!!.getMemberOrNull(senderId),
+												user
+											)
+											dmNotificationStatusEmbedField(dmResult)
+											timestamp = Clock.System.now()
+										}
 									}
 
 									ModerationActions.TIMEOUT.name -> {
+										val timeoutTime =
+											ModerationConfigCollection().getConfig(guild!!.id)?.quickTimeoutLength
+										if (timeoutTime == null) {
+											respond {
+												content =
+													"No timeout length has been set in the config, please set a length."
+											}
+											return@SelectMenu
+										}
+
+										val dm = guild!!.getMemberOrNull(senderId)?.dm {
+											embed {
+												title = "You have been timed-out in ${guild?.asGuild()?.name}"
+												description =
+													"Quick timed out for $timeoutTime $reasonSuffix."
+											}
+										}
+
+										val dmResult = getDmResult(true, dm)
+
+										guild!!.getMemberOrNull(senderId)
+											?.timeout(timeoutTime, reason = "Quick timed-out $reasonSuffix")
+
+										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
+											targetMessage.reply {
+												embed {
+													title = "Timed-out."
+													description = "${targetMessage.author!!.mention} user was timed-" +
+															"out for $timeoutTime for sending this message."
+												}
+											}
+										}
+
+										loggingChannel.createEmbed {
+											title = "Timed-out a user"
+											description = "${
+												guild!!.getMemberOrNull(senderId)?.mention
+											} has be timed-out!"
+											baseModerationEmbed(
+												"Quick timed-out via moderate menu $reasonSuffix",
+												guild!!.getMemberOrNull(senderId),
+												user
+											)
+											dmNotificationStatusEmbedField(dmResult)
+											timestamp = Clock.System.now()
+										}
 									}
 
 									ModerationActions.WARN.name -> {
+										WarnCollection().setWarn(senderId, guild!!.id, false)
+										val strikes = WarnCollection().getWarn(senderId, guild!!.id)?.strikes
+
+										val dm = guild!!.getMemberOrNull(senderId)?.dm {
+											embed {
+												title = "Warning strike $strikes in ${guild?.asGuild()?.name}"
+												description =
+													"Quick warned $reasonSuffix\nYou now have $strikes strike(s)"
+											}
+										}
+
+										val dmResult = getDmResult(true, dm)
+
+										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
+											targetMessage.reply {
+												embed {
+													title = "Warned."
+													description = "${targetMessage.author!!.mention} user was warned " +
+															"for sending this message."
+												}
+											}
+										}
+
+										loggingChannel.createEmbed {
+											title = "Warned user"
+											description = "${
+												guild!!.getMemberOrNull(senderId)?.mention
+											} has been warned.\nStrikes: $strikes"
+											baseModerationEmbed(
+												"Quick warned via moderate menu $reasonSuffix",
+												guild!!.getMemberOrNull(senderId),
+												user
+											)
+											dmNotificationStatusEmbedField(dmResult)
+											timestamp = Clock.System.now()
+										}
 									}
 								}
 							}
@@ -138,14 +363,11 @@ class ModerationCommands : Extension() {
 			description = "Bans a user."
 
 			check {
-				// TODO make a function for all the general checks?
 				modCommandChecks(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers)
 			}
 
 			action {
-				// TODO ban function and functions in said ban function that do the other stuff
-
 				isBotOrModerator(arguments.userArgument, "ban") ?: return@action
 
 				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
@@ -568,13 +790,7 @@ class ModerationCommands : Extension() {
 					}
 				}
 
-				val dmResult = if (arguments.dm && dm != null) {
-					DmResult.DM_SUCCESS
-				} else if (arguments.dm && dm == null) {
-					DmResult.DM_FAIL
-				} else {
-					DmResult.DM_NOT_SENT
-				}
+				val dmResult = getDmResult(arguments.dm, dm)
 
 				actionLog.createMessage {
 					embed {
@@ -646,13 +862,7 @@ class ModerationCommands : Extension() {
 					}
 				}
 
-				val dmResult = if (arguments.dm && dm != null) {
-					DmResult.DM_SUCCESS
-				} else if (arguments.dm && dm == null) {
-					DmResult.DM_FAIL
-				} else {
-					DmResult.DM_NOT_SENT
-				}
+				val dmResult = getDmResult(arguments.dm, dm)
 
 				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
@@ -901,17 +1111,17 @@ private fun EmbedBuilder.warnTimeoutLog(timeoutNumber: Int, moderator: User, tar
 	when (timeoutNumber) {
 		1 -> {}
 		2 ->
-		    description = "${targetUser.mention} has been timed-out for 3 hours due to 2 warn strikes\n" +
-				"${targetUser.id} (${targetUser.tag})\nReason: $reason"
+			description = "${targetUser.mention} has been timed-out for 3 hours due to 2 warn strikes\n" +
+					"${targetUser.id} (${targetUser.tag})\nReason: $reason"
 
 		3 ->
-		    description = "${targetUser.mention} has been timed-out for 12 hours due to 3 warn strikes\n" +
-				"${targetUser.id} (${targetUser.tag}\nReason: $reason"
+			description = "${targetUser.mention} has been timed-out for 12 hours due to 3 warn strikes\n" +
+					"${targetUser.id} (${targetUser.tag}\nReason: $reason"
 
 		else ->
-		    description = "${targetUser.mention} has been timed-out for 3 days due to $targetUser warn " +
-				"strike\n${targetUser.id} (${targetUser.tag})\nIt might be time to consider other " +
-				"action. Reason: $reason"
+			description = "${targetUser.mention} has been timed-out for 3 days due to $targetUser warn " +
+					"strike\n${targetUser.id} (${targetUser.tag})\nIt might be time to consider other " +
+					"action. Reason: $reason"
 	}
 
 	if (timeoutNumber != 1) {
