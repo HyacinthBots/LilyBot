@@ -1,6 +1,8 @@
 package org.hyacinthbots.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
+import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.pagination.PublicResponsePaginator
@@ -114,7 +116,7 @@ class InfoCommands : Extension() {
 						title = "What is LilyBot?"
 						description = "Lily is a FOSS multi-purpose bot for Discord created by " +
 								"the HyacinthBots organization. " +
-								"Use `/info` to learn more, or `/links` to get a list of links relevant to Lily."
+								"Use `/info` to learn more, or `/invite` to get an invite link."
 
 						field {
 							name = "How do I configure Lily?"
@@ -139,22 +141,33 @@ class InfoCommands : Extension() {
 						}
 
 						field {
-							name = "How can I support the continued development of Lily?"
-							value = "Lily is developed primarily by NoComment#6411 and tempest#4510 " +
-									"in our free time. Neither of us have resources to invest in hosting, " +
-									"so financial donations via [Buy Me a Coffee]" +
-									"(https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. At the moment, " +
-									"Lily is very generously hosted free of charge by gdude#2002, " +
-									"but we're looking to move to our own hosting. " +
-									"We also have domain costs for our website.\n\n" +
-									"Contributions of code & documentation are also incredibly appreciated, " +
-									"and you can read our [contributing guide]" +
-									"(https://github.com/HyacinthBots/LilyBot/blob/main/CONTRIBUTING.md) " +
-									"or [development guide]" +
-									"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/development-guide.md) " +
-									"to get started."
+							name = "Useful links"
+							value =
+								"Website: Coming Soon™️\n" +
+								"GitHub: https://github.com/HyacinthBots\n" +
+								"Buy Me a Coffee: https://buymeacoffee.com/HyacinthBots\n" +
+								"Twitter: https://twitter.com/HyacinthBots\n" +
+								"Email: `hyacinthbots@outlook.com`\n" +
+								"Discord: https://discord.gg/hy2329fcTZ"
 						}
 						color = DISCORD_BLURPLE
+					}
+
+					@Suppress("DuplicatedCode")
+					components {
+						linkButton {
+							label = "Invite Link"
+							url = "https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
+									"&permissions=1151990787078&scope=bot%20applications.commands"
+						}
+						linkButton {
+							label = "Privacy Policy"
+							url = "https://github.com/HyacinthBots/LilyBot/blob/main/docs/privacy-policy.md"
+						}
+						linkButton {
+							label = "Terms of Service"
+							url = "https://github.com/HyacinthBots/.github/blob/main/terms-of-service.md"
+						}
 					}
 				}
 			}
@@ -180,8 +193,24 @@ class InfoCommands : Extension() {
 						title = "Info about LilyBot"
 						description = "Lily is a FOSS multi-purpose bot for Discord created by " +
 								"the HyacinthBots organization. " +
-								"Use `/help` for support, or `/links` to get a list of links relevant to Lily."
+								"Use `/help` for support or `/invite` to get an invite link."
 
+						field {
+							name = "How can I support the continued development of Lily?"
+							value = "Lily is developed primarily by NoComment#6411 and tempest#4510 " +
+									"in our free time. Neither of us have resources to invest in hosting, " +
+									"so financial donations via [Buy Me a Coffee]" +
+									"(https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. At the moment, " +
+									"Lily is very generously hosted free of charge by gdude#2002, " +
+									"but we're looking to move to our own hosting. " +
+									"We also have domain costs for our website.\n\n" +
+									"Contributions of code & documentation are also incredibly appreciated, " +
+									"and you can read our [contributing guide]" +
+									"(https://github.com/HyacinthBots/LilyBot/blob/main/CONTRIBUTING.md) " +
+									"or [development guide]" +
+									"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/development-guide.md) " +
+									"to get started."
+						}
 						field {
 							name = "Version"
 							value =
@@ -198,36 +227,55 @@ class InfoCommands : Extension() {
 							""".replace("\n", " ").trimIndent()
 							inline = true
 						}
+						field {
+							name = "Useful links"
+							value =
+								"Website: Coming Soon™️\n" +
+										"GitHub: https://github.com/HyacinthBots\n" +
+										"Buy Me a Coffee: https://buymeacoffee.com/HyacinthBots\n" +
+										"Twitter: https://twitter.com/HyacinthBots\n" +
+										"Email: `hyacinthbots@outlook.com`\n" +
+										"Discord: https://discord.gg/hy2329fcTZ"
+						}
 						color = DISCORD_BLURPLE
+					}
+
+					@Suppress("DuplicatedCode")
+					components {
+						linkButton {
+							label = "Invite Link"
+							url =
+								"https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
+										"&permissions=1151990787078&scope=bot%20applications.commands"
+						}
+						linkButton {
+							label = "Privacy Policy"
+							url = "https://github.com/HyacinthBots/LilyBot/blob/main/docs/privacy-policy.md"
+						}
+						linkButton {
+							label = "Terms of Service"
+							url = "https://github.com/HyacinthBots/.github/blob/main/terms-of-service.md"
+						}
 					}
 				}
 			}
 		}
 
 		/**
-		 * A command that creates an embed providing a list of links relevant to Lily.
+		 * A command that responds to the user with a link to invite Lily to their server.
 		 *
 		 * @author tempest15
 		 * @since 4.4.0
 		 */
 		publicSlashCommand {
-			name = "links"
-			description = "Get a list of links relevant to Lily!"
+			name = "invite"
+			description = "Get an invite link for Lily!"
 
 			action {
 				respond {
-					embed {
-						title = "Useful links"
-						description =
-							"Use `/help` for support, or `/info` to learn more about Lily.\n\n" +
-							"Website: Coming Soon™️\n" +
-							"GitHub: https://github.com/HyacinthBots\n" +
-							"Buy Me a Coffee: https://buymeacoffee.com/HyacinthBots\n" +
-							"Twitter: https://twitter.com/HyacinthBots\n" +
-							"Email: `hyacinthbots@outlook.com`\n" +
-							"Discord: https://discord.gg/hy2329fcTZ"
-						color = DISCORD_BLURPLE
-					}
+					content = "Use this link to add Lily to your server:" +
+							"https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
+							"&permissions=1151990787078&scope=bot%20applications.commands"
 				}
 			}
 		}
