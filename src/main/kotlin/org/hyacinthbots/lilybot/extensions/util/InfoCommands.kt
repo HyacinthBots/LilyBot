@@ -12,6 +12,7 @@ import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.Locale
+import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -153,22 +154,7 @@ class InfoCommands : Extension() {
 						color = DISCORD_BLURPLE
 					}
 
-					@Suppress("DuplicatedCode")
-					components {
-						linkButton {
-							label = "Invite Link"
-							url = "https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
-									"&permissions=1151990787078&scope=bot%20applications.commands"
-						}
-						linkButton {
-							label = "Privacy Policy"
-							url = "https://github.com/HyacinthBots/LilyBot/blob/main/docs/privacy-policy.md"
-						}
-						linkButton {
-							label = "Terms of Service"
-							url = "https://github.com/HyacinthBots/.github/blob/main/terms-of-service.md"
-						}
-					}
+					buttons()
 				}
 			}
 		}
@@ -240,23 +226,7 @@ class InfoCommands : Extension() {
 						color = DISCORD_BLURPLE
 					}
 
-					@Suppress("DuplicatedCode")
-					components {
-						linkButton {
-							label = "Invite Link"
-							url =
-								"https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
-										"&permissions=1151990787078&scope=bot%20applications.commands"
-						}
-						linkButton {
-							label = "Privacy Policy"
-							url = "https://github.com/HyacinthBots/LilyBot/blob/main/docs/privacy-policy.md"
-						}
-						linkButton {
-							label = "Terms of Service"
-							url = "https://github.com/HyacinthBots/.github/blob/main/terms-of-service.md"
-						}
-					}
+					buttons()
 				}
 			}
 		}
@@ -278,6 +248,31 @@ class InfoCommands : Extension() {
 							"&permissions=1151990787078&scope=bot%20applications.commands"
 				}
 			}
+		}
+	}
+}
+
+/**
+ * Applies info and utility buttons to a given message.
+ *
+ * @author NoComment1105
+ * @since 4.4.0
+ */
+suspend fun MessageCreateBuilder.buttons() {
+	components {
+		linkButton {
+			label = "Invite Link"
+			url =
+				"https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
+						"&permissions=1151990787078&scope=bot%20applications.commands"
+		}
+		linkButton {
+			label = "Privacy Policy"
+			url = "https://github.com/HyacinthBots/LilyBot/blob/main/docs/privacy-policy.md"
+		}
+		linkButton {
+			label = "Terms of Service"
+			url = "https://github.com/HyacinthBots/.github/blob/main/terms-of-service.md"
 		}
 	}
 }
