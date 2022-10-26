@@ -43,7 +43,7 @@ class MessageDelete : Extension() {
 			}
 
 			action {
-				onMessageDelete(event.getMessage(), event.pkMessage)
+				onMessageDelete(event.getMessageOrNull(), event.pkMessage)
 			}
 		}
 
@@ -63,7 +63,7 @@ class MessageDelete : Extension() {
 			}
 
 			action {
-				onMessageDelete(event.getMessage(), null)
+					onMessageDelete(event.getMessageOrNull(), null)
 			}
 		}
 	}
@@ -75,7 +75,8 @@ class MessageDelete : Extension() {
 	 * @param proxiedMessage Extra data for PluralKit proxied messages
 	 * @author trainb0y
 	 */
-	private suspend fun onMessageDelete(message: Message, proxiedMessage: PKMessage?) {
+	private suspend fun onMessageDelete(message: Message?, proxiedMessage: PKMessage?) {
+		message ?: return
 		val guild = message.getGuild()
 
 		if (message.content.startsWith("pk;e", 0, true)) {

@@ -56,10 +56,11 @@ import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
+import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
-import org.hyacinthbots.lilybot.database.collections.RemindMeCollection
+import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
@@ -67,11 +68,13 @@ import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
+import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
+import org.hyacinthbots.lilybot.utils.trimmedContents
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 import kotlin.time.Duration.Companion.seconds
 
@@ -246,11 +249,11 @@ class ModUtilities : Extension() {
 							title = "Say message edited"
 							field {
 								name = "Original Content"
-								value = "```$originalContent```"
+								value = "```${originalContent.trimmedContents(500)}```"
 							}
 							field {
 								name = "New Content"
-								value = "```${arguments.newContent}```"
+								value = "```${arguments.newContent.trimmedContents(500)}```"
 							}
 							footer {
 								text = "Edited by ${user.asUser().tag}"
@@ -503,12 +506,14 @@ class ModUtilities : Extension() {
 								SupportConfigCollection().clearConfig(guild!!.id)
 								UtilityConfigCollection().clearConfig(guild!!.id)
 								GalleryChannelCollection().removeAll(guild!!.id)
+								GithubCollection().removeDefaultRepo(guild!!.id)
 								LogUploadingBlacklistCollection().clearBlacklist(guild!!.id)
-								RemindMeCollection().removeGuildReminders(guild!!.id)
+								ReminderCollection().removeGuildReminders(guild!!.id)
 								RoleMenuCollection().removeAllRoleMenus(guild!!.id)
 								TagsCollection().clearTags(guild!!.id)
 								ThreadsCollection().removeGuildThreads(guild!!.id)
 								WarnCollection().clearWarns(guild!!.id)
+								WelcomeChannelCollection().removeWelcomeChannelsForGuild(guild!!.id, kord)
 							}
 						}
 

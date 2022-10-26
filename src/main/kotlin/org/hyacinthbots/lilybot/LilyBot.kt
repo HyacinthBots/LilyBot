@@ -5,16 +5,18 @@ package org.hyacinthbots.lilybot
 import cc.ekblad.toml.decode
 import cc.ekblad.toml.tomlMapper
 import com.kotlindiscord.kord.extensions.ExtensibleBot
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
+import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
-import kotlinx.datetime.Clock
 import mu.KotlinLogging
-import org.hyacinthbots.lilybot.database.collections.UptimeCollection
+import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
 import org.hyacinthbots.lilybot.extensions.config.Config
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.GuildLogging
 import org.hyacinthbots.lilybot.extensions.events.LogUploading
 import org.hyacinthbots.lilybot.extensions.events.MemberLogging
@@ -30,6 +32,7 @@ import org.hyacinthbots.lilybot.extensions.util.GuildAnnouncements
 import org.hyacinthbots.lilybot.extensions.util.InfoCommands
 import org.hyacinthbots.lilybot.extensions.util.ModUtilities
 import org.hyacinthbots.lilybot.extensions.util.PublicUtilities
+import org.hyacinthbots.lilybot.extensions.util.Reminders
 import org.hyacinthbots.lilybot.extensions.util.RoleMenu
 import org.hyacinthbots.lilybot.extensions.util.StartupHooks
 import org.hyacinthbots.lilybot.extensions.util.Tags
@@ -40,12 +43,15 @@ import org.hyacinthbots.lilybot.utils.SENTRY_DSN
 import org.hyacinthbots.lilybot.utils.database
 import org.hyacinthbots.lilybot.utils.docs.CommandDocs
 import org.hyacinthbots.lilybot.utils.docs.DocsGenerator
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
+import org.quiltmc.community.cozy.modules.welcome.welcomeChannel
 import java.io.IOException
 import kotlin.io.path.Path
+import kotlin.time.Duration.Companion.minutes
 
-var github: GitHub? = null
+lateinit var github: GitHub
 private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
 
 var commandDocs: CommandDocs? = null
@@ -86,7 +92,7 @@ suspend fun main() {
 			add(::MessageEdit)
 			add(::ModUtilities)
 			add(::PublicUtilities)
-			// add(::Reminders)
+			add(::Reminders)
 			add(::Report)
 			add(::RoleMenu)
 			add(::StartupHooks)
@@ -95,6 +101,22 @@ suspend fun main() {
 			add(::TerminalModeration)
 			add(::ThreadControl)
 			add(::ThreadInviter)
+
+			/*
+			The welcome channel extension allows users to designate a YAML file to create a channel with
+			a variety of pre-built blocks.
+			 */
+			welcomeChannel(WelcomeChannelCollection()) {
+				staffCommandCheck {
+					hasPermission(Permission.BanMembers)
+				}
+
+				getLogChannel { _, guild ->
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+				}
+
+				refreshDuration = 5.minutes
+			}
 
 			/*
 			The anti-phishing extension automatically deletes and logs scam links. It also allows users to check links
@@ -127,12 +149,6 @@ suspend fun main() {
 
 	DocsGenerator.clearDocs(ENVIRONMENT)
 	DocsGenerator.writeNewDocs(ENVIRONMENT)
-
-	if (UptimeCollection().get() == null) {
-		UptimeCollection().set(Clock.System.now())
-	} else {
-		UptimeCollection().update(Clock.System.now())
-	}
 
 	bot.start()
 }
