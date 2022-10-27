@@ -8,7 +8,7 @@ import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDefaultingDuration
+import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOptionalDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
@@ -108,7 +108,7 @@ class ModerationCommands : Extension() {
 				val sender = guild!!.getMemberOrNull(senderId)
 					?: run { respond { content = "Unable to find user" }; return@action }
 
-				isBotOrModerator(sender.asUser(), guild, "moderate") ?: return@action
+				isBotOrModerator(event.kord, sender.asUser(), guild, "moderate") ?: return@action
 
 				menuMessage = respond {
 					content = "How would you like to moderate this message?"
@@ -407,7 +407,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				isBotOrModerator(arguments.userArgument, guild, "ban") ?: return@action
+				isBotOrModerator(event.kord, arguments.userArgument, guild, "ban") ?: return@action
 
 				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
 				if (arguments.messages > 7 || arguments.messages < 0) {
@@ -470,7 +470,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				isBotOrModerator(arguments.userArgument, guild, "soft-ban") ?: return@action
+				isBotOrModerator(event.kord, arguments.userArgument, guild, "soft-ban") ?: return@action
 
 				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
 				if (arguments.messages != null && (arguments.messages!! > 7 || arguments.messages!! < 0)) {
@@ -580,7 +580,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				isBotOrModerator(arguments.userArgument, guild, "kick") ?: return@action
+				isBotOrModerator(event.kord, arguments.userArgument, guild, "kick") ?: return@action
 
 				val action = kick(arguments.userArgument) {
 					reason = arguments.reason
@@ -677,9 +677,11 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
+				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
+				val durationArg = arguments.duration ?: modConfig?.quickTimeoutLength ?: DateTimePeriod(hours = 6)
+				val duration = Clock.System.now().plus(durationArg, TimeZone.UTC)
 
-				isBotOrModerator(arguments.userArgument, guild, "timeout") ?: return@action
+				isBotOrModerator(event.kord, arguments.userArgument, guild, "timeout") ?: return@action
 
 				val action = timeout(arguments.userArgument) {
 					reason = arguments.reason
@@ -695,8 +697,7 @@ class ModerationCommands : Extension() {
 						timestamp = Clock.System.now()
 						field {
 							name = "Duration:"
-							value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
-								.replace("PT", "") + ")"
+							value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
 							inline = false
 						}
 					}
@@ -706,16 +707,14 @@ class ModerationCommands : Extension() {
 						color = DISCORD_BLACK
 						field {
 							name = "Duration:"
-							value = duration.toDiscord(TimestampType.Default) + " (" + arguments.duration.toString()
-								.replace("PT", "") + ")"
+							value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
 							inline = false
 						}
 					}
 					dmEmbed {
 						title = "You have been timed out in ${guild?.fetchGuild()?.name}"
 						description = "**Duration:**\n${
-							duration.toDiscord(TimestampType.Default) + "(" + arguments.duration.toString()
-								.replace("PT", "") + ")"
+							duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
 						}\n**Reason:**\n${arguments.reason}"
 					}
 				}
@@ -790,7 +789,7 @@ class ModerationCommands : Extension() {
 				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				val guildName = guild?.asGuild()?.name
 
-				isBotOrModerator(arguments.userArgument, guild, "warn") ?: return@action
+				isBotOrModerator(event.kord, arguments.userArgument, guild, "warn") ?: return@action
 
 				WarnCollection().setWarn(arguments.userArgument.id, guild!!.id, false)
 				val strikes = WarnCollection().getWarn(arguments.userArgument.id, guild!!.id)?.strikes
@@ -1082,10 +1081,9 @@ class ModerationCommands : Extension() {
 		}
 
 		/** The time the timeout should last for. */
-		val duration by coalescingDefaultingDuration {
+		val duration by coalescingOptionalDuration {
 			name = "duration"
 			description = "Duration of timeout"
-			defaultValue = DateTimePeriod(0, 0, 0, 6, 0, 0, 0)
 		}
 
 		/** The reason for the timeout. */

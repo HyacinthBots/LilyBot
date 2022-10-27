@@ -4,16 +4,17 @@ import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
 import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
-import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.botHasPermissions
+import com.kotlindiscord.kord.extensions.utils.getTopRole
 import com.kotlindiscord.kord.extensions.utils.loadModule
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.RoleBehavior
 import dev.kord.core.behavior.channel.asChannelOf
@@ -26,7 +27,6 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
-import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.EmbedBuilder
 import io.github.nocomment1105.discordmoderationactions.enums.DmResult
@@ -488,12 +488,13 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 }
 
 /**
- * This function runs a check to see if the target user is a bot or moderator in an [EphemeralSlashCommandContext],
+ * This function runs a check to see if the target user is a bot or moderator in an [EphemeralInteractionContext],
  * before responding accordingly. It takes the target user as an input, allowing said user to pass through the checks.
  * It also takes in the command name to make the response more detailed to the command it is called from. If at any
  * point the check fails, null is returned. This should be handled with an elvis operator to return the action in the
  * code.
  *
+ * @param kord The kord instance so the self of the bot can be gotten if needed
  * @param user The target user in the command
  * @param guild The guild the command was run in
  * @param commandName The name of the command. Used for the responses and error message
@@ -502,6 +503,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  * @since 2.1.0
  */
 suspend inline fun EphemeralInteractionContext.isBotOrModerator(
+	kord: Kord,
 	user: User,
 	guild: GuildBehavior?,
 	commandName: String
@@ -514,25 +516,31 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 		return null
 	}
 
-	try {
-		// Get the users roles into a List of Snowflakes
-		val roles = user.asMember(guild.id).roles.toList().map { it.id }
-		// If the user is a bot, return
-		if (guild.getMember(user.id).isBot) {
-			respond {
-				content = "You cannot $commandName bot users!"
-			}
-			return null
-			// If the moderator ping role is in roles, return
-		} else if (moderatorRoleId in roles) {
-			respond {
-				content = "You cannot $commandName moderators!"
-			}
-			return null
+	val member = user.asMemberOrNull(guild.id) ?: return null
+	val self = kord.getSelf().asMemberOrNull(guild.id) ?: return null
+	// Get the users roles into a List of Snowflakes
+	val roles = member.roles.toList().map { it.id }
+	// If the user is a bot, return
+	if (member.isBot) {
+		respond {
+			content = "You cannot $commandName bot users!"
 		}
-		// Just to catch any errors in the checks
-	} catch (exception: EntityNotFoundException) {
-		utilsLogger.warn { "isBot and isModerator checks failed on $commandName." }
+		return null
+		// If the moderator ping role is in roles, return
+	} else if (moderatorRoleId in roles) {
+		respond {
+			content = "You cannot $commandName moderators!"
+		}
+		return null
+	} else if (member.getTopRole()?.getPosition() != null && self.getTopRole()?.getPosition() == null) {
+		respond {
+			content = "This user has a role and Lily does, therefore she cannot $commandName them."
+		}
+		return null
+	} else if (member.getTopRole()?.getPosition()!! > self.getTopRole()?.getPosition()!!) {
+		respond {
+			content = "This users highest role is above Lily's, therefore she cannot $commandName them."
+		}
 	}
 
 	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
