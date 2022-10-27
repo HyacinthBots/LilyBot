@@ -44,6 +44,7 @@ import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.entities.ReminderData
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.fitsEmbed
+import org.hyacinthbots.lilybot.utils.interval
 
 class Reminders : Extension() {
 	override val name = "reminders"
@@ -650,18 +651,6 @@ class Reminders : Extension() {
 						this.customMessage ?: "none"
 					}
 				}\n---\n"
-	}
-
-	/**
-	 * Converts a [DateTimePeriod] into a [String] interval at which it repeats at.
-	 *
-	 * @return The string interval the DateTimePeriod repeats at
-	 * @author NoComment1105
-	 * @since 4.2.0
-	 */
-	private fun DateTimePeriod?.interval(): String? {
-		this ?: return null
-		return this.toString().lowercase().replace("pt", "").replace("p", "")
 	}
 
 	inner class ReminderSetArgs : Arguments() {

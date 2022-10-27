@@ -36,10 +36,12 @@ import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
@@ -64,6 +66,7 @@ import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getDmResult
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.interval
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import kotlin.math.min
@@ -92,7 +95,20 @@ class ModerationCommands : Extension() {
 			action {
 				val messageEvent = event
 				val loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!) ?: return@action
-				respond {
+				var menuMessage: EphemeralFollowupMessage? = null
+				val targetMessage = messageEvent.interaction.getTarget()
+				val senderId: Snowflake
+				if (targetMessage.author.isNullOrBot()) {
+					val sender = PluralKit().getMessageOrNull(targetMessage.author!!.id)
+					sender ?: run { respond { content = "Unable to find user" }; return@action }
+					senderId = sender.sender
+				} else {
+					senderId = targetMessage.author!!.id
+				}
+
+				isBotOrModerator(guild!!.getMemberOrNull(senderId)!!.asUser(), guild, "moderate") ?: return@action
+
+				menuMessage = respond {
 					content = "How would you like to moderate this message?"
 					components {
 						ephemeralSelectMenu {
@@ -125,16 +141,6 @@ class ModerationCommands : Extension() {
 								if (option == null) {
 									respond { content = "You did not select an option!" }
 									return@SelectMenu
-								}
-
-								val targetMessage = messageEvent.interaction.getTarget()
-								val senderId: Snowflake
-								if (targetMessage.author.isNullOrBot()) {
-									val sender = PluralKit().getMessageOrNull(targetMessage.author!!.id)
-									sender ?: run { respond { content = "Unable to find user" }; return@SelectMenu }
-									senderId = sender.sender
-								} else {
-									senderId = targetMessage.author!!.id
 								}
 
 								val reasonSuffix = "for sending the following message: `${targetMessage.content}`"
@@ -181,6 +187,11 @@ class ModerationCommands : Extension() {
 											dmNotificationStatusEmbedField(dmResult)
 											timestamp = Clock.System.now()
 										}
+
+										menuMessage?.edit {
+											content = "Banned a user."
+											components { removeAll() }
+										}
 									}
 
 									ModerationActions.SOFT_BAN.name -> {
@@ -225,6 +236,11 @@ class ModerationCommands : Extension() {
 											dmNotificationStatusEmbedField(dmResult)
 											timestamp = Clock.System.now()
 										}
+
+										menuMessage?.edit {
+											content = "Soft-Banned a user."
+											components { removeAll() }
+										}
 									}
 
 									ModerationActions.KICK.name -> {
@@ -262,15 +278,21 @@ class ModerationCommands : Extension() {
 											dmNotificationStatusEmbedField(dmResult)
 											timestamp = Clock.System.now()
 										}
+
+										menuMessage?.edit {
+											content = "Kicked a user."
+											components { removeAll() }
+										}
 									}
 
 									ModerationActions.TIMEOUT.name -> {
 										val timeoutTime =
 											ModerationConfigCollection().getConfig(guild!!.id)?.quickTimeoutLength
 										if (timeoutTime == null) {
-											respond {
+											menuMessage?.edit {
 												content =
-													"No timeout length has been set in the config, please set a length."
+													"No timeout length has been set in the moderation config, please set a length."
+												components { removeAll() }
 											}
 											return@SelectMenu
 										}
@@ -309,7 +331,17 @@ class ModerationCommands : Extension() {
 												user
 											)
 											dmNotificationStatusEmbedField(dmResult)
+											field {
+												name = "Length"
+												value = modConfig?.quickTimeoutLength.interval()
+													?: "Failed to load timeout length"
+											}
 											timestamp = Clock.System.now()
+										}
+
+										menuMessage?.edit {
+											content = "Timed-out a user."
+											components { removeAll() }
 										}
 									}
 
@@ -350,6 +382,11 @@ class ModerationCommands : Extension() {
 											dmNotificationStatusEmbedField(dmResult)
 											timestamp = Clock.System.now()
 										}
+
+										menuMessage?.edit {
+											content = "Warned a user."
+											components { removeAll() }
+										}
 									}
 								}
 							}
@@ -369,7 +406,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				isBotOrModerator(arguments.userArgument, "ban") ?: return@action
+				isBotOrModerator(arguments.userArgument, guild, "ban") ?: return@action
 
 				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
 				if (arguments.messages > 7 || arguments.messages < 0) {
@@ -432,7 +469,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				isBotOrModerator(arguments.userArgument, "ban") ?: return@action
+				isBotOrModerator(arguments.userArgument, guild, "soft-ban") ?: return@action
 
 				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
 				if (arguments.messages != null && (arguments.messages!! > 7 || arguments.messages!! < 0)) {
@@ -542,7 +579,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				isBotOrModerator(arguments.userArgument, "kick") ?: return@action
+				isBotOrModerator(arguments.userArgument, guild, "kick") ?: return@action
 
 				val action = kick(arguments.userArgument) {
 					reason = arguments.reason
@@ -641,7 +678,7 @@ class ModerationCommands : Extension() {
 			action {
 				val duration = Clock.System.now().plus(arguments.duration, TimeZone.UTC)
 
-				isBotOrModerator(arguments.userArgument, "timeout") ?: return@action
+				isBotOrModerator(arguments.userArgument, guild, "timeout") ?: return@action
 
 				val action = timeout(arguments.userArgument) {
 					reason = arguments.reason
@@ -752,7 +789,7 @@ class ModerationCommands : Extension() {
 				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				val guildName = guild?.asGuild()?.name
 
-				isBotOrModerator(arguments.userArgument, "warn")
+				isBotOrModerator(arguments.userArgument, guild, "warn") ?: return@action
 
 				WarnCollection().setWarn(arguments.userArgument.id, guild!!.id, false)
 				val strikes = WarnCollection().getWarn(arguments.userArgument.id, guild!!.id)?.strikes

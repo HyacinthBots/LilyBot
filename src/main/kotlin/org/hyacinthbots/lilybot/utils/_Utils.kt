@@ -7,6 +7,7 @@ import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
+import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import com.kotlindiscord.kord.extensions.utils.loadModule
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.DateTimePeriod
 import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
@@ -315,7 +317,8 @@ suspend inline fun configIsUsable(option: ConfigOptions, guildId: Snowflake): Bo
 			return loggingConfig.messageChannel != null
 		}
 
-		ConfigOptions.MEMBER_LOGGING_ENABLED -> return LoggingConfigCollection().getConfig(guildId)?.enableMemberLogs ?: false
+		ConfigOptions.MEMBER_LOGGING_ENABLED -> return LoggingConfigCollection().getConfig(guildId)?.enableMemberLogs
+			?: false
 
 		ConfigOptions.MEMBER_LOG -> {
 			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
@@ -492,14 +495,19 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  * code.
  *
  * @param user The target user in the command
+ * @param guild The guild the command was run in
  * @param commandName The name of the command. Used for the responses and error message
  * @return *null*, if user is a bot/moderator. *success* if it isn't
  * @author NoComment1105
  * @since 2.1.0
  */
-suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
+suspend inline fun EphemeralInteractionContext.isBotOrModerator(
+	user: User,
+	guild: GuildBehavior?,
+	commandName: String
+): String? {
 	val moderatorRoleId = ModerationConfigCollection().getConfig(guild!!.id)?.role
-	ModerationConfigCollection().getConfig(guild!!.id) ?: run {
+	ModerationConfigCollection().getConfig(guild.id) ?: run {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
 		}
@@ -508,9 +516,9 @@ suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, 
 
 	try {
 		// Get the users roles into a List of Snowflakes
-		val roles = user.asMember(guild!!.id).roles.toList().map { it.id }
+		val roles = user.asMember(guild.id).roles.toList().map { it.id }
 		// If the user is a bot, return
-		if (guild?.getMember(user.id)?.isBot == true) {
+		if (guild.getMember(user.id).isBot) {
 			respond {
 				content = "You cannot $commandName bot users!"
 			}
@@ -746,4 +754,16 @@ fun getDmResult(shouldDm: Boolean, dm: Message?): DmResult {
 	} else {
 		DmResult.DM_NOT_SENT
 	}
+}
+
+/**
+ * Converts a [DateTimePeriod] into a [String] interval at which it repeats at.
+ *
+ * @return The string interval the DateTimePeriod repeats at
+ * @author NoComment1105
+ * @since 4.2.0
+ */
+fun DateTimePeriod?.interval(): String? {
+	this ?: return null
+	return this.toString().lowercase().replace("pt", "").replace("p", "")
 }
