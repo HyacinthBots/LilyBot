@@ -49,6 +49,7 @@ import io.github.nocomment1105.discordmoderationactions.builder.removeTimeout
 import io.github.nocomment1105.discordmoderationactions.builder.softban
 import io.github.nocomment1105.discordmoderationactions.builder.timeout
 import io.github.nocomment1105.discordmoderationactions.builder.unban
+import io.github.nocomment1105.discordmoderationactions.enums.ActionResults
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
@@ -78,11 +79,11 @@ class ModerationCommands : Extension() {
 	@OptIn(DoNotChain::class)
 	override suspend fun setup() {
 		ephemeralMessageCommand {
-			name = "moderate"
+			name = "Moderate"
 			locking = true
 
 			check {
-				hasPermission(Permission.BanMembers) // TODO Go make a `hasPermissions` in KordEx
+				hasPermission(Permission.BanMembers) // TODO Go make a `hasPermissions` in KordEx. **Edit: PR Submitted**
 				hasPermission(Permission.KickMembers)
 				hasPermission(Permission.ModerateMembers)
 				requireBotPermissions(Permission.BanMembers, Permission.KickMembers, Permission.ModerateMembers)
@@ -376,7 +377,7 @@ class ModerationCommands : Extension() {
 					return@action
 				}
 
-				ban(arguments.userArgument) {
+				val action = ban(arguments.userArgument) {
 					reason = arguments.reason
 					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
 					sendActionLog = true
@@ -410,6 +411,11 @@ class ModerationCommands : Extension() {
 					}
 				}
 
+				if (action.result == ActionResults.NULL_GUILD) {
+					respond { content = action.result.message }
+					return@action
+				}
+
 				respond {
 					content = "Banned a user"
 				}
@@ -434,7 +440,7 @@ class ModerationCommands : Extension() {
 					return@action
 				}
 
-				softban(arguments.userArgument) {
+				val action = softban(arguments.userArgument) {
 					reason = arguments.reason
 					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
 					sendActionLog = true
@@ -451,7 +457,7 @@ class ModerationCommands : Extension() {
 						timestamp = Clock.System.now()
 						field {
 							name = "Days of messages deleted"
-							value = arguments.messages.toString()
+							value = "${arguments.messages ?: deleteMessageDuration.days}"
 							inline = false
 						}
 					}
@@ -466,6 +472,11 @@ class ModerationCommands : Extension() {
 						description = "**Reason:**\n${arguments.reason}\n\n" +
 								"You are free to rejoin without the need to be unbanned"
 					}
+				}
+
+				if (action.result == ActionResults.NULL_GUILD) {
+					respond { content = action.result.message }
+					return@action
 				}
 
 				respond {
@@ -484,7 +495,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				unban(arguments.userArgument) {
+				val action = unban(arguments.userArgument) {
 					reason = arguments.reason
 					sendActionLog = true
 					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
@@ -507,6 +518,14 @@ class ModerationCommands : Extension() {
 					}
 				}
 
+				if (action.result == ActionResults.NULL_GUILD) {
+					respond { content = action.result.message }
+					return@action
+				} else if (action.result == ActionResults.ACTION_FAIL && action.extraInfo != null) {
+					respond { content = action.extraInfo }
+					return@action
+				}
+
 				respond {
 					content = "Unbanned user."
 				}
@@ -525,7 +544,7 @@ class ModerationCommands : Extension() {
 			action {
 				isBotOrModerator(arguments.userArgument, "kick") ?: return@action
 
-				kick(arguments.userArgument) {
+				val action = kick(arguments.userArgument) {
 					reason = arguments.reason
 					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
 					sendActionLog = true
@@ -551,6 +570,11 @@ class ModerationCommands : Extension() {
 						title = "You have been kicked from ${guild?.fetchGuild()?.name}"
 						description = "**Reason:**\n${arguments.reason}"
 					}
+				}
+
+				if (action.result == ActionResults.NULL_GUILD) {
+					respond { content = action.result.message }
+					return@action
 				}
 
 				respond {
@@ -619,7 +643,7 @@ class ModerationCommands : Extension() {
 
 				isBotOrModerator(arguments.userArgument, "timeout") ?: return@action
 
-				timeout(arguments.userArgument) {
+				val action = timeout(arguments.userArgument) {
 					reason = arguments.reason
 					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
 					timeoutDuration = duration
@@ -658,6 +682,11 @@ class ModerationCommands : Extension() {
 					}
 				}
 
+				if (action.result == ActionResults.NULL_GUILD) {
+					respond { content = action.result.message }
+					return@action
+				}
+
 				respond {
 					content = "Timed-out user."
 				}
@@ -674,7 +703,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				removeTimeout(arguments.userArgument) {
+				val action = removeTimeout(arguments.userArgument) {
 					sendDm = arguments.dm
 					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
 					actionEmbed {
@@ -696,6 +725,11 @@ class ModerationCommands : Extension() {
 						title = "Timeout removed in ${guild!!.asGuild().name}"
 						description = "Your timeout has been manually removed in this guild."
 					}
+				}
+
+				if (action.result == ActionResults.NULL_GUILD) {
+					respond { content = action.result.message }
+					return@action
 				}
 
 				respond {
@@ -804,8 +838,10 @@ class ModerationCommands : Extension() {
 							value = strikes.toString()
 						}
 					}
-					embed {
-						warnTimeoutLog(strikes!!, user.asUser(), arguments.userArgument, arguments.reason)
+					if (strikes != 1) {
+						embed {
+							warnTimeoutLog(strikes!!, user.asUser(), arguments.userArgument, arguments.reason)
+						}
 					}
 				}
 
@@ -1111,25 +1147,32 @@ private fun EmbedBuilder.warnTimeoutLog(timeoutNumber: Int, moderator: User, tar
 	when (timeoutNumber) {
 		1 -> {}
 		2 ->
-			description = "${targetUser.mention} has been timed-out for 3 hours due to 2 warn strikes\n" +
-					"${targetUser.id} (${targetUser.tag})\nReason: $reason"
+			description = "${targetUser.mention} has been timed-out for 3 hours due to 2 warn strikes"
 
 		3 ->
-			description = "${targetUser.mention} has been timed-out for 12 hours due to 3 warn strikes\n" +
-					"${targetUser.id} (${targetUser.tag}\nReason: $reason"
+			description = "${targetUser.mention} has been timed-out for 12 hours due to 3 warn strikes"
 
 		else ->
 			description = "${targetUser.mention} has been timed-out for 3 days due to $targetUser warn " +
-					"strike\n${targetUser.id} (${targetUser.tag})\nIt might be time to consider other " +
-					"action. Reason: $reason"
+					"strike\nIt might be time to consider other " +
+					"action."
 	}
 
 	if (timeoutNumber != 1) {
 		title = "Timeout"
+		field {
+			name = "User"
+			value = "${targetUser.id} (${targetUser.tag})"
+		}
+		field {
+			name = "Reason"
+			value = reason
+		}
 		footer {
 			text = moderator.tag
 			icon = moderator.avatar?.url
 		}
 		color = DISCORD_BLACK
+		timestamp = Clock.System.now()
 	}
 }
