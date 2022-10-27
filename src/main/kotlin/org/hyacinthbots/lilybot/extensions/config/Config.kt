@@ -239,7 +239,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
-			if (!canPingRole(arguments.moderatorRole)) {
+			if (!canPingRole(arguments.moderatorRole) && arguments.moderatorRole != null) {
 				respond {
 					content =
 						"I cannot use the role: ${arguments.moderatorRole!!.mention}, because it is not mentionable by" +
