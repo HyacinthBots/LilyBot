@@ -99,14 +99,16 @@ class ModerationCommands : Extension() {
 				val targetMessage = messageEvent.interaction.getTarget()
 				val senderId: Snowflake
 				if (targetMessage.author.isNullOrBot()) {
-					val sender = PluralKit().getMessageOrNull(targetMessage.author!!.id)
-					sender ?: run { respond { content = "Unable to find user" }; return@action }
-					senderId = sender.sender
+					val proxiedMessage = PluralKit().getMessageOrNull(targetMessage.id)
+					proxiedMessage ?: run { respond { content = "Unable to find user" }; return@action }
+					senderId = proxiedMessage.sender
 				} else {
 					senderId = targetMessage.author!!.id
 				}
+				val sender = guild!!.getMemberOrNull(senderId)
+					?: run { respond { content = "Unable to find user" }; return@action }
 
-				isBotOrModerator(guild!!.getMemberOrNull(senderId)!!.asUser(), guild, "moderate") ?: return@action
+				isBotOrModerator(sender.asUser(), guild, "moderate") ?: return@action
 
 				menuMessage = respond {
 					content = "How would you like to moderate this message?"
@@ -148,7 +150,7 @@ class ModerationCommands : Extension() {
 
 								when (option) {
 									ModerationActions.BAN.name -> {
-										val dm = guild!!.getMemberOrNull(senderId)?.dm {
+										val dm = sender.dm {
 											embed {
 												title = "You have been banned from ${guild?.asGuild()?.name}"
 												description =
@@ -159,7 +161,7 @@ class ModerationCommands : Extension() {
 
 										val dmResult = getDmResult(true, dm)
 
-										guild!!.getMemberOrNull(senderId)?.ban {
+										sender.ban {
 											reason =
 												"Quick banned $reasonSuffix"
 										}
@@ -168,7 +170,7 @@ class ModerationCommands : Extension() {
 											targetMessage.reply {
 												embed {
 													title = "Banned."
-													description = "${targetMessage.author!!.mention} user was banned " +
+													description = "${sender.mention} user was banned " +
 															"for sending this message."
 												}
 											}
@@ -177,11 +179,11 @@ class ModerationCommands : Extension() {
 										loggingChannel.createEmbed {
 											title = "Banned a user"
 											description = "${
-												guild!!.getMemberOrNull(senderId)?.mention
+												sender.mention
 											} has been banned!"
 											baseModerationEmbed(
 												"Quick banned via moderate menu $reasonSuffix",
-												guild!!.getMemberOrNull(senderId),
+												sender,
 												user
 											)
 											dmNotificationStatusEmbedField(dmResult)
@@ -195,7 +197,7 @@ class ModerationCommands : Extension() {
 									}
 
 									ModerationActions.SOFT_BAN.name -> {
-										val dm = guild!!.getMemberOrNull(senderId)?.dm {
+										val dm = sender.dm {
 											embed {
 												title = "You have been soft-banned from ${guild?.asGuild()?.name}"
 												description =
@@ -206,7 +208,7 @@ class ModerationCommands : Extension() {
 
 										val dmResult = getDmResult(true, dm)
 
-										guild!!.getMemberOrNull(senderId)?.ban {
+										sender.ban {
 											reason =
 												"Quick soft-banned $reasonSuffix"
 										}
@@ -217,7 +219,7 @@ class ModerationCommands : Extension() {
 											targetMessage.reply {
 												embed {
 													title = "Soft-Banned."
-													description = "${targetMessage.author!!.mention} user was soft-" +
+													description = "${sender.mention} user was soft-" +
 															"banned for sending this message."
 												}
 											}
@@ -226,11 +228,11 @@ class ModerationCommands : Extension() {
 										loggingChannel.createEmbed {
 											title = "Soft-Banned a user"
 											description = "${
-												guild!!.getMemberOrNull(senderId)?.mention
+												sender.mention
 											} has been soft-banned!"
 											baseModerationEmbed(
 												"Quick soft-banned via moderate menu $reasonSuffix",
-												guild!!.getMemberOrNull(senderId),
+												sender,
 												user
 											)
 											dmNotificationStatusEmbedField(dmResult)
@@ -244,7 +246,7 @@ class ModerationCommands : Extension() {
 									}
 
 									ModerationActions.KICK.name -> {
-										val dm = guild!!.getMemberOrNull(senderId)?.dm {
+										val dm = sender.dm {
 											embed {
 												title = "You have been kicked from ${guild?.asGuild()?.name}"
 												description = "Quick kicked $reasonSuffix."
@@ -259,7 +261,7 @@ class ModerationCommands : Extension() {
 											targetMessage.reply {
 												embed {
 													title = "Kicked."
-													description = "${targetMessage.author!!.mention} user was kicked " +
+													description = "${sender.mention} user was kicked " +
 															"for sending this message."
 												}
 											}
@@ -268,11 +270,11 @@ class ModerationCommands : Extension() {
 										loggingChannel.createEmbed {
 											title = "Kicked a user"
 											description = "${
-												guild!!.getMemberOrNull(senderId)?.mention
+												sender.mention
 											} has been kicked!"
 											baseModerationEmbed(
 												"Quick kicked via moderate menu $reasonSuffix",
-												guild!!.getMemberOrNull(senderId),
+												sender,
 												user
 											)
 											dmNotificationStatusEmbedField(dmResult)
@@ -297,7 +299,7 @@ class ModerationCommands : Extension() {
 											return@SelectMenu
 										}
 
-										val dm = guild!!.getMemberOrNull(senderId)?.dm {
+										val dm = sender.dm {
 											embed {
 												title = "You have been timed-out in ${guild?.asGuild()?.name}"
 												description =
@@ -307,14 +309,13 @@ class ModerationCommands : Extension() {
 
 										val dmResult = getDmResult(true, dm)
 
-										guild!!.getMemberOrNull(senderId)
-											?.timeout(timeoutTime, reason = "Quick timed-out $reasonSuffix")
+										sender.timeout(timeoutTime, reason = "Quick timed-out $reasonSuffix")
 
 										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
 											targetMessage.reply {
 												embed {
 													title = "Timed-out."
-													description = "${targetMessage.author!!.mention} user was timed-" +
+													description = "${sender.mention} user was timed-" +
 															"out for $timeoutTime for sending this message."
 												}
 											}
@@ -323,11 +324,11 @@ class ModerationCommands : Extension() {
 										loggingChannel.createEmbed {
 											title = "Timed-out a user"
 											description = "${
-												guild!!.getMemberOrNull(senderId)?.mention
+												sender.mention
 											} has be timed-out!"
 											baseModerationEmbed(
 												"Quick timed-out via moderate menu $reasonSuffix",
-												guild!!.getMemberOrNull(senderId),
+												sender,
 												user
 											)
 											dmNotificationStatusEmbedField(dmResult)
@@ -349,7 +350,7 @@ class ModerationCommands : Extension() {
 										WarnCollection().setWarn(senderId, guild!!.id, false)
 										val strikes = WarnCollection().getWarn(senderId, guild!!.id)?.strikes
 
-										val dm = guild!!.getMemberOrNull(senderId)?.dm {
+										val dm = sender.dm {
 											embed {
 												title = "Warning strike $strikes in ${guild?.asGuild()?.name}"
 												description =
@@ -363,7 +364,7 @@ class ModerationCommands : Extension() {
 											targetMessage.reply {
 												embed {
 													title = "Warned."
-													description = "${targetMessage.author!!.mention} user was warned " +
+													description = "${sender.mention} user was warned " +
 															"for sending this message."
 												}
 											}
@@ -372,11 +373,11 @@ class ModerationCommands : Extension() {
 										loggingChannel.createEmbed {
 											title = "Warned user"
 											description = "${
-												guild!!.getMemberOrNull(senderId)?.mention
+												sender.mention
 											} has been warned.\nStrikes: $strikes"
 											baseModerationEmbed(
 												"Quick warned via moderate menu $reasonSuffix",
-												guild!!.getMemberOrNull(senderId),
+												sender,
 												user
 											)
 											dmNotificationStatusEmbedField(dmResult)
