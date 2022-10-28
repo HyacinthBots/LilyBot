@@ -534,7 +534,7 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 		return null
 	} else if (member.getTopRole()?.getPosition() != null && self.getTopRole()?.getPosition() == null) {
 		respond {
-			content = "This user has a role and Lily does, therefore she cannot $commandName them."
+			content = "This user has a role and Lily does not, therefore she cannot $commandName them."
 		}
 		return null
 	} else if (member.getTopRole()?.getPosition()!! > self.getTopRole()?.getPosition()!!) {
