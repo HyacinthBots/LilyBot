@@ -311,7 +311,7 @@ class TemporaryModeration : Extension() {
 				}
 
 				WarnCollection().setWarn(userArg.id, guild!!.id, true)
-				val newStrikes = WarnCollection().getWarn(userArg.id, guild!!.id).strikes
+				val newStrikes = WarnCollection().getWarn(userArg.id, guild!!.id)!!.strikes
 
 				respond {
 					content = "Removed strike from user"
