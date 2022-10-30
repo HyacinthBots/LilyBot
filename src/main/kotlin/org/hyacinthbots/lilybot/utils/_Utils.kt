@@ -537,10 +537,11 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 			content = "This user has a role and Lily does not, therefore she cannot $commandName them."
 		}
 		return null
-	} else if (member.getTopRole()?.getPosition()!! > self.getTopRole()?.getPosition()!!) {
+	} else if ((member.getTopRole()?.getPosition() ?: 0) > ((self.getTopRole()?.getPosition()) ?: 0)) {
 		respond {
 			content = "This users highest role is above Lily's, therefore she cannot $commandName them."
 		}
+		return null
 	}
 
 	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
