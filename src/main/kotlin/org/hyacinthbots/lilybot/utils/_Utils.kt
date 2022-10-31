@@ -50,6 +50,7 @@ import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
+import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
@@ -602,6 +603,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { StatusCollection() } bind StatusCollection::class
 				single { TagsCollection() } bind TagsCollection::class
 				single { ThreadsCollection() } bind ThreadsCollection::class
+				single { UptimeCollection() } bind UptimeCollection::class
 				single { WarnCollection() } bind WarnCollection::class
 				single { WelcomeChannelCollection() } bind WelcomeChannelCollection::class
 			}
