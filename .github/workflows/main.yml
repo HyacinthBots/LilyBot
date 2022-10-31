@@ -27,18 +27,11 @@ jobs:
         with:
           arguments: build --stacktrace
 
-      - name: Extract Current Branch name
-        shell: bash
-
-        # bash pattern expansion to grab branch name without slashes
-        run: ref="${GITHUB_REF#refs/heads/}" && echo "::set-output name=branch::${ref////-}"
-        id: ref
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
 
         with:
-          name: build-artifacts-${{ steps.ref.outputs.branch }}
+          name: Build and Deploy Artifacts
           path: build/libs/*[0-9].jar
 
       - name: Login to GitHub Container Registry
