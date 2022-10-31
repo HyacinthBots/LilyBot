@@ -521,6 +521,7 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 	// Get the users roles into a List of Snowflakes
 	val roles = member.roles.toList().map { it.id }
 	// If the user is a bot, return
+	@Suppress("UnnecessaryParentheses")
 	if (member.isBot) {
 		respond {
 			content = "You cannot $commandName bot users!"
@@ -537,7 +538,7 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 			content = "This user has a role and Lily does not, therefore she cannot $commandName them."
 		}
 		return null
-	} else if ((member.getTopRole()?.getPosition() ?: 0) > ((self.getTopRole()?.getPosition()) ?: 0)) {
+	} else if ((member.getTopRole()?.getPosition() ?: 0) > (self.getTopRole()?.getPosition() ?: 0)) {
 		respond {
 			content = "This users highest role is above Lily's, therefore she cannot $commandName them."
 		}

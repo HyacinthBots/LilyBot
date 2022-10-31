@@ -303,7 +303,7 @@ class ModerationCommands : Extension() {
 											embed {
 												title = "You have been timed-out in ${guild?.asGuild()?.name}"
 												description =
-													"Quick timed out for $timeoutTime $reasonSuffix."
+													"Quick timed out for ${timeoutTime.interval()} $reasonSuffix."
 											}
 										}
 
@@ -316,7 +316,7 @@ class ModerationCommands : Extension() {
 												embed {
 													title = "Timed-out."
 													description = "${sender.mention} user was timed-" +
-															"out for $timeoutTime for sending this message."
+															"out for ${timeoutTime.interval()} for sending this message."
 												}
 											}
 										}
