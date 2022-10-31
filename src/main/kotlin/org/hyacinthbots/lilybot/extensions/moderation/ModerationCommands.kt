@@ -45,6 +45,7 @@ import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.request.KtorRequestException
 import io.github.nocomment1105.discordmoderationactions.builder.ban
 import io.github.nocomment1105.discordmoderationactions.builder.kick
 import io.github.nocomment1105.discordmoderationactions.builder.removeTimeout
@@ -173,11 +174,19 @@ class ModerationCommands : Extension() {
 										}
 
 										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
-											targetMessage.reply {
-												embed {
+											try {
+												targetMessage.reply {
+													embed {
+														title = "Banned."
+														description = "${sender.mention} user was banned " +
+																"for sending this message."
+													}
+												}
+											} catch (e: KtorRequestException) {
+												channel.createEmbed {
 													title = "Banned."
 													description = "${sender.mention} user was banned " +
-															"for sending this message."
+															"for sending a deleted message."
 												}
 											}
 										}
@@ -222,11 +231,19 @@ class ModerationCommands : Extension() {
 										guild!!.unban(senderId, "Quick soft-ban unban")
 
 										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
-											targetMessage.reply {
-												embed {
+											try {
+												targetMessage.reply {
+													embed {
+														title = "Soft-banned."
+														description = "${sender.mention} user was soft-banned " +
+																"for sending this message."
+													}
+												}
+											} catch (e: KtorRequestException) {
+												channel.createEmbed {
 													title = "Soft-Banned."
-													description = "${sender.mention} user was soft-" +
-															"banned for sending this message."
+													description = "${sender.mention} user was soft-banned " +
+															"for sending a deleted message."
 												}
 											}
 										}
@@ -264,11 +281,19 @@ class ModerationCommands : Extension() {
 										guild!!.kick(senderId, "Quick kicked ")
 
 										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
-											targetMessage.reply {
-												embed {
+											try {
+												targetMessage.reply {
+													embed {
+														title = "Kicked."
+														description = "${sender.mention} user was kicked " +
+																"for sending this message."
+													}
+												}
+											} catch (e: KtorRequestException) {
+												channel.createEmbed {
 													title = "Kicked."
 													description = "${sender.mention} user was kicked " +
-															"for sending this message."
+															"for sending a deleted message."
 												}
 											}
 										}
@@ -318,11 +343,19 @@ class ModerationCommands : Extension() {
 										sender.timeout(timeoutTime, reason = "Quick timed-out $reasonSuffix")
 
 										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
-											targetMessage.reply {
-												embed {
+											try {
+												targetMessage.reply {
+													embed {
+														title = "Timed-out."
+														description = "${sender.mention} user was timed-out for " +
+																"${timeoutTime.interval()} for sending this message."
+													}
+												}
+											} catch (e: KtorRequestException) {
+												channel.createEmbed {
 													title = "Timed-out."
-													description = "${sender.mention} user was timed-" +
-															"out for ${timeoutTime.interval()} for sending this message."
+													description = "${sender.mention} user was timed-out for " +
+															"${timeoutTime.interval()} for sending a deleted message."
 												}
 											}
 										}
@@ -367,11 +400,19 @@ class ModerationCommands : Extension() {
 										val dmResult = getDmResult(true, dm)
 
 										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
-											targetMessage.reply {
-												embed {
+											try {
+												targetMessage.reply {
+													embed {
+														title = "Warned."
+														description = "${sender.mention} user was warned " +
+																"for sending this message."
+													}
+												}
+											} catch (e: KtorRequestException) {
+												channel.createEmbed {
 													title = "Warned."
 													description = "${sender.mention} user was warned " +
-															"for sending this message."
+															"for sending a deleted message."
 												}
 											}
 										}
