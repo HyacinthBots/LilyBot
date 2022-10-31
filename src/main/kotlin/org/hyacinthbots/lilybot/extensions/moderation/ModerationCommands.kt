@@ -96,7 +96,13 @@ class ModerationCommands : Extension() {
 				val messageEvent = event
 				val loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!) ?: return@action
 				var menuMessage: EphemeralFollowupMessage? = null
-				val targetMessage = messageEvent.interaction.getTarget()
+				val targetMessage = messageEvent.interaction.getTargetOrNull()
+				if (targetMessage == null) {
+					respond {
+						content = "The message this command was run on cannot be found! It may have been deleted."
+					}
+					return@action
+				}
 				val senderId: Snowflake
 				if (targetMessage.author.isNullOrBot()) {
 					val proxiedMessage = PluralKit().getMessageOrNull(targetMessage.id)
