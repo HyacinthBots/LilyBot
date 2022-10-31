@@ -14,7 +14,7 @@
 LilyBot, or Lily, is a multipurpose Discord bot. Lily handles moderation, utility, link filtering, and much, much more. Lily is canonically transfem and uses she/her or it/its pronouns.
 
 ## Usage
-**If you're looking to add Lily to your server, you don't need any of this and can simply click [this link](https://discord.com/api/oauth2/authorize?client_id=876278900836139008&permissions=1428479371270&scope=bot%20applications.commands).**
+**If you're looking to add Lily to your server, you don't need any of this and can simply click [this link](https://discord.com/api/oauth2/authorize?client_id=876278900836139008&permissions=1151990787078&scope=bot%20applications.commands).**
 
 If you need additional instruction using up the public instance of Lily, try our
 [usage guide](https://github.com/HyacinthBots/LilyBot/blob/main/docs/usage-guide.md).
@@ -23,7 +23,7 @@ If you're looking to set up a development environment for Lily, try our [develop
 
 
 ## Links
-* Visit [our buymeacoffee page](https://buymeacoffee.com/Hyacinthbots) to support the continued development of HyacinthBots projects!
+* Visit [our Buy Me a Coffee page](https://buymeacoffee.com/Hyacinthbots) to support the continued development of HyacinthBots projects!
 * Join [our Discord](https://discord.gg/hy2329fcTZ) to watch the development and get support for LilyBot and other HyacinthBots projects!
 * Follow us on Twitter [`@HyacinthBots`](https://twitter.com/hyacinthbots)
 * Email us at [`hyacinthbots@outlook.com`](mailto:hyacinthbots@outlook.com)
@@ -41,6 +41,7 @@ Lily makes use of the following tools and frameworks.
 * [Github-API](https://github.com/hub4j/github-api), the API utilized by the GitHub commands
 * [Shadow Gradle Plugin](https://github.com/johnrengelman/shadow), a tool which allows us to make a big fatjar containing all dependencies
 * [detekt](https://detekt.dev/index.html), a static code analysis tool for the Kotlin programming language. This helps us keep our code clean and nicely formatted.
+* [Cozy's Welcome channel module](hhttps://github.com/QuiltMC/cozy-discord/tree/root/module-welcome) made by our friends at [QuiltMC](https://quiltmc.org/)
 
 #### Contributing
 This repository is open to contributions by the community. If you plan on contributing, please check our

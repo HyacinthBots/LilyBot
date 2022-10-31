@@ -1,18 +1,23 @@
 package org.hyacinthbots.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.application.slash.publicSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.types.respondEphemeral
+import dev.kord.common.entity.Permission
 import dev.kord.rest.builder.message.create.embed
-import io.ktor.utils.io.errors.IOException
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.github
 import org.kohsuke.github.GHDirection
 import org.kohsuke.github.GHException
@@ -25,6 +30,7 @@ import org.kohsuke.github.GHPullRequest
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GHUser
 import org.kohsuke.github.PagedIterator
+import java.io.IOException
 import java.text.DecimalFormat
 import kotlin.math.floor
 import kotlin.math.ln
@@ -54,8 +60,17 @@ class Github : Extension() {
 				description = "Look up an issue on a specific repository"
 
 				action {
+					val repository = arguments.repository ?: GithubCollection().getDefaultRepo(guild!!.id)
+					if (repository == null) {
+						respond {
+							content =
+								"There is no default repository set. Please specify a repository to search or set" +
+										"a default."
+						}
+						return@action
+					}
 					// Clarify the input is formatted correctly, inform the user if not.
-					if (!arguments.repository.contains("/")) {
+					if (!repository.contains("/")) {
 						sentry.breadcrumb(BreadcrumbType.Error) {
 							category = "extensions.util.Github.issue.InputCheck"
 							message = "Input missing /"
@@ -72,14 +87,14 @@ class Github : Extension() {
 					var issue: GHIssue?
 
 					try {
-						issue = if (arguments.repository.contains("http", true)) {
-							github?.getRepository(
-								"${arguments.repository.split("/")[3]}/" +
-										arguments.repository.split("/")[4]
+						issue = if (repository.contains("http", true)) {
+							github.getRepository(
+								"${repository.split("/")[3]}/" +
+										repository.split("/")[4]
 							)?.getIssue(arguments.issue)
 						} else {
 							try {
-								github?.getRepository(arguments.repository)?.getIssue(arguments.issue)
+								github.getRepository(repository)?.getIssue(arguments.issue)
 							} catch (e: GHFileNotFoundException) {
 								respondEphemeral {
 									embed {
@@ -90,8 +105,8 @@ class Github : Extension() {
 							}
 						}
 					} catch (e: IOException) {
-						val iterator: PagedIterator<GHIssue>? = github?.searchIssues()
-							?.q("${arguments.issue} repo:${arguments.repository}")
+						val iterator: PagedIterator<GHIssue>? = github.searchIssues()
+							?.q("${arguments.issue} repo:$repository")
 							?.order(GHDirection.DESC)
 							?.list()
 							?._iterator(1)
@@ -126,7 +141,7 @@ class Github : Extension() {
 
 						val num = issue!!.number
 						try {
-							issue = github?.getRepository(arguments.repository)?.getIssue(num)
+							issue = github.getRepository(repository)?.getIssue(num)
 						} catch (e: GHFileNotFoundException) {
 							respond {
 								embed {
@@ -273,8 +288,17 @@ class Github : Extension() {
 				description = "Search GitHub for a specific repository"
 
 				action {
+					val repository = arguments.repository ?: GithubCollection().getDefaultRepo(guild!!.id)
+					if (repository == null) {
+						respond {
+							content =
+								"There is no default repository set. Please specify a repository to search or set" +
+										"a default."
+						}
+						return@action
+					}
 					// Clarify the input is formatted correctly, inform the user if not
-					if (!arguments.repository.contains("/")) {
+					if (!repository.contains("/")) {
 						sentry.breadcrumb(BreadcrumbType.Error) {
 							category = "extensions.util.Github.repository.InputCheck"
 							message = "Input missing /"
@@ -291,13 +315,13 @@ class Github : Extension() {
 					var repo: GHRepository?
 
 					try {
-						repo = if (arguments.repository.contains("http", true)) {
-							github?.getRepository(
-								"${arguments.repository.split("/")[3]}/" +
-										arguments.repository.split("/")[4]
+						repo = if (repository.contains("http", true)) {
+							github.getRepository(
+								"${repository.split("/")[3]}/" +
+										repository.split("/")[4]
 							)
 						} else {
-							github?.getRepository(arguments.repository)
+							github.getRepository(repository)
 						}
 						sentry.breadcrumb(BreadcrumbType.Info) {
 							category = "extensions.util.Github.repository.getRepository"
@@ -376,9 +400,9 @@ class Github : Extension() {
 
 					try {
 						ghUser = if (arguments.username.contains("http", true)) {
-							github?.getUser(arguments.username.split("/")[3])
+							github.getUser(arguments.username.split("/")[3])
 						} else {
-							github?.getUser(arguments.username)
+							github.getUser(arguments.username)
 						}
 						sentry.breadcrumb(BreadcrumbType.Info) {
 							category = "extensions.util.Github.user.getUser"
@@ -462,7 +486,7 @@ class Github : Extension() {
 								message = "User is Organisation"
 								data["isOrg"] = ghUser?.login
 							}
-							val org: GHOrganization? = github?.getOrganization(ghUser?.login)
+							val org: GHOrganization? = github.getOrganization(ghUser?.login)
 
 							respond {
 								embed {
@@ -494,6 +518,72 @@ class Github : Extension() {
 					}
 				}
 			}
+
+			ephemeralSubCommand(::DefaultArgs) {
+				name = "default-repo"
+				description = "Set the default repo to look up issues in."
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ModerateMembers)
+				}
+
+				action {
+					if (!arguments.defaultRepo.contains("/")) {
+						respond {
+							embed {
+								title = "Make sure your input is formatted like this:"
+								description = "Format: `User/Repo` or `Org/Repo`\nFor example: `HyacinthBots/LilyBot`"
+							}
+						}
+						return@action
+					}
+					try {
+						if (arguments.defaultRepo.contains("http", true)) {
+							val urlParts = arguments.defaultRepo.split("/")
+							if (urlParts.size <= 4) {
+								respond { content = "Invalid repo URL, please try again" }
+								return@action
+							}
+							github.getRepository("${urlParts[3]}/${urlParts[4]}")
+						} else {
+							github.getRepository(arguments.defaultRepo)
+						}
+					} catch (e: IOException) {
+						respond {
+							content = "GitHub repository not found! Please make sure this repository exists"
+						}
+						return@action
+					}
+
+					GithubCollection().setDefaultRepo(guild!!.id, arguments.defaultRepo)
+					respond { content = "Default repo set." }
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "remove-default-repo"
+				description = "Removes the default repo for this guild"
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requireBotPermissions(Permission.ModerateMembers)
+				}
+
+				action {
+					if (GithubCollection().getDefaultRepo(guild!!.id) == null) {
+						respond { content = "There is no default repo for this guild!" }
+						return@action
+					}
+
+					GithubCollection().removeDefaultRepo(guild!!.id)
+					respond {
+						content = "Default repo removed"
+					}
+				}
+			}
 		}
 	}
 
@@ -504,7 +594,7 @@ class Github : Extension() {
 	 * @param bytes The repository size provided by GitHub
 	 * @return The friendly repository size
 	 * @since 2.0
-	 * @author NoComment1105, chalkyjean (java version author)
+	 * @author NoComment1105, chalkyjeans (java version author)
 	 */
 	private fun bytesToFriendly(bytes: Int): String {
 		val byteValue = 1024.0
@@ -522,24 +612,24 @@ class Github : Extension() {
 	}
 
 	inner class IssueArgs : Arguments() {
-		/** The repository being searched for, must contain a `/`. */
-		val repository by string {
-			name = "repository"
-			description = "The GitHub repository you would like to search"
-		}
-
 		/** The issue number being searched for. */
 		val issue by int {
 			name = "issue-number"
 			description = "The issue number you would like to search for"
 		}
+
+		/** The repository being searched for, must contain a `/`. */
+		val repository by optionalString {
+			name = "repository"
+			description = "The GitHub repository you would like to search if no default is set"
+		}
 	}
 
 	inner class RepoArgs : Arguments() {
 		/** The repository being searched for, must contain a `/`. */
-		val repository by string {
+		val repository by optionalString {
 			name = "repository"
-			description = "The GitHub repository you would like to search for"
+			description = "The GitHub repository you would like to search if no default is set"
 		}
 	}
 
@@ -548,6 +638,14 @@ class Github : Extension() {
 		val username by string {
 			name = "username"
 			description = "The name of the User/Organisation you wish to search for"
+		}
+	}
+
+	inner class DefaultArgs : Arguments() {
+		/** The default repo for the GitHub commands. */
+		val defaultRepo by string {
+			name = "default-repo"
+			description = "The default repo to look up issues in"
 		}
 	}
 }
