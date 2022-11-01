@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOptionalDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
@@ -238,7 +239,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
-			if (!canPingRole(arguments.moderatorRole)) {
+			if (!canPingRole(arguments.moderatorRole) && arguments.moderatorRole != null) {
 				respond {
 					content =
 						"I cannot use the role: ${arguments.moderatorRole!!.mention}, because it is not mentionable by" +
@@ -294,6 +295,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					arguments.enabled,
 					arguments.modActionLog?.id,
 					arguments.moderatorRole?.id,
+					arguments.quickTimeoutLength,
 					arguments.logPublicly
 				)
 			)
@@ -855,6 +857,11 @@ class ModerationArgs : Arguments() {
 	val modActionLog by optionalChannel {
 		name = "action-log"
 		description = "The channel used to store moderator actions."
+	}
+
+	val quickTimeoutLength by coalescingOptionalDuration {
+		name = "quick-timeout-length"
+		description = "The length of timeouts to use for quick timeouts"
 	}
 
 	val logPublicly by optionalBoolean {
