@@ -76,6 +76,8 @@ dependencies {
 
 	// Cozy's welcome module
 	implementation(libs.cozy.welcome)
+
+    implementation(libs.dma)
 }
 
 application {
