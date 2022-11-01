@@ -11,6 +11,9 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.PKMessageCreateEvent
+import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageCreateEvent
+import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageCreateEvent
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.delete
 import com.kotlindiscord.kord.extensions.utils.respond
@@ -19,18 +22,19 @@ import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
-import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
@@ -237,8 +241,72 @@ class AutoThreading : Extension() {
 			}
 		}
 
-		// todo Use PluralKit module
-		event<MessageCreateEvent> {
+		event<ProxiedMessageCreateEvent> {
+			check {
+				anyGuild()
+				failIf {
+					event.pkMessage.sender == kord.selfId ||
+							listOf(
+								MessageType.ChatInputCommand,
+								MessageType.ThreadCreated,
+								MessageType.ThreadStarterMessage
+							).contains(event.message.type) ||
+							listOf(
+								ChannelType.GuildNews,
+								ChannelType.GuildVoice,
+								ChannelType.PublicGuildThread,
+								ChannelType.PublicNewsThread
+							).contains(event.message.getChannelOrNull()?.type)
+				}
+			}
+			action {
+				val eventMessage = event.pkMessage
+				val channel = event.getGuild().getChannelOf<TextChannel>(eventMessage.id)
+				val authorId = eventMessage.sender
+
+				val options = AutoThreadingCollection().getSingleAutoThread(channel.id) ?: return@action
+
+				val threadName = "Thread for ${
+					eventMessage.member?.name ?: event.getGuild().getMember(eventMessage.sender).username
+				}"
+
+				if (!options.allowDuplicates) {
+					checkForDuplicateThreads(event, authorId, channel) ?: return@action
+				}
+
+				val thread = channel.startPublicThreadWithMessage(
+					eventMessage.id,
+					threadName,
+					channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
+				)
+
+				ThreadsCollection().setThreadOwner(event.guildId, thread.id, authorId)
+
+				val threadMessage = thread.createMessage(
+					if (options.mention) {
+						event.getGuild().getMember(eventMessage.sender).mention
+					} else {
+						"message"
+					}
+				)
+
+				if (options.roleId != null) {
+					val role = event.getGuild().getRole(options.roleId)
+					threadMessage.edit {
+						content += role.mention
+					}
+				}
+
+				messageAndArchive(
+					options,
+					thread,
+					threadMessage,
+					event.getGuild().getMember(eventMessage.sender)
+				)
+			}
+		}
+
+		event<UnProxiedMessageCreateEvent> {
 			check {
 				anyGuild()
 				failIf {
@@ -263,30 +331,10 @@ class AutoThreading : Extension() {
 
 				val options = AutoThreadingCollection().getSingleAutoThread(channel.id) ?: return@action
 
-				// todo Implement naming schemes properly
-				val threadName = "foo"
+				val threadName = "Thread for ${eventMessage.author?.asUser()?.username}"
 
 				if (!options.allowDuplicates) {
-					var previousUserThread: TextChannelThread? = null
-					val ownerThreads = ThreadsCollection().getOwnerThreads(authorId)
-
-					// todo If we include channel ID in ThreadData we can improve this code by using .find { }
-					ownerThreads.forEach {
-						val ownedThread = event.getGuild()?.getChannelOfOrNull<TextChannelThread>(it.threadId)
-						if (ownedThread?.parentId == channel.id) {
-							previousUserThread = ownedThread
-							return@forEach
-						}
-					}
-
-					if (previousUserThread != null) {
-						val response = event.message.respond {
-							content = "Please use your existing thread in this channel ${previousUserThread!!.mention}"
-						}
-						event.message.delete("User already has a thread")
-						response.delete(10000L, false)
-						return@action
-					}
+					checkForDuplicateThreads(event, authorId, channel) ?: return@action
 				}
 
 				val thread = channel.startPublicThreadWithMessage(
@@ -300,13 +348,15 @@ class AutoThreading : Extension() {
 				val threadMessage = thread.createMessage(
 					if (options.mention) {
 						eventMessage.author!!.mention
-					} else "message"
+					} else {
+						"message"
+					}
 				)
 
 				if (options.roleId != null) {
-					val role = event.getGuild()?.getRole(options.roleId)
+					val role = event.getGuild().getRole(options.roleId)
 					threadMessage.edit {
-						this.content += role?.mention
+						content += role.mention
 					}
 				}
 
@@ -417,5 +467,34 @@ class AutoThreading : Extension() {
 				reason = "Initial thread creation"
 			}
 		}
+	}
+
+	private suspend inline fun <T : PKMessageCreateEvent> checkForDuplicateThreads(
+		event: T,
+		authorId: Snowflake,
+		channel: TextChannel
+	): Int? {
+		var previousUserThread: TextChannelThread? = null
+		val ownerThreads = ThreadsCollection().getOwnerThreads(authorId)
+
+		// todo If we include channel ID in ThreadData we can improve this code by using .find { }
+		ownerThreads.forEach {
+			val ownedThread = event.getGuild().getChannelOfOrNull<TextChannelThread>(it.threadId)
+			if (ownedThread?.parentId == channel.id) {
+				previousUserThread = ownedThread
+				return@forEach
+			}
+		}
+
+		if (previousUserThread != null) {
+			val response = event.message.respond {
+				content = "Please use your existing thread in this channel ${previousUserThread!!.mention}"
+			}
+			event.message.delete("User already has a thread")
+			response.delete(10000L, false)
+			return null
+		}
+
+		return 0
 	}
 }
