@@ -7,10 +7,10 @@ We only support the latest version of LilyBot, as this is the version used in ou
 
 ## Reporting a Vulnerability
 
-When reporting a vulnerability, we request that you gather all the information you can about the vulnerability and compiling it into a document before sending it to us via Email at hyacinthbots@outlook.com.
+When reporting a vulnerability, we request that you gather all the information you can about the vulnerability and compile it into a document before sending it to us via email at hyacinthbots@outlook.com.
 
-You will recieve a response quickly declaring that we have recieved your email and the contents of it and are now aware of the vulnerability. We will proceed to make inquiries into the severity of the vulnerability and determine the speed and course of action to take.
+You will receive a response quickly declaring that we have received your email and the contents of it and are now aware of the vulnerability. We will proceed to make inquiries into the severity of the vulnerability and determine the speed and course of action to take.
 
-You will recieve updates on the vulnerability as and when we have them. You will be regularly informed of what we find and the course of action we are taking.
+You will receive updates on the vulnerability as and when we have them. You will be regularly informed of what we find and the course of action we are taking.
 
-Upon removal of the vulnerability you will recieve an email detailing this and a new release will be created, containing a fix for the vulnerability, to ensure that everyone is made safe.
+Upon removal of the vulnerability you will receive an email detailing this and a new release will be created, containing a fix for the vulnerability, to ensure that everyone is made safe.
