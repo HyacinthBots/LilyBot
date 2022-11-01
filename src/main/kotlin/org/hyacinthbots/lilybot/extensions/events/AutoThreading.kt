@@ -274,13 +274,7 @@ class AutoThreading : Extension() {
 					checkForDuplicateThreads(event, authorId, channel) ?: return@action
 				}
 
-				val thread = channel.startPublicThreadWithMessage(
-					eventMessage.id,
-					threadName,
-					channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
-				)
-
-				ThreadsCollection().setThreadOwner(event.guildId, thread.id, authorId)
+				val thread = startThreadAndAddToDb(channel, eventMessage.id, threadName, event.getGuild().id, authorId)
 
 				val threadMessage = thread.createMessage(
 					if (options.mention) {
@@ -337,13 +331,7 @@ class AutoThreading : Extension() {
 					checkForDuplicateThreads(event, authorId, channel) ?: return@action
 				}
 
-				val thread = channel.startPublicThreadWithMessage(
-					eventMessage.id,
-					threadName,
-					channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
-				)
-
-				ThreadsCollection().setThreadOwner(event.guildId, thread.id, authorId)
+				val thread = startThreadAndAddToDb(channel, eventMessage.id, threadName, event.getGuild().id, authorId)
 
 				val threadMessage = thread.createMessage(
 					if (options.mention) {
@@ -477,18 +465,14 @@ class AutoThreading : Extension() {
 		var previousUserThread: TextChannelThread? = null
 		val ownerThreads = ThreadsCollection().getOwnerThreads(authorId)
 
-		// todo If we include channel ID in ThreadData we can improve this code by using .find { }
-		ownerThreads.forEach {
-			val ownedThread = event.getGuild().getChannelOfOrNull<TextChannelThread>(it.threadId)
-			if (ownedThread?.parentId == channel.id) {
-				previousUserThread = ownedThread
-				return@forEach
-			}
+		val threadData = ownerThreads.find { it.parentChannel == channel.id }
+		if (threadData != null) {
+			previousUserThread = event.getGuild().getChannelOfOrNull(threadData.threadId)
 		}
 
 		if (previousUserThread != null) {
 			val response = event.message.respond {
-				content = "Please use your existing thread in this channel ${previousUserThread!!.mention}"
+				content = "Please use your existing thread in this channel ${previousUserThread.mention}"
 			}
 			event.message.delete("User already has a thread")
 			response.delete(10000L, false)
@@ -496,5 +480,23 @@ class AutoThreading : Extension() {
 		}
 
 		return 0
+	}
+
+	private suspend inline fun startThreadAndAddToDb(
+		channel: TextChannel,
+		eventMessage: Snowflake,
+		threadName: String,
+		guildId: Snowflake,
+		threadAuthorId: Snowflake
+	): TextChannelThread {
+		val thread = channel.startPublicThreadWithMessage(
+			eventMessage,
+			threadName,
+			channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
+		)
+
+		ThreadsCollection().setThreadOwner(guildId, thread.parentId, thread.id, threadAuthorId)
+
+		return thread
 	}
 }

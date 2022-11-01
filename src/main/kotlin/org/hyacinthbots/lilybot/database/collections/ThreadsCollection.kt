@@ -70,13 +70,14 @@ class ThreadsCollection : KordExKoinComponent {
 	 * @since 3.2.0
 	 */
 	suspend inline fun setThreadOwner(
-		inputGuildId: Snowflake?,
+		inputGuildId: Snowflake,
+		parentChannel: Snowflake?,
 		inputThreadId: Snowflake,
 		newOwnerId: Snowflake,
 		preventArchiving: Boolean = false
 	) {
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
-		collection.insertOne(ThreadData(inputGuildId, inputThreadId, newOwnerId, preventArchiving))
+		collection.insertOne(ThreadData(inputGuildId, parentChannel, inputThreadId, newOwnerId, preventArchiving))
 	}
 
 	/**

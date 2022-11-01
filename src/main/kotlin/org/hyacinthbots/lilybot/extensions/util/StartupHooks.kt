@@ -10,13 +10,19 @@ import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.NewsChannel
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.gateway.ReadyEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.Cleanups
+import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
+import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
+import org.litote.kmongo.coroutine.toList
+import org.litote.kmongo.eq
+import org.litote.kmongo.setValue
 import kotlin.time.Duration.Companion.days
 
 /**
@@ -39,6 +45,17 @@ class StartupHooks : Extension() {
 
 		event<ReadyEvent> {
 			action {
+				// TODO Remove this post mainv5 migration. We need this because we need kord object and that is not
+				//  present in migrations
+				with(Database().mainDatabase.getCollection<ThreadData>("threadData")) {
+					collection.find(ThreadData::guildId eq null).toList().forEach {
+						updateOne(
+							ThreadData::threadId eq it.threadId,
+							setValue(ThreadData::parentChannel, kord.getChannelOf<TextChannelThread>(it.threadId)?.parentId)
+						)
+					}
+				}
+
 				val now = Clock.System.now()
 
 				/**
