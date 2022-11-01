@@ -433,11 +433,11 @@ class AutoThreading : Extension() {
 	private suspend inline fun messageAndArchive(
 		inputOptions: AutoThreadingData,
 		inputThread: TextChannelThread,
-		inputThreadMessage: Message,
+		inputThreadMessage: Message?,
 		inputUser: User
 	) {
 		if (inputOptions.creationMessage != null) {
-			inputThreadMessage.edit {
+			inputThreadMessage?.edit {
 				content =
 					if (inputOptions.mention) {
 						inputUser.mention + " " + inputOptions.creationMessage
@@ -446,7 +446,7 @@ class AutoThreading : Extension() {
 					}
 			}
 		} else {
-			inputThreadMessage.delete("Initial thread creation")
+			inputThreadMessage?.delete("Initial thread creation")
 		}
 
 		if (inputOptions.archive) {

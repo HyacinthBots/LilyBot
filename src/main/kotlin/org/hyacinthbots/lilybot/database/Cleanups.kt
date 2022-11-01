@@ -122,11 +122,6 @@ object Cleanups : KordExKoinComponent {
 					category = "cleanupThreadData"
 					message = "Cleaning thread ${it.threadId}"
 				}
-				if (it.guildId == null) {
-					ThreadsCollection().removeThread(it.threadId)
-					deletedThreads++
-					return
-				}
 				val guild = kordInstance.getGuild(it.guildId) ?: return
 				val thread = guild.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: continue
 				val latestMessage = thread.getLastMessage() ?: continue
