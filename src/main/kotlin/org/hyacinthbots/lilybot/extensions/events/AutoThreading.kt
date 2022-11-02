@@ -7,7 +7,6 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
@@ -15,15 +14,22 @@ import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.PKMessageCreateEvent
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageCreateEvent
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageCreateEvent
+import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
+import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubCommand
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.delete
 import com.kotlindiscord.kord.extensions.utils.respond
+import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.ArchiveDuration
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
@@ -31,11 +37,16 @@ import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.getChannelOfOrNull
+import dev.kord.core.behavior.interaction.ModalParentInteractionBehavior
+import dev.kord.core.behavior.interaction.modal
+import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
+import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
+import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
@@ -44,6 +55,7 @@ import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import kotlin.time.Duration.Companion.seconds
 
 // This code solves the following issues:
 // Customize support message - https://github.com/IrisShaders/LilyBot/issues/138
@@ -61,9 +73,12 @@ class AutoThreading : Extension() {
 			name = "auto-threading"
 			description = "The parent command for auto-threading management."
 
-			ephemeralSubCommand(::AutoThreadingArgs) {
+			@OptIn(UnsafeAPI::class)
+			unsafeSubCommand(::AutoThreadingArgs) {
 				name = "enable"
 				description = "Automatically create a thread for each message sent in this channel."
+
+				initialResponse = InitialSlashCommandResponse.None
 
 				check {
 					anyGuild()
@@ -74,7 +89,8 @@ class AutoThreading : Extension() {
 				action {
 					// Check if the auto-threading is disabled
 					if (AutoThreadingCollection().getSingleAutoThread(channel.id) != null) {
-						respond {
+						ackEphemeral()
+						respondEphemeral {
 							content = "Auto-threading is already enabled for this channel."
 						}
 						return@action
@@ -82,10 +98,23 @@ class AutoThreading : Extension() {
 
 					// Check if the role can be pinged
 					if (arguments.role?.mentionable == false) {
-						respond {
+						ackEphemeral()
+						respondEphemeral {
 							content = "Lily cannot mention this role. Please fix the role's permissions and try again."
 						}
 						return@action
+					}
+
+					var message: String? = null
+
+					if (arguments.message) {
+						message = createMessageModal(event.interaction)
+					} else {
+						// Respond to the user
+						ackEphemeral()
+						respondEphemeral {
+							content = "Auto-threading has been **enabled** in this channel."
+						}
 					}
 
 					// Add the channel to the database as auto-threaded
@@ -98,14 +127,9 @@ class AutoThreading : Extension() {
 							archive = arguments.archive,
 							smartNaming = arguments.smartNaming,
 							mention = arguments.mention,
-							creationMessage = arguments.message
+							creationMessage = message
 						)
 					)
-
-					// Respond to the user
-					respond {
-						content = "Auto-threading has been **enabled** in this channel."
-					}
 
 					// Log the change
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!) ?: return@action
@@ -145,8 +169,8 @@ class AutoThreading : Extension() {
 						}
 						field {
 							name = "Initial Message:"
-							value = if (arguments.message != null) "```${arguments.message}```" else "null"
-							inline = arguments.message == null
+							value = if (message != null) "```$message```" else "null"
+							inline = message == null
 						}
 						footer {
 							text = user.asUser().tag
@@ -354,10 +378,10 @@ class AutoThreading : Extension() {
 			defaultValue = false
 		}
 
-		val message by optionalString {
+		val message by defaultingBoolean {
 			name = "message"
-			description = "The message, if any, to send at the beginning of new threads in this channel."
-			maxLength = 1000 // todo make sure this is adequate
+			description = "Whether to send a message on thread creation or not."
+			defaultValue = false
 		}
 	}
 
@@ -386,6 +410,37 @@ class AutoThreading : Extension() {
 				reason = "Initial thread creation"
 			}
 		}
+	}
+
+	private suspend fun createMessageModal(inputInteraction: ModalParentInteractionBehavior): String? {
+		val modal = inputInteraction.modal("Creation message", "messageModal") {
+			actionRow {
+				textInput(TextInputStyle.Paragraph, "message", "What message would you like to send?") {
+					placeholder = "Welcome to your thread user!"
+					required = true
+				}
+			}
+		}
+
+		val interaction =
+			modal.kord.waitFor<ModalSubmitInteractionCreateEvent>(180.seconds.inWholeMilliseconds) {
+				interaction.modalId == "messageModal"
+			}?.interaction
+
+		if (interaction == null) {
+			modal.createEphemeralFollowup {
+				content = "Message timed out"
+			}
+			return null
+		}
+
+		val modalResponse = interaction.deferEphemeralResponse()
+
+		modalResponse.respond {
+				content = "Auto-threading has been **enabled** in this channel."
+			}
+
+		return interaction.textInputs["message"]!!.value!!
 	}
 
 	/**
