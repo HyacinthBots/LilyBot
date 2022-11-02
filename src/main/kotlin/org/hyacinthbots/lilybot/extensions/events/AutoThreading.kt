@@ -11,6 +11,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.PKMessageCreateEvent
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageCreateEvent
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageCreateEvent
@@ -260,43 +261,7 @@ class AutoThreading : Extension() {
 				}
 			}
 			action {
-				val eventMessage = event.pkMessage
-				val channel = event.getGuild().getChannelOf<TextChannel>(eventMessage.id)
-				val authorId = eventMessage.sender
-
-				val options = AutoThreadingCollection().getSingleAutoThread(channel.id) ?: return@action
-
-				val threadName = "Thread for ${
-					eventMessage.member?.name ?: event.getGuild().getMember(eventMessage.sender).username
-				}"
-
-				if (!options.allowDuplicates) {
-					checkForDuplicateThreads(event, authorId, channel) ?: return@action
-				}
-
-				val thread = startThreadAndAddToDb(channel, eventMessage.id, threadName, event.getGuild().id, authorId)
-
-				val threadMessage = thread.createMessage(
-					if (options.mention) {
-						event.getGuild().getMember(eventMessage.sender).mention
-					} else {
-						"message"
-					}
-				)
-
-				if (options.roleId != null) {
-					val role = event.getGuild().getRole(options.roleId)
-					threadMessage.edit {
-						content += role.mention
-					}
-				}
-
-				messageAndArchive(
-					options,
-					thread,
-					threadMessage,
-					event.getGuild().getMember(eventMessage.sender)
-				)
+				onMessageSend(event, event.getMessageOrNull(), event.pkMessage)
 			}
 		}
 
@@ -319,41 +284,7 @@ class AutoThreading : Extension() {
 				}
 			}
 			action {
-				val eventMessage = event.message
-				val channel = eventMessage.channel.asChannelOf<TextChannel>()
-				val authorId = eventMessage.author?.id ?: return@action
-
-				val options = AutoThreadingCollection().getSingleAutoThread(channel.id) ?: return@action
-
-				val threadName = "Thread for ${eventMessage.author?.asUser()?.username}"
-
-				if (!options.allowDuplicates) {
-					checkForDuplicateThreads(event, authorId, channel) ?: return@action
-				}
-
-				val thread = startThreadAndAddToDb(channel, eventMessage.id, threadName, event.getGuild().id, authorId)
-
-				val threadMessage = thread.createMessage(
-					if (options.mention) {
-						eventMessage.author!!.mention
-					} else {
-						"message"
-					}
-				)
-
-				if (options.roleId != null) {
-					val role = event.getGuild().getRole(options.roleId)
-					threadMessage.edit {
-						content += role.mention
-					}
-				}
-
-				messageAndArchive(
-					options,
-					thread,
-					threadMessage,
-					eventMessage.author!!
-				)
+				onMessageSend(event, event.getMessageOrNull())
 			}
 		}
 
@@ -457,46 +388,88 @@ class AutoThreading : Extension() {
 		}
 	}
 
-	private suspend inline fun <T : PKMessageCreateEvent> checkForDuplicateThreads(
+	/**
+	 * A single function for both Proxied and Non-Proxied message to be turned into threads.
+	 *
+	 * @param event The event for the message creation
+	 * @param message The original message (unproxied)
+	 * @param proxiedMessage The proxied message, if the message was proxied
+	 * @since 4.4.0
+	 * @author NoComment1105
+	 */
+	private suspend fun <T : PKMessageCreateEvent> onMessageSend(
 		event: T,
-		authorId: Snowflake,
-		channel: TextChannel
-	): Int? {
-		var previousUserThread: TextChannelThread? = null
-		val ownerThreads = ThreadsCollection().getOwnerThreads(authorId)
+		message: Message?,
+		proxiedMessage: PKMessage? = null
+	) {
+		val memberFromPk = if (proxiedMessage != null) event.getGuild().getMember(proxiedMessage.sender) else null
 
-		val threadData = ownerThreads.find { it.parentChannel == channel.id }
-		if (threadData != null) {
-			previousUserThread = event.getGuild().getChannelOfOrNull(threadData.threadId)
+		val channel: TextChannel = if (proxiedMessage == null) {
+			message?.channel?.asChannelOf() ?: return
+		} else {
+			// Check the real message member too, despite the pk message not being null, we may still be able to use the original
+			message?.channel?.asChannelOf() ?: event.getGuild().getChannelOf(proxiedMessage.channel) ?: return
 		}
 
-		if (previousUserThread != null) {
-			val response = event.message.respond {
-				content = "Please use your existing thread in this channel ${previousUserThread.mention}"
+		val authorId: Snowflake = if (proxiedMessage == null) {
+			message?.author?.id ?: return
+		} else {
+			message?.author?.id ?: proxiedMessage.sender
+		}
+
+		val options = AutoThreadingCollection().getSingleAutoThread(channel.id) ?: return
+
+		val threadName = "Thread for ${
+			message?.author?.asUser()?.username ?: proxiedMessage?.member?.name ?: memberFromPk
+		}"
+
+		if (!options.allowDuplicates) {
+			var previousUserThread: TextChannelThread? = null
+			val ownerThreads = ThreadsCollection().getOwnerThreads(authorId)
+
+			val threadData = ownerThreads.find { it.parentChannel == channel.id }
+			if (threadData != null) {
+				previousUserThread = event.getGuild().getChannelOfOrNull(threadData.threadId)
 			}
-			event.message.delete("User already has a thread")
-			response.delete(10000L, false)
-			return null
+
+			if (previousUserThread != null) {
+				val response = event.message.respond {
+					content = "Please use your existing thread in this channel ${previousUserThread.mention}"
+				}
+				event.message.delete("User already has a thread")
+				response.delete(10000L, false)
+				return
+			}
 		}
 
-		return 0
-	}
-
-	private suspend inline fun startThreadAndAddToDb(
-		channel: TextChannel,
-		eventMessage: Snowflake,
-		threadName: String,
-		guildId: Snowflake,
-		threadAuthorId: Snowflake
-	): TextChannelThread {
 		val thread = channel.startPublicThreadWithMessage(
-			eventMessage,
+			message?.id ?: proxiedMessage!!.channel,
 			threadName,
 			channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 		)
 
-		ThreadsCollection().setThreadOwner(guildId, thread.parentId, thread.id, threadAuthorId)
+		ThreadsCollection().setThreadOwner(event.getGuild().id, thread.parentId, thread.id, authorId)
 
-		return thread
+		val threadMessage = thread.createMessage(
+			if (options.mention) {
+				message?.author?.mention ?: memberFromPk!!.mention
+			} else {
+				"message"
+			}
+		)
+
+		if (options.roleId != null) {
+			val role = event.getGuild().getRole(options.roleId)
+			threadMessage.edit {
+				content += role.mention
+			}
+		}
+
+		messageAndArchive(
+			options,
+			thread,
+			threadMessage,
+			message?.author ?: memberFromPk!!.asUser()
+		)
 	}
 }
