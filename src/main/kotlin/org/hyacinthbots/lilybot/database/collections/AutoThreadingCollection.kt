@@ -27,4 +27,7 @@ class AutoThreadingCollection : KordExKoinComponent {
 
 	suspend inline fun deleteAutoThread(inputChannelId: Snowflake) =
 		collection.deleteOne(AutoThreadingData::channelId eq inputChannelId)
+
+	suspend inline fun deleteGuildAutoThreads(inputGuildId: Snowflake) =
+		collection.deleteMany(AutoThreadingData::guildId eq inputGuildId)
 }
