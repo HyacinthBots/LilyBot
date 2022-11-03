@@ -83,15 +83,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			}
 
 			if (!arguments.enable) {
-				SupportConfigCollection().setConfig(
-					SupportConfigData(
-						guild!!.id,
-						false,
-						null,
-						null,
-						null
-					)
-				)
+				SupportConfigCollection().setConfig(SupportConfigData(guild!!.id, false, null, null, null))
 				ackEphemeral()
 				respondEphemeral {
 					content = "Support system disabled."
@@ -246,16 +238,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			}
 
 			if (!arguments.enabled) {
-				ModerationConfigCollection().setConfig(
-					ModerationConfigData(
-						guild!!.id,
-						false,
-						null,
-						null,
-						null,
-						null
-					)
-				)
+				ModerationConfigCollection().setConfig(ModerationConfigData(guild!!.id, false, null, null, null, null))
 				respond {
 					content = "Moderation system disabled."
 				}
@@ -755,7 +738,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								value = if (config.enableMessageDeleteLogs) {
 									"Enabled\n" +
 											"${guild!!.getChannel(config.messageChannel!!).mention} (" +
-											"${guild!!.getChannel(config.messageChannel).name })"
+											"${guild!!.getChannel(config.messageChannel).name})"
 								} else {
 									"Disabled"
 								}
@@ -764,8 +747,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								name = "Message edit logs"
 								value = if (config.enableMessageEditLogs) {
 									"Enabled\n" +
-											"${guild!!.getChannel(config.messageChannel!!).mention } (" +
-											"${guild!!.getChannel(config.messageChannel).name })"
+											"${guild!!.getChannel(config.messageChannel!!).mention} (" +
+											"${guild!!.getChannel(config.messageChannel).name})"
 								} else {
 									"Disabled"
 								}
@@ -774,8 +757,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								name = "Member logs"
 								value = if (config.enableMemberLogs) {
 									"Enabled\n" +
-											"${guild!!.getChannel(config.memberLog!!).mention } (" +
-											"${guild!!.getChannel(config.memberLog).name })"
+											"${guild!!.getChannel(config.memberLog!!).mention} (" +
+											"${guild!!.getChannel(config.memberLog).name})"
 								} else {
 									"Disabled"
 								}
