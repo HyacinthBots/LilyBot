@@ -430,7 +430,7 @@ class Reminders : Extension() {
 
 							respond {
 								content = "Removed all ${
-									guild!!.getMember(arguments.user.id).mention
+									guild!!.getMemberOrNull(arguments.user.id)?.mention
 								}'s reminders for this guild."
 							}
 						}
@@ -449,7 +449,7 @@ class Reminders : Extension() {
 
 							respond {
 								content = "Removed all ${
-									guild!!.getMember(arguments.user.id).mention
+									guild!!.getMemberOrNull(arguments.user.id)?.mention
 								}'s repeating reminders for this guild."
 							}
 						}
@@ -468,7 +468,7 @@ class Reminders : Extension() {
 
 							respond {
 								content = "Removed all ${
-									guild!!.getMember(arguments.user.id).mention
+									guild!!.getMemberOrNull(arguments.user.id)?.mention
 								}'s non-repeating reminders for this guild."
 							}
 						}

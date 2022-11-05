@@ -545,7 +545,7 @@ class RoleMenu : Extension() {
 	 * @since 3.4.0
 	 */
 	private suspend inline fun EphemeralSlashCommandContext<*>.botCanAssignRole(kord: Kord, role: Role): Boolean {
-		val self = guild?.getMember(kord.selfId)!!
+		val self = guild?.getMemberOrNull(kord.selfId)!!
 		if (self.getTopRole()!! < role) {
 			respond {
 				content = "The selected role is higher than me in the role hierarchy. " +

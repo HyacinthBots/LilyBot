@@ -722,8 +722,8 @@ suspend fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
 		field {
 			name = "Message Author:"
 			value = "System Member: ${proxiedMessage.member?.name}\n" +
-					"Account: ${guild.getMember(proxiedMessage.sender).tag} " +
-					guild.getMember(proxiedMessage.sender).mention
+					"Account: ${guild.getMemberOrNull(proxiedMessage.sender)?.tag ?: "Unable to get account"} " +
+					guild.getMemberOrNull(proxiedMessage.sender)?.mention
 			inline = true
 		}
 
