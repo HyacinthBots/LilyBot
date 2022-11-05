@@ -490,8 +490,13 @@ class Reminders : Extension() {
 
 		for (it in dueReminders) {
 			val guild = kord.getGuild(it.guildId)
-			val channel = guild?.getChannelOfOrNull<GuildMessageChannel>(it.channelId)
-			if (guild == null || channel == null) {
+			if (guild == null) {
+				ReminderCollection().removeReminder(it.id)
+				continue
+			}
+
+			val channel = guild.getChannelOfOrNull<GuildMessageChannel>(it.channelId)
+			if (channel == null) {
 				ReminderCollection().removeReminder(it.id)
 				continue
 			}
