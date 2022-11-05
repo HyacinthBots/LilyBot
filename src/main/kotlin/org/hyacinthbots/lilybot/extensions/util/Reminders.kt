@@ -489,25 +489,29 @@ class Reminders : Extension() {
 		val dueReminders =
 			reminders.filter { it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0 }
 
-		dueReminders.forEach {
-			val channel = kord.getGuild(it.guildId)?.getChannelOfOrNull<GuildMessageChannel>(it.channelId)
+		for (it in dueReminders) {
+			val guild = kord.getGuild(it.guildId)
+			val channel = guild?.getChannelOfOrNull<GuildMessageChannel>(it.channelId)
+			if (guild == null || channel == null) {
+				ReminderCollection().removeReminder(it.id)
+				continue
+			}
 
 			val hasPerms =
-				channel?.botHasPermissions(Permission.ViewChannel, Permission.EmbedLinks, Permission.SendMessages)
-					?: false
+				channel.botHasPermissions(Permission.ViewChannel, Permission.EmbedLinks, Permission.SendMessages)
 
-			if (channel == null || it.dm || !hasPerms) {
-				kord.getUser(it.userId)?.dm {
+			if (it.dm || !hasPerms) {
+				guild.getMemberOrNull(it.userId)?.dm {
 					if (!it.dm) {
 						content =
-							"I was unable to find/access the channel from ${kord.getGuild(it.guildId)} that this" +
+							"I was unable to find/access the channel from $guild that this" +
 									"reminder was set in."
 					}
 					reminderEmbed(it)
 				}
 			} else {
 				channel.createMessage {
-					content = kord.getUser(it.userId)?.mention
+					content = guild.getMemberOrNull(it.userId)?.mention
 					reminderEmbed(it)
 				}
 				markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, false)
