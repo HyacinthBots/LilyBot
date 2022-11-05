@@ -33,10 +33,12 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOfOrNull
+import dev.kord.core.entity.Guild
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
@@ -430,7 +432,7 @@ class Reminders : Extension() {
 
 							respond {
 								content = "Removed all ${
-									guild!!.getMember(arguments.user.id).mention
+									guild!!.getMemberOrNull(arguments.user.id)?.mention
 								}'s reminders for this guild."
 							}
 						}
@@ -449,7 +451,7 @@ class Reminders : Extension() {
 
 							respond {
 								content = "Removed all ${
-									guild!!.getMember(arguments.user.id).mention
+									guild!!.getMemberOrNull(arguments.user.id)?.mention
 								}'s repeating reminders for this guild."
 							}
 						}
@@ -468,7 +470,7 @@ class Reminders : Extension() {
 
 							respond {
 								content = "Removed all ${
-									guild!!.getMember(arguments.user.id).mention
+									guild!!.getMemberOrNull(arguments.user.id)?.mention
 								}'s non-repeating reminders for this guild."
 							}
 						}
@@ -489,25 +491,40 @@ class Reminders : Extension() {
 		val dueReminders =
 			reminders.filter { it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0 }
 
-		dueReminders.forEach {
-			val channel = kord.getGuild(it.guildId)?.getChannelOfOrNull<GuildMessageChannel>(it.channelId)
+		for (it in dueReminders) {
+			var guild: Guild? = null
+			try {
+				guild = kord.getGuild(it.guildId)
+			} catch (_: KtorRequestException) {
+				ReminderCollection().removeReminder(it.id)
+			}
+
+			if (guild == null) {
+				ReminderCollection().removeReminder(it.id)
+				continue
+			}
+
+			val channel = guild.getChannelOfOrNull<GuildMessageChannel>(it.channelId)
+			if (channel == null) {
+				ReminderCollection().removeReminder(it.id)
+				continue
+			}
 
 			val hasPerms =
-				channel?.botHasPermissions(Permission.ViewChannel, Permission.EmbedLinks, Permission.SendMessages)
-					?: false
+				channel.botHasPermissions(Permission.ViewChannel, Permission.EmbedLinks, Permission.SendMessages)
 
-			if (channel == null || it.dm || !hasPerms) {
-				kord.getUser(it.userId)?.dm {
+			if (it.dm || !hasPerms) {
+				guild.getMemberOrNull(it.userId)?.dm {
 					if (!it.dm) {
 						content =
-							"I was unable to find/access the channel from ${kord.getGuild(it.guildId)} that this" +
+							"I was unable to find/access the channel from $guild that this" +
 									"reminder was set in."
 					}
 					reminderEmbed(it)
 				}
 			} else {
 				channel.createMessage {
-					content = kord.getUser(it.userId)?.mention
+					content = guild.getMemberOrNull(it.userId)?.mention
 					reminderEmbed(it)
 				}
 				markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, false)

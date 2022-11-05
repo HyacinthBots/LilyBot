@@ -165,7 +165,7 @@ class ThreadControl : Extension() {
 					val member = user.asMember(guild!!.id)
 
 					val oldOwnerId = ThreadsCollection().getThread(threadChannel.id)?.ownerId ?: threadChannel.ownerId
-					val oldOwner = guild!!.getMember(oldOwnerId)
+					val oldOwner = guild!!.getMemberOrNull(oldOwnerId)
 
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
 
@@ -188,7 +188,7 @@ class ThreadControl : Extension() {
 
 					respond { content = "Ownership transferred." }
 
-					var content = "Thread ownership transferred from ${oldOwner.mention} " +
+					var content = "Thread ownership transferred from ${oldOwner?.mention} " +
 							"to ${arguments.newOwner.mention}."
 
 					if (member != oldOwner) content += " Transferred by ${member.mention}"
@@ -202,7 +202,7 @@ class ThreadControl : Extension() {
 							title = "Thread ownership transferred"
 							field {
 								name = "Previous owner"
-								value = "${oldOwner.mention} ${oldOwner.tag}"
+								value = "${oldOwner?.mention ?: "Unable to find previous owner"} ${oldOwner?.tag ?: ""}"
 							}
 							field {
 								name = "New owner"

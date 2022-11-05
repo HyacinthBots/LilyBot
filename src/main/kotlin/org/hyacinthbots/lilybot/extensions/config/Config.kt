@@ -82,11 +82,20 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
+			if (!arguments.enable) {
+				SupportConfigCollection().setConfig(SupportConfigData(guild!!.id, false, null, null, null))
+				ackEphemeral()
+				respondEphemeral {
+					content = "Support system disabled."
+				}
+				return@action
+			}
+
 			if (!canPingRole(arguments.role)) {
 				ackEphemeral()
 				respondEphemeral {
 					content =
-						"I cannot use the role: ${arguments.role!!.mention}, because it is not mentionable by" +
+						"I cannot use the role: ${arguments.role?.mention}, because it is not mentionable by" +
 								"regular users. Please enable this in the role settings, or use a different role."
 				}
 				return@action
@@ -228,6 +237,14 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
+			if (!arguments.enabled) {
+				ModerationConfigCollection().setConfig(ModerationConfigData(guild!!.id, false, null, null, null, null))
+				respond {
+					content = "Moderation system disabled."
+				}
+				return@action
+			}
+
 			if (
 				arguments.moderatorRole != null && arguments.modActionLog == null ||
 				arguments.moderatorRole == null && arguments.modActionLog != null
@@ -242,7 +259,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			if (!canPingRole(arguments.moderatorRole) && arguments.moderatorRole != null) {
 				respond {
 					content =
-						"I cannot use the role: ${arguments.moderatorRole!!.mention}, because it is not mentionable by" +
+						"I cannot use the role: ${arguments.moderatorRole?.mention}, because it is not mentionable by" +
 								"regular users. Please enable this in the role settings, or use a different role."
 				}
 				return@action
@@ -372,7 +389,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				title = "Configuration: Logging"
 				field {
 					name = "Message Delete Logs"
-					value = if (arguments.enableMessageDeleteLogs && arguments.messageLogs?.mention != null) {
+					value = if (arguments.enableMessageDeleteLogs && arguments.messageLogs != null) {
 						arguments.messageLogs!!.mention
 					} else {
 						"Disabled"
@@ -380,7 +397,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 				field {
 					name = "Message Edit Logs"
-					value = if (arguments.enableMessageEditLogs && arguments.messageLogs?.mention != null) {
+					value = if (arguments.enableMessageEditLogs && arguments.messageLogs != null) {
 						arguments.messageLogs!!.mention
 					} else {
 						"Disabled"
@@ -388,7 +405,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 				field {
 					name = "Member Logs"
-					value = if (arguments.enableMemberLogging && arguments.memberLog?.mention != null) {
+					value = if (arguments.enableMemberLogging && arguments.memberLog != null) {
 						arguments.memberLog!!.mention
 					} else {
 						"Disabled"
@@ -417,7 +434,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				)
 			)
 
-			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)
 
 			if (utilityLog == null) {
 				respond {
@@ -721,7 +738,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								value = if (config.enableMessageDeleteLogs) {
 									"Enabled\n" +
 											"${guild!!.getChannel(config.messageChannel!!).mention} (" +
-											"${guild!!.getChannel(config.messageChannel).name })"
+											"${guild!!.getChannel(config.messageChannel).name})"
 								} else {
 									"Disabled"
 								}
@@ -730,8 +747,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								name = "Message edit logs"
 								value = if (config.enableMessageEditLogs) {
 									"Enabled\n" +
-											"${guild!!.getChannel(config.messageChannel!!).mention } (" +
-											"${guild!!.getChannel(config.messageChannel).name })"
+											"${guild!!.getChannel(config.messageChannel!!).mention} (" +
+											"${guild!!.getChannel(config.messageChannel).name})"
 								} else {
 									"Disabled"
 								}
@@ -740,8 +757,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 								name = "Member logs"
 								value = if (config.enableMemberLogs) {
 									"Enabled\n" +
-											"${guild!!.getChannel(config.memberLog!!).mention } (" +
-											"${guild!!.getChannel(config.memberLog).name })"
+											"${guild!!.getChannel(config.memberLog!!).mention} (" +
+											"${guild!!.getChannel(config.memberLog).name})"
 								} else {
 									"Disabled"
 								}
