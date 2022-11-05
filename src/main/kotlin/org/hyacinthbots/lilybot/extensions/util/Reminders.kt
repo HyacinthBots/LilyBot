@@ -33,10 +33,12 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOfOrNull
+import dev.kord.core.entity.Guild
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
@@ -489,7 +491,13 @@ class Reminders : Extension() {
 			reminders.filter { it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0 }
 
 		for (it in dueReminders) {
-			val guild = kord.getGuild(it.guildId)
+			var guild: Guild? = null
+			try {
+				guild = kord.getGuild(it.guildId)
+			} catch (_: KtorRequestException) {
+				ReminderCollection().removeReminder(it.id)
+			}
+
 			if (guild == null) {
 				ReminderCollection().removeReminder(it.id)
 				continue
