@@ -238,7 +238,17 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			}
 
 			if (!arguments.enabled) {
-				ModerationConfigCollection().setConfig(ModerationConfigData(guild!!.id, false, null, null, null, null))
+				ModerationConfigCollection().setConfig(
+					ModerationConfigData(
+						guild!!.id,
+						false,
+						null,
+						null,
+						null,
+						null,
+						null
+					)
+				)
 				respond {
 					content = "Moderation system disabled."
 				}
@@ -313,6 +323,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					arguments.modActionLog?.id,
 					arguments.moderatorRole?.id,
 					arguments.quickTimeoutLength,
+					arguments.warnAutoPunishments,
 					arguments.logPublicly
 				)
 			)
@@ -879,6 +890,11 @@ class ModerationArgs : Arguments() {
 	val quickTimeoutLength by coalescingOptionalDuration {
 		name = "quick-timeout-length"
 		description = "The length of timeouts to use for quick timeouts"
+	}
+
+	val warnAutoPunishments by optionalBoolean {
+		name = "warn-auto-punishments"
+		description = "Whether to automatically punish users for reach a certain threshold on warns"
 	}
 
 	val logPublicly by optionalBoolean {
