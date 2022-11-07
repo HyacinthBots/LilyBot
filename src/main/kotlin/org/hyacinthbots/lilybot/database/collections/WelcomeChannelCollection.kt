@@ -54,7 +54,7 @@ class WelcomeChannelCollection : KordExKoinComponent, CozyWelcomeChannelData {
 	}
 
 	suspend fun removeWelcomeChannelsForGuild(guildId: Snowflake, kord: Kord) {
-		val guild = kord.getGuild(guildId) ?: return
+		val guild = kord.getGuildOrNull(guildId) ?: return
 		guild.channels.collect {
 			collection.deleteOne(WelcomeChannelData::channelId eq it.id)
 		}

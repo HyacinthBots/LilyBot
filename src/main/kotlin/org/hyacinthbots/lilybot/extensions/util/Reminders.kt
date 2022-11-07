@@ -494,7 +494,7 @@ class Reminders : Extension() {
 		for (it in dueReminders) {
 			var guild: Guild? = null
 			try {
-				guild = kord.getGuild(it.guildId)
+				guild = kord.getGuildOrNull(it.guildId)
 			} catch (_: KtorRequestException) {
 				ReminderCollection().removeReminder(it.id)
 			}
@@ -587,7 +587,7 @@ class Reminders : Extension() {
 		wasCancelled: Boolean,
 		byModerator: Boolean = false
 	) {
-		val guild = kord.getGuild(guildId) ?: return
+		val guild = kord.getGuildOrNull(guildId) ?: return
 		val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return
 		val message = channel.getMessageOrNull(messageId) ?: return
 		message.edit {

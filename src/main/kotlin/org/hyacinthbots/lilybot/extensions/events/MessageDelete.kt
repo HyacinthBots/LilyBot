@@ -77,7 +77,7 @@ class MessageDelete : Extension() {
 	 */
 	private suspend fun onMessageDelete(message: Message?, proxiedMessage: PKMessage?) {
 		message ?: return
-		val guild = message.getGuild()
+		val guild = message.getGuildOrNull() ?: return
 
 		if (message.content.startsWith("pk;e", 0, true)) {
 			return

@@ -118,10 +118,10 @@ class LogUploading : Extension() {
 					delay(4.seconds) // Delay to allow for thread creation
 					ThreadsCollection().getOwnerThreads(eventMember!!.id).forEach {
 						val thread =
-							event.getGuild().getChannelOfOrNull<TextChannelThread>(it.threadId) ?: return@forEach
+							event.getGuildOrNull()?.getChannelOfOrNull<TextChannelThread>(it.threadId) ?: return@forEach
 						if (thread.parentId == supportConfig?.channel) {
 							uploadChannel =
-								event.getGuild().getChannelOfOrNull<GuildMessageChannel>(it.threadId) ?: return@forEach
+								event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId) ?: return@forEach
 							return@forEach
 						}
 					}
