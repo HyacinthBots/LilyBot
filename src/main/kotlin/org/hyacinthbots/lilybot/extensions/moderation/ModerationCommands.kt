@@ -78,7 +78,7 @@ class ModerationCommands : Extension() {
 
 	private val warnSuffix = "Please consider your actions carefully.\n\n" +
 			"For more information about the warn system, please see [this document]" +
-			"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md)"
+			"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md#name-warn)"
 
 	@OptIn(DoNotChain::class)
 	override suspend fun setup() {
@@ -864,13 +864,17 @@ class ModerationCommands : Extension() {
 								embed {
 									title = "2nd warning in $guildName"
 									description = "**Reason:** ${arguments.reason}\n\n" +
-											"You have been timed out for 3 hours. $warnSuffix"
+											if (config.autoPunishOnWarn == true) {
+												"You have been timed out for 3 hours. $warnSuffix"
+											} else warnSuffix
 								}
 							}
 						}
 
-						guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+						if (config.autoPunishOnWarn == true) {
+							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+								timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+							}
 						}
 					}
 
@@ -880,14 +884,18 @@ class ModerationCommands : Extension() {
 								embed {
 									title = "3rd warning in $guildName"
 									description = "**Reason:** ${arguments.reason}\n\n" +
-											"You have been timed-out for 12 hours. $warnSuffix"
+											if (config.autoPunishOnWarn == true) {
+												"You have been timed-out for 12 hours. $warnSuffix"
+											} else warnSuffix
 									color = DISCORD_RED
 								}
 							}
 						}
 
-						guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+						if (config.autoPunishOnWarn == true) {
+							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+								timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+							}
 						}
 					}
 
@@ -897,13 +905,17 @@ class ModerationCommands : Extension() {
 								embed {
 									title = "Warning $strikes in $guildName"
 									description = "**Reason:** ${arguments.reason}\n\n" +
-											"You have been timed-out for 3 days. $warnSuffix"
+											if (config.autoPunishOnWarn == true) {
+												"You have been timed-out for 3 days. $warnSuffix"
+											} else warnSuffix
 								}
 							}
 						}
 
-						guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3D"))
+						if (config.autoPunishOnWarn == true) {
+							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+								timeoutUntil = Clock.System.now().plus(Duration.parse("PT3D"))
+							}
 						}
 					}
 				}

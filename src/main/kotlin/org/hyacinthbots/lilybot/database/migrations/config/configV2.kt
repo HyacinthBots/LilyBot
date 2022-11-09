@@ -11,5 +11,10 @@ suspend fun configV2(db: CoroutineDatabase) {
 			ModerationConfigData::quickTimeoutLength exists false,
 			setValue(ModerationConfigData::quickTimeoutLength, null)
 		)
+
+		updateMany(
+			ModerationConfigData::autoPunishOnWarn exists false,
+			setValue(ModerationConfigData::autoPunishOnWarn, null)
+		)
 	}
 }

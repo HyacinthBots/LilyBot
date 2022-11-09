@@ -13,7 +13,7 @@ permissions = "Manage Guild"
 [[command]]
 category = "Administration commands"
 name = "config moderation"
-args = "* `enable` - Whether to enable the moderation system or not - Boolean\n* `moderator-role` - The role of the guild moderators, used for pinging in message logs and adding to threads\n* `mod-action-log` - The channel to store the moderation actions in - Channel\n*`log-publicly` - Whether to log moderation actions in the channel they were run in as well as the action log. Defaults to false - Optional Boolean"
+args = "* `enable` - Whether to enable the moderation system or not - Boolean\n* `moderator-role` - The role of the guild moderators, used for pinging in message logs and adding to threads\n* `mod-action-log` - The channel to store the moderation actions in - Channel\n* `quick-timeout-length` - The length of timeout to set when using the `Moderate` message command - Optional Duration\n* `warn-auto-punishments` - Whether to automatically punish users for reaching a certain warn strike count - Optional Boolean\n* `log-publicly` - Whether to log moderation actions in the channel they were run in as well as the action log. Defaults to false - Optional Boolean"
 result = "The config is set for moderation."
 permissions = "Manage Guild"
 
@@ -82,7 +82,7 @@ permissions = "Ban Members"
 category = "Moderation commands"
 name = "warn"
 args = "* `user` - Person to warn - User\n* `reason` - Reason for warn - Optional String\n* `image` - An image to provide extra context for the action - Optional Attachment\n* `dm` - Whether to DM the user or not. Default: True - Optional Boolean"
-result = "Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.\n\n| Points |     Sanction     |\n|:------:|:----------------:|\n|   1    |      None.       |\n|   2    | 3 hour timeout.  |\n|   3    | 12 hour timeout. |\n|   3+   |  3 day timeout.  |"
+result = "Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total and if auto-punishments is enabled in the config, action is taken based on the below table.\n\n| Points |     Sanction     |\n|:------:|:----------------:|\n|   1    |      None.       |\n|   2    | 3 hour timeout.  |\n|   3    | 12 hour timeout. |\n|   3+   |  3 day timeout.  |"
 permissions = "Moderate Members"
 
 [[command]]
