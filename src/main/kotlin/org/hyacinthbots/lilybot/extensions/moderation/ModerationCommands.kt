@@ -934,7 +934,7 @@ class ModerationCommands : Extension() {
 							value = strikes.toString()
 						}
 					}
-					if (strikes != 1) {
+					if (config.autoPunishOnWarn == true && strikes != 1) {
 						embed {
 							warnTimeoutLog(strikes!!, user.asUser(), arguments.userArgument, arguments.reason)
 						}
