@@ -1,7 +1,7 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileOutputStream
-import java.util.Properties
+import java.util.*
 
 plugins {
     application
@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "4.3.0"
+version = "4.4.0"
 
 repositories {
     mavenCentral()
