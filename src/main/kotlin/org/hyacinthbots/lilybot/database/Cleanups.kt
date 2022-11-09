@@ -127,7 +127,7 @@ object Cleanups : KordExKoinComponent {
 					deletedThreads++
 					return
 				}
-				val guild = kordInstance.getGuild(it.guildId) ?: return
+				val guild = kordInstance.getGuildOrNull(it.guildId) ?: return
 				val thread = guild.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: continue
 				val latestMessage = thread.getLastMessage() ?: continue
 				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp

@@ -426,7 +426,14 @@ class RoleMenu : Extension() {
 					return@Button
 				}
 
-				val guild = kord.getGuild(data.guildId)!!
+				val guild = kord.getGuildOrNull(data.guildId)
+				if (guild == null) {
+					event.interaction.respondEphemeral {
+						content = "An error occurred getting when trying to get the server, please try again! If the " +
+								"problem persists, open a report at <https://github.com/HyacinthBots/LilyBot/issues>"
+					}
+					return@Button
+				}
 
 				val roles = mutableListOf<Role>()
 				data.roles.forEach {
@@ -545,7 +552,7 @@ class RoleMenu : Extension() {
 	 * @since 3.4.0
 	 */
 	private suspend inline fun EphemeralSlashCommandContext<*>.botCanAssignRole(kord: Kord, role: Role): Boolean {
-		val self = guild?.getMember(kord.selfId)!!
+		val self = guild?.getMemberOrNull(kord.selfId)!!
 		if (self.getTopRole()!! < role) {
 			respond {
 				content = "The selected role is higher than me in the role hierarchy. " +

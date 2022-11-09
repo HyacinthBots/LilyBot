@@ -28,7 +28,9 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 * `enable` - Whether to enable the moderation system or not - Boolean
 * `moderator-role` - The role of the guild moderators, used for pinging in message logs and adding to threads
 * `mod-action-log` - The channel to store the moderation actions in - Channel
-*`log-publicly` - Whether to log moderation actions in the channel they were run in as well as the action log. Defaults to false - Optional Boolean
+* `quick-timeout-length` - The length of timeout to set when using the `Moderate` message command - Optional Duration
+* `warn-auto-punishments` - Whether to automatically punish users for reaching a certain warn strike count - Optional Boolean
+* `log-publicly` - Whether to log moderation actions in the channel they were run in as well as the action log. Defaults to false - Optional Boolean
 
 **Result**: The config is set for moderation.
 
@@ -157,7 +159,7 @@ These commands are for use by moderators. They utilize built-in permission check
 * `image` - An image to provide extra context for the action - Optional Attachment
 * `dm` - Whether to DM the user or not. Default: True - Optional Boolean
 
-**Result**: Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total, action is taken based on the below table.
+**Result**: Warns `warnUser` with a DM and adds a strike to their points total. Depending on their new points total and if auto-punishments is enabled in the config, action is taken based on the below table.
 
 | Points |     Sanction     |
 |:------:|:----------------:|

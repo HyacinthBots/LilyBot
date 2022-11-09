@@ -4,15 +4,17 @@ import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
 import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
-import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
+import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.botHasPermissions
+import com.kotlindiscord.kord.extensions.utils.getTopRole
 import com.kotlindiscord.kord.extensions.utils.loadModule
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.RoleBehavior
 import dev.kord.core.behavior.channel.asChannelOf
@@ -25,13 +27,14 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
-import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.EmbedBuilder
+import io.github.nocomment1105.discordmoderationactions.enums.DmResult
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.DateTimePeriod
 import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
@@ -47,6 +50,7 @@ import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
+import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
@@ -314,7 +318,8 @@ suspend inline fun configIsUsable(option: ConfigOptions, guildId: Snowflake): Bo
 			return loggingConfig.messageChannel != null
 		}
 
-		ConfigOptions.MEMBER_LOGGING_ENABLED -> return LoggingConfigCollection().getConfig(guildId)?.enableMemberLogs ?: false
+		ConfigOptions.MEMBER_LOGGING_ENABLED -> return LoggingConfigCollection().getConfig(guildId)?.enableMemberLogs
+			?: false
 
 		ConfigOptions.MEMBER_LOG -> {
 			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
@@ -484,46 +489,61 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 }
 
 /**
- * This function runs a check to see if the target user is a bot or moderator in an [EphemeralSlashCommandContext],
+ * This function runs a check to see if the target user is a bot or moderator in an [EphemeralInteractionContext],
  * before responding accordingly. It takes the target user as an input, allowing said user to pass through the checks.
  * It also takes in the command name to make the response more detailed to the command it is called from. If at any
  * point the check fails, null is returned. This should be handled with an elvis operator to return the action in the
  * code.
  *
+ * @param kord The kord instance so the self of the bot can be gotten if needed
  * @param user The target user in the command
+ * @param guild The guild the command was run in
  * @param commandName The name of the command. Used for the responses and error message
  * @return *null*, if user is a bot/moderator. *success* if it isn't
  * @author NoComment1105
  * @since 2.1.0
  */
-suspend inline fun EphemeralSlashCommandContext<*>.isBotOrModerator(user: User, commandName: String): String? {
+suspend inline fun EphemeralInteractionContext.isBotOrModerator(
+	kord: Kord,
+	user: User,
+	guild: GuildBehavior?,
+	commandName: String
+): String? {
 	val moderatorRoleId = ModerationConfigCollection().getConfig(guild!!.id)?.role
-	ModerationConfigCollection().getConfig(guild!!.id) ?: run {
+	ModerationConfigCollection().getConfig(guild.id) ?: run {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
 		}
 		return null
 	}
 
-	try {
-		// Get the users roles into a List of Snowflakes
-		val roles = user.asMember(guild!!.id).roles.toList().map { it.id }
-		// If the user is a bot, return
-		if (guild?.getMember(user.id)?.isBot == true) {
-			respond {
-				content = "You cannot $commandName bot users!"
-			}
-			return null
-			// If the moderator ping role is in roles, return
-		} else if (moderatorRoleId in roles) {
-			respond {
-				content = "You cannot $commandName moderators!"
-			}
-			return null
+	val member = user.asMemberOrNull(guild.id) ?: return null
+	val self = kord.getSelf().asMemberOrNull(guild.id) ?: return null
+	// Get the users roles into a List of Snowflakes
+	val roles = member.roles.toList().map { it.id }
+	// If the user is a bot, return
+	@Suppress("UnnecessaryParentheses")
+	if (member.isBot) {
+		respond {
+			content = "You cannot $commandName bot users!"
 		}
-		// Just to catch any errors in the checks
-	} catch (exception: EntityNotFoundException) {
-		utilsLogger.warn { "isBot and isModerator checks failed on $commandName." }
+		return null
+		// If the moderator ping role is in roles, return
+	} else if (moderatorRoleId in roles) {
+		respond {
+			content = "You cannot $commandName moderators!"
+		}
+		return null
+	} else if (member.getTopRole()?.getPosition() != null && self.getTopRole()?.getPosition() == null) {
+		respond {
+			content = "This user has a role and Lily does not, therefore she cannot $commandName them."
+		}
+		return null
+	} else if ((member.getTopRole()?.getPosition() ?: 0) > (self.getTopRole()?.getPosition() ?: 0)) {
+		respond {
+			content = "This users highest role is above Lily's, therefore she cannot $commandName them."
+		}
+		return null
 	}
 
 	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
@@ -583,6 +603,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { StatusCollection() } bind StatusCollection::class
 				single { TagsCollection() } bind TagsCollection::class
 				single { ThreadsCollection() } bind ThreadsCollection::class
+				single { UptimeCollection() } bind UptimeCollection::class
 				single { WarnCollection() } bind WarnCollection::class
 				single { WelcomeChannelCollection() } bind WelcomeChannelCollection::class
 			}
@@ -701,8 +722,8 @@ suspend fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
 		field {
 			name = "Message Author:"
 			value = "System Member: ${proxiedMessage.member?.name}\n" +
-					"Account: ${guild.getMember(proxiedMessage.sender).tag} " +
-					guild.getMember(proxiedMessage.sender).mention
+					"Account: ${guild.getMemberOrNull(proxiedMessage.sender)?.tag ?: "Unable to get account"} " +
+					guild.getMemberOrNull(proxiedMessage.sender)?.mention
 			inline = true
 		}
 
@@ -734,4 +755,27 @@ suspend fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
  * @author NoComment1105
  * @since 4.1.0
  */
-suspend fun canPingRole(role: RoleBehavior?) = role != null && role.guild.getRole(role.id).mentionable
+suspend inline fun canPingRole(role: RoleBehavior?) = role != null && role.guild.getRole(role.id).mentionable
+
+fun getDmResult(shouldDm: Boolean, dm: Message?): DmResult {
+	@Suppress("KotlinConstantConditions") // Yes, but I want to be 100% sure
+	return if (shouldDm && dm != null) {
+		DmResult.DM_SUCCESS
+	} else if (shouldDm && dm == null) {
+		DmResult.DM_FAIL
+	} else {
+		DmResult.DM_NOT_SENT
+	}
+}
+
+/**
+ * Converts a [DateTimePeriod] into a [String] interval at which it repeats at.
+ *
+ * @return The string interval the DateTimePeriod repeats at
+ * @author NoComment1105
+ * @since 4.2.0
+ */
+fun DateTimePeriod?.interval(): String? {
+	this ?: return null
+	return this.toString().lowercase().replace("pt", "").replace("p", "")
+}

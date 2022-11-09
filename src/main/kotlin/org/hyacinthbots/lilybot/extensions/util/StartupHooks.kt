@@ -42,22 +42,6 @@ class StartupHooks : Extension() {
 				val now = Clock.System.now()
 
 				/**
-				 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
-				 * @author IMS212
-				 * @since v2.0
-				 */
-				// The channel specifically for sending online notifications to
-				val homeGuild = kord.getGuild(TEST_GUILD_ID)!!
-				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
-				val onlineMessage = onlineLog.createEmbed {
-					title = "Lily is now online!"
-					description =
-						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
-					color = DISCORD_GREEN
-				}
-				onlineMessage.publish()
-
-				/**
 				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
 				 * else the database value.
 				 */
@@ -68,6 +52,22 @@ class StartupHooks : Extension() {
 						playing(StatusCollection().getStatus()!!)
 					}
 				}
+
+				/**
+				 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
+				 * @author IMS212
+				 * @since v2.0
+				 */
+				// The channel specifically for sending online notifications to
+				val homeGuild = kord.getGuildOrNull(TEST_GUILD_ID) ?: return@action
+				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
+				val onlineMessage = onlineLog.createEmbed {
+					title = "Lily is now online!"
+					description =
+						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
+					color = DISCORD_GREEN
+				}
+				onlineMessage.publish()
 			}
 		}
 	}

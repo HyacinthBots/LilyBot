@@ -89,7 +89,7 @@ class ThreadInviter : Extension() {
 				config.role ?: return@action
 				config.channel ?: return@action
 
-				val guild = event.getGuild()
+				val guild = event.getGuildOrNull() ?: return@action
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
 				val textChannel: TextChannel
@@ -146,7 +146,7 @@ class ThreadInviter : Extension() {
 					startMessage.edit {
 						content =
 							"${user.asUser().mention}, the ${
-								event.getGuild().getRole(config.role).mention
+								event.getGuildOrNull()?.getRole(config.role)?.mention
 							} will be with you shortly!"
 					}
 
@@ -205,7 +205,7 @@ class ThreadInviter : Extension() {
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
 				val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
-				val guild = event.getGuild()
+				val guild = event.getGuildOrNull() ?: return@action
 
 				val supportChannel = getLoggingChannelWithPerms(ConfigOptions.SUPPORT_CHANNEL, guild) ?: return@action
 
@@ -254,12 +254,12 @@ class ThreadInviter : Extension() {
 					startMessage.edit {
 						content = if (config.message.isNullOrEmpty()) {
 							"${user.asUser().mention}, the ${
-								event.getGuild()
-									.getRole(config.role!!).mention
+								event.getGuildOrNull()
+									?.getRole(config.role!!)?.mention
 							} will be with you shortly!"
 						} else {
 							"${user.asUser().mention} ${
-								event.getGuild().getRole(config.role!!).mention
+								event.getGuildOrNull()?.getRole(config.role!!)?.mention
 							}\n${config.message}"
 						}
 					}

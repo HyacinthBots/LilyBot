@@ -25,6 +25,7 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.MessageChannel
@@ -116,10 +117,11 @@ class LogUploading : Extension() {
 				if (deferUploadUntilThread) {
 					delay(4.seconds) // Delay to allow for thread creation
 					ThreadsCollection().getOwnerThreads(eventMember!!.id).forEach {
-						if (event.getGuild().getChannelOf<TextChannelThread>(it.threadId).parentId ==
-							supportConfig?.channel
-						) {
-							uploadChannel = event.getGuild().getChannelOf<GuildMessageChannel>(it.threadId)
+						val thread =
+							event.getGuildOrNull()?.getChannelOfOrNull<TextChannelThread>(it.threadId) ?: return@forEach
+						if (thread.parentId == supportConfig?.channel) {
+							uploadChannel =
+								event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId) ?: return@forEach
 							return@forEach
 						}
 					}

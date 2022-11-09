@@ -173,6 +173,8 @@ formatting:
   NoEmptyFirstLineInMethodBlock:
     active: true
     autoCorrect: true
+  NoWildcardImports:
+    packagesToUseImportOnDemandProperty: ""
   PackageName:
     active: true
     autoCorrect: true

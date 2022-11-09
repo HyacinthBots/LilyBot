@@ -46,6 +46,7 @@ import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.entities.ReminderData
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.fitsEmbed
+import org.hyacinthbots.lilybot.utils.interval
 
 class Reminders : Extension() {
 	override val name = "reminders"
@@ -431,7 +432,7 @@ class Reminders : Extension() {
 
 							respond {
 								content = "Removed all ${
-									guild!!.getMember(arguments.user.id).mention
+									guild!!.getMemberOrNull(arguments.user.id)?.mention
 								}'s reminders for this guild."
 							}
 						}
@@ -450,7 +451,7 @@ class Reminders : Extension() {
 
 							respond {
 								content = "Removed all ${
-									guild!!.getMember(arguments.user.id).mention
+									guild!!.getMemberOrNull(arguments.user.id)?.mention
 								}'s repeating reminders for this guild."
 							}
 						}
@@ -469,7 +470,7 @@ class Reminders : Extension() {
 
 							respond {
 								content = "Removed all ${
-									guild!!.getMember(arguments.user.id).mention
+									guild!!.getMemberOrNull(arguments.user.id)?.mention
 								}'s non-repeating reminders for this guild."
 							}
 						}
@@ -493,7 +494,7 @@ class Reminders : Extension() {
 		for (it in dueReminders) {
 			var guild: Guild? = null
 			try {
-				guild = kord.getGuild(it.guildId)
+				guild = kord.getGuildOrNull(it.guildId)
 			} catch (_: KtorRequestException) {
 				ReminderCollection().removeReminder(it.id)
 			}
@@ -586,7 +587,7 @@ class Reminders : Extension() {
 		wasCancelled: Boolean,
 		byModerator: Boolean = false
 	) {
-		val guild = kord.getGuild(guildId) ?: return
+		val guild = kord.getGuildOrNull(guildId) ?: return
 		val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return
 		val message = channel.getMessageOrNull(messageId) ?: return
 		message.edit {
@@ -667,18 +668,6 @@ class Reminders : Extension() {
 						this.customMessage ?: "none"
 					}
 				}\n---\n"
-	}
-
-	/**
-	 * Converts a [DateTimePeriod] into a [String] interval at which it repeats at.
-	 *
-	 * @return The string interval the DateTimePeriod repeats at
-	 * @author NoComment1105
-	 * @since 4.2.0
-	 */
-	private fun DateTimePeriod?.interval(): String? {
-		this ?: return null
-		return this.toString().lowercase().replace("pt", "").replace("p", "")
 	}
 
 	inner class ReminderSetArgs : Arguments() {

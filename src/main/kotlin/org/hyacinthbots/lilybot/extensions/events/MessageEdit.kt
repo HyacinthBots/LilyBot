@@ -78,7 +78,7 @@ class MessageEdit : Extension() {
 	 * @author trainb0y
 	 */
 	private suspend fun onMessageEdit(message: Message, old: Message?, proxiedMessage: PKMessage?) {
-		val guild = message.getGuild()
+		val guild = message.getGuildOrNull() ?: return
 
 		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, guild) ?: return
 

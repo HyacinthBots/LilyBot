@@ -1,4 +1,7 @@
+
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileOutputStream
+import java.util.*
 
 plugins {
     application
@@ -12,7 +15,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "4.3.0"
+version = "4.4.0"
 
 repositories {
     mavenCentral()
@@ -73,6 +76,8 @@ dependencies {
 
 	// Cozy's welcome module
 	implementation(libs.cozy.welcome)
+
+    implementation(libs.dma)
 }
 
 application {
@@ -84,6 +89,17 @@ gitHooks {
         mapOf("pre-commit" to "detekt")
     )
 }
+
+val generatedVersionDir = "$buildDir/generated-version"
+
+sourceSets {
+    main {
+        kotlin {
+            output.dir(generatedVersionDir)
+        }
+    }
+}
+
 
 tasks {
     withType<KotlinCompile> {
@@ -120,6 +136,20 @@ tasks {
          */
         gradleVersion = "7.5.1"
         distributionType = Wrapper.DistributionType.BIN
+    }
+
+    register("generateVersionProperties") {
+        doLast {
+            val propertiesFile = file("$generatedVersionDir/version.properties")
+            propertiesFile.parentFile.mkdirs()
+            val properties = Properties()
+            properties.setProperty("version", "$version")
+            properties.store(FileOutputStream(propertiesFile), null)
+        }
+    }
+
+    named("processResources") {
+        dependsOn("generateVersionProperties")
     }
 }
 
