@@ -963,6 +963,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val targetUser = guild?.getMemberOrNull(arguments.userArgument.id) ?: run {
 					respond {
 						content = "I was unable to find the member in this guild! Please try again!"
@@ -1009,6 +1010,14 @@ class ModerationCommands : Extension() {
 						name = "Total Strikes:"
 						value = userStrikes.toString()
 						inline = false
+					}
+				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Warning Removal"
+						description = "${arguments.userArgument.mention} had a warn strike removed by a moderator."
+						color = DISCORD_BLACK
 					}
 				}
 			}
