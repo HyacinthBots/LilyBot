@@ -44,6 +44,7 @@ import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.hyacinthbots.lilybot.utils.canPingRole
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.interval
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -301,6 +302,18 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					name = "Log publicly"
 					value = when (arguments.logPublicly) {
 						true -> "True"
+						false -> "Disabled"
+						null -> "Disabled"
+					}
+				}
+				field {
+					name = "Quick timeout length"
+					value = arguments.quickTimeoutLength.interval() ?: "No quick timeout length set"
+				}
+				field {
+					name = "Warning Auto-punishments"
+					value = when (arguments.warnAutoPunishments) {
+						true -> "Enabled"
 						false -> "Disabled"
 						null -> "Disabled"
 					}

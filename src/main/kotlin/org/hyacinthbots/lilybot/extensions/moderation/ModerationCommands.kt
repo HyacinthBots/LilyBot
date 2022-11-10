@@ -934,7 +934,7 @@ class ModerationCommands : Extension() {
 							value = strikes.toString()
 						}
 					}
-					if (strikes != 1) {
+					if (config.autoPunishOnWarn == true && strikes != 1) {
 						embed {
 							warnTimeoutLog(strikes!!, user.asUser(), arguments.userArgument, arguments.reason)
 						}
@@ -1248,8 +1248,8 @@ private fun EmbedBuilder.warnTimeoutLog(timeoutNumber: Int, moderator: User, tar
 			description = "${targetUser.mention} has been timed-out for 12 hours due to 3 warn strikes"
 
 		else ->
-			description = "${targetUser.mention} has been timed-out for 3 days due to $targetUser warn " +
-					"strike\nIt might be time to consider other " +
+			description = "${targetUser.mention} has been timed-out for 3 days due to $timeoutNumber warn " +
+					"strikes\nIt might be time to consider other " +
 					"action."
 	}
 
