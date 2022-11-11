@@ -29,6 +29,6 @@ The following data is not automatically collected by LilyBot and will only be st
 - **Guild Data** is checked when the bot restarts. Guild Leave Data is used to delete all data from a guild that LilyBot left over 30 days prior.
 
 ## Contact & Data Access or Removal
-For questions or requests for access or removal of personal data, you may email us at hyacinthbots@outlook.com. You may also contact either NoComment#6411 or tempest#451 on Discord.
+For questions or requests for access or removal of personal data, you may email us at hyacinthbots@outlook.com. You may also contact either NoComment#6411 or tempest#4510 on Discord.
 
 Please note that, under normal circumstances, the lead developers of the bot do not have access to data that LilyBot stores. If requests are made, we will need to contact our hosting provider.
