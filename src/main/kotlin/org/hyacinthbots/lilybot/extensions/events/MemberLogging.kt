@@ -8,6 +8,8 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
+import dev.kord.core.supplier.EntitySupplyStrategy
+import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
@@ -50,6 +52,9 @@ class MemberLogging : Extension() {
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_GREEN
+					footer {
+						text = "Member count: ${event.guild.withStrategy(EntitySupplyStrategy.rest).members.count()}"
+					}
 				}
 			}
 		}
@@ -80,6 +85,9 @@ class MemberLogging : Extension() {
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_RED
+					footer {
+						text = "Member count: ${event.guild.withStrategy(EntitySupplyStrategy.rest).members.count()}"
+					}
 				}
 			}
 		}
