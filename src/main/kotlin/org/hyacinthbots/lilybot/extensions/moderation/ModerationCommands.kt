@@ -521,7 +521,9 @@ class ModerationCommands : Extension() {
 
 				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
 				if (arguments.messages != null && (arguments.messages!! > 7 || arguments.messages!! < 0)) {
-					respond { content = "Invalid `messages` parameter! This number must be between 0 and 7!" }
+					respond {
+						content = "Invalid `delete-message-days` parameter! This number must be between 0 and 7 days!"
+					}
 					return@action
 				}
 
@@ -961,6 +963,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val targetUser = guild?.getMemberOrNull(arguments.userArgument.id) ?: run {
 					respond {
 						content = "I was unable to find the member in this guild! Please try again!"
@@ -1009,6 +1012,14 @@ class ModerationCommands : Extension() {
 						inline = false
 					}
 				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Warning Removal"
+						description = "${arguments.userArgument.mention} had a warn strike removed by a moderator."
+						color = DISCORD_BLACK
+					}
+				}
 			}
 		}
 	}
@@ -1022,8 +1033,8 @@ class ModerationCommands : Extension() {
 
 		/** The number of days worth of messages to delete. */
 		val messages by int {
-			name = "messages"
-			description = "Messages"
+			name = "delete-message-days"
+			description = "The number of days worth of messages to delete"
 		}
 
 		/** The reason for the ban. */
@@ -1056,8 +1067,8 @@ class ModerationCommands : Extension() {
 
 		/** The number of days worth of messages to delete, defaults to 3 days. */
 		val messages by optionalInt {
-			name = "messages"
-			description = "Messages"
+			name = "delete-message-days"
+			description = "The number of days worth of messages to delete"
 		}
 
 		/** The reason for the soft-ban. */
