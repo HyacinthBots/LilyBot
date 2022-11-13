@@ -517,8 +517,16 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 		return null
 	}
 
-	val member = user.asMemberOrNull(guild.id) ?: return null
-	val self = kord.getSelf().asMemberOrNull(guild.id) ?: return null
+	val member = user.asMemberOrNull(guild.id) ?: run {
+		utilsLogger.debug { "isBotOrModerator skipped on $commandName due to this user not being a member" }
+		return "skip"
+	}
+	val self = kord.getSelf().asMemberOrNull(guild.id) ?: run {
+		respond {
+			content = "There was an error getting Lily as a member of this server, please try again!"
+		}
+		return null
+	}
 	// Get the users roles into a List of Snowflakes
 	val roles = member.roles.toList().map { it.id }
 	// If the user is a bot, return
