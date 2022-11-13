@@ -54,7 +54,7 @@ repositories {
 dependencies {
     detektPlugins(libs.detekt)
 
-    implementation(libs.kord.extensions)
+    implementation(libs.kord.extensions.core)
     implementation(libs.kord.extensions.phishing)
     implementation(libs.kord.extensions.pluralkit)
     implementation(libs.kord.extensions.unsafe)
@@ -128,7 +128,7 @@ tasks {
     wrapper {
         /*
          * To update the gradle wrapper version, change
-         * the `gradleVersion` below and in `gradle-wrapper.properties`
+         * the `gradleVersion` below
          *
          * Then run the following command twice to update the gradle
          * scripts suitably
