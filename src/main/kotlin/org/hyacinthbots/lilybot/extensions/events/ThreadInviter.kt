@@ -291,23 +291,16 @@ class ThreadInviter : Extension() {
 					event.channel.ownerId == kord.selfId ||
 							event.channel.member != null
 				}
-				requiredConfigs(
-					ConfigOptions.SUPPORT_ENABLED,
-					ConfigOptions.SUPPORT_CHANNEL,
-					ConfigOptions.SUPPORT_ROLE,
-					ConfigOptions.MODERATOR_ROLE
-				)
 			}
 
 			action {
-				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)!!
-				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-				val modRole = event.channel.guild.getRole(moderationConfig.role!!)
+				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
+				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
 				val threadOwner = event.channel.owner.asUser()
 
 				ThreadsCollection().setThreadOwner(event.channel.guildId, event.channel.id, threadOwner.id)
 
-				if (supportConfig.enabled && event.channel.parentId == supportConfig.channel) {
+				if (supportConfig != null && supportConfig.enabled && event.channel.parentId == supportConfig.channel) {
 					val supportRole = event.channel.guild.getRole(supportConfig.role!!)
 
 					event.channel.withTyping { delay(2.seconds) }
@@ -332,7 +325,10 @@ class ThreadInviter : Extension() {
 					}
 				}
 
-				if (!supportConfig.enabled || event.channel.parentId != supportConfig.channel) {
+				if (moderationConfig != null || supportConfig == null ||
+					!supportConfig.enabled || event.channel.parentId != supportConfig.channel
+				) {
+					val modRole = event.channel.guild.getRole(moderationConfig?.role!!)
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
 						content = "Hello there! Lemme just grab the moderators..."
