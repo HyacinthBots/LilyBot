@@ -855,7 +855,7 @@ class ModerationCommands : Extension() {
 							embed {
 								title = "1st warning in $guildName"
 								description = "**Reason:** ${arguments.reason}\n\n" +
-										"No moderation action has been take. $warnSuffix"
+										"No moderation action has been taken. $warnSuffix"
 							}
 						}
 					}
