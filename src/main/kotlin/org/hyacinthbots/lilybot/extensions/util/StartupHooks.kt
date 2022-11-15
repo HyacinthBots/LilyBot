@@ -14,6 +14,7 @@ import dev.kord.core.event.gateway.ReadyEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.Cleanups
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
+import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
@@ -40,6 +41,8 @@ class StartupHooks : Extension() {
 		event<ReadyEvent> {
 			action {
 				val now = Clock.System.now()
+
+				UptimeCollection().set(now)
 
 				/**
 				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
