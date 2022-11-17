@@ -63,7 +63,7 @@ class MessageDelete : Extension() {
 			}
 
 			action {
-					onMessageDelete(event.getMessageOrNull(), null)
+				onMessageDelete(event.getMessageOrNull(), null)
 			}
 		}
 	}

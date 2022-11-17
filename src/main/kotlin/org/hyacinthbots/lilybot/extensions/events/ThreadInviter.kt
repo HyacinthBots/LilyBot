@@ -125,7 +125,7 @@ class ThreadInviter : Extension() {
 						content = "${user.mention} You already have a thread, please talk about your issue in it.\n" +
 								existingUserThread!!.mention
 					}
-					textChannel.getMessage(event.pkMessage.id).delete()
+					textChannel.getMessageOrNull(event.pkMessage.id)?.delete()
 					response.delete(10.seconds.inWholeMilliseconds, false)
 				} else {
 					val thread =
