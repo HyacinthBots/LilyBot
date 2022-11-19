@@ -92,11 +92,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				return@action
 			}
 
-			if (!canPingRole(arguments.role)) {
+			if (!canPingRole(arguments.role) && arguments.role != null) {
 				ackEphemeral()
 				respondEphemeral {
 					content =
-						"I cannot use the role: ${arguments.role?.mention}, because it is not mentionable by" +
+						"I cannot use the role: ${arguments.role!!.mention}, because it is not mentionable by " +
 								"regular users. Please enable this in the role settings, or use a different role."
 				}
 				return@action
@@ -270,7 +270,7 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			if (!canPingRole(arguments.moderatorRole) && arguments.moderatorRole != null) {
 				respond {
 					content =
-						"I cannot use the role: ${arguments.moderatorRole?.mention}, because it is not mentionable by" +
+						"I cannot use the role: ${arguments.moderatorRole!!.mention}, because it is not mentionable by " +
 								"regular users. Please enable this in the role settings, or use a different role."
 				}
 				return@action
