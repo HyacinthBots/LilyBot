@@ -88,7 +88,7 @@ class MessageDelete : Extension() {
 						event.messages.reversed().joinToString("\n") { // Reversed for chronology
 							"*  [${
 								it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
-							} UTC]  **${it.author?.username}**  (${it.author?.id}):  ${it.content}"
+							} UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
 						}
 
 				messageLog.createMessage {
