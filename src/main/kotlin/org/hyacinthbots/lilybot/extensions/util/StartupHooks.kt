@@ -61,13 +61,12 @@ class StartupHooks : Extension() {
 				// The channel specifically for sending online notifications to
 				val homeGuild = kord.getGuildOrNull(TEST_GUILD_ID) ?: return@action
 				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
-				val onlineMessage = onlineLog.createEmbed {
+				onlineLog.createEmbed {
 					title = "Lily is now online!"
 					description =
 						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
 					color = DISCORD_GREEN
 				}
-				onlineMessage.publish()
 			}
 		}
 	}
