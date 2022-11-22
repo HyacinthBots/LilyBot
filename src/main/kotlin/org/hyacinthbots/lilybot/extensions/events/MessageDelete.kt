@@ -9,9 +9,16 @@ import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedM
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageDeleteEvent
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.event.message.MessageBulkDeleteEvent
+import dev.kord.rest.builder.message.create.embed
+import io.ktor.client.request.forms.ChannelProvider
+import io.ktor.utils.io.jvm.javaio.toByteReadChannel
 import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
@@ -64,6 +71,47 @@ class MessageDelete : Extension() {
 
 			action {
 				onMessageDelete(event.getMessageOrNull(), null)
+			}
+		}
+
+		event<MessageBulkDeleteEvent> {
+			check {
+				anyGuild()
+				requiredConfigs(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+			}
+
+			action {
+				val messageLog =
+					getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, event.getGuild()!!) ?: return@action
+
+				val messages = "# Messages\n\n**Total:** ${event.messages.size}\n\n" +
+						event.messages.reversed().joinToString("\n") { // Reversed for chronology
+							"*  [${
+								it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
+							} UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
+						}
+
+				messageLog.createMessage {
+					embed {
+						title = "Bulk Message Delete"
+						description = "A Bulk delete of messages occurred"
+						field {
+							name = "Location"
+							value =
+								"${event.channel.mention} (${event.channel.asChannelOf<GuildMessageChannel>().name})"
+						}
+						field {
+							name = "Number of messages"
+							value = event.messages.size.toString()
+						}
+						color = DISCORD_PINK
+						timestamp = Clock.System.now()
+					}
+					addFile(
+						"messages.md",
+						ChannelProvider { messages.byteInputStream().toByteReadChannel() }
+					)
+				}
 			}
 		}
 	}
