@@ -418,7 +418,9 @@ suspend inline fun getSystemChannelWithPerms(inputGuild: Guild): GuildMessageCha
 	val systemChannel = inputGuild.getSystemChannel() ?: return null
 	if (!systemChannel.botHasPermissions(Permission.ViewChannel) ||
 		!systemChannel.botHasPermissions(Permission.SendMessages)
-	) return null
+	) {
+	    return null
+	}
 	return systemChannel
 }
 
@@ -651,7 +653,9 @@ fun Message?.trimmedContents(): String? {
 	this ?: return null
 	return if (this.content.length > 1024) {
 		this.content.substring(0, 1020) + " ..."
-	} else this.content
+	} else {
+	    this.content
+	}
 }
 
 /**
@@ -663,7 +667,9 @@ fun String?.trimmedContents(): String? {
 	this ?: return null
 	return if (this.length > 1024) {
 		this.substring(0, 1020) + " ..."
-	} else this
+	} else {
+	    this
+	}
 }
 
 /**
@@ -680,7 +686,9 @@ fun Message?.trimmedContents(desiredLength: Int): String? {
 	val useRegularLength = this.content.length < desiredLength.coerceIn(1, 1020)
 	return if (this.content.length > desiredLength.coerceIn(1, 1020)) {
 		this.content.substring(0, if (useRegularLength) this.content.length else desiredLength) + "..."
-	} else this.content
+	} else {
+	    this.content
+	}
 }
 
 /**
@@ -693,7 +701,9 @@ fun String?.trimmedContents(desiredLength: Int): String? {
 	val useRegularLength = this.length < desiredLength.coerceIn(1, 1020)
 	return if (this.length > desiredLength.coerceIn(1, 1020)) {
 		this.substring(0, if (useRegularLength) this.length else desiredLength) + "..."
-	} else this
+	} else {
+	    this
+	}
 }
 
 /**

@@ -595,7 +595,9 @@ class Reminders : Extension() {
 					"${
 						if (wasCancelled) {
 							"cancelled ${if (byModerator) "by moderator" else ""}."
-						} else "completed."
+						} else {
+						    "completed."
+						}
 					}**"
 		}
 	}
