@@ -868,7 +868,9 @@ class ModerationCommands : Extension() {
 									description = "**Reason:** ${arguments.reason}\n\n" +
 											if (config.autoPunishOnWarn == true) {
 												"You have been timed out for 3 hours. $warnSuffix"
-											} else warnSuffix
+											} else {
+											    warnSuffix
+											}
 								}
 							}
 						}
@@ -888,7 +890,9 @@ class ModerationCommands : Extension() {
 									description = "**Reason:** ${arguments.reason}\n\n" +
 											if (config.autoPunishOnWarn == true) {
 												"You have been timed-out for 12 hours. $warnSuffix"
-											} else warnSuffix
+											} else {
+											    warnSuffix
+											}
 									color = DISCORD_RED
 								}
 							}
@@ -909,7 +913,9 @@ class ModerationCommands : Extension() {
 									description = "**Reason:** ${arguments.reason}\n\n" +
 											if (config.autoPunishOnWarn == true) {
 												"You have been timed-out for 3 days. $warnSuffix"
-											} else warnSuffix
+											} else {
+											    warnSuffix
+											}
 								}
 							}
 						}

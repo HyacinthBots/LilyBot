@@ -1,10 +1,10 @@
 [versions]
 kord-extensions = "1.5.5-20221121.113710-37"
 logging = "3.0.4"
-logback = "1.4.4"
+logback = "1.4.5"
 github-api = "1.313"
 kmongo = "4.7.2"
-detekt = "1.21.0"
+detekt = "1.22.0"
 koma = "1.1.0"
 cozy-welcome = "1.0-SNAPSHOT"
 dma = "0.1.0"
