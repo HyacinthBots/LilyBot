@@ -1,5 +1,5 @@
 [versions]
-kord-extensions = "1.5.5-20221107.093708-35"
+kord-extensions = "1.5.5-20221121.113710-37"
 logging = "3.0.4"
 logback = "1.4.4"
 github-api = "1.313"
