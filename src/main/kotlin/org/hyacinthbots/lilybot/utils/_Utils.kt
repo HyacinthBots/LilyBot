@@ -787,3 +787,13 @@ fun DateTimePeriod?.interval(): String? {
 	this ?: return null
 	return this.toString().lowercase().replace("pt", "").replace("p", "")
 }
+
+/**
+ * Get the member count of the given Guild.
+ *
+ * @return The number of members in this guild.
+ * @author NoComment1105
+ * @since 4.4.3
+ */
+suspend fun <T : GuildBehavior> T.getMemberCount() =
+	kord.with(EntitySupplyStrategy.rest).getGuild(this.id).members.count()
