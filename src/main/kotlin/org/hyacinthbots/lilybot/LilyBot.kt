@@ -58,7 +58,7 @@ private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
 var commandDocs: CommandDocs? = null
 
 val docFile = Path("./docs/commands.md")
-val commitHash = LilyBot::class.java.getResource("/commit_hash.txt")?.readText(Charset.defaultCharset())
+val commitHash = LilyBot::class.java.getResource("commit_hash.txt")?.readText(Charset.defaultCharset())
 
 suspend fun main() {
 	val mapper = tomlMapper { }
