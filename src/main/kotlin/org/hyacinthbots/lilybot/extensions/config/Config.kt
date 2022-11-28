@@ -590,15 +590,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				}
 			}
 
-			if (arguments.enablePublicMemberLogging) {
-				event.interaction.getOriginalInteractionResponseOrNull()?.edit {
-					embed {
-						loggingEmbed()
-					}
-				}
-			} else {
-				ackEphemeral()
-				respondEphemeral { embed { loggingEmbed() } }
+			event.interaction.getOriginalInteractionResponseOrNull()?.edit {
+				embed { loggingEmbed() }
 			}
 		}
 	}
