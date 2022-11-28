@@ -1,6 +1,8 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
+import java.nio.charset.Charset
 import java.util.*
 
 plugins {
@@ -115,6 +117,9 @@ tasks {
 
     processResources {
         from("docs/commanddocs.toml")
+        val hash = getCommitHash()
+        inputs.property("hash", hash)
+        filesMatching("commit_hash.txt") { expand("hash" to hash) }
     }
 
     jar {
@@ -158,4 +163,14 @@ detekt {
     config = files("$rootDir/detekt.yml")
 
     autoCorrect = true
+}
+
+fun getCommitHash(): String {
+    val stdout = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "log", "-n", "1", "--pretty=format:\"%h\"", "--encoding=UTF-8")
+        standardOutput = stdout
+    }
+    val str = stdout.toString(Charset.defaultCharset())
+    return str.substring(1, str.length - 1)
 }
