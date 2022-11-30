@@ -40,10 +40,10 @@ class MemberLogging : Extension() {
 				failIf { event.member.id == kord.selfId }
 			}
 			action {
-				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild) ?: return@action
+				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild)
 				val config = LoggingConfigCollection().getConfig(event.guildId)
 
-				memberLog.createEmbed {
+				memberLog?.createEmbed {
 					author {
 						name = "User joined the server!"
 						icon = event.member.avatar?.url
@@ -66,11 +66,13 @@ class MemberLogging : Extension() {
 				}
 
 				if (config != null && config.enablePublicMemberLogs) {
-					val publicLog = guildFor(event)?.getChannelOfOrNull<GuildMessageChannel>(config.publicMemberLog!!)
-						?: return@action
-					if (!publicLog.botHasPermissions(Permission.SendMessages, Permission.EmbedLinks)) return@action
+					var publicLog = guildFor(event)?.getChannelOfOrNull<GuildMessageChannel>(config.publicMemberLog!!)
+					val permissions = publicLog?.botHasPermissions(Permission.SendMessages, Permission.EmbedLinks)
+					if (permissions == false || permissions == null) {
+						publicLog = null
+					}
 
-					publicLog.createMessage {
+					publicLog?.createMessage {
 						if (config.publicMemberLogData?.pingNewUsers == true) content = event.member.mention
 						embed {
 							author {
@@ -102,10 +104,10 @@ class MemberLogging : Extension() {
 				failIf { event.user.id == kord.selfId }
 			}
 			action {
-				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild) ?: return@action
+				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild)
 				val config = LoggingConfigCollection().getConfig(event.guildId)
 
-				memberLog.createEmbed {
+				memberLog?.createEmbed {
 					author {
 						name = "User left the server!"
 						icon = event.user.avatar?.url
@@ -127,11 +129,13 @@ class MemberLogging : Extension() {
 				}
 
 				if (config != null && config.enablePublicMemberLogs) {
-					val publicLog = guildFor(event)?.getChannelOfOrNull<GuildMessageChannel>(config.publicMemberLog!!)
-						?: return@action
-					if (!publicLog.botHasPermissions(Permission.SendMessages, Permission.EmbedLinks)) return@action
+					var publicLog = guildFor(event)?.getChannelOfOrNull<GuildMessageChannel>(config.publicMemberLog!!)
+					val permissions = publicLog?.botHasPermissions(Permission.SendMessages, Permission.EmbedLinks)
+					if (permissions == false || permissions == null) {
+						publicLog = null
+					}
 
-					publicLog.createEmbed {
+					publicLog?.createEmbed {
 						author {
 							name = "Goodbye ${event.user.username}"
 							icon = event.user.avatar?.url
