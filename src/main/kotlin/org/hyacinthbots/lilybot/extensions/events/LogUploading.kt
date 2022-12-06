@@ -282,6 +282,8 @@ class LogUploading : Extension() {
 			name = "log-uploading"
 			description = "The parent command for blacklisting channels from running the log uploading code"
 
+			requirePermission(Permission.ModerateMembers)
+
 			check {
 				anyGuild()
 				hasPermission(Permission.ModerateMembers)

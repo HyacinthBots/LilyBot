@@ -67,6 +67,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 
 		initialResponse = InitialSlashCommandResponse.None
 
+		requirePermission(Permission.ManageGuild)
+
 		check {
 			anyGuild()
 			hasPermission(Permission.ManageGuild)
@@ -223,6 +225,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		name = "moderation"
 		description = "Configure Lily's moderation system"
 
+		requirePermission(Permission.ManageGuild)
+
 		check {
 			anyGuild()
 			hasPermission(Permission.ManageGuild)
@@ -362,6 +366,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		name = "logging"
 		description = "Configure Lily's logging system"
 
+		requirePermission(Permission.ManageGuild)
+
 		check {
 			anyGuild()
 			hasPermission(Permission.ManageGuild)
@@ -479,6 +485,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		name = "utility"
 		description = "Configure Lily's utility settings"
 
+		requirePermission(Permission.ManageGuild)
+
 		check {
 			anyGuild()
 			hasPermission(Permission.ManageGuild)
@@ -557,6 +565,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 	ephemeralSubCommand(::ClearArgs) {
 		name = "clear"
 		description = "Clear a config type"
+
+		requirePermission(Permission.ManageGuild)
 
 		check {
 			anyGuild()
@@ -698,6 +708,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 	ephemeralSubCommand(::ViewArgs) {
 		name = "view"
 		description = "View the current config that you have set"
+
+		requirePermission(Permission.ManageGuild)
 
 		check {
 			anyGuild()

@@ -40,6 +40,7 @@ class GuildAnnouncements : Extension() {
 			initialResponse = InitialSlashCommandResponse.None
 
 			guild(TEST_GUILD_ID)
+			requirePermission(Permission.Administrator)
 
 			check {
 				hasPermission(Permission.Administrator)

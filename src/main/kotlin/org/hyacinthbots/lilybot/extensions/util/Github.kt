@@ -523,6 +523,8 @@ class Github : Extension() {
 				name = "default-repo"
 				description = "Set the default repo to look up issues in."
 
+				requirePermission(Permission.ModerateMembers)
+
 				check {
 					anyGuild()
 					hasPermission(Permission.ModerateMembers)
@@ -565,6 +567,8 @@ class Github : Extension() {
 			ephemeralSubCommand {
 				name = "remove-default-repo"
 				description = "Removes the default repo for this guild"
+
+				requirePermission(Permission.ModerateMembers)
 
 				check {
 					anyGuild()

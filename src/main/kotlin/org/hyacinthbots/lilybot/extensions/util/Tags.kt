@@ -235,6 +235,8 @@ class Tags : Extension() {
 			name = "tag-create"
 			description = "Create a tag for your guild! Use /tag-help for more info."
 
+			requirePermission(Permission.ModerateMembers)
+
 			check {
 				anyGuild()
 				hasPermission(Permission.ModerateMembers)
@@ -306,6 +308,8 @@ class Tags : Extension() {
 			name = "tag-delete"
 			description = "Delete a tag from your guild. Use /tag-help for more info."
 
+			requirePermission(Permission.ModerateMembers)
+
 			check {
 				anyGuild()
 				hasPermission(Permission.ModerateMembers)
@@ -343,6 +347,8 @@ class Tags : Extension() {
 		ephemeralSlashCommand(::EditTagArgs) {
 			name = "tag-edit"
 			description = "Edit a tag in your guild. Use /tag-help for more info."
+
+			requirePermission(Permission.ModerateMembers)
 
 			check {
 				anyGuild()
