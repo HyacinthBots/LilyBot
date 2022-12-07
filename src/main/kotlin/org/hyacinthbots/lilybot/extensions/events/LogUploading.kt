@@ -282,14 +282,16 @@ class LogUploading : Extension() {
 			name = "log-uploading"
 			description = "The parent command for blacklisting channels from running the log uploading code"
 
-			check {
-				anyGuild()
-				hasPermission(Permission.ModerateMembers)
-			}
-
 			ephemeralSubCommand {
 				name = "blacklist-add"
 				description = "Add a channel to the log uploading blacklist"
+
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+				}
 
 				action {
 					val blacklist = LogUploadingBlacklistCollection().isChannelInUploadBlacklist(guild!!.id, channel.id)
@@ -326,6 +328,13 @@ class LogUploading : Extension() {
 				name = "blacklist-remove"
 				description = "Remove a channel from the log uploading blacklist"
 
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+				}
+
 				action {
 					LogUploadingBlacklistCollection().isChannelInUploadBlacklist(guild!!.id, channel.id) ?: run {
 						respond {
@@ -359,6 +368,13 @@ class LogUploading : Extension() {
 			ephemeralSubCommand {
 				name = "blacklist-list"
 				description = "List all channels that block log uploading"
+
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+				}
 
 				action {
 					var channels = ""

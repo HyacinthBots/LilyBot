@@ -325,11 +325,7 @@ class Reminders : Extension() {
 				name = "mod-list"
 				description = "List all reminders for a user, if you're a moderator"
 
-				check {
-					anyGuild()
-					hasPermission(Permission.ModerateMembers)
-					requirePermission(Permission.ModerateMembers)
-				}
+				requirePermission(Permission.ModerateMembers)
 
 				check {
 					anyGuild()
@@ -357,6 +353,14 @@ class Reminders : Extension() {
 			ephemeralSubCommand(::ReminderModRemoveArgs) {
 				name = "mod-remove"
 				description = "Remove a reminder for a user, if you're a moderator"
+
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
 
 				action {
 					val reminders = ReminderCollection().getRemindersForUser(arguments.user.id)
@@ -396,6 +400,8 @@ class Reminders : Extension() {
 			ephemeralSubCommand(::ReminderModRemoveAllArgs) {
 				name = "mod-remove-all"
 				description = "Remove all a specific type of reminder for a user, if you're a moderator"
+
+				requirePermission(Permission.ModerateMembers)
 
 				check {
 					anyGuild()
