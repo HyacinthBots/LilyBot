@@ -315,11 +315,11 @@ class ThreadInviter : Extension() {
 					event.channel.withTyping { delay(3.seconds) }
 					message.edit {
 						content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
-								" you can just send a message in <#${
+								" you can just send a message in ${
 									event.channel.guild.getChannel(
 										supportConfig.channel
 									).mention
-								}> and I'll automatically make a thread for you!\n\nOnce you're finished, use" +
+								} and I'll automatically make a thread for you!\n\nOnce you're finished, use" +
 								" `/thread archive` to close  " +
 								" your thread. If you want to change the thread name, use `/thread rename` to do so."
 					}
