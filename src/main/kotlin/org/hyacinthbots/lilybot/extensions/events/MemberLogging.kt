@@ -3,16 +3,23 @@ package org.hyacinthbots.lilybot.extensions.events
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.utils.botHasPermissions
+import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.getChannelOfOrNull
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
-import dev.kord.core.supplier.EntitySupplyStrategy
-import kotlinx.coroutines.flow.count
+import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getMemberCount
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 
 /**
@@ -33,9 +40,10 @@ class MemberLogging : Extension() {
 				failIf { event.member.id == kord.selfId }
 			}
 			action {
-				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild) ?: return@action
+				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild)
+				val config = LoggingConfigCollection().getConfig(event.guildId)
 
-				memberLog.createEmbed {
+				memberLog?.createEmbed {
 					author {
 						name = "User joined the server!"
 						icon = event.member.avatar?.url
@@ -53,7 +61,36 @@ class MemberLogging : Extension() {
 					timestamp = Clock.System.now()
 					color = DISCORD_GREEN
 					footer {
-						text = "Member count: ${event.guild.withStrategy(EntitySupplyStrategy.rest).members.count()}"
+						text = "Member count: ${event.guild.getMemberCount()}"
+					}
+				}
+
+				if (config != null && config.enablePublicMemberLogs) {
+					var publicLog = guildFor(event)?.getChannelOfOrNull<GuildMessageChannel>(config.publicMemberLog!!)
+					val permissions = publicLog?.botHasPermissions(Permission.SendMessages, Permission.EmbedLinks)
+					if (permissions == false || permissions == null) {
+						publicLog = null
+					}
+
+					publicLog?.createMessage {
+						if (config.publicMemberLogData?.pingNewUsers == true) content = event.member.mention
+						embed {
+							author {
+								name = "Welcome ${event.member.username}"
+								icon = event.member.avatar?.url
+							}
+							description = if (config.publicMemberLogData?.joinMessage != null) {
+								config.publicMemberLogData.joinMessage
+							} else {
+								"Welcome to the server!"
+							}
+							timestamp = Clock.System.now()
+							color = DISCORD_GREEN
+							footer {
+								text =
+									"Member count: ${event.guild.getMemberCount()}"
+							}
+						}
 					}
 				}
 			}
@@ -67,9 +104,10 @@ class MemberLogging : Extension() {
 				failIf { event.user.id == kord.selfId }
 			}
 			action {
-				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild) ?: return@action
+				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild)
+				val config = LoggingConfigCollection().getConfig(event.guildId)
 
-				memberLog.createEmbed {
+				memberLog?.createEmbed {
 					author {
 						name = "User left the server!"
 						icon = event.user.avatar?.url
@@ -86,7 +124,32 @@ class MemberLogging : Extension() {
 					timestamp = Clock.System.now()
 					color = DISCORD_RED
 					footer {
-						text = "Member count: ${event.guild.withStrategy(EntitySupplyStrategy.rest).members.count()}"
+						text = "Member count: ${event.guild.getMemberCount()}"
+					}
+				}
+
+				if (config != null && config.enablePublicMemberLogs) {
+					var publicLog = guildFor(event)?.getChannelOfOrNull<GuildMessageChannel>(config.publicMemberLog!!)
+					val permissions = publicLog?.botHasPermissions(Permission.SendMessages, Permission.EmbedLinks)
+					if (permissions == false || permissions == null) {
+						publicLog = null
+					}
+
+					publicLog?.createEmbed {
+						author {
+							name = "Goodbye ${event.user.username}"
+							icon = event.user.avatar?.url
+						}
+						description = if (config.publicMemberLogData?.leaveMessage != null) {
+							config.publicMemberLogData.leaveMessage
+						} else {
+							"Farewell!"
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_RED
+						footer {
+							text = "Member count: ${event.guild.getMemberCount()}"
+						}
 					}
 				}
 			}

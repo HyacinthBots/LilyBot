@@ -20,7 +20,7 @@ permissions = "Manage Guild"
 [[command]]
 category = "Administration commands"
 name = "config logging"
-args = "* `enable-message-logs` - Whether to enable message delete logging or not - Boolean\n* `enable-member-logs` - Whether to enable logging of member joins and leaves - Boolean\n* `message-logs` - The channel for logging message deletion - Optional Channel\n* `member-logs` - The channel for logging member join/leaves to -  Optional Channel"
+args = "* `enable-delete-logs` - Whether to enable message delete logging or not - Boolean\n* `enable-edit-logs` - Whether to enable message edit logging or not - Boolean\n* `enable-member-logs` - Whether to enable logging of member joins and leaves - Boolean\n* `enable-public-member-logging` - Whether to enable public logging of member joins and leaves - Boolean\n* `message-logs` - The channel for logging message deletion - Optional Channel\n* `member-log` - The channel for logging member join/leaves to -  Optional Channel\n* `public-member-log` - The channel for publicly logging member join and leaves too - Optional Channel"
 result = "The config is set for logging."
 permissions = "Manage Guild"
 

@@ -3,6 +3,7 @@ package org.hyacinthbots.lilybot.utils
 import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.utils.loadModule
+import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.RoleBehavior
 import dev.kord.core.entity.Message
 import dev.kord.core.supplier.EntitySupplyStrategy
@@ -53,6 +54,16 @@ suspend inline fun canPingRole(role: RoleBehavior?) = role != null && role.guild
  * @since 3.4.5
  */
 suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.cacheWithRestFallback).guilds.count()
+
+/**
+ * Get the member count of the given Guild.
+ *
+ * @return The number of members in this guild.
+ * @author NoComment1105
+ * @since 4.4.3
+ */
+suspend inline fun <T : GuildBehavior> T.getMemberCount() =
+	kord.with(EntitySupplyStrategy.rest).getGuild(this.id).members.count()
 
 /**
  * Gets the result of attempting to send a DM to a user.

@@ -23,6 +23,7 @@ import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.respondEphemeral
@@ -40,11 +41,13 @@ import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
+import org.hyacinthbots.lilybot.database.entities.PublicMemberLogData
 import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.hyacinthbots.lilybot.utils.canPingRole
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.interval
+import org.hyacinthbots.lilybot.utils.trimmedContents
 import kotlin.time.Duration.Companion.seconds
 
 class Config : Extension() {
@@ -362,9 +365,11 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		}
 	}
 
-	ephemeralSubCommand(::LoggingArgs) {
+	unsafeSubCommand(::LoggingArgs) {
 		name = "logging"
 		description = "Configure Lily's logging system"
+
+		initialResponse = InitialSlashCommandResponse.None
 
 		requirePermission(Permission.ManageGuild)
 
@@ -376,7 +381,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 		action {
 			val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)
 			if (loggingConfig != null) {
-				respond {
+				ackEphemeral()
+				respondEphemeral {
 					content = "You already have a logging configuration set. " +
 							"Please clear it before attempting to set a new one."
 				}
@@ -384,10 +390,18 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			}
 
 			if (arguments.enableMemberLogging && arguments.memberLog == null) {
-				respond { content = "You must specify a channel to log members joining and leaving to!" }
+				ackEphemeral()
+				respondEphemeral { content = "You must specify a channel to log members joining and leaving to!" }
 				return@action
 			} else if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) && arguments.messageLogs == null) {
-				respond { content = "You must specify a channel to log deleted/edited messages to!" }
+				ackEphemeral()
+				respondEphemeral { content = "You must specify a channel to log deleted/edited messages to!" }
+				return@action
+			} else if (arguments.enablePublicMemberLogging && arguments.publicMemberLog == null) {
+				ackEphemeral()
+				respondEphemeral {
+					content = "You must specify a channel to publicly log members joining and leaving to!"
+				}
 				return@action
 			}
 
@@ -395,7 +409,8 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			if (arguments.enableMemberLogging && arguments.memberLog != null) {
 				memberLog = guild!!.getChannelOfOrNull(arguments.memberLog!!.id)
 				if (memberLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
-					respond {
+					ackEphemeral()
+					respondEphemeral {
 						content = "The member log you've selected is invalid, or I can't view it. " +
 								"Please attempt to resolve this and try again."
 					}
@@ -407,8 +422,22 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 			if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) && arguments.messageLogs != null) {
 				messageLog = guild!!.getChannelOfOrNull(arguments.messageLogs!!.id)
 				if (messageLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
-					respond {
+					ackEphemeral()
+					respondEphemeral {
 						content = "The message log you've selected is invalid, or I can't view it. " +
+								"Please attempt to resolve this and try again."
+					}
+					return@action
+				}
+			}
+
+			val publicMemberLog: TextChannel?
+			if (arguments.enablePublicMemberLogging && arguments.publicMemberLog != null) {
+				publicMemberLog = guild!!.getChannelOfOrNull(arguments.publicMemberLog!!.id)
+				if (publicMemberLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
+					ackEphemeral()
+					respondEphemeral {
+						content = "The public member log you've selected is invalid, or I can't view it. " +
 								"Please attempt to resolve this and try again."
 					}
 					return@action
@@ -441,15 +470,99 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 						"Disabled"
 					}
 				}
+
+				field {
+					name = "Public Member logs"
+					value = if (arguments.enablePublicMemberLogging && arguments.publicMemberLog != null) {
+						arguments.publicMemberLog!!.mention
+					} else {
+						"Disabled"
+					}
+				}
+				if (arguments.enableMemberLogging && arguments.publicMemberLog != null) {
+					val config = LoggingConfigCollection().getConfig(guild!!.id)
+					if (config != null) {
+						field {
+							name = "Join Message"
+							value = config.publicMemberLogData?.joinMessage.trimmedContents(256)!!
+						}
+						field {
+							name = "Leave Message"
+							value = config.publicMemberLogData?.leaveMessage.trimmedContents(256)!!
+						}
+						field {
+							name = "Ping on join"
+							value = config.publicMemberLogData?.pingNewUsers.toString()
+						}
+					}
+				}
+
 				footer {
 					text = "Configured by ${user.asUser().tag}"
 					icon = user.asUser().avatar?.url
 				}
 			}
 
-			respond {
-				embed {
-					loggingEmbed()
+			var publicMemberLogData: PublicMemberLogData? = null
+			if (arguments.enablePublicMemberLogging) {
+				val modal = event.interaction.modal("Public Logging Configuration", "publicLogConfig") {
+					actionRow {
+						textInput(
+							TextInputStyle.Paragraph,
+							"joinMessage",
+							"What would you like sent when a user joins?"
+						) {
+							placeholder = "Welcome to the server!"
+						}
+					}
+					actionRow {
+						textInput(
+							TextInputStyle.Paragraph,
+							"leaveMessage",
+							"What would you like sent when a user leaves?"
+						) {
+							placeholder = "Adiós, amigo!"
+						}
+					}
+					actionRow {
+						textInput(
+							TextInputStyle.Short,
+							"ping",
+							"Type `yes` to ping new users when they join"
+						) {
+							placeholder = "Defaults to false if input is not yes/invalid"
+						}
+					}
+				}
+
+				val interaction = modal.kord.waitFor<ModalSubmitInteractionCreateEvent>(360.seconds) {
+					interaction.modalId == "publicLogConfig"
+				}?.interaction
+
+				if (interaction == null) {
+					modal.createEphemeralFollowup {
+						embed {
+							description = "Configuration timed out"
+						}
+					}
+					return@action
+				}
+
+				val joinMessage = interaction.textInputs["joinMessage"]!!.value!!
+				val leaveMessage = interaction.textInputs["leaveMessage"]!!.value!!
+				val shouldPing = interaction.textInputs["ping"]!!.value!!.lowercase()
+				val modalResponse = interaction.deferEphemeralResponse()
+
+				publicMemberLogData = PublicMemberLogData(
+					shouldPing == "yes",
+					joinMessage,
+					leaveMessage
+				)
+
+				modalResponse.respond {
+					embed {
+						loggingEmbed()
+					}
 				}
 			}
 
@@ -460,14 +573,18 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 					arguments.enableMessageEditLogs,
 					arguments.messageLogs?.id,
 					arguments.enableMemberLogging,
-					arguments.memberLog?.id
+					arguments.memberLog?.id,
+					arguments.enablePublicMemberLogging,
+					arguments.publicMemberLog?.id,
+					publicMemberLogData
 				)
 			)
 
 			val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)
 
 			if (utilityLog == null) {
-				respond {
+				ackEphemeral()
+				respondEphemeral {
 					content = "Consider setting a utility config to log changes to configurations."
 				}
 				return@action
@@ -477,6 +594,10 @@ suspend fun Config.configCommand() = unsafeSlashCommand {
 				embed {
 					loggingEmbed()
 				}
+			}
+
+			event.interaction.getOriginalInteractionResponseOrNull()?.edit {
+				embed { loggingEmbed() }
 			}
 		}
 	}
@@ -944,6 +1065,12 @@ class LoggingArgs : Arguments() {
 		description = "Enable logging of members joining and leaving the guild"
 	}
 
+	val enablePublicMemberLogging by boolean {
+		name = "enable-public-member-logging"
+		description =
+			"Enable logging of members joining and leaving the guild with a public message and ping if enabled"
+	}
+
 	val messageLogs by optionalChannel {
 		name = "message-logs"
 		description = "The channel for logging message deletions"
@@ -952,6 +1079,11 @@ class LoggingArgs : Arguments() {
 	val memberLog by optionalChannel {
 		name = "member-log"
 		description = "The channel for logging members joining and leaving the guild"
+	}
+
+	val publicMemberLog by optionalChannel {
+		name = "public-member-log"
+		description = "The channel for the public logging of members joining and leaving the guild"
 	}
 }
 
