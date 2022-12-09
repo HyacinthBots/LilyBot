@@ -68,6 +68,8 @@ class RoleMenu : Extension() {
 				name = "create"
 				description = "Create a new role menu in this channel. A channel can have any number of role menus."
 
+				requirePermission(Permission.ManageRoles)
+
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageRoles)
@@ -167,6 +169,8 @@ class RoleMenu : Extension() {
 				name = "add"
 				description = "Add a role to the existing role menu in this channel."
 
+				requirePermission(Permission.ManageRoles)
+
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageRoles)
@@ -241,6 +245,8 @@ class RoleMenu : Extension() {
 				name = "remove"
 				description = "Remove a role from the existing role menu in this channel."
 
+				requirePermission(Permission.ManageMessages)
+
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageMessages)
@@ -304,6 +310,8 @@ class RoleMenu : Extension() {
 			ephemeralSubCommand {
 				name = "pronouns"
 				description = "Create a pronoun selection role menu and the roles to go with it."
+
+				requirePermission(Permission.ManageMessages)
 
 				check {
 					anyGuild()

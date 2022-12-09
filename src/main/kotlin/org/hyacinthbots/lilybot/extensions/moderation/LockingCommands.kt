@@ -43,6 +43,8 @@ class LockingCommands : Extension() {
 				name = "channel"
 				description = "Lock a channel so those with default permissions cannot send messages"
 
+				requirePermission(Permission.ModerateMembers)
+
 				check {
 					anyGuild()
 					requiredConfigs(
@@ -111,6 +113,8 @@ class LockingCommands : Extension() {
 				name = "server"
 				description = "Lock the server so those with default permissions cannot send messages"
 
+				requirePermission(Permission.ModerateMembers)
+
 				check {
 					anyGuild()
 					requiredConfigs(
@@ -171,6 +175,8 @@ class LockingCommands : Extension() {
 			ephemeralSubCommand(::UnlockChannelArgs) {
 				name = "channel"
 				description = "Unlock a channel so everyone can send messages again"
+
+				requirePermission(Permission.ModerateMembers)
 
 				check {
 					anyGuild()
@@ -242,6 +248,8 @@ class LockingCommands : Extension() {
 			ephemeralSubCommand {
 				name = "server"
 				description = "Unlock the server so everyone can send messages again"
+
+				requirePermission(Permission.ModerateMembers)
 
 				check {
 					anyGuild()
