@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "4.4.2"
+version = "4.5.0"
 
 repositories {
     mavenCentral()
