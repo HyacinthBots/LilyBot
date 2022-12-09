@@ -18,8 +18,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.hyacinthbots.lilybot.commandDocs
-import org.hyacinthbots.lilybot.commitHash
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
+import org.hyacinthbots.lilybot.utils.BUILD_ID
 import java.util.Properties
 
 /**
@@ -187,10 +187,9 @@ class InfoCommands : Extension() {
 							value = "Lily is developed primarily by NoComment#6411 and tempest#4510 " +
 									"in our free time. Neither of us have resources to invest in hosting, " +
 									"so financial donations via [Buy Me a Coffee]" +
-									"(https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. At the moment, " +
-									"Lily is very generously hosted free of charge by gdude#2002, " +
-									"but we're looking to move to our own hosting. " +
-									"We also have domain costs for our website.\n\n" +
+									"(https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. Currently, we run" +
+									"lily on a Hetzner cloud server, which we can afford in our current situation. " +
+									"We will also have domain costs for our website.\n\n" +
 									"Contributions of code & documentation are also incredibly appreciated, " +
 									"and you can read our [contributing guide]" +
 									"(https://github.com/HyacinthBots/LilyBot/blob/main/CONTRIBUTING.md) " +
@@ -201,7 +200,7 @@ class InfoCommands : Extension() {
 						field {
 							name = "Version"
 							value =
-								"${versionProperties.getProperty("version") ?: "??"} (${commitHash ?: "Unknown Commit"})"
+								"${versionProperties.getProperty("version") ?: "??"} ($BUILD_ID)"
 							inline = true
 						}
 						field {

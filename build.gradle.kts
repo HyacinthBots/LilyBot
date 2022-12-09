@@ -1,8 +1,6 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
-import java.nio.charset.Charset
 import java.util.*
 
 plugins {
@@ -14,6 +12,8 @@ plugins {
     id("com.github.johnrengelman.shadow")
     id("io.gitlab.arturbosch.detekt")
     id("com.github.jakemarsden.git-hooks")
+    id("org.ajoberstar.grgit") version "5.0.0"
+    id("net.kyori.blossom") version "1.3.1"
 }
 
 group = "org.hyacinthbots.lilybot"
@@ -117,9 +117,6 @@ tasks {
 
     processResources {
         from("docs/commanddocs.toml")
-        val hash = getCommitHash()
-        inputs.property("hash", hash)
-        filesMatching("commit_hash.txt") { expand("hash" to hash) }
     }
 
     jar {
@@ -165,12 +162,6 @@ detekt {
     autoCorrect = true
 }
 
-fun getCommitHash(): String {
-    val stdout = ByteArrayOutputStream()
-    exec {
-        commandLine("git", "log", "-n", "1", "--pretty=format:\"%h\"", "--encoding=UTF-8")
-        standardOutput = stdout
-    }
-    val str = stdout.toString(Charset.defaultCharset())
-    return str.substring(1, str.length - 1)
+blossom {
+    replaceToken("@version@", grgit.head().abbreviatedId)
 }

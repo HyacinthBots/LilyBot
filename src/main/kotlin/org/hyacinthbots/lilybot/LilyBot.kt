@@ -48,7 +48,6 @@ import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import org.quiltmc.community.cozy.modules.welcome.welcomeChannel
 import java.io.IOException
-import java.nio.charset.Charset
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
@@ -58,7 +57,6 @@ private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
 var commandDocs: CommandDocs? = null
 
 val docFile = Path("./docs/commands.md")
-val commitHash = LilyBot::class.java.getResource("commit_hash.txt")?.readText(Charset.defaultCharset())
 
 suspend fun main() {
 	val mapper = tomlMapper { }
