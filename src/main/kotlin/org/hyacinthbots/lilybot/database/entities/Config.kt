@@ -14,6 +14,9 @@ import kotlinx.serialization.Serializable
  * @property messageChannel The channel to send message logs to
  * @property enableMemberLogs If users joining or leaving the guild should be logged
  * @property memberLog The channel to send member logs to
+ * @property enablePublicMemberLogs If users joining or leaving the guild should be logged publicly
+ * @property publicMemberLog The channel to send public member logs to
+ * @property publicMemberLogData The data for public member logging
  * @since 4.0.0
  */
 @Serializable
@@ -24,6 +27,9 @@ data class LoggingConfigData(
 	val messageChannel: Snowflake?,
 	val enableMemberLogs: Boolean,
 	val memberLog: Snowflake?,
+	val enablePublicMemberLogs: Boolean,
+	val publicMemberLog: Snowflake?,
+	val publicMemberLogData: PublicMemberLogData?
 )
 
 /**

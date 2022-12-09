@@ -49,7 +49,7 @@ complexity:
   ComplexCondition:
     active: true
     threshold: 10
-  ComplexMethod:
+  CyclomaticComplexMethod:
     active: false
   LargeClass:
     active: false
@@ -162,11 +162,12 @@ formatting:
   EnumEntryNameCase:
     active: true
     autoCorrect: true
+  Filename:
+    active: false
   Indentation:
     active: false
     autoCorrect: false
     indentSize: 4
-    continuationIndentSize: 4
   MultiLineIfElse:
     active: true
     autoCorrect: true
@@ -268,7 +269,7 @@ style:
     active: true
   DataClassContainsFunctions:
     active: true
-    conversionFunctionPrefix: 'to'
+    conversionFunctionPrefix: ['to']
   DataClassShouldBeImmutable:
     active: true
   EqualsOnSignatureLine:
@@ -291,9 +292,6 @@ style:
   ForbiddenMethodCall:
     active: false
     methods: []
-  ForbiddenPublicDataClass:
-    active: false
-    ignorePackages: ['*.internal', '*.internal.*']
   ForbiddenVoid:
     active: true
     ignoreOverridden: true
@@ -329,7 +327,7 @@ style:
   ReturnCount:
     active: false
     max: 2
-    excludedFunctions: 'equals'
+    excludedFunctions: ['equals']
     excludeLabeled: false
     excludeReturnFromLambda: true
     excludeGuardClauses: false

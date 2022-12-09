@@ -51,6 +51,8 @@ class GalleryChannel : Extension() {
 				name = "set"
 				description = "Set a channel as a gallery channel"
 
+				requirePermission(Permission.ManageGuild)
+
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageGuild)
@@ -94,6 +96,8 @@ class GalleryChannel : Extension() {
 			ephemeralSubCommand {
 				name = "unset"
 				description = "Unset a channel as a gallery channel."
+
+				requirePermission(Permission.ManageGuild)
 
 				check {
 					anyGuild()

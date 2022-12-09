@@ -1,6 +1,8 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
+import java.nio.charset.Charset
 import java.util.*
 
 plugins {
@@ -15,7 +17,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "4.4.2"
+version = "4.5.0"
 
 repositories {
     mavenCentral()
@@ -54,7 +56,7 @@ repositories {
 dependencies {
     detektPlugins(libs.detekt)
 
-    implementation(libs.kord.extensions)
+    implementation(libs.kord.extensions.core)
     implementation(libs.kord.extensions.phishing)
     implementation(libs.kord.extensions.pluralkit)
     implementation(libs.kord.extensions.unsafe)
@@ -115,6 +117,9 @@ tasks {
 
     processResources {
         from("docs/commanddocs.toml")
+        val hash = getCommitHash()
+        inputs.property("hash", hash)
+        filesMatching("commit_hash.txt") { expand("hash" to hash) }
     }
 
     jar {
@@ -128,13 +133,13 @@ tasks {
     wrapper {
         /*
          * To update the gradle wrapper version, change
-         * the `gradleVersion` below and in `gradle-wrapper.properties`
+         * the `gradleVersion` below
          *
          * Then run the following command twice to update the gradle
          * scripts suitably
          * `./gradlew wrapper`
          */
-        gradleVersion = "7.5.1"
+        gradleVersion = "7.6"
         distributionType = Wrapper.DistributionType.BIN
     }
 
@@ -158,4 +163,14 @@ detekt {
     config = files("$rootDir/detekt.yml")
 
     autoCorrect = true
+}
+
+fun getCommitHash(): String {
+    val stdout = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "log", "-n", "1", "--pretty=format:\"%h\"", "--encoding=UTF-8")
+        standardOutput = stdout
+    }
+    val str = stdout.toString(Charset.defaultCharset())
+    return str.substring(1, str.length - 1)
 }

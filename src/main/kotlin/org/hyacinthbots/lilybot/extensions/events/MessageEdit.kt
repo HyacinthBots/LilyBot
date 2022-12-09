@@ -46,7 +46,7 @@ class MessageEdit : Extension() {
 				}
 			}
 			action {
-				onMessageEdit(event.getMessage(), event.old, null)
+				onMessageEdit(event.getMessageOrNull(), event.old, null)
 			}
 		}
 
@@ -64,7 +64,7 @@ class MessageEdit : Extension() {
 				}
 			}
 			action {
-				onMessageEdit(event.getMessage(), event.old, event.pkMessage)
+				onMessageEdit(event.getMessageOrNull(), event.old, event.pkMessage)
 			}
 		}
 	}
@@ -77,7 +77,8 @@ class MessageEdit : Extension() {
 	 * @param proxiedMessage Extra data for PluralKit proxied messages
 	 * @author trainb0y
 	 */
-	private suspend fun onMessageEdit(message: Message, old: Message?, proxiedMessage: PKMessage?) {
+	private suspend fun onMessageEdit(message: Message?, old: Message?, proxiedMessage: PKMessage?) {
+		message ?: return
 		val guild = message.getGuildOrNull() ?: return
 
 		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, guild) ?: return

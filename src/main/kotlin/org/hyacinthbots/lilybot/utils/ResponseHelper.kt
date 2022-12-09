@@ -1,6 +1,9 @@
 package org.hyacinthbots.lilybot.utils
 
+import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import dev.kord.core.behavior.UserBehavior
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.rest.builder.message.EmbedBuilder
 import io.github.nocomment1105.discordmoderationactions.enums.DmResult
@@ -45,5 +48,50 @@ fun EmbedBuilder.dmNotificationStatusEmbedField(dm: DmResult?) {
 		name = "User Notification:"
 		value = dm?.message ?: "Fireworks have frazzled the lily"
 		inline = false
+	}
+}
+
+/**
+ * This function removed duplicated code from MessageDelete and MessageEdit.
+ * It holds attachment and PluralKit info fields for the logging embeds.
+ * @author tempest15
+ * @since 4.1.0
+ */
+suspend inline fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
+	guild: Guild,
+	message: Message,
+	proxiedMessage: PKMessage?
+) {
+	if (message.attachments.isNotEmpty()) {
+		field {
+			name = "Attachments"
+			value = message.attachments.joinToString(separator = "\n") { it.url }
+			inline = false
+		}
+	}
+	if (proxiedMessage != null) {
+		field {
+			name = "Message Author:"
+			value = "System Member: ${proxiedMessage.member?.name}\n" +
+					"Account: ${guild.getMemberOrNull(proxiedMessage.sender)?.tag ?: "Unable to get account"} " +
+					guild.getMemberOrNull(proxiedMessage.sender)?.mention
+			inline = true
+		}
+
+		field {
+			name = "Author ID:"
+			value = proxiedMessage.sender.toString()
+		}
+	} else {
+		field {
+			name = "Message Author:"
+			value = "${message.author?.tag ?: "Failed to get author of message"} ${message.author?.mention ?: ""}"
+			inline = true
+		}
+
+		field {
+			name = "Author ID:"
+			value = message.author?.id.toString()
+		}
 	}
 }

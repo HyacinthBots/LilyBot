@@ -42,10 +42,13 @@ These are commands for the maintenance of LilyBot. The can only be run by Server
 
 ### Name: `config logging`
 **Arguments**:
-* `enable-message-logs` - Whether to enable message delete logging or not - Boolean
+* `enable-delete-logs` - Whether to enable message delete logging or not - Boolean
+* `enable-edit-logs` - Whether to enable message edit logging or not - Boolean
 * `enable-member-logs` - Whether to enable logging of member joins and leaves - Boolean
+* `enable-public-member-logging` - Whether to enable public logging of member joins and leaves - Boolean
 * `message-logs` - The channel for logging message deletion - Optional Channel
-* `member-logs` - The channel for logging member join/leaves to -  Optional Channel
+* `member-log` - The channel for logging member join/leaves to -  Optional Channel
+* `public-member-log` - The channel for publicly logging member join and leaves too - Optional Channel
 
 **Result**: The config is set for logging.
 

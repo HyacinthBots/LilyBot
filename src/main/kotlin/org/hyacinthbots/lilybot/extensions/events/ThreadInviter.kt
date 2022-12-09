@@ -125,7 +125,7 @@ class ThreadInviter : Extension() {
 						content = "${user.mention} You already have a thread, please talk about your issue in it.\n" +
 								existingUserThread!!.mention
 					}
-					textChannel.getMessage(event.pkMessage.id).delete()
+					textChannel.getMessageOrNull(event.pkMessage.id)?.delete()
 					response.delete(10.seconds.inWholeMilliseconds, false)
 				} else {
 					val thread =
@@ -291,23 +291,16 @@ class ThreadInviter : Extension() {
 					event.channel.ownerId == kord.selfId ||
 							event.channel.member != null
 				}
-				requiredConfigs(
-					ConfigOptions.SUPPORT_ENABLED,
-					ConfigOptions.SUPPORT_CHANNEL,
-					ConfigOptions.SUPPORT_ROLE,
-					ConfigOptions.MODERATOR_ROLE
-				)
 			}
 
 			action {
-				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)!!
-				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-				val modRole = event.channel.guild.getRole(moderationConfig.role!!)
+				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
+				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
 				val threadOwner = event.channel.owner.asUser()
 
 				ThreadsCollection().setThreadOwner(event.channel.guildId, event.channel.id, threadOwner.id)
 
-				if (supportConfig.enabled && event.channel.parentId == supportConfig.channel) {
+				if (supportConfig != null && supportConfig.enabled && event.channel.parentId == supportConfig.channel) {
 					val supportRole = event.channel.guild.getRole(supportConfig.role!!)
 
 					event.channel.withTyping { delay(2.seconds) }
@@ -322,17 +315,20 @@ class ThreadInviter : Extension() {
 					event.channel.withTyping { delay(3.seconds) }
 					message.edit {
 						content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
-								" you can just send a message in <#${
+								" you can just send a message in ${
 									event.channel.guild.getChannel(
 										supportConfig.channel
 									).mention
-								}> and I'll automatically make a thread for you!\n\nOnce you're finished, use" +
+								} and I'll automatically make a thread for you!\n\nOnce you're finished, use" +
 								" `/thread archive` to close  " +
 								" your thread. If you want to change the thread name, use `/thread rename` to do so."
 					}
 				}
 
-				if (!supportConfig.enabled || event.channel.parentId != supportConfig.channel) {
+				if (moderationConfig != null || supportConfig == null ||
+					!supportConfig.enabled || event.channel.parentId != supportConfig.channel
+				) {
+					val modRole = event.channel.guild.getRole(moderationConfig?.role!!)
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
 						content = "Hello there! Lemme just grab the moderators..."

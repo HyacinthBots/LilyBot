@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.annotations.DoNotChain
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
+import com.kotlindiscord.kord.extensions.checks.hasPermissions
 import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOptionalDuration
@@ -86,10 +87,10 @@ class ModerationCommands : Extension() {
 			name = "Moderate"
 			locking = true
 
+			requirePermission(Permission.BanMembers, Permission.KickMembers, Permission.ModerateMembers)
+
 			check {
-				hasPermission(Permission.BanMembers) // TODO Go make a `hasPermissions` in KordEx. **Edit: PR Submitted**
-				hasPermission(Permission.KickMembers)
-				hasPermission(Permission.ModerateMembers)
+				hasPermissions(Permissions(Permission.BanMembers, Permission.KickMembers, Permission.ModerateMembers))
 				requireBotPermissions(Permission.BanMembers, Permission.KickMembers, Permission.ModerateMembers)
 			}
 
@@ -448,6 +449,8 @@ class ModerationCommands : Extension() {
 			name = "ban"
 			description = "Bans a user."
 
+			requirePermission(Permission.BanMembers)
+
 			check {
 				modCommandChecks(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers)
@@ -510,6 +513,8 @@ class ModerationCommands : Extension() {
 		ephemeralSlashCommand(::SoftBanArgs) {
 			name = "soft-ban"
 			description = "Soft-bans a user."
+
+			requirePermission(Permission.BanMembers)
 
 			check {
 				modCommandChecks(Permission.BanMembers)
@@ -576,6 +581,8 @@ class ModerationCommands : Extension() {
 			name = "unban"
 			description = "Unbans a user."
 
+			requirePermission(Permission.BanMembers)
+
 			check {
 				modCommandChecks(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers)
@@ -622,6 +629,8 @@ class ModerationCommands : Extension() {
 		ephemeralSlashCommand(::KickArgs) {
 			name = "kick"
 			description = "Kicks a user."
+
+			requirePermission(Permission.KickMembers)
 
 			check {
 				modCommandChecks(Permission.KickMembers)
@@ -674,6 +683,8 @@ class ModerationCommands : Extension() {
 			name = "clear"
 			description = "Clears messages from a channel."
 
+			requirePermission(Permission.ManageMessages)
+
 			check {
 				modCommandChecks(Permission.ManageMessages)
 				requireBotPermissions(Permission.ManageMessages)
@@ -719,6 +730,8 @@ class ModerationCommands : Extension() {
 		ephemeralSlashCommand(::TimeoutArgs) {
 			name = "timeout"
 			description = "Times out a user."
+
+			requirePermission(Permission.ModerateMembers)
 
 			check {
 				modCommandChecks(Permission.ModerateMembers)
@@ -783,6 +796,8 @@ class ModerationCommands : Extension() {
 			name = "remove-timeout"
 			description = "Removes a timeout from a user"
 
+			requirePermission(Permission.ModerateMembers)
+
 			check {
 				modCommandChecks(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
@@ -828,6 +843,8 @@ class ModerationCommands : Extension() {
 			name = "warn"
 			description = "Warns a user."
 
+			requirePermission(Permission.ModerateMembers)
+
 			check {
 				modCommandChecks(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
@@ -855,7 +872,7 @@ class ModerationCommands : Extension() {
 							embed {
 								title = "1st warning in $guildName"
 								description = "**Reason:** ${arguments.reason}\n\n" +
-										"No moderation action has been take. $warnSuffix"
+										"No moderation action has been taken. $warnSuffix"
 							}
 						}
 					}
@@ -868,7 +885,9 @@ class ModerationCommands : Extension() {
 									description = "**Reason:** ${arguments.reason}\n\n" +
 											if (config.autoPunishOnWarn == true) {
 												"You have been timed out for 3 hours. $warnSuffix"
-											} else warnSuffix
+											} else {
+											    warnSuffix
+											}
 								}
 							}
 						}
@@ -888,7 +907,9 @@ class ModerationCommands : Extension() {
 									description = "**Reason:** ${arguments.reason}\n\n" +
 											if (config.autoPunishOnWarn == true) {
 												"You have been timed-out for 12 hours. $warnSuffix"
-											} else warnSuffix
+											} else {
+											    warnSuffix
+											}
 									color = DISCORD_RED
 								}
 							}
@@ -909,7 +930,9 @@ class ModerationCommands : Extension() {
 									description = "**Reason:** ${arguments.reason}\n\n" +
 											if (config.autoPunishOnWarn == true) {
 												"You have been timed-out for 3 days. $warnSuffix"
-											} else warnSuffix
+											} else {
+											    warnSuffix
+											}
 								}
 							}
 						}
@@ -956,6 +979,8 @@ class ModerationCommands : Extension() {
 		ephemeralSlashCommand(::RemoveWarnArgs) {
 			name = "remove-warn"
 			description = "Removes a user's warnings"
+
+			requirePermission(Permission.ModerateMembers)
 
 			check {
 				modCommandChecks(Permission.ModerateMembers)

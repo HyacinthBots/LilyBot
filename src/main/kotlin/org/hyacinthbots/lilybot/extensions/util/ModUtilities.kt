@@ -97,6 +97,8 @@ class ModUtilities : Extension() {
 			name = "say"
 			description = "Say something through Lily."
 
+			requirePermission(Permission.ModerateMembers)
+
 			check {
 				anyGuild()
 				hasPermission(Permission.ModerateMembers)
@@ -188,6 +190,8 @@ class ModUtilities : Extension() {
 		ephemeralSlashCommand(::SayEditArgs) {
 			name = "edit-say"
 			description = "Edit a message created by /say"
+
+			requirePermission(Permission.ModerateMembers)
 
 			check {
 				anyGuild()
@@ -358,7 +362,9 @@ class ModUtilities : Extension() {
 			ephemeralSubCommand(::PresenceArgs) {
 				name = "set"
 				description = "Set a custom status for Lily."
+
 				guild(TEST_GUILD_ID)
+				requirePermission(Permission.Administrator)
 
 				check {
 					hasPermission(Permission.Administrator)
@@ -395,7 +401,9 @@ class ModUtilities : Extension() {
 			ephemeralSubCommand {
 				name = "reset"
 				description = "Reset Lily's presence to the default status."
+
 				guild(TEST_GUILD_ID)
+				requirePermission(Permission.Administrator)
 
 				check {
 					hasPermission(Permission.Administrator)
