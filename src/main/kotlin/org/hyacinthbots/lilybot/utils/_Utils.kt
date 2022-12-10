@@ -63,7 +63,7 @@ suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.ca
  * @since 4.4.3
  */
 suspend inline fun <T : GuildBehavior> T.getMemberCount() =
-	kord.with(EntitySupplyStrategy.rest).getGuild(this.id).members.count()
+	kord.getGuildOrNull(this.id)!!.withStrategy(EntitySupplyStrategy.rest).members.count()
 
 /**
  * Gets the result of attempting to send a DM to a user.
