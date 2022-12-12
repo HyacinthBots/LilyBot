@@ -537,7 +537,7 @@ class Reminders : Extension() {
 			}
 
 			if (it.repeating) {
-				ReminderCollection().repeatReminder(it.remindTime, it.repeatingInterval!!, it.id)
+				ReminderCollection().repeatReminder(it, it.repeatingInterval!!)
 			} else {
 				ReminderCollection().removeReminder(it.id)
 			}
