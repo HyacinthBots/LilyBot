@@ -7,5 +7,6 @@ import org.litote.kmongo.eq
 
 @Suppress("UnderscoresInNumericLiterals")
 suspend fun mainV5(db: CoroutineDatabase) {
-	db.getCollection<ReminderData>().deleteMany(ReminderData::userId eq Snowflake(462348944173957120))
+	db.getCollection<ReminderData>().deleteMany(ReminderData::userId eq Snowflake(723642065082253314))
+	db.getCollection<ReminderData>().deleteMany(ReminderData::userId eq Snowflake(366702774403989504))
 }
