@@ -98,7 +98,7 @@ class Reminders : Extension() {
 						return@action
 					}
 
-					if (arguments.repeatingInterval != null && arguments.repeatingInterval!!.toDuration(TimeZone.UTC) <=
+					if (arguments.repeatingInterval != null && arguments.repeatingInterval!!.toDuration(TimeZone.UTC) <
 						DateTimePeriod(hours = 1).toDuration(TimeZone.UTC)
 					) {
 						respond {
