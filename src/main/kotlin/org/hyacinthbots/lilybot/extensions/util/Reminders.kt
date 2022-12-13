@@ -429,11 +429,11 @@ class Reminders : Extension() {
 						"all" -> {
 							reminders.forEach {
 								ReminderCollection().removeReminder(it.id)
-								markReminderCompleteOrCancelled(
-									it.guildId, it.channelId, it.messageId,
-									wasCancelled = true,
-									byModerator = true
-								)
+// 								markReminderCompleteOrCancelled(
+// 									it.guildId, it.channelId, it.messageId,
+// 									wasCancelled = true,
+// 									byModerator = true
+// 								)
 							}
 
 							respond {
