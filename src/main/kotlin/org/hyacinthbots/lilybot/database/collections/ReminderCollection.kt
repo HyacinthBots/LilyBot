@@ -1,14 +1,16 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import com.kotlindiscord.kord.extensions.utils.toDuration
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.plus
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.ReminderData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
+import org.litote.kmongo.setValue
 
 /**
  * This class contains the functions for interacting with []the reminder database][ReminderData]. This
@@ -92,31 +94,15 @@ class ReminderCollection : KordExKoinComponent {
 	/**
 	 * Updates a repeating reminder to be extended by the given [repeatingInterval].
 	 *
-	 * @param originalData The original time the reminder data
+	 * @param originalRemindTime The original time the reminder was supposed to send
 	 * @param repeatingInterval The repeating interval to extend the reminder by
+	 * @param number The ID of the reminder to update
 	 * @author NoComment1105
-	 * @since 4.5.0
+	 * @since 4.2.0
 	 */
-	suspend fun repeatReminder(originalData: ReminderData, repeatingInterval: DateTimePeriod) {
-		collection.deleteOne(
-			ReminderData::id eq originalData.id,
-			ReminderData::userId eq originalData.userId
+	suspend fun repeatReminder(originalRemindTime: Instant, repeatingInterval: DateTimePeriod, number: Long) =
+		collection.updateOne(
+			ReminderData::id eq number,
+			setValue(ReminderData::remindTime, originalRemindTime.plus(repeatingInterval.toDuration(TimeZone.UTC)))
 		)
-
-		collection.insertOne(
-			ReminderData(
-				originalData.guildId,
-				originalData.remindTime.plus(repeatingInterval, TimeZone.UTC),
-				originalData.setTime,
-				originalData.userId,
-				originalData.channelId,
-				originalData.messageId,
-				originalData.dm,
-				originalData.customMessage,
-				originalData.repeating,
-				originalData.repeatingInterval,
-				originalData.id
-			)
-		)
-	}
 }
