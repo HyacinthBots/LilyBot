@@ -76,7 +76,7 @@ object Migrator : KordExKoinComponent {
 		if (currentVersion != meta.version) {
 			meta = meta.copy(version = currentVersion)
 
-			mainMetaCollection.update(meta)
+			// mainMetaCollection.update(meta)
 
 			logger.info { "Finished main database migrations." }
 		}
