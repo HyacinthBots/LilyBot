@@ -3,7 +3,6 @@ package org.hyacinthbots.lilybot.database.entities
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.Instant
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 /**
@@ -26,7 +25,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ReminderData(
 	val guildId: Snowflake,
-	@Contextual val remindTime: Instant,
+	val remindTime: Instant,
 	val setTime: Instant,
 	val userId: Snowflake,
 	val channelId: Snowflake,

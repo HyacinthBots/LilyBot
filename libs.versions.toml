@@ -6,7 +6,7 @@ github-api = "1.313"
 kmongo = "4.7.2"
 detekt = "1.22.0"
 koma = "1.1.0"
-cozy-welcome = "1.0-SNAPSHOT"
+cozy-welcome = "1.0-20221208.222216-97" # Just until we update KordEx, since it throws stuff if kordex's are different
 dma = "0.1.0"
 
 [libraries]
