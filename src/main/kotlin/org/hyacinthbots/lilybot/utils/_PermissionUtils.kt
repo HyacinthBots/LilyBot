@@ -19,7 +19,6 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
@@ -91,9 +90,9 @@ suspend inline fun getLoggingChannelWithPerms(
  * @since 3.5.4
  */
 suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessageChannel? =
-	inputGuild.channels.first {
+	inputGuild.channels.toList().sorted().firstOrNull {
 		it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)
-	}.asChannelOfOrNull()
+	}?.asChannelOfOrNull()
 
 /**
  * Gets a guild's system channel as designated by Discord, or null if said channel is invalid or doesn't exist.
