@@ -527,7 +527,7 @@ class RoleMenu : Extension() {
 	 * @author tempest15
 	 * @since 3.4.0
 	 */
-	private suspend inline fun EphemeralSlashCommandContext<*>.roleMenuExists(
+	private suspend inline fun EphemeralSlashCommandContext<*, *>.roleMenuExists(
 		inputMessage: Message?,
 		argumentMessageId: Snowflake
 	): Boolean {
@@ -559,7 +559,7 @@ class RoleMenu : Extension() {
 	 * @author tempest15
 	 * @since 3.4.0
 	 */
-	private suspend inline fun EphemeralSlashCommandContext<*>.botCanAssignRole(kord: Kord, role: Role): Boolean {
+	private suspend inline fun EphemeralSlashCommandContext<*, *>.botCanAssignRole(kord: Kord, role: Role): Boolean {
 		val self = guild?.getMemberOrNull(kord.selfId)!!
 		if (self.getTopRole()!! < role) {
 			respond {

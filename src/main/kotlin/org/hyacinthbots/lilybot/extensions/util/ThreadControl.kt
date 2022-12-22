@@ -367,7 +367,7 @@ class ThreadControl : Extension() {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	private suspend fun EphemeralSlashCommandContext<*>.ownsThreadOrModerator(
+	private suspend fun EphemeralSlashCommandContext<*, *>.ownsThreadOrModerator(
 		inputThread: ThreadChannel,
 		inputMember: Member
 	): Boolean {
