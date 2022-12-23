@@ -34,11 +34,11 @@ import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.channel.MessageChannelBehavior
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.behavior.interaction.response.edit
@@ -106,18 +106,11 @@ class ModUtilities : Extension() {
 				botHasChannelPerms(Permissions(Permission.SendMessages, Permission.EmbedLinks))
 			}
 			action {
-				val targetChannel: GuildMessageChannel?
-				try {
-					targetChannel =
-						if (arguments.channel != null) {
-							guild!!.getChannelOf(arguments.channel!!.id)
-						} else {
-							channel.asChannelOf()
-						}
-				} catch (e: EntityNotFoundException) {
-					respond { content = "Channel not found." }
-					return@action
-				}
+				val targetChannel: GuildMessageChannel = if (arguments.channel != null) {
+						guild!!.getChannelOfOrNull(arguments.channel!!.id) ?: return@action
+					} else {
+						channel.asChannelOfOrNull() ?: return@action
+					}
 				val createdMessage: Message
 
 				try {
@@ -373,7 +366,7 @@ class ModUtilities : Extension() {
 
 				action {
 					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-					val actionLog = guild!!.getChannelOf<GuildMessageChannel>(config.channel!!)
+					val actionLog = guild!!.getChannelOfOrNull<GuildMessageChannel>(config.channel!!)
 
 					// Update the presence in the action
 					this@ephemeralSlashCommand.kord.editPresence {
@@ -386,7 +379,7 @@ class ModUtilities : Extension() {
 
 					respond { content = "Presence set to `${arguments.presenceArgument}`" }
 
-					actionLog.createEmbed {
+					actionLog?.createEmbed {
 						title = "Presence changed"
 						description = "Lily's presence has been set to `${arguments.presenceArgument}`"
 						footer {
@@ -496,7 +489,7 @@ class ModUtilities : Extension() {
 									components { removeAll() }
 								}
 
-								guild?.getChannelOf<GuildMessageChannel>(
+								guild!!.getChannelOfOrNull<GuildMessageChannel>(
 									ModerationConfigCollection().getConfig(guild!!.id)?.channel ?: guild!!.asGuild()
 										.getSystemChannel()!!.id
 								)?.createMessage {

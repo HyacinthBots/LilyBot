@@ -24,7 +24,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.ModalParentInteractionBehavior
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
@@ -136,7 +136,7 @@ suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualRepo
 
 	action {
 		val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
-		val modLog = guild!!.getChannelOf<GuildMessageChannel>(moderationConfig.channel!!)
+		val modLog = guild!!.getChannelOfOrNull<GuildMessageChannel>(moderationConfig.channel!!)
 		val channel: MessageChannel
 		val reportedMessage: Message
 

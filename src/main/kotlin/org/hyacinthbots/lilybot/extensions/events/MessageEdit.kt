@@ -10,7 +10,7 @@ import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageUpdateEvent
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageUpdateEvent
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
@@ -92,7 +92,8 @@ class MessageEdit : Extension() {
 				}
 				description =
 					"Location: ${message.channel.mention} " +
-							"(${message.channel.asChannelOf<GuildMessageChannel>().name})"
+							"(${message.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
+								?: "Could not get channel name"})"
 				timestamp = Clock.System.now()
 
 				field {

@@ -33,7 +33,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
@@ -694,7 +694,14 @@ class ModerationCommands : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val messageAmount = arguments.messages
-				val textChannel = channel.asChannelOf<GuildMessageChannel>()
+				val textChannel = channel.asChannelOfOrNull<GuildMessageChannel>()
+
+				if (textChannel == null) {
+					respond {
+						content = "Could not get the channel to clear messages from."
+					}
+					return@action
+				}
 
 				// Get the specified amount of messages into an array list of Snowflakes and delete them
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(

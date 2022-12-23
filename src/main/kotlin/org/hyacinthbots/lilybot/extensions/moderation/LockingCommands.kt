@@ -13,7 +13,7 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
@@ -65,9 +65,15 @@ class LockingCommands : Extension() {
 					if (channelArg is TextChannelThread) {
 						channelParent = channelArg.getParent()
 					}
-					val targetChannel = channelParent ?: channelArg.asChannelOf()
+					val targetChannel = channelParent ?: channelArg.asChannelOfOrNull()
+					if (targetChannel == null) {
+						respond {
+							content = "I can't fetch the targeted channel properly."
+							return@action
+						}
+					}
 
-					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
+					val channelPerms = targetChannel!!.getPermissionOverwritesForRole(guild!!.id)
 					if (channelPerms != null && channelPerms.denied.contains(Permission.SendMessages)) {
 						respond { content = "This channel is already locked!" }
 						return@action
@@ -196,7 +202,13 @@ class LockingCommands : Extension() {
 					if (channelArg is TextChannelThread) {
 						channelParent = channelArg.getParent()
 					}
-					val targetChannel = channelParent ?: channelArg.asChannelOf()
+					val targetChannel = channelParent ?: channelArg.asChannelOfOrNull()
+					if (targetChannel == null) {
+						respond {
+							content = "I can't fetch the targeted channel properly."
+							return@action
+						}
+					}
 
 					val everyoneRole = guild!!.getRole(guild!!.id)
 					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
@@ -204,7 +216,7 @@ class LockingCommands : Extension() {
 						return@action
 					}
 
-					val channelPerms = targetChannel.getPermissionOverwritesForRole(guild!!.id)
+					val channelPerms = targetChannel!!.getPermissionOverwritesForRole(guild!!.id)
 					if (channelPerms == null) {
 						respond { content = "This channel is not locked!" }
 						return@action

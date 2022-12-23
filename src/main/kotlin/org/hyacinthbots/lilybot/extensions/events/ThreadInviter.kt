@@ -18,11 +18,10 @@ import dev.kord.common.entity.ArchiveDuration
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.MessageType
 import dev.kord.core.behavior.UserBehavior
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.channel.NewsChannel
@@ -92,12 +91,7 @@ class ThreadInviter : Extension() {
 				val guild = event.getGuildOrNull() ?: return@action
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
-				val textChannel: TextChannel
-				try {
-					textChannel = guild.getChannelOf(event.pkMessage.channel)
-				} catch (e: ClassCastException) {
-					return@action
-				}
+				val textChannel: TextChannel = guild.getChannelOfOrNull(event.pkMessage.channel) ?: return@action
 
 				val supportChannel = getLoggingChannelWithPerms(ConfigOptions.SUPPORT_CHANNEL, guild) ?: return@action
 
@@ -108,8 +102,8 @@ class ThreadInviter : Extension() {
 
 				ThreadsCollection().getOwnerThreads(userId).forEach {
 					try {
-						val thread = guild.getChannelOf<TextChannelThread>(it.threadId)
-						if (thread.parent == supportChannel && !thread.isArchived) {
+						val thread = guild.getChannelOfOrNull<TextChannelThread>(it.threadId)
+						if (thread?.parent == supportChannel && !thread.isArchived) {
 							userThreadExists = true
 							existingUserThread = thread
 						}
@@ -204,7 +198,7 @@ class ThreadInviter : Extension() {
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
-				val textChannel = event.message.getChannel().asChannelOf<TextChannel>()
+				val textChannel = event.message.getChannel().asChannelOfOrNull<TextChannel>()
 				val guild = event.getGuildOrNull() ?: return@action
 
 				val supportChannel = getLoggingChannelWithPerms(ConfigOptions.SUPPORT_CHANNEL, guild) ?: return@action

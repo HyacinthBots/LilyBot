@@ -7,7 +7,7 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageDeleteEvent
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageDeleteEvent
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
@@ -97,8 +97,9 @@ class MessageDelete : Extension() {
 						description = "A Bulk delete of messages occurred"
 						field {
 							name = "Location"
-							value =
-								"${event.channel.mention} (${event.channel.asChannelOf<GuildMessageChannel>().name})"
+							value = "${event.channel.mention} " +
+									"(${event.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
+										?: "Could not get channel name})"}"
 						}
 						field {
 							name = "Number of messages"
@@ -140,7 +141,7 @@ class MessageDelete : Extension() {
 			}
 			description =
 				"Location: ${message.channel.mention} " +
-						"(${message.channel.asChannelOf<GuildMessageChannel>().name})"
+						"(${message.channel.asChannelOfOrNull<GuildMessageChannel>()?.name ?: "Could not get channel name"})"
 			color = DISCORD_PINK
 			timestamp = Clock.System.now()
 

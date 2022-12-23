@@ -24,7 +24,6 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
@@ -312,7 +311,7 @@ class LogUploading : Extension() {
 
 					if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
 
-					guild!!.getChannelOf<GuildMessageChannel>(utilityConfig.utilityLogChannel!!).createEmbed {
+					guild!!.getChannelOfOrNull<GuildMessageChannel>(utilityConfig.utilityLogChannel!!)?.createEmbed {
 						title = "Log uploading disabled"
 						description = "Log uploading was disabled in ${channel.mention}"
 						color = DISCORD_RED
@@ -353,7 +352,7 @@ class LogUploading : Extension() {
 
 					if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
 
-					guild!!.getChannelOf<GuildMessageChannel>(utilityConfig.utilityLogChannel!!).createEmbed {
+					guild!!.getChannelOfOrNull<GuildMessageChannel>(utilityConfig.utilityLogChannel!!)?.createEmbed {
 						title = "Log uploading re-enabled"
 						description = "Log uploading was re-enabled in ${channel.mention}"
 						color = DISCORD_GREEN
