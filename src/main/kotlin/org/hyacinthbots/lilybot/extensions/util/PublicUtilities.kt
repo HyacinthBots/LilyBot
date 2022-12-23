@@ -19,7 +19,7 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
@@ -89,7 +89,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = UtilityConfigCollection().getConfig(guildFor(event)!!.id)!!
-					val utilityLog = guild?.getChannelOf<GuildMessageChannel>(config.utilityLogChannel!!)
+					val utilityLog = guild?.getChannelOfOrNull<GuildMessageChannel>(config.utilityLogChannel!!)
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
@@ -253,7 +253,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
-					val utilityLog = guild?.getChannelOf<GuildMessageChannel>(config.utilityLogChannel!!)
+					val utilityLog = guild?.getChannelOfOrNull<GuildMessageChannel>(config.utilityLogChannel!!)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {
