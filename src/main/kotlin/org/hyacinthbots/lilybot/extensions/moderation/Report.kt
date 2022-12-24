@@ -11,6 +11,7 @@ import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.types.edit
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.entity.ButtonStyle
@@ -18,12 +19,9 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOfOrNull
-import dev.kord.core.behavior.interaction.respondEphemeral
-import dev.kord.core.behavior.interaction.response.EphemeralMessageInteractionResponseBehavior
-import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
-import dev.kord.core.entity.interaction.ApplicationCommandInteraction
+import dev.kord.rest.builder.message.create.FollowupMessageCreateBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
@@ -70,14 +68,15 @@ class Report : Extension() {
 				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				val config = ModerationConfigCollection().getConfig(guild!!.id) ?: return@action
 
-				createConfirmation(
-					event.interaction,
-					user,
-					config.role!!,
-					actionLog,
-					reportedMessage,
-					modal?.reason?.value ?: "No reason provided"
-				)
+				respond {
+					createConfirmation(
+						user,
+						config.role!!,
+						actionLog,
+						reportedMessage,
+						modal?.reason?.value ?: "No reason provided"
+					)
+				}
 			}
 		}
 
@@ -130,14 +129,15 @@ class Report : Extension() {
 					return@action
 				}
 
-				createConfirmation(
-					event.interaction,
-					user,
-					moderationConfig.role!!,
-					modLog,
-					reportedMessage,
-					modal?.reason?.value ?: "No reason provided"
-				)
+				respond {
+					createConfirmation(
+						user,
+						moderationConfig.role!!,
+						modLog,
+						reportedMessage,
+						modal?.reason?.value ?: "No reason provided"
+					)
+				}
 			}
 		}
 	}
@@ -145,8 +145,7 @@ class Report : Extension() {
 	/**
 	 * A function to apply the confirmation to a report.
 	 *
-	 * @param inputInteraction The interaction to respond to
-	 * @param user The user who created the [inputInteraction]
+	 * @param user The user who created the action
 	 * @param moderatorRoleId The ID of the configured moderator role for the guild
 	 * @param modLog The channel for the guild that deleted messages are logged to
 	 * @param reportedMessage The message that was reported
@@ -154,78 +153,73 @@ class Report : Extension() {
 	 * @author tempest15, NoComment1105
 	 * @since 4.5.0
 	 */
-	private suspend fun createConfirmation(
-		inputInteraction: ApplicationCommandInteraction,
+	private suspend fun FollowupMessageCreateBuilder.createConfirmation(
 		user: UserBehavior,
 		moderatorRoleId: Snowflake,
 		modLog: GuildMessageChannel?,
 		reportedMessage: Message,
 		reason: String
 	) {
-		var reportResponse: EphemeralMessageInteractionResponseBehavior? = null
+		content = "Would you like to report this message? This will ping moderators, and false reporting will be " +
+				"treated as spam and punished accordingly"
+		components {
+			ephemeralButton(0) {
+				label = "Yes"
+				style = ButtonStyle.Success
 
-		reportResponse = inputInteraction.respondEphemeral {
-			content = "Would you like to report this message? This will ping moderators, and false reporting will be " +
-					"treated as spam and punished accordingly"
-			components {
-				ephemeralButton(0) {
-					label = "Yes"
-					style = ButtonStyle.Success
+				action {
+					this.edit {
+						content = "Message reported to staff"
+						components { removeAll() }
 
-					action {
-						reportResponse?.edit {
-							content = "Message reported to staff"
-							components { removeAll() }
+						modLog?.createMessage { content = "<@&$moderatorRoleId>" }
 
-							modLog?.createMessage { content = "<@&$moderatorRoleId>" }
-
-							modLog?.createMessage {
-								embed {
-									title = "Message reported"
-									description = "A message was reported in ${reportedMessage.getChannel().mention}"
-									field {
-										name = "Message Content:"
-										value =
-											reportedMessage.content.ifEmpty {
-												"Failed to get content of message"
-											}
-										inline = true
-									}
-									field {
-										name = "Message Author:"
-										value =
-											reportedMessage.author?.mention ?: "Failed to get author of message"
-									}
-									field {
-										name = "Report reason:"
-										value = reason
-									}
-									footer {
-										text = "Reported by: ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
-									}
-									timestamp = Clock.System.now()
-									color = DISCORD_RED
+						modLog?.createMessage {
+							embed {
+								title = "Message reported"
+								description = "A message was reported in ${reportedMessage.getChannel().mention}"
+								field {
+									name = "Message Content:"
+									value =
+										reportedMessage.content.ifEmpty {
+											"Failed to get content of message"
+										}
+									inline = true
 								}
-								components {
-									linkButton {
-										label = "Jump to message"
-										url = reportedMessage.getJumpUrl()
-									}
+								field {
+									name = "Message Author:"
+									value =
+										reportedMessage.author?.mention ?: "Failed to get author of message"
+								}
+								field {
+									name = "Report reason:"
+									value = reason
+								}
+								footer {
+									text = "Reported by: ${user.asUser().tag}"
+									icon = user.asUser().avatar?.url
+								}
+								timestamp = Clock.System.now()
+								color = DISCORD_RED
+							}
+							components {
+								linkButton {
+									label = "Jump to message"
+									url = reportedMessage.getJumpUrl()
 								}
 							}
 						}
 					}
 				}
-				ephemeralButton(0) {
-					label = "No"
-					style = ButtonStyle.Danger
+			}
+			ephemeralButton(0) {
+				label = "No"
+				style = ButtonStyle.Danger
 
-					action {
-						reportResponse?.edit {
-							content = "Message not reported."
-							components { removeAll() }
-						}
+				action {
+					this.edit {
+						content = "Message not reported."
+						components { removeAll() }
 					}
 				}
 			}
@@ -244,7 +238,7 @@ class Report : Extension() {
 		override var title = "Report a message"
 
 		val reason = paragraphText {
-			title = "Why are you reporting this message"
+			label = "Why are you reporting this message"
 			placeholder = "It violates rule X!"
 		}
 	}

@@ -23,10 +23,8 @@ import org.hyacinthbots.lilybot.utils.getSystemChannelWithPerms
 class GuildAnnouncements : Extension() {
 	override val name = "guild-announcements"
 
-	private lateinit var embedFooter: String
-
 	override suspend fun setup() {
-		ephemeralSlashCommand(::Modal) {
+		ephemeralSlashCommand(::GuildAnnouncementModal) {
 			name = "announcement"
 			description = "Send an announcement to all guilds Lily is in"
 
@@ -38,10 +36,9 @@ class GuildAnnouncements : Extension() {
 			}
 
 			action { modal ->
-				embedFooter = "Sent by ${user.asUser().tag}"
 				var response: EphemeralFollowupMessage? = null
 				response = respond {
-					content = "Would you like to send this message? It will be delivered to all servesr this bot is in."
+					content = "Would you like to send this message? It will be delivered to all servers this bot is in."
 					components {
 						ephemeralButton {
 							label = "Yes"
@@ -67,7 +64,7 @@ class GuildAnnouncements : Extension() {
 											description = modal?.body?.value
 											color = Color(0x7B52AE)
 											footer {
-												text = embedFooter
+												text = "Sent by ${user.asUser().tag}"
 											}
 										}
 									}
@@ -92,7 +89,7 @@ class GuildAnnouncements : Extension() {
 		}
 	}
 
-	inner class Modal : ModalForm() {
+	inner class GuildAnnouncementModal : ModalForm() {
 		override var title = "Send an announcement"
 
 		val header = lineText {
@@ -105,7 +102,7 @@ class GuildAnnouncements : Extension() {
 		val body = paragraphText {
 			label = "Announcement Body"
 			placeholder = "We're happy to announce Lily is now written in Rust! It turns out we really like crabs"
-			maxLength = 1750 - embedFooter.length
+			maxLength = 1750
 			required = true
 		}
 	}

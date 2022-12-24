@@ -432,6 +432,11 @@ class ModUtilities : Extension() {
 			}
 
 			action { modal ->
+				if (modal?.confirmation?.value?.lowercase() != "yes") {
+					respond { content = "Confirmation failure. Reset cancelled" }
+					return@action
+				}
+
 				var response: EphemeralFollowupMessage? = null
 
 				response = respond {
@@ -614,7 +619,7 @@ class ModUtilities : Extension() {
 		override var title = "Reset data for this guild"
 
 		val confirmation = lineText {
-			title = "Confirm Reset"
+			label = "Confirm Reset"
 			placeholder = "Type 'yes' to confirm"
 			required = true
 		}

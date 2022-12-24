@@ -13,11 +13,18 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
 import com.kotlindiscord.kord.extensions.components.forms.ModalForm
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
+import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubCommand
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
+import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOfOrNull
+import dev.kord.core.behavior.interaction.modal
+import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
@@ -39,14 +46,17 @@ import org.hyacinthbots.lilybot.utils.trimmedContents
 class Config : Extension() {
 	override val name: String = "config"
 
+	@OptIn(UnsafeAPI::class)
 	override suspend fun setup() {
 		ephemeralSlashCommand {
 			name = "config"
 			description = "Configure Lily's settings"
 
-			ephemeralSubCommand(::SupportArgs, ::SupportModal) {
+			unsafeSubCommand(::SupportArgs) {
 				name = "support"
 				description = "Configure Lily's support system"
+
+				initialResponse = InitialSlashCommandResponse.None
 
 				requirePermission(Permission.ManageGuild)
 
@@ -55,11 +65,11 @@ class Config : Extension() {
 					hasPermission(Permission.ManageGuild)
 				}
 
-				// TODO test this actually works :P
-				action { modal ->
+				action {
 					val supportConfig = SupportConfigCollection().getConfig(guild!!.id)
 					if (supportConfig != null) {
-						respond {
+						ackEphemeral()
+						respondEphemeral {
 							content = "You already have a support configuration set. " +
 									"Please clear it before attempting to set a new one."
 						}
@@ -68,15 +78,16 @@ class Config : Extension() {
 
 					if (!arguments.enable) {
 						SupportConfigCollection().setConfig(SupportConfigData(guild!!.id, false, null, null, null))
-						respond {
+						ackEphemeral()
+						respondEphemeral {
 							content = "Support system disabled."
 						}
 						return@action
 					}
 
-					// TODO Sub function please
 					if (!canPingRole(arguments.role) && arguments.role != null) {
-						respond {
+						ackEphemeral()
+						respondEphemeral {
 							content =
 								"I cannot use the role: ${arguments.role!!.mention}, because it is not mentionable by " +
 										"regular users. Please enable this in the role settings, or use a different role."
@@ -92,7 +103,8 @@ class Config : Extension() {
 								Permission.SendMessages
 							) != true
 						) {
-							respond {
+							ackEphemeral()
+							respondEphemeral {
 								content = "The mod action log you've selected is invalid, or I can't view it. " +
 										"Please attempt to resolve this and try again."
 							}
@@ -116,12 +128,27 @@ class Config : Extension() {
 					}
 
 					if (arguments.customMessage) {
-						respond {
+						val modalObj = SupportModal()
+
+						this@unsafeSubCommand.componentRegistry.register(modalObj)
+
+						event.interaction.modal(
+							modalObj.title,
+							modalObj.id
+						) {
+							modalObj.applyToBuilder(this, getLocale(), null)
+						}
+
+						modalObj.awaitCompletion { modalSubmitInteraction ->
+							interactionResponse = modalSubmitInteraction?.deferEphemeralMessageUpdate()
+						}
+
+						interactionResponse?.createEphemeralFollowup {
 							embed {
 								supportEmbed()
 								field {
 									name = "Message"
-									value = modal?.msgInput?.value!!
+									value = modalObj.msgInput.value!!
 								}
 							}
 						}
@@ -132,11 +159,12 @@ class Config : Extension() {
 								arguments.enable,
 								arguments.channel?.id,
 								arguments.role?.id,
-								modal?.msgInput?.value!!
+								modalObj.msgInput.value!!
 							)
 						)
 					} else {
-						respond {
+						ackEphemeral()
+						respondEphemeral {
 							embed {
 								supportEmbed()
 								field {
@@ -160,7 +188,7 @@ class Config : Extension() {
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 
 					if (utilityLog == null) {
-						respond {
+						respondEphemeral {
 							content = "Consider setting a utility config to log changes to configurations."
 						}
 						return@action
@@ -319,9 +347,11 @@ class Config : Extension() {
 				}
 			}
 
-			ephemeralSubCommand(::LoggingArgs, ::LoggingModal) {
+			unsafeSubCommand(::LoggingArgs) {
 				name = "logging"
 				description = "Configure Lily's logging system"
+
+				initialResponse = InitialSlashCommandResponse.None
 
 				requirePermission(Permission.ManageGuild)
 
@@ -330,19 +360,11 @@ class Config : Extension() {
 					hasPermission(Permission.ManageGuild)
 				}
 
-				// TODO test that this does the thing and not show the modal unless enable public logging is true
-				action { modal ->
-					if (arguments.enablePublicMemberLogging) {
-						PublicMemberLogData(
-							modal?.ping?.value == "yes",
-							modal?.joinMessage?.value,
-							modal?.leaveMessage?.value
-						)
-					}
-
+				action {
 					val loggingConfig = LoggingConfigCollection().getConfig(guild!!.id)
 					if (loggingConfig != null) {
-						respond {
+						ackEphemeral()
+						respondEphemeral {
 							content = "You already have a logging configuration set. " +
 									"Please clear it before attempting to set a new one."
 						}
@@ -350,15 +372,20 @@ class Config : Extension() {
 					}
 
 					if (arguments.enableMemberLogging && arguments.memberLog == null) {
-						respond { content = "You must specify a channel to log members joining and leaving to!" }
+						ackEphemeral()
+						respondEphemeral {
+							content = "You must specify a channel to log members joining and leaving to!"
+						}
 						return@action
 					} else if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) &&
 						arguments.messageLogs == null
 					) {
-						respond { content = "You must specify a channel to log deleted/edited messages to!" }
+						ackEphemeral()
+						respondEphemeral { content = "You must specify a channel to log deleted/edited messages to!" }
 						return@action
 					} else if (arguments.enablePublicMemberLogging && arguments.publicMemberLog == null) {
-						respond {
+						ackEphemeral()
+						respondEphemeral {
 							content = "You must specify a channel to publicly log members joining and leaving to!"
 						}
 						return@action
@@ -368,7 +395,8 @@ class Config : Extension() {
 					if (arguments.enableMemberLogging && arguments.memberLog != null) {
 						memberLog = guild!!.getChannelOfOrNull(arguments.memberLog!!.id)
 						if (memberLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
-							respond {
+							ackEphemeral()
+							respondEphemeral {
 								content = "The member log you've selected is invalid, or I can't view it. " +
 										"Please attempt to resolve this and try again."
 							}
@@ -380,7 +408,8 @@ class Config : Extension() {
 					if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) && arguments.messageLogs != null) {
 						messageLog = guild!!.getChannelOfOrNull(arguments.messageLogs!!.id)
 						if (messageLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
-							respond {
+							ackEphemeral()
+							respondEphemeral {
 								content = "The message log you've selected is invalid, or I can't view it. " +
 										"Please attempt to resolve this and try again."
 							}
@@ -396,7 +425,8 @@ class Config : Extension() {
 								Permission.SendMessages
 							) != true
 						) {
-							respond {
+							ackEphemeral()
+							respondEphemeral {
 								content = "The public member log you've selected is invalid, or I can't view it. " +
 										"Please attempt to resolve this and try again."
 							}
@@ -463,6 +493,34 @@ class Config : Extension() {
 						}
 					}
 
+					var publicMemberLogData: PublicMemberLogData? = null
+					if (arguments.enablePublicMemberLogging) {
+						val modalObj = LoggingModal()
+
+						this@unsafeSubCommand.componentRegistry.register(modalObj)
+
+						event.interaction.modal(
+							modalObj.title,
+							modalObj.id
+						) {
+							modalObj.applyToBuilder(this, getLocale(), null)
+						}
+
+						modalObj.awaitCompletion { modalSubmitInteraction ->
+							interactionResponse = modalSubmitInteraction?.deferEphemeralMessageUpdate()
+						}
+
+						publicMemberLogData = PublicMemberLogData(
+							modalObj.ping.value == "yes",
+							modalObj.joinMessage.value,
+							modalObj.leaveMessage.value
+						)
+
+						interactionResponse?.createEphemeralFollowup {
+							embed { loggingEmbed() }
+						}
+					}
+
 					LoggingConfigCollection().setConfig(
 						LoggingConfigData(
 							guild!!.id,
@@ -473,18 +531,21 @@ class Config : Extension() {
 							arguments.memberLog?.id,
 							arguments.enablePublicMemberLogging,
 							arguments.publicMemberLog?.id,
-							PublicMemberLogData(
-								modal?.ping?.value == "yes",
-								modal?.joinMessage?.value,
-								modal?.leaveMessage?.value
-							)
+							publicMemberLogData
 						)
 					)
+
+					if (!arguments.enablePublicMemberLogging) {
+						ackEphemeral()
+					}
+					respondEphemeral {
+						embed { loggingEmbed() }
+					}
 
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)
 
 					if (utilityLog == null) {
-						respond {
+						respondEphemeral {
 							content = "Consider setting a utility config to log changes to configurations."
 						}
 						return@action
@@ -494,10 +555,6 @@ class Config : Extension() {
 						embed {
 							loggingEmbed()
 						}
-					}
-
-					respond {
-						embed { loggingEmbed() }
 					}
 				}
 			}
@@ -1040,7 +1097,7 @@ class Config : Extension() {
 		override var title = "Support Message Configuraiton"
 
 		val msgInput = paragraphText {
-			title = "Support Message"
+			label = "Support Message"
 			placeholder = "Input the content of the message you would like sent when a support thread is created"
 			required = true
 		}
@@ -1050,19 +1107,19 @@ class Config : Extension() {
 		override var title = "Public logging configuration"
 
 		val joinMessage = paragraphText {
-			title = "What would you like to send when a user joins"
+			label = "What would you like sent when a user joins"
 			placeholder = "Welcome to the server!"
 			required = true
 		}
 
 		val leaveMessage = paragraphText {
-			title = "What would you like to send when a user leaves"
+			label = "What would you like sent when a user leaves"
 			placeholder = "Adiós amigo!"
 			required = true
 		}
 
 		val ping = lineText {
-			title = "Type `yes` to ping new users when they join"
+			label = "Type `yes` to ping new users when they join"
 			placeholder = "Defaults to false if input is invalid or not `yes`"
 		}
 	}
