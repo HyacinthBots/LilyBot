@@ -8,6 +8,7 @@ detekt = "1.22.0"
 koma = "1.1.0"
 cozy-welcome = "1.0-20221208.222216-97" # Just until we update KordEx, since it throws stuff if kordex's are different
 dma = "0.1.0"
+docgenerator = "main-SNAPSHOT"
 
 [libraries]
 kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
@@ -23,3 +24,4 @@ detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref
 koma = { module = "cc.ekblad:4koma", version.ref = "koma" }
 cozy-welcome = {module = "org.quiltmc.community:module-welcome", version.ref = "cozy-welcome"}
 dma = { module = "com.github.nocomment1105:discord-moderation-actions", version.ref = "dma"}
+docgenerator = { module = "com.github.hyacinthbots:doc-generator", version.ref = "docgenerator" }

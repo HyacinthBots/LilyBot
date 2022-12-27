@@ -13,6 +13,9 @@ import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
+import org.hyacinthbots.docgenerator.docsGenerator
+import org.hyacinthbots.docgenerator.enums.CommandTypes
+import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
 import org.hyacinthbots.lilybot.extensions.config.Config
@@ -42,7 +45,6 @@ import org.hyacinthbots.lilybot.utils.ENVIRONMENT
 import org.hyacinthbots.lilybot.utils.SENTRY_DSN
 import org.hyacinthbots.lilybot.utils.database
 import org.hyacinthbots.lilybot.utils.docs.CommandDocs
-import org.hyacinthbots.lilybot.utils.docs.DocsGenerator
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -137,6 +139,14 @@ suspend fun main() {
 			}
 		}
 
+		docsGenerator {
+			enabled = true
+			fileFormat = SupportedFileFormat.MARKDOWN
+			commandTypes = listOf(CommandTypes.SLASH, CommandTypes.MESSAGE, CommandTypes.USER)
+			filePath = docFile
+			environment = ENVIRONMENT
+		}
+
 		// Connect to GitHub to allow the GitHub commands to function
 		try {
 			github = GitHubBuilder().build()
@@ -147,8 +157,8 @@ suspend fun main() {
 		}
 	}
 
-	DocsGenerator.clearDocs(ENVIRONMENT)
-	DocsGenerator.writeNewDocs(ENVIRONMENT)
+	// DocsGenerator.clearDocs(ENVIRONMENT)
+	// DocsGenerator.writeNewDocs(ENVIRONMENT)
 
 	bot.start()
 }

@@ -80,6 +80,7 @@ dependencies {
 	implementation(libs.cozy.welcome)
 
     implementation(libs.dma)
+    implementation(libs.docgenerator)
 }
 
 application {
