@@ -18,37 +18,29 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
+import com.kotlindiscord.kord.extensions.components.forms.ModalForm
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
-import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
-import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
-import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOfOrNull
-import dev.kord.core.behavior.interaction.modal
-import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
-import dev.kord.core.behavior.interaction.response.edit
-import dev.kord.core.behavior.interaction.response.respond
+import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
-import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
+import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
-import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
@@ -76,7 +68,6 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.trimmedContents
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
@@ -86,7 +77,6 @@ import kotlin.time.Duration.Companion.seconds
 class ModUtilities : Extension() {
 	override val name = "mod-utilities"
 
-	@OptIn(UnsafeAPI::class)
 	override suspend fun setup() {
 		/**
 		 * Say Command
@@ -430,11 +420,9 @@ class ModUtilities : Extension() {
 			}
 		}
 
-		unsafeSlashCommand {
+		ephemeralSlashCommand(::ResetModal) {
 			name = "reset"
 			description = "'Resets' Lily for this guild by deleting all database information relating to this guild"
-
-			initialResponse = InitialSlashCommandResponse.None
 
 			requirePermission(Permission.Administrator) // Hide this command from non-administrators
 
@@ -443,36 +431,15 @@ class ModUtilities : Extension() {
 				hasPermission(Permission.Administrator)
 			}
 
-			action {
-				val modal = event.interaction.modal("Reset data for this guild", "resetModal") {
-					actionRow {
-						textInput(TextInputStyle.Short, "confirmation", "Confirm reset") {
-							placeholder = "Type 'yes' to confirm"
-						}
-					}
-				}
-
-				val interaction =
-					modal.kord.waitFor<ModalSubmitInteractionCreateEvent>(120.seconds.inWholeMilliseconds) {
-						interaction.modalId == "resetModal"
-					}?.interaction
-
-				if (interaction == null) {
-					modal.createEphemeralFollowup { content = "Reset interaction timed out" }
+			action { modal ->
+				if (modal?.confirmation?.value?.lowercase() != "yes") {
+					respond { content = "Confirmation failure. Reset cancelled" }
 					return@action
 				}
 
-				val confirmation = interaction.textInputs["confirmation"]!!.value!!
-				val modalResponse = interaction.deferEphemeralResponse()
+				var response: EphemeralFollowupMessage? = null
 
-				if (confirmation.lowercase() != "yes") {
-					modalResponse.respond { content = "Confirmation failure. Reset cancelled" }
-					return@action
-				}
-
-				var response: EphemeralMessageInteractionResponse? = null
-
-				response = modalResponse.respond {
+				response = respond {
 					content =
 						"Are you sure you want to reset the database? This will remove all data associated with " +
 								"this guild from Lily's database. This includes configs, user-set reminders, tags and more." +
@@ -645,6 +612,16 @@ class ModUtilities : Extension() {
 		val presenceArgument by string {
 			name = "presence"
 			description = "The new value Lily's presence should be set to"
+		}
+	}
+
+	inner class ResetModal : ModalForm() {
+		override var title = "Reset data for this guild"
+
+		val confirmation = lineText {
+			label = "Confirm Reset"
+			placeholder = "Type 'yes' to confirm"
+			required = true
 		}
 	}
 }

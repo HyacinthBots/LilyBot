@@ -1,13 +1,13 @@
 [versions]
-kord-extensions = "1.5.5-20221205.192723-47"
+kord-extensions = "1.5.6-20221216.114038-3"
 logging = "3.0.4"
 logback = "1.4.5"
 github-api = "1.313"
 kmongo = "4.7.2"
 detekt = "1.22.0"
 koma = "1.1.0"
-cozy-welcome = "1.0-20221208.222216-97" # Just until we update KordEx, since it throws stuff if kordex's are different
-dma = "0.1.0"
+cozy-welcome = "1.0-SNAPSHOT"
+dma = "main-SNAPSHOT"
 docgenerator = "main-SNAPSHOT"
 
 [libraries]
