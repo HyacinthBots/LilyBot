@@ -515,10 +515,6 @@ class Config : Extension() {
 							modalObj.joinMessage.value,
 							modalObj.leaveMessage.value
 						)
-
-						interactionResponse?.createEphemeralFollowup {
-							embed { loggingEmbed() }
-						}
 					}
 
 					LoggingConfigCollection().setConfig(
