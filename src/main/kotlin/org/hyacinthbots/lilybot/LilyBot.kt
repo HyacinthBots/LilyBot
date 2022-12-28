@@ -13,8 +13,8 @@ import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
+import org.hyacinthbots.docgenerator.CommandType
 import org.hyacinthbots.docgenerator.docsGenerator
-import org.hyacinthbots.docgenerator.enums.CommandTypes
 import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
@@ -142,7 +142,7 @@ suspend fun main() {
 		docsGenerator {
 			enabled = true
 			fileFormat = SupportedFileFormat.MARKDOWN
-			commandTypes = listOf(CommandTypes.SLASH, CommandTypes.MESSAGE, CommandTypes.USER)
+			commandTypes = CommandType.ALL
 			filePath = docFile
 			environment = ENVIRONMENT
 		}
