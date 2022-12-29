@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
  * @property mention If the user who created the thread should be welcomed in the first message
  * @property creationMessage The message to send in the thread when it is created
  *
- * @since 4.4.0
+ * @since 4.6.0
  */
 @Serializable
 data class AutoThreadingData(

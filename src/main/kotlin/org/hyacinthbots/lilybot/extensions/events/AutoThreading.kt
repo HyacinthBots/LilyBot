@@ -82,6 +82,7 @@ class AutoThreading : Extension() {
 					requireBotPermissions(Permission.SendMessages)
 					botHasChannelPerms(Permissions(Permission.SendMessages))
 				}
+
 				action {
 					// Check if the auto-threading is disabled
 					if (AutoThreadingCollection().getSingleAutoThread(channel.id) != null) {
@@ -188,6 +189,7 @@ class AutoThreading : Extension() {
 					requireBotPermissions(Permission.SendMessages)
 					botHasChannelPerms(Permissions(Permission.SendMessages))
 				}
+
 				action {
 					// Check if auto-threading is enabled
 					if (AutoThreadingCollection().getSingleAutoThread(channel.id) == null) {
@@ -236,6 +238,7 @@ class AutoThreading : Extension() {
 					requireBotPermissions(Permission.SendMessages)
 					botHasChannelPerms(Permissions(Permission.SendMessages))
 				}
+
 				action {
 					val autoThreads = AutoThreadingCollection().getAllAutoThreads(guild!!.id)
 					var responseContent: String? = null
@@ -280,6 +283,7 @@ class AutoThreading : Extension() {
 							).contains(event.message.getChannelOrNull()?.type)
 				}
 			}
+
 			action {
 				onMessageSend(event, event.getMessageOrNull(), event.pkMessage)
 			}
@@ -303,6 +307,7 @@ class AutoThreading : Extension() {
 							).contains(event.message.getChannelOrNull()?.type)
 				}
 			}
+
 			action {
 				onMessageSend(event, event.getMessageOrNull())
 			}
@@ -316,6 +321,7 @@ class AutoThreading : Extension() {
 							event.channel.member != null
 				}
 			}
+
 			action {
 				// fixme this event fires twice for some unknown reason so this is a workaround
 				delay(1000)
@@ -407,7 +413,7 @@ class AutoThreading : Extension() {
 	 * @param event The event for the message creation
 	 * @param message The original message that wasn't proxied
 	 * @param proxiedMessage The proxied message, if the message was proxied
-	 * @since 4.4.0
+	 * @since 4.6.0
 	 * @author NoComment1105
 	 */
 	private suspend fun <T : PKMessageCreateEvent> onMessageSend(
@@ -479,13 +485,7 @@ class AutoThreading : Extension() {
 		inputThread: TextChannelThread,
 		inputUser: User
 	) {
-		val threadMessage = inputThread.createMessage(
-			if (inputOptions.mention) {
-				inputUser.mention
-			} else {
-				"Placeholder message"
-			}
-		)
+		val threadMessage = inputThread.createMessage(if (inputOptions.mention) inputUser.mention else "Placeholder")
 
 		if (inputOptions.roleId != null) {
 			val role = inputThread.guild.getRole(inputOptions.roleId)
@@ -516,7 +516,7 @@ class AutoThreading : Extension() {
 					}
 			}
 		} else {
-			threadMessage.delete("Initial thread creation")
+			threadMessage.delete()
 		}
 
 		if (inputOptions.archive) {
