@@ -42,6 +42,7 @@ import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.Role
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
@@ -51,6 +52,7 @@ import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
+import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -360,7 +362,7 @@ class AutoThreading : Extension() {
 
 		val message by defaultingBoolean {
 			name = "message"
-			description = "Whether to send a message on thread creation or not. Default false."
+			description = "Whether to send a custom message on thread creation or not. Default false."
 			defaultValue = false
 		}
 	}
@@ -484,8 +486,20 @@ class AutoThreading : Extension() {
 
 		if (inputOptions.roleId != null) {
 			val role = inputThread.guild.getRole(inputOptions.roleId)
-			threadMessage.edit {
-				content = role.mention
+			val moderatorRoleId = ModerationConfigCollection().getConfig(inputThread.guildId)?.role
+			var moderatorRole: Role? = null
+			if (moderatorRoleId != null) {
+				moderatorRole = inputThread.guild.getRole(moderatorRoleId)
+			}
+
+			if (moderatorRole != null && moderatorRole.mentionable) {
+				threadMessage.edit {
+					content = role.mention + moderatorRole.mention
+				}
+			} else {
+				threadMessage.edit {
+					content = role.mention
+				}
 			}
 		}
 
