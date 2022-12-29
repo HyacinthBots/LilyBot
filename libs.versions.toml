@@ -1,18 +1,17 @@
 [versions]
-kotlin = "1.7.20"  # Note: Plugin versions must be updated in the settings.gradle.kts too
-
-kord-extensions = "1.5.5-20221027.131143-34"
-logging = "3.0.2"
-logback = "1.4.4"
+kord-extensions = "1.5.6-20221216.114038-3"
+logging = "3.0.4"
+logback = "1.4.5"
 github-api = "1.313"
-kmongo = "4.7.1"
-detekt = "1.21.0"
+kmongo = "4.7.2"
+detekt = "1.22.0"
 koma = "1.1.0"
 cozy-welcome = "1.0-SNAPSHOT"
-dma = "0.1.0"
+#dma = "0.1.0"
+dma = "main-SNAPSHOT"
 
 [libraries]
-kord-extensions = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
+kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
 kord-extensions-phishing = { module = "com.kotlindiscord.kord.extensions:extra-phishing", version.ref = "kord-extensions" }
 kord-extensions-pluralkit = { module = "com.kotlindiscord.kord.extensions:extra-pluralkit", version.ref = "kord-extensions"}
 kord-extensions-unsafe = { module = "com.kotlindiscord.kord.extensions:unsafe", version.ref = "kord-extensions"}

@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.annotations.DoNotChain
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
+import com.kotlindiscord.kord.extensions.checks.hasPermissions
 import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOptionalDuration
@@ -32,7 +33,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
@@ -78,7 +79,7 @@ class ModerationCommands : Extension() {
 
 	private val warnSuffix = "Please consider your actions carefully.\n\n" +
 			"For more information about the warn system, please see [this document]" +
-			"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md)"
+			"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md#name-warn)"
 
 	@OptIn(DoNotChain::class)
 	override suspend fun setup() {
@@ -86,10 +87,10 @@ class ModerationCommands : Extension() {
 			name = "Moderate"
 			locking = true
 
+			requirePermission(Permission.BanMembers, Permission.KickMembers, Permission.ModerateMembers)
+
 			check {
-				hasPermission(Permission.BanMembers) // TODO Go make a `hasPermissions` in KordEx. **Edit: PR Submitted**
-				hasPermission(Permission.KickMembers)
-				hasPermission(Permission.ModerateMembers)
+				hasPermissions(Permissions(Permission.BanMembers, Permission.KickMembers, Permission.ModerateMembers))
 				requireBotPermissions(Permission.BanMembers, Permission.KickMembers, Permission.ModerateMembers)
 			}
 
@@ -448,6 +449,8 @@ class ModerationCommands : Extension() {
 			name = "ban"
 			description = "Bans a user."
 
+			requirePermission(Permission.BanMembers)
+
 			check {
 				modCommandChecks(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers)
@@ -511,6 +514,8 @@ class ModerationCommands : Extension() {
 			name = "soft-ban"
 			description = "Soft-bans a user."
 
+			requirePermission(Permission.BanMembers)
+
 			check {
 				modCommandChecks(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers)
@@ -521,7 +526,9 @@ class ModerationCommands : Extension() {
 
 				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
 				if (arguments.messages != null && (arguments.messages!! > 7 || arguments.messages!! < 0)) {
-					respond { content = "Invalid `messages` parameter! This number must be between 0 and 7!" }
+					respond {
+						content = "Invalid `delete-message-days` parameter! This number must be between 0 and 7 days!"
+					}
 					return@action
 				}
 
@@ -574,6 +581,8 @@ class ModerationCommands : Extension() {
 			name = "unban"
 			description = "Unbans a user."
 
+			requirePermission(Permission.BanMembers)
+
 			check {
 				modCommandChecks(Permission.BanMembers)
 				requireBotPermissions(Permission.BanMembers)
@@ -620,6 +629,8 @@ class ModerationCommands : Extension() {
 		ephemeralSlashCommand(::KickArgs) {
 			name = "kick"
 			description = "Kicks a user."
+
+			requirePermission(Permission.KickMembers)
 
 			check {
 				modCommandChecks(Permission.KickMembers)
@@ -672,6 +683,8 @@ class ModerationCommands : Extension() {
 			name = "clear"
 			description = "Clears messages from a channel."
 
+			requirePermission(Permission.ManageMessages)
+
 			check {
 				modCommandChecks(Permission.ManageMessages)
 				requireBotPermissions(Permission.ManageMessages)
@@ -681,7 +694,14 @@ class ModerationCommands : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val messageAmount = arguments.messages
-				val textChannel = channel.asChannelOf<GuildMessageChannel>()
+				val textChannel = channel.asChannelOfOrNull<GuildMessageChannel>()
+
+				if (textChannel == null) {
+					respond {
+						content = "Could not get the channel to clear messages from."
+					}
+					return@action
+				}
 
 				// Get the specified amount of messages into an array list of Snowflakes and delete them
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
@@ -717,6 +737,8 @@ class ModerationCommands : Extension() {
 		ephemeralSlashCommand(::TimeoutArgs) {
 			name = "timeout"
 			description = "Times out a user."
+
+			requirePermission(Permission.ModerateMembers)
 
 			check {
 				modCommandChecks(Permission.ModerateMembers)
@@ -781,6 +803,8 @@ class ModerationCommands : Extension() {
 			name = "remove-timeout"
 			description = "Removes a timeout from a user"
 
+			requirePermission(Permission.ModerateMembers)
+
 			check {
 				modCommandChecks(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
@@ -826,6 +850,8 @@ class ModerationCommands : Extension() {
 			name = "warn"
 			description = "Warns a user."
 
+			requirePermission(Permission.ModerateMembers)
+
 			check {
 				modCommandChecks(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
@@ -853,7 +879,7 @@ class ModerationCommands : Extension() {
 							embed {
 								title = "1st warning in $guildName"
 								description = "**Reason:** ${arguments.reason}\n\n" +
-										"No moderation action has been take. $warnSuffix"
+										"No moderation action has been taken. $warnSuffix"
 							}
 						}
 					}
@@ -864,13 +890,19 @@ class ModerationCommands : Extension() {
 								embed {
 									title = "2nd warning in $guildName"
 									description = "**Reason:** ${arguments.reason}\n\n" +
-											"You have been timed out for 3 hours. $warnSuffix"
+											if (config.autoPunishOnWarn == true) {
+												"You have been timed out for 3 hours. $warnSuffix"
+											} else {
+											    warnSuffix
+											}
 								}
 							}
 						}
 
-						guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+						if (config.autoPunishOnWarn == true) {
+							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+								timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
+							}
 						}
 					}
 
@@ -880,14 +912,20 @@ class ModerationCommands : Extension() {
 								embed {
 									title = "3rd warning in $guildName"
 									description = "**Reason:** ${arguments.reason}\n\n" +
-											"You have been timed-out for 12 hours. $warnSuffix"
+											if (config.autoPunishOnWarn == true) {
+												"You have been timed-out for 12 hours. $warnSuffix"
+											} else {
+											    warnSuffix
+											}
 									color = DISCORD_RED
 								}
 							}
 						}
 
-						guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+						if (config.autoPunishOnWarn == true) {
+							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+								timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
+							}
 						}
 					}
 
@@ -897,13 +935,19 @@ class ModerationCommands : Extension() {
 								embed {
 									title = "Warning $strikes in $guildName"
 									description = "**Reason:** ${arguments.reason}\n\n" +
-											"You have been timed-out for 3 days. $warnSuffix"
+											if (config.autoPunishOnWarn == true) {
+												"You have been timed-out for 3 days. $warnSuffix"
+											} else {
+											    warnSuffix
+											}
 								}
 							}
 						}
 
-						guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-							timeoutUntil = Clock.System.now().plus(Duration.parse("PT3D"))
+						if (config.autoPunishOnWarn == true) {
+							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+								timeoutUntil = Clock.System.now().plus(Duration.parse("PT3D"))
+							}
 						}
 					}
 				}
@@ -922,7 +966,7 @@ class ModerationCommands : Extension() {
 							value = strikes.toString()
 						}
 					}
-					if (strikes != 1) {
+					if (config.autoPunishOnWarn == true && strikes != 1) {
 						embed {
 							warnTimeoutLog(strikes!!, user.asUser(), arguments.userArgument, arguments.reason)
 						}
@@ -943,12 +987,15 @@ class ModerationCommands : Extension() {
 			name = "remove-warn"
 			description = "Removes a user's warnings"
 
+			requirePermission(Permission.ModerateMembers)
+
 			check {
 				modCommandChecks(Permission.ModerateMembers)
 				requireBotPermissions(Permission.ModerateMembers)
 			}
 
 			action {
+				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val targetUser = guild?.getMemberOrNull(arguments.userArgument.id) ?: run {
 					respond {
 						content = "I was unable to find the member in this guild! Please try again!"
@@ -997,6 +1044,14 @@ class ModerationCommands : Extension() {
 						inline = false
 					}
 				}
+
+				if (config.publicLogging != null && config.publicLogging == true) {
+					channel.createEmbed {
+						title = "Warning Removal"
+						description = "${arguments.userArgument.mention} had a warn strike removed by a moderator."
+						color = DISCORD_BLACK
+					}
+				}
 			}
 		}
 	}
@@ -1010,8 +1065,8 @@ class ModerationCommands : Extension() {
 
 		/** The number of days worth of messages to delete. */
 		val messages by int {
-			name = "messages"
-			description = "Messages"
+			name = "delete-message-days"
+			description = "The number of days worth of messages to delete"
 		}
 
 		/** The reason for the ban. */
@@ -1044,8 +1099,8 @@ class ModerationCommands : Extension() {
 
 		/** The number of days worth of messages to delete, defaults to 3 days. */
 		val messages by optionalInt {
-			name = "messages"
-			description = "Messages"
+			name = "delete-message-days"
+			description = "The number of days worth of messages to delete"
 		}
 
 		/** The reason for the soft-ban. */
@@ -1236,8 +1291,8 @@ private fun EmbedBuilder.warnTimeoutLog(timeoutNumber: Int, moderator: User, tar
 			description = "${targetUser.mention} has been timed-out for 12 hours due to 3 warn strikes"
 
 		else ->
-			description = "${targetUser.mention} has been timed-out for 3 days due to $targetUser warn " +
-					"strike\nIt might be time to consider other " +
+			description = "${targetUser.mention} has been timed-out for 3 days due to $timeoutNumber warn " +
+					"strikes\nIt might be time to consider other " +
 					"action."
 	}
 

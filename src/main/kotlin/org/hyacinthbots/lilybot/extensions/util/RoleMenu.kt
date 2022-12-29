@@ -68,6 +68,8 @@ class RoleMenu : Extension() {
 				name = "create"
 				description = "Create a new role menu in this channel. A channel can have any number of role menus."
 
+				requirePermission(Permission.ManageRoles)
+
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageRoles)
@@ -167,6 +169,8 @@ class RoleMenu : Extension() {
 				name = "add"
 				description = "Add a role to the existing role menu in this channel."
 
+				requirePermission(Permission.ManageRoles)
+
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageRoles)
@@ -241,6 +245,8 @@ class RoleMenu : Extension() {
 				name = "remove"
 				description = "Remove a role from the existing role menu in this channel."
 
+				requirePermission(Permission.ManageMessages)
+
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageMessages)
@@ -304,6 +310,8 @@ class RoleMenu : Extension() {
 			ephemeralSubCommand {
 				name = "pronouns"
 				description = "Create a pronoun selection role menu and the roles to go with it."
+
+				requirePermission(Permission.ManageMessages)
 
 				check {
 					anyGuild()
@@ -426,7 +434,14 @@ class RoleMenu : Extension() {
 					return@Button
 				}
 
-				val guild = kord.getGuild(data.guildId)!!
+				val guild = kord.getGuildOrNull(data.guildId)
+				if (guild == null) {
+					event.interaction.respondEphemeral {
+						content = "An error occurred getting when trying to get the server, please try again! If the " +
+								"problem persists, open a report at <https://github.com/HyacinthBots/LilyBot/issues>"
+					}
+					return@Button
+				}
 
 				val roles = mutableListOf<Role>()
 				data.roles.forEach {
@@ -512,7 +527,7 @@ class RoleMenu : Extension() {
 	 * @author tempest15
 	 * @since 3.4.0
 	 */
-	private suspend inline fun EphemeralSlashCommandContext<*>.roleMenuExists(
+	private suspend inline fun EphemeralSlashCommandContext<*, *>.roleMenuExists(
 		inputMessage: Message?,
 		argumentMessageId: Snowflake
 	): Boolean {
@@ -544,7 +559,7 @@ class RoleMenu : Extension() {
 	 * @author tempest15
 	 * @since 3.4.0
 	 */
-	private suspend inline fun EphemeralSlashCommandContext<*>.botCanAssignRole(kord: Kord, role: Role): Boolean {
+	private suspend inline fun EphemeralSlashCommandContext<*, *>.botCanAssignRole(kord: Kord, role: Role): Boolean {
 		val self = guild?.getMemberOrNull(kord.selfId)!!
 		if (self.getTopRole()!! < role) {
 			respond {

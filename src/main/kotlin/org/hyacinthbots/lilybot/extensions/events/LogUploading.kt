@@ -24,7 +24,6 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
@@ -118,10 +117,10 @@ class LogUploading : Extension() {
 					delay(4.seconds) // Delay to allow for thread creation
 					ThreadsCollection().getOwnerThreads(eventMember!!.id).forEach {
 						val thread =
-							event.getGuild().getChannelOfOrNull<TextChannelThread>(it.threadId) ?: return@forEach
+							event.getGuildOrNull()?.getChannelOfOrNull<TextChannelThread>(it.threadId) ?: return@forEach
 						if (thread.parentId == supportConfig?.channel) {
 							uploadChannel =
-								event.getGuild().getChannelOfOrNull<GuildMessageChannel>(it.threadId) ?: return@forEach
+								event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId) ?: return@forEach
 							return@forEach
 						}
 					}
@@ -282,14 +281,16 @@ class LogUploading : Extension() {
 			name = "log-uploading"
 			description = "The parent command for blacklisting channels from running the log uploading code"
 
-			check {
-				anyGuild()
-				hasPermission(Permission.ModerateMembers)
-			}
-
 			ephemeralSubCommand {
 				name = "blacklist-add"
 				description = "Add a channel to the log uploading blacklist"
+
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+				}
 
 				action {
 					val blacklist = LogUploadingBlacklistCollection().isChannelInUploadBlacklist(guild!!.id, channel.id)
@@ -310,7 +311,7 @@ class LogUploading : Extension() {
 
 					if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
 
-					guild!!.getChannelOf<GuildMessageChannel>(utilityConfig.utilityLogChannel!!).createEmbed {
+					guild!!.getChannelOfOrNull<GuildMessageChannel>(utilityConfig.utilityLogChannel!!)?.createEmbed {
 						title = "Log uploading disabled"
 						description = "Log uploading was disabled in ${channel.mention}"
 						color = DISCORD_RED
@@ -325,6 +326,13 @@ class LogUploading : Extension() {
 			ephemeralSubCommand {
 				name = "blacklist-remove"
 				description = "Remove a channel from the log uploading blacklist"
+
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+				}
 
 				action {
 					LogUploadingBlacklistCollection().isChannelInUploadBlacklist(guild!!.id, channel.id) ?: run {
@@ -344,7 +352,7 @@ class LogUploading : Extension() {
 
 					if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
 
-					guild!!.getChannelOf<GuildMessageChannel>(utilityConfig.utilityLogChannel!!).createEmbed {
+					guild!!.getChannelOfOrNull<GuildMessageChannel>(utilityConfig.utilityLogChannel!!)?.createEmbed {
 						title = "Log uploading re-enabled"
 						description = "Log uploading was re-enabled in ${channel.mention}"
 						color = DISCORD_GREEN
@@ -359,6 +367,13 @@ class LogUploading : Extension() {
 			ephemeralSubCommand {
 				name = "blacklist-list"
 				description = "List all channels that block log uploading"
+
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+				}
 
 				action {
 					var channels = ""

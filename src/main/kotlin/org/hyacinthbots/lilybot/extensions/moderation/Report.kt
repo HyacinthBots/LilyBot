@@ -1,5 +1,3 @@
-@file:OptIn(UnsafeAPI::class)
-
 package org.hyacinthbots.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_RED
@@ -8,42 +6,28 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
+import com.kotlindiscord.kord.extensions.components.forms.ModalForm
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
-import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeMessageCommand
-import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSlashCommand
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialMessageCommandResponse
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
+import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
+import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.types.edit
+import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
-import com.kotlindiscord.kord.extensions.utils.waitFor
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
-import dev.kord.common.entity.TextInputStyle
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.getChannelOf
-import dev.kord.core.behavior.interaction.ModalParentInteractionBehavior
-import dev.kord.core.behavior.interaction.modal
-import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
-import dev.kord.core.behavior.interaction.response.edit
-import dev.kord.core.behavior.interaction.response.respond
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
-import dev.kord.core.entity.channel.MessageChannel
-import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
-import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
-import dev.kord.core.exception.EntityNotFoundException
+import dev.kord.rest.builder.message.create.FollowupMessageCreateBuilder
 import dev.kord.rest.builder.message.create.embed
-import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * The message reporting feature in the bot.
@@ -54,183 +38,128 @@ class Report : Extension() {
 	override val name = "report"
 
 	override suspend fun setup() {
-		reportMessageCommand()
-		reportSlashCommand()
-	}
-}
+		ephemeralMessageCommand(::ReportModal) {
+			name = "Report"
+			locking = true // To prevent the command from being run more than once concurrently
 
-/**
- * The message command for the report functions in the bot.
- *
- * @author NoComment1105
- * @since 3.3.0
- */
-suspend inline fun Report.reportMessageCommand() = unsafeMessageCommand {
-	name = "Report"
-	locking = true // To prevent the command from being run more than once concurrently
-
-	initialResponse = InitialMessageCommandResponse.None
-
-	check {
-		anyGuild()
-		requiredConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
-	}
-
-	action {
-		val reportedMessage: Message
-
-		try {
-			reportedMessage = event.interaction.getTarget()
-		} catch (e: KtorRequestException) {
-			ackEphemeral()
-			respondEphemeral {
-				content = "Sorry, I can't properly access this message. Please ping the moderators instead."
+			check {
+				anyGuild()
+				requiredConfigs(
+					ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG
+				)
 			}
-			return@action
-		} catch (e: EntityNotFoundException) {
-			ackEphemeral()
-			respondEphemeral {
-				content = "Sorry, I can't find this message. Please ping the moderators instead."
+
+			action { modal ->
+				val reportedMessage = event.interaction.getTargetOrNull()
+				if (reportedMessage == null) {
+					respond {
+						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
+					}
+					return@action
+				}
+
+				if (reportedMessage.author == event.interaction.user) {
+					respond {
+						content = "You may not report your own message."
+					}
+					return@action
+				}
+
+				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
+				val config = ModerationConfigCollection().getConfig(guild!!.id) ?: return@action
+
+				respond {
+					createConfirmation(
+						user,
+						config.role!!,
+						actionLog,
+						reportedMessage,
+						modal?.reason?.value ?: "No reason provided"
+					)
+				}
 			}
-			return@action
 		}
 
-		if (reportedMessage.author == event.interaction.user) {
-			ackEphemeral()
-			respondEphemeral {
-				content = "You may not report your own message."
+		ephemeralSlashCommand(::ManualReportArgs, ::ReportModal) {
+			name = "manual-report"
+			description = "Report a message, using a link instead of the message command"
+			locking = true // To prevent the command from being run more than once concurrently
+
+			check {
+				anyGuild()
+				requiredConfigs(
+					ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG
+				)
 			}
-			return@action
-		}
 
-		val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
-		val config = ModerationConfigCollection().getConfig(guild!!.id) ?: return@action
-		createReportModal(
-			event.interaction as ModalParentInteractionBehavior,
-			user,
-			config.role!!,
-			actionLog,
-			reportedMessage,
-		)
-	}
-}
+			action { modal ->
+				val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
+				val modLog = guild!!.getChannelOfOrNull<GuildMessageChannel>(moderationConfig.channel!!)
 
-/**
- * The slash command variant of [reportMessageCommand]. This is primarily here for mobile users, since context menu's
- * don't properly exist in the mobile apps yet. Should be removed when they're introduced.
- *
- * @author NoComment1105
- * @since 3.3.0
- */
-suspend inline fun Report.reportSlashCommand() = unsafeSlashCommand(::ManualReportArgs) {
-	name = "manual-report"
-	description = "Report a message, using a link instead of the message command"
-	locking = true // To prevent the command from being run more than once concurrently
+				if (arguments.message.contains("/").not()) {
+					respond {
+						content = "The URL provided was malformed and the message could not be found!"
+					}
+					return@action
+				}
 
-	initialResponse = InitialSlashCommandResponse.None
+				val channel =
+					guild!!.getChannelOfOrNull<GuildMessageChannel>(Snowflake(arguments.message.split("/")[5]))
 
-	check {
-		anyGuild()
-		requiredConfigs(ConfigOptions.MODERATION_ENABLED, ConfigOptions.MODERATOR_ROLE, ConfigOptions.ACTION_LOG)
-	}
+				if (channel == null) {
+					respond {
+						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
+					}
+					return@action
+				}
 
-	action {
-		val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)!!
-		val modLog = guild!!.getChannelOf<GuildMessageChannel>(moderationConfig.channel!!)
-		val channel: MessageChannel
-		val reportedMessage: Message
+				val reportedMessage = channel.getMessageOrNull(Snowflake(arguments.message.split("/")[6]))
 
-		if (arguments.message.contains("/").not()) {
-			ackEphemeral()
-			respondEphemeral {
-				content = "The URL provided was malformed and the message could not be found!"
-			}
-			return@action
-		}
+				if (reportedMessage == null) {
+					respond {
+						content = "Sorry, I can't find this message. Please ping the moderators instead."
+					}
+					return@action
+				}
 
-		try {
-			// Since this takes in a discord URL, we have to parse the channel and message ID out of it to use
-			channel = guild?.getChannel(
-				Snowflake(arguments.message.split("/")[5])
-			) as MessageChannel
-			reportedMessage = channel.getMessage(Snowflake(arguments.message.split("/")[6]))
-		} catch (e: KtorRequestException) { // In the event of a report in a channel the bot can't see
-			ackEphemeral()
-			respondEphemeral {
-				content = "Sorry, I can't properly access this message. Please ping the moderators instead."
-			}
-			return@action
-		} catch (e: EntityNotFoundException) { // In the event of the message already being deleted.
-			ackEphemeral()
-			respondEphemeral {
-				content = "Sorry, I can't find this message. Please ping the moderators instead."
-			}
-			return@action
-		}
+				if (reportedMessage.author == event.interaction.user) {
+					respond {
+						content = "You may not report your own message."
+					}
+					return@action
+				}
 
-		if (reportedMessage.author == event.interaction.user) {
-			ackEphemeral()
-			respondEphemeral {
-				content = "You may not report your own message."
-			}
-			return@action
-		}
-
-		createReportModal(
-			event.interaction as ModalParentInteractionBehavior,
-			user,
-			moderationConfig.role!!,
-			modLog,
-			reportedMessage,
-		)
-	}
-}
-
-/**
- * A function to contain common code between [reportMessageCommand] and [reportSlashCommand].
- *
- * @param inputInteraction The interaction to create a modal in response to
- * @param user The user who created the [inputInteraction]
- * @param moderatorRoleId The ID of the configured moderator role for the guild
- * @param modLog The channel for the guild that deleted messages are logged to
- * @param reportedMessage The message that was reported
- * @author tempest15
- * @since 3.3.0
- */
-suspend fun createReportModal(
-	inputInteraction: ModalParentInteractionBehavior,
-	user: UserBehavior,
-	moderatorRoleId: Snowflake,
-	modLog: GuildMessageChannel?,
-	reportedMessage: Message,
-) {
-	val modal = inputInteraction.modal("Report a message", "reportModal") {
-		actionRow {
-			textInput(TextInputStyle.Paragraph, "reason", "Why are you reporting this message?") {
-				placeholder = "It violates rule X!"
+				respond {
+					createConfirmation(
+						user,
+						moderationConfig.role!!,
+						modLog,
+						reportedMessage,
+						modal?.reason?.value ?: "No reason provided"
+					)
+				}
 			}
 		}
 	}
 
-	val interaction = modal.kord.waitFor<ModalSubmitInteractionCreateEvent>(120.seconds.inWholeMilliseconds) {
-		interaction.modalId == "reportModal"
-	}?.interaction
-
-	if (interaction == null) {
-		modal.createEphemeralFollowup {
-			embed {
-				description = "Report timed out"
-			}
-		}
-		return
-	}
-
-	val reason = interaction.textInputs["reason"]!!.value!!
-	val modalResponse = interaction.deferEphemeralResponse()
-
-	var reportResponse: EphemeralMessageInteractionResponse? = null
-
-	reportResponse = modalResponse.respond {
+	/**
+	 * A function to apply the confirmation to a report.
+	 *
+	 * @param user The user who created the action
+	 * @param moderatorRoleId The ID of the configured moderator role for the guild
+	 * @param modLog The channel for the guild that deleted messages are logged to
+	 * @param reportedMessage The message that was reported
+	 * @param reason The reason for the report
+	 * @author tempest15, NoComment1105
+	 * @since 4.5.0
+	 */
+	private suspend fun FollowupMessageCreateBuilder.createConfirmation(
+		user: UserBehavior,
+		moderatorRoleId: Snowflake,
+		modLog: GuildMessageChannel?,
+		reportedMessage: Message,
+		reason: String
+	) {
 		content = "Would you like to report this message? This will ping moderators, and false reporting will be " +
 				"treated as spam and punished accordingly"
 		components {
@@ -239,7 +168,7 @@ suspend fun createReportModal(
 				style = ButtonStyle.Success
 
 				action {
-					reportResponse?.edit {
+					this.edit {
 						content = "Message reported to staff"
 						components { removeAll() }
 
@@ -288,7 +217,7 @@ suspend fun createReportModal(
 				style = ButtonStyle.Danger
 
 				action {
-					reportResponse?.edit {
+					this.edit {
 						content = "Message not reported."
 						components { removeAll() }
 					}
@@ -296,12 +225,21 @@ suspend fun createReportModal(
 			}
 		}
 	}
-}
 
-class ManualReportArgs : Arguments() {
-	/** The link to the message being reported. */
-	val message by string {
-		name = "message-link"
-		description = "Link to the message to report"
+	inner class ManualReportArgs : Arguments() {
+		/** The link to the message being reported. */
+		val message by string {
+			name = "message-link"
+			description = "Link to the message to report"
+		}
+	}
+
+	inner class ReportModal : ModalForm() {
+		override var title = "Report a message"
+
+		val reason = paragraphText {
+			label = "Why are you reporting this message"
+			placeholder = "It violates rule X!"
+		}
 	}
 }

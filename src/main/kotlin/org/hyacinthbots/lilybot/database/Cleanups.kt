@@ -11,7 +11,6 @@ import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
-import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
@@ -75,7 +74,6 @@ object Cleanups : KordExKoinComponent {
 
 			if (leaveDuration.inWholeDays > 30) {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
-				AutoThreadingCollection().deleteGuildAutoThreads(it.guildId)
 				ModerationConfigCollection().clearConfig(it.guildId)
 				SupportConfigCollection().clearConfig(it.guildId)
 				LoggingConfigCollection().clearConfig(it.guildId)
@@ -124,7 +122,7 @@ object Cleanups : KordExKoinComponent {
 					category = "cleanupThreadData"
 					message = "Cleaning thread ${it.threadId}"
 				}
-				val guild = kordInstance.getGuild(it.guildId) ?: return
+				val guild = kordInstance.getGuildOrNull(it.guildId) ?: return
 				val thread = guild.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: continue
 				val latestMessage = thread.getLastMessage() ?: continue
 				val timeSinceLatestMessage = Clock.System.now() - latestMessage.id.timestamp

@@ -5,8 +5,6 @@ import kotlinx.datetime.Instant
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.UptimeData
 import org.koin.core.component.inject
-import org.litote.kmongo.ne
-import org.litote.kmongo.setValue
 
 /**
  * Stores the functions for interacting with [the uptime database][UptimeData]. This class contains the functions for
@@ -14,7 +12,6 @@ import org.litote.kmongo.setValue
  *
  * @see get
  * @see set
- * @see update
  * @since 4.2.0
  */
 class UptimeCollection : KordExKoinComponent {
@@ -39,15 +36,8 @@ class UptimeCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 4.2.0
 	 */
-	suspend fun set(onTime: Instant) =
+	suspend fun set(onTime: Instant) {
+		collection.drop()
 		collection.insertOne(UptimeData(onTime))
-
-	/**
-	 * Updates the uptime data in the database with the new [data][UptimeData].
-	 *
-	 * @author NoComment1105
-	 * @since 4.2.0
-	 */
-	suspend fun update(onTime: Instant) =
-		collection.updateOne(UptimeData::onTime ne null, setValue(UptimeData::onTime, onTime))
+	}
 }

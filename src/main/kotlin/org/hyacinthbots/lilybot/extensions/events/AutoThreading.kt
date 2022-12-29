@@ -327,7 +327,9 @@ class AutoThreading : Extension() {
 				val threadMessage = thread.createMessage(
 					if (options.mention) {
 						event.channel.owner.mention
-					} else "message"
+					} else {
+					    "message"
+					}
 				)
 
 				if (options.roleId != null) {
@@ -482,7 +484,7 @@ class AutoThreading : Extension() {
 			var previousUserThread: TextChannelThread? = null
 			val ownerThreads = ThreadsCollection().getOwnerThreads(authorId)
 
-			val threadData = ownerThreads.find { it.parentChannel == channel.id }
+			val threadData = ownerThreads.find { it.threadId == channel.id } // todo this is wrong
 			if (threadData != null) {
 				previousUserThread = event.getGuild().getChannelOfOrNull(threadData.threadId)
 			}
@@ -503,7 +505,7 @@ class AutoThreading : Extension() {
 			channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 		)
 
-		ThreadsCollection().setThreadOwner(event.getGuild().id, thread.parentId, thread.id, authorId)
+		ThreadsCollection().setThreadOwner(event.getGuild().id, thread.parentId, thread.id)
 
 		val threadMessage = thread.createMessage(
 			if (options.mention) {

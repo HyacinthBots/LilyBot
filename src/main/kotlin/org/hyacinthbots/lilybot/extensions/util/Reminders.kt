@@ -98,7 +98,7 @@ class Reminders : Extension() {
 						return@action
 					}
 
-					if (arguments.repeatingInterval != null && arguments.repeatingInterval!!.toDuration(TimeZone.UTC) <=
+					if (arguments.repeatingInterval != null && arguments.repeatingInterval!!.toDuration(TimeZone.UTC) <
 						DateTimePeriod(hours = 1).toDuration(TimeZone.UTC)
 					) {
 						respond {
@@ -325,11 +325,7 @@ class Reminders : Extension() {
 				name = "mod-list"
 				description = "List all reminders for a user, if you're a moderator"
 
-				check {
-					anyGuild()
-					hasPermission(Permission.ModerateMembers)
-					requirePermission(Permission.ModerateMembers)
-				}
+				requirePermission(Permission.ModerateMembers)
 
 				check {
 					anyGuild()
@@ -357,6 +353,14 @@ class Reminders : Extension() {
 			ephemeralSubCommand(::ReminderModRemoveArgs) {
 				name = "mod-remove"
 				description = "Remove a reminder for a user, if you're a moderator"
+
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
 
 				action {
 					val reminders = ReminderCollection().getRemindersForUser(arguments.user.id)
@@ -396,6 +400,8 @@ class Reminders : Extension() {
 			ephemeralSubCommand(::ReminderModRemoveAllArgs) {
 				name = "mod-remove-all"
 				description = "Remove all a specific type of reminder for a user, if you're a moderator"
+
+				requirePermission(Permission.ModerateMembers)
 
 				check {
 					anyGuild()
@@ -494,7 +500,7 @@ class Reminders : Extension() {
 		for (it in dueReminders) {
 			var guild: Guild? = null
 			try {
-				guild = kord.getGuild(it.guildId)
+				guild = kord.getGuildOrNull(it.guildId)
 			} catch (_: KtorRequestException) {
 				ReminderCollection().removeReminder(it.id)
 			}
@@ -531,7 +537,7 @@ class Reminders : Extension() {
 			}
 
 			if (it.repeating) {
-				ReminderCollection().repeatReminder(it.remindTime, it.repeatingInterval!!, it.id)
+				ReminderCollection().repeatReminder(it, it.repeatingInterval!!)
 			} else {
 				ReminderCollection().removeReminder(it.id)
 			}
@@ -587,7 +593,7 @@ class Reminders : Extension() {
 		wasCancelled: Boolean,
 		byModerator: Boolean = false
 	) {
-		val guild = kord.getGuild(guildId) ?: return
+		val guild = kord.getGuildOrNull(guildId) ?: return
 		val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return
 		val message = channel.getMessageOrNull(messageId) ?: return
 		message.edit {
@@ -595,7 +601,9 @@ class Reminders : Extension() {
 					"${
 						if (wasCancelled) {
 							"cancelled ${if (byModerator) "by moderator" else ""}."
-						} else "completed."
+						} else {
+						    "completed."
+						}
 					}**"
 		}
 	}

@@ -25,11 +25,11 @@ import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.threads.edit
-import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.channel.GuildMessageChannel
@@ -65,9 +65,16 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannelOf<ThreadChannel>()
+					val threadChannel = channel.asChannelOfOrNull<ThreadChannel>()
+					if (threadChannel == null) {
+						respond {
+							content = "Are you sure this channel is a thread? If it is, I can't fetch it properly."
+							return@action
+						}
+					}
+
 					val member = user.asMember(guild!!.id)
-					if (!ownsThreadOrModerator(threadChannel, member)) return@action
+					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
 
 					threadChannel.edit {
 						name = arguments.newThreadName
@@ -91,39 +98,40 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannelOf<ThreadChannel>()
+					val threadChannel = channel.asChannelOfOrNull<ThreadChannel>()
+					if (threadChannel == null) {
+						respond {
+							content = "Are you sure this channel is a thread? If it is, I can't fetch it properly."
+							return@action
+						}
+					}
+
 					val member = user.asMember(guild!!.id)
-					if (!ownsThreadOrModerator(threadChannel, member)) return@action
+					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
 
 					ThreadsCollection().getAllThreads().forEach {
 						if (it.threadId == threadChannel.id) {
 							val preventingArchiving = ThreadsCollection().getThread(it.threadId)?.preventArchiving
 							ThreadsCollection().removeThread(it.threadId)
-							ThreadsCollection().setThreadOwner(
-								it.guildId,
-								it.parentChannel,
-								it.threadId,
-								it.ownerId,
-								false
-							)
+							ThreadsCollection().setThreadOwner(it.guildId, it.threadId, it.ownerId, false)
 							if (preventingArchiving == true) {
-								guild!!.getChannelOf<GuildMessageChannel>(
+								guild!!.getChannelOfOrNull<GuildMessageChannel>(
 									ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!
-								).createEmbed {
-									title = "Thread archive prevention disabled"
-									description =
-										"Archive prevention has been disabled, as `/thread archive` was used."
-									color = DISCORD_FUCHSIA
+								)?.createEmbed {
+										title = "Thread archive prevention disabled"
+										description =
+											"Archive prevention has been disabled, as `/thread archive` was used."
+										color = DISCORD_FUCHSIA
 
-									field {
-										name = "User"
-										value = user.asUser().tag
+										field {
+											name = "User"
+											value = user.asUser().tag
+										}
+										field {
+											name = "Thread"
+											value = "${threadChannel.mention} ${threadChannel.name}"
+										}
 									}
-									field {
-										name = "Thread"
-										value = "${threadChannel.mention} ${threadChannel.name}"
-									}
-								}
 							}
 						}
 					}
@@ -161,10 +169,16 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannelOf<ThreadChannel>()
+					val threadChannel = channel.asChannelOfOrNull<ThreadChannel>()
+					if (threadChannel == null) {
+						respond {
+							content = "Are you sure this channel is a thread? If it is, I can't fetch it properly."
+							return@action
+						}
+					}
 					val member = user.asMember(guild!!.id)
 
-					val oldOwnerId = ThreadsCollection().getThread(threadChannel.id)?.ownerId ?: threadChannel.ownerId
+					val oldOwnerId = ThreadsCollection().getThread(threadChannel!!.id)?.ownerId ?: threadChannel.ownerId
 					val oldOwner = guild!!.getMemberOrNull(oldOwnerId)
 
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
@@ -179,12 +193,7 @@ class ThreadControl : Extension() {
 						return@action
 					}
 
-					ThreadsCollection().setThreadOwner(
-						guild!!.id,
-						threadChannel.parentId,
-						threadChannel.id,
-						arguments.newOwner.id
-					)
+					ThreadsCollection().setThreadOwner(guild!!.id, threadChannel.id, arguments.newOwner.id)
 
 					respond { content = "Ownership transferred." }
 
@@ -232,9 +241,15 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannelOf<ThreadChannel>()
+					val threadChannel = channel.asChannelOfOrNull<ThreadChannel>()
+					if (threadChannel == null) {
+						respond {
+							content = "Are you sure this channel is a thread? If it is, I can't fetch it properly."
+							return@action
+						}
+					}
 					val member = user.asMember(guild!!.id)
-					if (!ownsThreadOrModerator(threadChannel, member)) return@action
+					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
 
 					if (threadChannel.isArchived) {
 						threadChannel.edit {
@@ -247,13 +262,7 @@ class ThreadControl : Extension() {
 					var message: EphemeralMessageInteractionResponse? = null
 					var thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					if (thread == null) {
-						ThreadsCollection().setThreadOwner(
-							threadChannel.guildId,
-							threadChannel.parentId,
-							threadChannel.id,
-							threadChannel.ownerId,
-							false
-						)
+						ThreadsCollection().setThreadOwner(threadChannel.guildId, threadChannel.id, threadChannel.ownerId, false)
 						thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					}
 					if (thread?.preventArchiving == true) {
@@ -266,13 +275,7 @@ class ThreadControl : Extension() {
 									style = ButtonStyle.Primary
 
 									action button@{
-										ThreadsCollection().setThreadOwner(
-											thread.guildId,
-											thread.parentChannel,
-											thread.threadId,
-											thread.ownerId,
-											false
-										)
+										ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, false)
 										edit { content = "Thread archiving will no longer be prevented" }
 										val utilityLog = getLoggingChannelWithPerms(
 											ConfigOptions.UTILITY_LOG,
@@ -309,13 +312,7 @@ class ThreadControl : Extension() {
 						}
 						return@action
 					} else if (thread?.preventArchiving == false) {
-						ThreadsCollection().setThreadOwner(
-							thread.guildId,
-							thread.parentChannel,
-							thread.threadId,
-							thread.ownerId,
-							true
-						)
+						ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, true)
 						try {
 							val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 								?: return@action
@@ -396,7 +393,7 @@ class ThreadControl : Extension() {
 	 * @author tempest15
 	 * @since 3.2.0
 	 */
-	private suspend fun EphemeralSlashCommandContext<*>.ownsThreadOrModerator(
+	private suspend fun EphemeralSlashCommandContext<*, *>.ownsThreadOrModerator(
 		inputThread: ThreadChannel,
 		inputMember: Member
 	): Boolean {

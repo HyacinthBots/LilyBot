@@ -16,7 +16,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ThreadData(
 	val guildId: Snowflake,
-	val parentChannel: Snowflake?, // TODO make not nullable after migration
 	val threadId: Snowflake,
 	val ownerId: Snowflake,
 	var preventArchiving: Boolean = false

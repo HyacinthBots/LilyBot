@@ -10,19 +10,14 @@ import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.NewsChannel
-import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.gateway.ReadyEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.Cleanups
-import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
-import org.hyacinthbots.lilybot.database.entities.ThreadData
+import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
-import org.litote.kmongo.coroutine.toList
-import org.litote.kmongo.eq
-import org.litote.kmongo.setValue
 import kotlin.time.Duration.Companion.days
 
 /**
@@ -45,34 +40,9 @@ class StartupHooks : Extension() {
 
 		event<ReadyEvent> {
 			action {
-				// TODO Remove this post mainv5 migration. We need this because we need kord object and that is not
-				//  present in migrations
-				with(Database().mainDatabase.getCollection<ThreadData>("threadData")) {
-					collection.find(ThreadData::guildId eq null).toList().forEach {
-						updateOne(
-							ThreadData::threadId eq it.threadId,
-							setValue(ThreadData::parentChannel, kord.getChannelOf<TextChannelThread>(it.threadId)?.parentId)
-						)
-					}
-				}
-
 				val now = Clock.System.now()
 
-				/**
-				 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
-				 * @author IMS212
-				 * @since v2.0
-				 */
-				// The channel specifically for sending online notifications to
-				val homeGuild = kord.getGuild(TEST_GUILD_ID)!!
-				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
-				val onlineMessage = onlineLog.createEmbed {
-					title = "Lily is now online!"
-					description =
-						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
-					color = DISCORD_GREEN
-				}
-				onlineMessage.publish()
+				UptimeCollection().set(now)
 
 				/**
 				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
@@ -84,6 +54,21 @@ class StartupHooks : Extension() {
 					event.kord.editPresence {
 						playing(StatusCollection().getStatus()!!)
 					}
+				}
+
+				/**
+				 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
+				 * @author IMS212
+				 * @since v2.0
+				 */
+				// The channel specifically for sending online notifications to
+				val homeGuild = kord.getGuildOrNull(TEST_GUILD_ID) ?: return@action
+				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
+				onlineLog.createEmbed {
+					title = "Lily is now online!"
+					description =
+						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
+					color = DISCORD_GREEN
 				}
 			}
 		}

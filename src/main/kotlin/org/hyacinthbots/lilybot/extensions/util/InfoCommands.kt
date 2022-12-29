@@ -19,6 +19,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.hyacinthbots.lilybot.commandDocs
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
+import org.hyacinthbots.lilybot.utils.BUILD_ID
 import java.util.Properties
 
 /**
@@ -145,11 +146,11 @@ class InfoCommands : Extension() {
 							name = "Useful links"
 							value =
 								"Website: Coming Soon™️\n" +
-								"GitHub: https://github.com/HyacinthBots\n" +
-								"Buy Me a Coffee: https://buymeacoffee.com/HyacinthBots\n" +
-								"Twitter: https://twitter.com/HyacinthBots\n" +
-								"Email: `hyacinthbots@outlook.com`\n" +
-								"Discord: https://discord.gg/hy2329fcTZ"
+										"GitHub: https://github.com/HyacinthBots\n" +
+										"Buy Me a Coffee: https://buymeacoffee.com/HyacinthBots\n" +
+										"Twitter: https://twitter.com/HyacinthBots\n" +
+										"Email: `hyacinthbots@outlook.com`\n" +
+										"Discord: https://discord.gg/hy2329fcTZ"
 						}
 						color = DISCORD_BLURPLE
 					}
@@ -186,10 +187,9 @@ class InfoCommands : Extension() {
 							value = "Lily is developed primarily by NoComment#6411 and tempest#4510 " +
 									"in our free time. Neither of us have resources to invest in hosting, " +
 									"so financial donations via [Buy Me a Coffee]" +
-									"(https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. At the moment, " +
-									"Lily is very generously hosted free of charge by gdude#2002, " +
-									"but we're looking to move to our own hosting. " +
-									"We also have domain costs for our website.\n\n" +
+									"(https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. Currently, we run" +
+									"lily on a Hetzner cloud server, which we can afford in our current situation. " +
+									"We will also have domain costs for our website.\n\n" +
 									"Contributions of code & documentation are also incredibly appreciated, " +
 									"and you can read our [contributing guide]" +
 									"(https://github.com/HyacinthBots/LilyBot/blob/main/CONTRIBUTING.md) " +
@@ -200,17 +200,16 @@ class InfoCommands : Extension() {
 						field {
 							name = "Version"
 							value =
-								"${versionProperties.getProperty("version") ?: "??"} (${System.getenv("SHORT_SHA") ?: "unknown"})"
+								"${versionProperties.getProperty("version") ?: "??"} ($BUILD_ID)"
 							inline = true
 						}
 						field {
 							name = "Up Since"
-							value = """
-								${UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)
-									?.time.toString().split(".")[0]} 
-								${UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)?.date} UTC
-								(${UptimeCollection().get()?.onTime?.toDiscord(TimestampType.RelativeTime) ?: "??"})
-							""".replace("\n", " ").trimIndent()
+							value = "${
+								UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)
+									?.time.toString().split(".")[0]
+								} ${UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)?.date} UTC\n " +
+									"(${UptimeCollection().get()?.onTime?.toDiscord(TimestampType.RelativeTime) ?: "??"})"
 							inline = true
 						}
 						field {

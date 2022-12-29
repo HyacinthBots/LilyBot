@@ -10,7 +10,7 @@ import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageUpdateEvent
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageUpdateEvent
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
@@ -46,7 +46,7 @@ class MessageEdit : Extension() {
 				}
 			}
 			action {
-				onMessageEdit(event.getMessage(), event.old, null)
+				onMessageEdit(event.getMessageOrNull(), event.old, null)
 			}
 		}
 
@@ -64,7 +64,7 @@ class MessageEdit : Extension() {
 				}
 			}
 			action {
-				onMessageEdit(event.getMessage(), event.old, event.pkMessage)
+				onMessageEdit(event.getMessageOrNull(), event.old, event.pkMessage)
 			}
 		}
 	}
@@ -77,8 +77,9 @@ class MessageEdit : Extension() {
 	 * @param proxiedMessage Extra data for PluralKit proxied messages
 	 * @author trainb0y
 	 */
-	private suspend fun onMessageEdit(message: Message, old: Message?, proxiedMessage: PKMessage?) {
-		val guild = message.getGuild()
+	private suspend fun onMessageEdit(message: Message?, old: Message?, proxiedMessage: PKMessage?) {
+		message ?: return
+		val guild = message.getGuildOrNull() ?: return
 
 		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, guild) ?: return
 
@@ -91,7 +92,8 @@ class MessageEdit : Extension() {
 				}
 				description =
 					"Location: ${message.channel.mention} " +
-							"(${message.channel.asChannelOf<GuildMessageChannel>().name})"
+							"(${message.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
+								?: "Could not get channel name"})"
 				timestamp = Clock.System.now()
 
 				field {
