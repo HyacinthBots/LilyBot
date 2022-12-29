@@ -1090,7 +1090,7 @@ class Config : Extension() {
 	}
 
 	inner class SupportModal : ModalForm() {
-		override var title = "Support Message Configuraiton"
+		override var title = "Support Message Configuration"
 
 		val msgInput = paragraphText {
 			label = "Support Message"
