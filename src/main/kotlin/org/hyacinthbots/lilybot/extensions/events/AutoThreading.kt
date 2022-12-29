@@ -47,6 +47,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
+import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
@@ -56,16 +57,6 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import kotlin.time.Duration.Companion.seconds
-
-// This code solves the following issues:
-// Customize support message - https://github.com/IrisShaders/LilyBot/issues/138
-// Multiple support threads - https://github.com/IrisShaders/LilyBot/issues/178
-// Better support thread naming system - https://github.com/IrisShaders/LilyBot/issues/182
-// Multiple support channels - https://github.com/IrisShaders/LilyBot/issues/194
-
-// Yes this is no longer MPL, I rewrote it from scratch
-
-// todo logging
 
 class AutoThreading : Extension() {
 	override val name = "auto-threading"
@@ -125,7 +116,7 @@ class AutoThreading : Extension() {
 							guildId = guild!!.id,
 							channelId = channel.id,
 							roleId = arguments.role?.id,
-							allowDuplicates = arguments.allowDuplicates,
+							preventDuplicates = arguments.preventDuplicates,
 							archive = arguments.archive,
 							smartNaming = arguments.smartNaming,
 							mention = arguments.mention,
@@ -150,8 +141,8 @@ class AutoThreading : Extension() {
 							inline = true
 						}
 						field {
-							name = "Allow Duplicates:"
-							value = arguments.allowDuplicates.toString()
+							name = "Prevent Duplicates:"
+							value = arguments.preventDuplicates.toString()
 							inline = true
 						}
 						field {
@@ -325,26 +316,12 @@ class AutoThreading : Extension() {
 				val thread = event.channel.asChannelOfOrNull<TextChannelThread>() ?: return@action
 				val options = AutoThreadingCollection().getSingleAutoThread(thread.parentId) ?: return@action
 
-				// fixme this is being done twice for some reason
-				val threadMessage = thread.createMessage(
-					if (options.mention) {
-						event.channel.owner.mention
-					} else {
-					    "message"
-					}
-				)
+				// fixme this event fires twice for some unknown reason so this is a workaround
+				if (event.channel.getLastMessage()?.withStrategy(EntitySupplyStrategy.rest) != null) return@action
 
-				if (options.roleId != null) {
-					val role = event.channel.guild.getRole(options.roleId)
-					threadMessage.edit {
-						this.content = role.mention
-					}
-				}
-
-				messageAndArchive(
+				handleThreadCreation(
 					options,
 					thread,
-					threadMessage,
 					event.channel.owner.asUser()
 				)
 			}
@@ -357,11 +334,10 @@ class AutoThreading : Extension() {
 			description = "The role, if any, to invite to threads created in this channel."
 		}
 
-		val allowDuplicates by defaultingBoolean {
-			name = "allow-duplicates"
-			description = "If users should be prevented from having multiple threads open in this channel. " +
-					"Default true."
-			defaultValue = true
+		val preventDuplicates by defaultingBoolean {
+			name = "prevent-duplicates"
+			description = "If users should be stopped from having multiple open threads in this channel. Default false."
+			defaultValue = false
 		}
 
 		val archive by defaultingBoolean {
@@ -372,47 +348,20 @@ class AutoThreading : Extension() {
 
 		val smartNaming by defaultingBoolean {
 			name = "smart-naming"
-			description = "If Lily should use content-aware thread titles."
+			description = "If Lily should use content-aware thread titles. Default false"
 			defaultValue = false
 		}
 
 		val mention by defaultingBoolean {
 			name = "mention"
-			description = "If the user should be mentioned at the beginning of new threads in this channel."
+			description = "If the creator should be mentioned in new threads in this channel. Default false."
 			defaultValue = false
 		}
 
 		val message by defaultingBoolean {
 			name = "message"
-			description = "Whether to send a message on thread creation or not."
+			description = "Whether to send a message on thread creation or not. Default false."
 			defaultValue = false
-		}
-	}
-
-	private suspend inline fun messageAndArchive(
-		inputOptions: AutoThreadingData,
-		inputThread: TextChannelThread,
-		inputThreadMessage: Message?,
-		inputUser: User
-	) {
-		if (inputOptions.creationMessage != null) {
-			inputThreadMessage?.edit {
-				content =
-					if (inputOptions.mention) {
-						inputUser.mention + " " + inputOptions.creationMessage
-					} else {
-						inputOptions.creationMessage
-					}
-			}
-		} else {
-			inputThreadMessage?.delete("Initial thread creation")
-		}
-
-		if (inputOptions.archive) {
-			inputThread.edit {
-				archived = true
-				reason = "Initial thread creation"
-			}
 		}
 	}
 
@@ -451,7 +400,7 @@ class AutoThreading : Extension() {
 	 * A single function for both Proxied and Non-Proxied message to be turned into threads.
 	 *
 	 * @param event The event for the message creation
-	 * @param message The original message (unproxied)
+	 * @param message The original message that wasn't proxied
 	 * @param proxiedMessage The proxied message, if the message was proxied
 	 * @since 4.4.0
 	 * @author NoComment1105
@@ -482,7 +431,7 @@ class AutoThreading : Extension() {
 			message?.author?.asUser()?.username ?: proxiedMessage?.member?.name ?: memberFromPk
 		}"
 
-		if (!options.allowDuplicates) {
+		if (options.preventDuplicates) {
 			var previousUserThread: TextChannelThread? = null
 			val ownerThreads = ThreadsCollection().getOwnerThreads(authorId)
 
@@ -509,26 +458,51 @@ class AutoThreading : Extension() {
 
 		ThreadsCollection().setThreadOwner(event.getGuild().id, thread.id, event.member!!.id, channel.id)
 
-		val threadMessage = thread.createMessage(
-			if (options.mention) {
-				message?.author?.mention ?: memberFromPk!!.mention
+		handleThreadCreation(
+			options,
+			thread,
+			message?.author ?: memberFromPk!!.asUser()
+		)
+	}
+
+	private suspend inline fun handleThreadCreation(
+		inputOptions: AutoThreadingData,
+		inputThread: TextChannelThread,
+		inputUser: User
+	) {
+		val threadMessage = inputThread.createMessage(
+			if (inputOptions.mention) {
+				inputUser.mention
 			} else {
-				"message"
+				"Placeholder message"
 			}
 		)
 
-		if (options.roleId != null) {
-			val role = event.getGuild().getRole(options.roleId)
+		if (inputOptions.roleId != null) {
+			val role = inputThread.guild.getRole(inputOptions.roleId)
 			threadMessage.edit {
-				content += role.mention
+				content = role.mention
 			}
 		}
 
-		messageAndArchive(
-			options,
-			thread,
-			threadMessage,
-			message?.author ?: memberFromPk!!.asUser()
-		)
+		if (inputOptions.creationMessage != null) {
+			threadMessage.edit {
+				content =
+					if (inputOptions.mention) {
+						inputUser.mention + " " + inputOptions.creationMessage
+					} else {
+						inputOptions.creationMessage
+					}
+			}
+		} else {
+			threadMessage.delete("Initial thread creation")
+		}
+
+		if (inputOptions.archive) {
+			inputThread.edit {
+				archived = true
+				reason = "Initial thread creation"
+			}
+		}
 	}
 }
