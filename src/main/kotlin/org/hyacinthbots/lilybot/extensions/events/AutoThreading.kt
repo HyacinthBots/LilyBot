@@ -50,6 +50,7 @@ import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.create.embed
+import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
@@ -311,15 +312,17 @@ class AutoThreading : Extension() {
 			check {
 				anyGuild()
 				failIf {
-					event.channel.ownerId == kord.selfId
+					event.channel.ownerId == kord.selfId ||
+							event.channel.member != null
 				}
 			}
 			action {
+				// fixme this event fires twice for some unknown reason so this is a workaround
+				delay(1000)
+				if (event.channel.getLastMessage()?.withStrategy(EntitySupplyStrategy.rest) != null) return@action
+
 				val thread = event.channel.asChannelOfOrNull<TextChannelThread>() ?: return@action
 				val options = AutoThreadingCollection().getSingleAutoThread(thread.parentId) ?: return@action
-
-				// fixme this event fires twice for some unknown reason so this is a workaround
-				if (event.channel.getLastMessage()?.withStrategy(EntitySupplyStrategy.rest) != null) return@action
 
 				handleThreadCreation(
 					options,
