@@ -15,7 +15,10 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.dm
+import com.kotlindiscord.kord.extensions.utils.getTopRole
+import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
@@ -93,6 +96,32 @@ class PublicUtilities : Extension() {
 
 					val requester = user.asUser()
 					val requesterAsMember = requester.asMember(guild!!.id)
+					val self = this@PublicUtilities.kord.getSelf().asMember(guild!!.id)
+
+					if (requesterAsMember.getTopRole()?.getPosition() != null &&
+						self.getTopRole()?.getPosition() == null
+					) {
+							respond {
+								content = "You have a role and Lily does not, so she cannot change your nickname."
+							}
+							return@action
+					} else if (requesterAsMember.getTopRole()?.getPosition() ?: 0 >
+						self.getTopRole()?.getPosition() ?: 0
+					) {
+							respond {
+								content = "Your highest role is above Lily's, so she cannot change your nickname."
+							}
+							return@action
+					}
+
+					if (requesterAsMember.hasPermission(Permission.ChangeNickname)) {
+						requesterAsMember.edit { nickname = arguments.newNick }
+						respond {
+							content = "You have permission to change your own nickname, so I've just made the change."
+							return@action
+						}
+					}
+
 					// Declare the embed outside the action to allow us to reference it inside the action
 					var actionLogEmbed: Message? = null
 
@@ -129,7 +158,27 @@ class PublicUtilities : Extension() {
 										label = "Accept"
 										style = ButtonStyle.Success
 
-										action {
+										action button@{
+											if (requesterAsMember.getTopRole()?.getPosition() != null &&
+												self.getTopRole()?.getPosition() == null
+											) {
+												respond {
+													content = "This user has a role and Lily does not, " +
+															"so she cannot change their nickname. " +
+															"Please fix Lily's permissions and try again"
+												}
+												return@button
+											} else if (requesterAsMember.getTopRole()?.getPosition() ?: 0 >
+												self.getTopRole()?.getPosition() ?: 0
+											) {
+												respond {
+													content = "This user's highest role is above Lily's, " +
+															"so she cannot change their nickname. " +
+															"Please fix Lily's permissions and try again."
+												}
+												return@button
+											}
+
 											requesterAsMember.edit { nickname = arguments.newNick }
 
 											requester.dm {
