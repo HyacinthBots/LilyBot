@@ -113,7 +113,7 @@ class ThreadControl : Extension() {
 						if (it.threadId == threadChannel.id) {
 							val preventingArchiving = ThreadsCollection().getThread(it.threadId)?.preventArchiving
 							ThreadsCollection().removeThread(it.threadId)
-							ThreadsCollection().setThreadOwner(it.guildId, it.threadId, it.ownerId, false)
+							ThreadsCollection().setThreadOwner(it.guildId, it.threadId, it.ownerId, it.parentChannelId)
 							if (preventingArchiving == true) {
 								guild!!.getChannelOfOrNull<GuildMessageChannel>(
 									ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!
@@ -193,7 +193,7 @@ class ThreadControl : Extension() {
 						return@action
 					}
 
-					ThreadsCollection().setThreadOwner(guild!!.id, threadChannel.id, arguments.newOwner.id)
+					ThreadsCollection().setThreadOwner(guild!!.id, threadChannel.id, arguments.newOwner.id, threadChannel.parentId)
 
 					respond { content = "Ownership transferred." }
 
@@ -262,7 +262,12 @@ class ThreadControl : Extension() {
 					var message: EphemeralMessageInteractionResponse? = null
 					var thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					if (thread == null) {
-						ThreadsCollection().setThreadOwner(threadChannel.guildId, threadChannel.id, threadChannel.ownerId, false)
+						ThreadsCollection().setThreadOwner(
+							threadChannel.guildId,
+							threadChannel.id,
+							threadChannel.ownerId,
+							threadChannel.parentId
+						)
 						thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					}
 					if (thread?.preventArchiving == true) {
@@ -275,7 +280,7 @@ class ThreadControl : Extension() {
 									style = ButtonStyle.Primary
 
 									action button@{
-										ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, false)
+										ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, threadChannel.parentId)
 										edit { content = "Thread archiving will no longer be prevented" }
 										val utilityLog = getLoggingChannelWithPerms(
 											ConfigOptions.UTILITY_LOG,
@@ -312,7 +317,7 @@ class ThreadControl : Extension() {
 						}
 						return@action
 					} else if (thread?.preventArchiving == false) {
-						ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, true)
+						ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, threadChannel.parentId)
 						try {
 							val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 								?: return@action

@@ -65,6 +65,8 @@ import kotlin.time.Duration.Companion.seconds
 
 // Yes this is no longer MPL, I rewrote it from scratch
 
+// todo logging
+
 class AutoThreading : Extension() {
 	override val name = "auto-threading"
 
@@ -484,7 +486,7 @@ class AutoThreading : Extension() {
 			var previousUserThread: TextChannelThread? = null
 			val ownerThreads = ThreadsCollection().getOwnerThreads(authorId)
 
-			val threadData = ownerThreads.find { it.threadId == channel.id } // todo this is wrong
+			val threadData = ownerThreads.find { it.parentChannelId == channel.id }
 			if (threadData != null) {
 				previousUserThread = event.getGuild().getChannelOfOrNull(threadData.threadId)
 			}
@@ -505,7 +507,7 @@ class AutoThreading : Extension() {
 			channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
 		)
 
-		ThreadsCollection().setThreadOwner(event.getGuild().id, thread.parentId, thread.id)
+		ThreadsCollection().setThreadOwner(event.getGuild().id, thread.id, event.member!!.id, channel.id)
 
 		val threadMessage = thread.createMessage(
 			if (options.mention) {

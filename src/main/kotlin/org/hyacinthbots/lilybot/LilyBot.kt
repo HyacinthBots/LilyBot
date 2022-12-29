@@ -23,7 +23,6 @@ import org.hyacinthbots.lilybot.extensions.events.LogUploading
 import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
 import org.hyacinthbots.lilybot.extensions.events.MessageEdit
-import org.hyacinthbots.lilybot.extensions.events.ThreadInviter
 import org.hyacinthbots.lilybot.extensions.moderation.LockingCommands
 import org.hyacinthbots.lilybot.extensions.moderation.ModerationCommands
 import org.hyacinthbots.lilybot.extensions.moderation.Report
@@ -101,7 +100,6 @@ suspend fun main() {
 			add(::StartupHooks)
 			add(::Tags)
 			add(::ThreadControl)
-			add(::ThreadInviter)
 			add(::AutoThreading)
 
 			/*

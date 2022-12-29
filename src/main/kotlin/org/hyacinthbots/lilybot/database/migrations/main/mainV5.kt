@@ -7,6 +7,7 @@ import org.litote.kmongo.setValue
 
 suspend fun mainV5(db: CoroutineDatabase) {
 	with(db.getCollection<ThreadData>()) {
-		updateMany(ThreadData::parentChannel exists false, setValue(ThreadData::parentChannel, null))
+		updateMany(ThreadData::parentChannelId exists false, setValue(ThreadData::parentChannelId, null))
+	// todo rewrite to replace successfully
 	}
 }
