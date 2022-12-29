@@ -8,8 +8,11 @@ import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
+import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
+import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalAttachment
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalColour
@@ -29,7 +32,6 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
-import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
@@ -38,10 +40,10 @@ import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
-import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
@@ -107,14 +109,14 @@ class ModUtilities : Extension() {
 					if (arguments.embed) {
 						createdMessage = targetChannel.createEmbed {
 							color = arguments.color
-							description = arguments.message
+							description = arguments.body
 							if (arguments.timestamp) {
 								timestamp = Clock.System.now()
 							}
 						}
 					} else {
 						createdMessage = targetChannel.createMessage {
-							content = arguments.message
+							content = arguments.body
 						}
 					}
 				} catch (e: KtorRequestException) {
@@ -128,7 +130,7 @@ class ModUtilities : Extension() {
 				utilityLog.createMessage {
 					embed {
 						title = "Say command used"
-						description = "```${arguments.message}```"
+						description = "```${arguments.body}```"
 						field {
 							name = "Channel:"
 							value = targetChannel.mention
@@ -183,28 +185,20 @@ class ModUtilities : Extension() {
 			}
 
 			action {
-				// The channel the message was sent in. Either the channel provided, or if null, the channel the
-				// command was executed in.
-				val channelOfMessage = if (arguments.channelOfMessage != null) {
-					guild!!.getChannel(arguments.channelOfMessage!!.id) as MessageChannelBehavior
-				} else {
-					channel
-				}
-				val message: Message
-
-				try {
-					message = channelOfMessage.getMessage(arguments.messageToEdit)
-				} catch (e: KtorRequestException) { // In the event of the message being in a channel the bot can't see
-					respond {
-						content = "Sorry, I can't properly access this message."
+				val targetChannel = arguments.channelOfMessage.asChannelOfOrNull<TextChannel>()
+					?: run {
+						respond {
+							content = "Sorry, I either can't access the channel you selected or it's invalid."
+						}
+						return@action
 					}
-					return@action
-				} catch (e: EntityNotFoundException) { // In the event of the message already being deleted.
-					respond {
-						content = "Sorry, I can't find this message."
+				val message: Message = targetChannel.getMessageOrNull(arguments.targetMessage)
+					?: run {
+						respond {
+							content = "Sorry, I can't properly access this message."
+						}
+						return@action
 					}
-					return@action
-				}
 
 				val originalContent = message.content
 				// The messages that contains the embed that is going to be edited. If the message has no embed, or
@@ -213,10 +207,10 @@ class ModUtilities : Extension() {
 					if (message.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
 						respond { content = "I did not send this message, I cannot edit this!" }
 						return@action
-					} else if (arguments.newContent == null) {
+					} else if (arguments.newBody == null) {
 						respond { content = "Please specify a new message content" }
 						return@action
-					} else if (arguments.newContent != null && arguments.newContent!!.length > 1024) {
+					} else if (arguments.newBody != null && arguments.newBody!!.length > 1024) {
 						respond {
 							content =
 								"Maximum embed length reached! Your embed character length cannot be more than 1024 " +
@@ -225,7 +219,7 @@ class ModUtilities : Extension() {
 						return@action
 					}
 
-					message.edit { content = arguments.newContent }
+					message.edit { content = arguments.newBody }
 
 					respond { content = "Message edited" }
 
@@ -240,7 +234,7 @@ class ModUtilities : Extension() {
 							}
 							field {
 								name = "New Content"
-								value = "```${arguments.newContent.trimmedContents(500)}```"
+								value = "```${arguments.newBody.trimmedContents(500)}```"
 							}
 							footer {
 								text = "Edited by ${user.asUser().tag}"
@@ -269,7 +263,7 @@ class ModUtilities : Extension() {
 
 					message.edit {
 						embed {
-							description = arguments.newContent ?: oldContent
+							description = arguments.newBody ?: oldContent
 							color = arguments.newColor ?: oldColor
 							timestamp = when (arguments.timestamp) {
 								true -> message.timestamp
@@ -294,7 +288,7 @@ class ModUtilities : Extension() {
 							field {
 								name = "New content"
 								// The new content, if null the old content, if null none
-								value = "```${arguments.newContent ?: oldContent ?: "none"}```"
+								value = "```${arguments.newBody ?: oldContent ?: "none"}```"
 							}
 							field {
 								name = "Old color"
@@ -527,57 +521,65 @@ class ModUtilities : Extension() {
 	}
 
 	inner class SayArgs : Arguments() {
-		/** The message the user wishes to send. */
-		val message by string {
+		val embed by boolean {
+			name = "embed"
+			description = "If the message should be sent as an embed. " +
+					"Please note that if this is set to false, the only option that will be considered is body."
+		}
+
+		val body by optionalString {
 			name = "message"
 			description = "The text of the message to be sent."
 
 			// Fix newline escape characters
 			mutate {
-				it.replace("\\n", "\n")
-					.replace("\n ", "\n")
-					.replace("\n", "\n")
+				it?.replace("\\n", "\n")
+					?.replace("\n ", "\n")
+					?.replace("\n", "\n")
 			}
 		}
 
-		/** The channel to aim the message at. */
 		val channel by optionalChannel {
 			name = "channel"
 			description = "The channel the message should be sent in."
 		}
 
-		/** Whether to embed the message or not. */
-		val embed by defaultingBoolean {
-			name = "embed"
-			description = "If the message should be sent as an embed."
-			defaultValue = false
-		}
+		val title by optionalString { }
 
-		/** If the embed should have a timestamp. */
-		val timestamp by defaultingBoolean {
-			name = "timestamp"
-			description = "If the message should be sent with a timestamp. Only works with embeds."
-			defaultValue = true
-		}
+		val thumbnail by optionalAttachment { }
 
-		/** What color the embed should be. */
 		val color by defaultingColor {
 			name = "color"
 			description = "The color of the embed. Can be either a hex code or one of Discord's supported colors. " +
-					"Embeds only"
+					"Embed only"
 			defaultValue = DISCORD_BLURPLE
+		}
+
+		val footerIcon by optionalAttachment { }
+
+		val footerText by optionalString { }
+
+		val timestamp by defaultingBoolean {
+			name = "timestamp"
+			description = "If the message should be sent with a timestamp. Embed only."
+			defaultValue = false
 		}
 	}
 
 	inner class SayEditArgs : Arguments() {
-		/** The ID of the embed to edit. */
-		val messageToEdit by snowflake {
-			name = "message-to-edit"
+		val targetMessage by snowflake {
+			name = "target-message"
 			description = "The ID of the message you'd like to edit"
 		}
 
+		/** The channel the embed was originally sent in. */
+		val channelOfMessage by channel {
+			name = "channel-of-message"
+			description = "The channel the original message was sent in"
+		}
+
 		/** The new content of the embed. */
-		val newContent by optionalString {
+		val newBody by optionalString {
 			name = "new-content"
 			description = "The new content of the message"
 
@@ -594,17 +596,13 @@ class ModUtilities : Extension() {
 			description = "The new color of the embed. Embeds only"
 		}
 
-		/** The channel the embed was originally sent in. */
-		val channelOfMessage by optionalChannel {
-			name = "channel-of-message"
-			description = "The channel of the message"
-		}
-
 		/** Whether to add the timestamp of when the message was originally sent or not. */
 		val timestamp by optionalBoolean {
 			name = "timestamp"
 			description = "Whether to timestamp the embed or not. Embeds only"
 		}
+
+		// todo replace with full set of options from original say
 	}
 
 	inner class PresenceArgs : Arguments() {
