@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * @property roleId The ID of the role to be mentioned in new threads
  * @property preventDuplicates If users should be allowed to have multiple threads in the channel
  * @property archive If threads should be archived upon creation
- * @property smartNaming If the threads should use a content-aware naming scheme
+ * @property contentAwareNaming If the threads should use a content-aware naming scheme
  * @property mention If the user who created the thread should be welcomed in the first message
  * @property creationMessage The message to send in the thread when it is created
  *
@@ -24,7 +24,7 @@ data class AutoThreadingData(
 	val roleId: Snowflake?,
 	val preventDuplicates: Boolean,
 	val archive: Boolean,
-	val smartNaming: Boolean,
+	val contentAwareNaming: Boolean,
 	val mention: Boolean,
 	val creationMessage: String?
 )

@@ -118,7 +118,7 @@ class AutoThreading : Extension() {
 							roleId = arguments.role?.id,
 							preventDuplicates = arguments.preventDuplicates,
 							archive = arguments.archive,
-							smartNaming = arguments.smartNaming,
+							contentAwareNaming = arguments.contentAwareNaming,
 							mention = arguments.mention,
 							creationMessage = message
 						)
@@ -152,7 +152,7 @@ class AutoThreading : Extension() {
 						}
 						field {
 							name = "Smart Naming Enabled:"
-							value = arguments.smartNaming.toString()
+							value = arguments.contentAwareNaming.toString()
 							inline = true
 						}
 						field {
@@ -346,8 +346,8 @@ class AutoThreading : Extension() {
 			defaultValue = false
 		}
 
-		val smartNaming by defaultingBoolean {
-			name = "smart-naming"
+		val contentAwareNaming by defaultingBoolean {
+			name = "content-aware-naming"
 			description = "If Lily should use content-aware thread titles. Default false"
 			defaultValue = false
 		}
@@ -427,9 +427,13 @@ class AutoThreading : Extension() {
 
 		val options = AutoThreadingCollection().getSingleAutoThread(channel.id) ?: return
 
-		val threadName = "Thread for ${
-			message?.author?.asUser()?.username ?: proxiedMessage?.member?.name ?: memberFromPk
-		}"
+		var threadName: String? = event.message.content.trim().split("\n").firstOrNull()?.take(75)
+
+		if (!options.contentAwareNaming || threadName == null) {
+			threadName = "Thread for ${
+				message?.author?.asUser()?.username ?: proxiedMessage?.member?.name
+			}".take(75)
+		}
 
 		if (options.preventDuplicates) {
 			var previousUserThread: TextChannelThread? = null
