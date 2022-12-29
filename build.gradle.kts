@@ -6,12 +6,13 @@ import java.util.*
 plugins {
     application
 
-    kotlin("jvm")
-    kotlin("plugin.serialization")
+    val kotlinVersion = "1.7.21"
+    kotlin("jvm") version kotlinVersion
+    kotlin("plugin.serialization") version kotlinVersion
 
-    id("com.github.johnrengelman.shadow")
-    id("io.gitlab.arturbosch.detekt")
-    id("com.github.jakemarsden.git-hooks")
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("io.gitlab.arturbosch.detekt") version "1.22.0"
+    id("com.github.jakemarsden.git-hooks") version "0.0.2"
     id("org.ajoberstar.grgit") version "5.0.0"
     id("net.kyori.blossom") version "1.3.1"
 }
@@ -136,7 +137,7 @@ tasks {
          * scripts suitably
          * `./gradlew wrapper`
          */
-        gradleVersion = "7.6"
+        gradleVersion = "8.0-rc-1"
         distributionType = Wrapper.DistributionType.BIN
     }
 
