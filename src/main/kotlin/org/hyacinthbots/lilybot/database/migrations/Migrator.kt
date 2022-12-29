@@ -53,7 +53,6 @@ object Migrator : KordExKoinComponent {
 
 			@Suppress("TooGenericExceptionCaught")
 			try {
-				@Suppress("UseIfInsteadOfWhen")
 				when (nextVersion) {
 					1 -> ::mainV1
 					2 -> ::mainV2
@@ -102,7 +101,6 @@ object Migrator : KordExKoinComponent {
 
 			@Suppress("TooGenericExceptionCaught")
 			try {
-				@Suppress("UseIfInsteadOfWhen")
 				when (nextVersion) {
 					1 -> ::configV1
 					2 -> ::configV2
