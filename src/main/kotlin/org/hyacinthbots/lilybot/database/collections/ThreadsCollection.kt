@@ -75,7 +75,7 @@ class ThreadsCollection : KordExKoinComponent {
 		inputGuildId: Snowflake,
 		inputThreadId: Snowflake,
 		newOwnerId: Snowflake,
-		parentChannelId: Snowflake,
+		parentChannelId: Snowflake?,
 		preventArchiving: Boolean = false
 	) {
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)

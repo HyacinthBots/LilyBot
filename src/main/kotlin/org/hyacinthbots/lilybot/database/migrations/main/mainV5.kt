@@ -8,8 +8,7 @@ import org.litote.kmongo.setValue
 suspend fun mainV5(db: CoroutineDatabase) {
 	db.createCollection("autoThreadingData")
 
-	// todo actually set values for guildId
 	with(db.getCollection<ThreadData>()) {
-	updateMany(ThreadData::parentChannelId exists false, setValue(ThreadData::parentChannelId, null))
+		updateMany(ThreadData::parentChannelId exists false, setValue(ThreadData::parentChannelId, null))
 	}
 }

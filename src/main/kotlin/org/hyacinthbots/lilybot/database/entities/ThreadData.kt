@@ -19,6 +19,6 @@ data class ThreadData(
 	val guildId: Snowflake,
 	val threadId: Snowflake,
 	val ownerId: Snowflake,
-	val parentChannelId: Snowflake,
+	val parentChannelId: Snowflake?,
 	var preventArchiving: Boolean = false
 )
