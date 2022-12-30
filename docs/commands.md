@@ -6,92 +6,92 @@
 	* **Sub-command description**: Configure Lily's support system
 	* Required Member Permissions: Manage Server
 
-		* **Arguments**:
-			* `enable-support` - Whether to enable the support system - Boolean
-			* `custom-message` - True if you'd like to add a custom message, false if you'd like the default. - Boolean
-			* `support-channel` - The channel to be used for creating support threads in. - Optional Channel
-			* `support-role` - The role to add to support threads, when one is created. - Optional Role
+	* **Arguments**:
+		* `enable-support` - Whether to enable the support system - Boolean
+		* `custom-message` - True if you'd like to add a custom message, false if you'd like the default. - Boolean
+		* `support-channel` - The channel to be used for creating support threads in. - Optional Channel
+		* `support-role` - The role to add to support threads, when one is created. - Optional Role
 
 	#### Sub-command name: `moderation`
 	* **Sub-command description**: Configure Lily's moderation system
 	* Required Member Permissions: Manage Server
 
-		* **Arguments**:
-			* `enable-moderation` - Whether to enable the moderation system - Boolean
-			* `moderator-role` - The role of your moderators, used for pinging in message logs. - Optional Role
-			* `action-log` - The channel used to store moderator actions. - Optional Channel
-			* `quick-timeout-length` - The length of timeouts to use for quick timeouts - Coalescing Optional Duration
-			* `warn-auto-punishments` - Whether to automatically punish users for reach a certain threshold on warns - Optional Boolean
-			* `log-publicly` - Whether to log moderation publicly or not. - Optional Boolean
+	* **Arguments**:
+		* `enable-moderation` - Whether to enable the moderation system - Boolean
+		* `moderator-role` - The role of your moderators, used for pinging in message logs. - Optional Role
+		* `action-log` - The channel used to store moderator actions. - Optional Channel
+		* `quick-timeout-length` - The length of timeouts to use for quick timeouts - Coalescing Optional Duration
+		* `warn-auto-punishments` - Whether to automatically punish users for reach a certain threshold on warns - Optional Boolean
+		* `log-publicly` - Whether to log moderation publicly or not. - Optional Boolean
 
 	#### Sub-command name: `logging`
 	* **Sub-command description**: Configure Lily's logging system
 	* Required Member Permissions: Manage Server
 
-		* **Arguments**:
-			* `enable-delete-logs` - Enable logging of message deletions - Boolean
-			* `enable-edit-logs` - Enable logging of message edits - Boolean
-			* `enable-member-logging` - Enable logging of members joining and leaving the guild - Boolean
-			* `enable-public-member-logging` - Enable logging of members joining and leaving the guild with a public message and ping if enabled - Boolean
-			* `message-logs` - The channel for logging message deletions - Optional Channel
-			* `member-log` - The channel for logging members joining and leaving the guild - Optional Channel
-			* `public-member-log` - The channel for the public logging of members joining and leaving the guild - Optional Channel
+	* **Arguments**:
+		* `enable-delete-logs` - Enable logging of message deletions - Boolean
+		* `enable-edit-logs` - Enable logging of message edits - Boolean
+		* `enable-member-logging` - Enable logging of members joining and leaving the guild - Boolean
+		* `enable-public-member-logging` - Enable logging of members joining and leaving the guild with a public message and ping if enabled - Boolean
+		* `message-logs` - The channel for logging message deletions - Optional Channel
+		* `member-log` - The channel for logging members joining and leaving the guild - Optional Channel
+		* `public-member-log` - The channel for the public logging of members joining and leaving the guild - Optional Channel
 
 	#### Sub-command name: `utility`
 	* **Sub-command description**: Configure Lily's utility settings
 	* Required Member Permissions: Manage Server
 
-		* **Arguments**:
-			* `disable-log-uploading` - Enable or disable log uploading for this guild - Boolean
-			* `utility-log` - The channel to log various utility actions too. - Optional Channel
+	* **Arguments**:
+		* `disable-log-uploading` - Enable or disable log uploading for this guild - Boolean
+		* `utility-log` - The channel to log various utility actions too. - Optional Channel
 
 	#### Sub-command name: `clear`
 	* **Sub-command description**: Clear a config type
 	* Required Member Permissions: Manage Server
 
-		* **Arguments**:
-			* `config-type` - The type of config to clear - String Choice
+	* **Arguments**:
+		* `config-type` - The type of config to clear - String Choice
 
 	#### Sub-command name: `view`
 	* **Sub-command description**: View the current config that you have set
 	* Required Member Permissions: Manage Server
 
-		* **Arguments**:
-			* `config-type` - The type of config to clear - String Choice
+	* **Arguments**:
+		* `config-type` - The type of config to clear - String Choice
 
 ### Parent command name: `github`
 * **Parent command description**: The parent command for all /github commands
 	#### Sub-command name: `issue`
 	* **Sub-command description**: Look up an issue on a specific repository
 
-		* **Arguments**:
-			* `issue-number` - The issue number you would like to search for - Int
-			* `repository` - The GitHub repository you would like to search if no default is set - Optional String
+	* **Arguments**:
+		* `issue-number` - The issue number you would like to search for - Int
+		* `repository` - The GitHub repository you would like to search if no default is set - Optional String
 
 	#### Sub-command name: `repo`
 	* **Sub-command description**: Search GitHub for a specific repository
 
-		* **Arguments**:
-			* `repository` - The GitHub repository you would like to search if no default is set - Optional String
+	* **Arguments**:
+		* `repository` - The GitHub repository you would like to search if no default is set - Optional String
 
 	#### Sub-command name: `user`
 	* **Sub-command description**: Search github for a User/Organisation
 
-		* **Arguments**:
-			* `username` - The name of the User/Organisation you wish to search for - String
+	* **Arguments**:
+		* `username` - The name of the User/Organisation you wish to search for - String
 
 	#### Sub-command name: `default-repo`
 	* **Sub-command description**: Set the default repo to look up issues in.
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
-			* `default-repo` - The default repo to look up issues in - String
+	* **Arguments**:
+		* `default-repo` - The default repo to look up issues in - String
 
 	#### Sub-command name: `remove-default-repo`
 	* **Sub-command description**: Removes the default repo for this guild
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
+	* **Arguments**:
 None
 ### Parent command name: `gallery-channel`
 * **Parent command description**: The parent command for image channel setting
@@ -99,44 +99,44 @@ None
 	* **Sub-command description**: Set a channel as a gallery channel
 	* Required Member Permissions: Manage Server
 
-		* **Arguments**:
+	* **Arguments**:
 None
 	#### Sub-command name: `unset`
 	* **Sub-command description**: Unset a channel as a gallery channel.
 	* Required Member Permissions: Manage Server
 
-		* **Arguments**:
+	* **Arguments**:
 None
 	#### Sub-command name: `list`
 	* **Sub-command description**: List all gallery channels in the guild
 
-		* **Arguments**:
+	* **Arguments**:
 None
 ### Command name: `command-list`
 * Description: Show a list of Lily's commands!
 
-	* Arguments:
+* Arguments:
 None
 ### Command name: `help`
 * Description: Get help with using Lily!
 
-	* Arguments:
+* Arguments:
 None
 ### Command name: `info`
 * Description: Learn about Lily, and get uptime data!
 
-	* Arguments:
+* Arguments:
 None
 ### Command name: `invite`
 * Description: Get an invite link for Lily!
 
-	* Arguments:
+* Arguments:
 None
 ### Command name: `announcement`
 * Description: Send an announcement to all guilds Lily is in
-	* Required Member Permissions: Administrator
+* Required Member Permissions: Administrator
 
-	* Arguments:
+* Arguments:
 None
 ### Parent command name: `lock`
 * **Parent command description**: The parent command for all locking commands
@@ -144,16 +144,16 @@ None
 	* **Sub-command description**: Lock a channel so those with default permissions cannot send messages
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
-			* `channel` - Channel to lock. Defaults to current channel - Optional Channel
-			* `reason` - Reason for locking the channel - Defaulting String
+	* **Arguments**:
+		* `channel` - Channel to lock. Defaults to current channel - Optional Channel
+		* `reason` - Reason for locking the channel - Defaulting String
 
 	#### Sub-command name: `server`
 	* **Sub-command description**: Lock the server so those with default permissions cannot send messages
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
-			* `reason` - Reason for locking the server - Defaulting String
+	* **Arguments**:
+		* `reason` - Reason for locking the server - Defaulting String
 
 ### Parent command name: `unlock`
 * **Parent command description**: The parent command for all unlocking commands
@@ -161,14 +161,14 @@ None
 	* **Sub-command description**: Unlock a channel so everyone can send messages again
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
-			* `channel` - Channel to unlock. Defaults to current channel - Optional Channel
+	* **Arguments**:
+		* `channel` - Channel to unlock. Defaults to current channel - Optional Channel
 
 	#### Sub-command name: `server`
 	* **Sub-command description**: Unlock the server so everyone can send messages again
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
+	* **Arguments**:
 None
 ### Parent command name: `log-uploading`
 * **Parent command description**: The parent command for blacklisting channels from running the log uploading code
@@ -176,125 +176,125 @@ None
 	* **Sub-command description**: Add a channel to the log uploading blacklist
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
+	* **Arguments**:
 None
 	#### Sub-command name: `blacklist-remove`
 	* **Sub-command description**: Remove a channel from the log uploading blacklist
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
+	* **Arguments**:
 None
 	#### Sub-command name: `blacklist-list`
 	* **Sub-command description**: List all channels that block log uploading
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
+	* **Arguments**:
 None
 ### Command name: `ban`
 * Description: Bans a user.
-	* Required Member Permissions: Ban Members
+* Required Member Permissions: Ban Members
 
-	* Arguments:
-		* `user` - Person to ban - User
-		* `delete-message-days` - The number of days worth of messages to delete - Int
-		* `reason` - The reason for the ban - Defaulting String
-		* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
-		* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
+* Arguments:
+	* `user` - Person to ban - User
+	* `delete-message-days` - The number of days worth of messages to delete - Int
+	* `reason` - The reason for the ban - Defaulting String
+	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ### Command name: `soft-ban`
 * Description: Soft-bans a user.
-	* Required Member Permissions: Ban Members
+* Required Member Permissions: Ban Members
 
-	* Arguments:
-		* `user` - Person to Soft ban - User
-		* `delete-message-days` - The number of days worth of messages to delete - Optional Int/Long
-		* `reason` - The reason for the ban - Defaulting String
-		* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
-		* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
+* Arguments:
+	* `user` - Person to Soft ban - User
+	* `delete-message-days` - The number of days worth of messages to delete - Optional Int/Long
+	* `reason` - The reason for the ban - Defaulting String
+	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ### Command name: `unban`
 * Description: Unbans a user.
-	* Required Member Permissions: Ban Members
+* Required Member Permissions: Ban Members
 
-	* Arguments:
-		* `user` - Person to un-ban - User
-		* `reason` - The reason for the un-ban - Defaulting String
+* Arguments:
+	* `user` - Person to un-ban - User
+	* `reason` - The reason for the un-ban - Defaulting String
 
 ### Command name: `kick`
 * Description: Kicks a user.
-	* Required Member Permissions: Kick Members
+* Required Member Permissions: Kick Members
 
-	* Arguments:
-		* `user` - Person to kick - User
-		* `reason` - The reason for the Kick - Defaulting String
-		* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
-		* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
+* Arguments:
+	* `user` - Person to kick - User
+	* `reason` - The reason for the Kick - Defaulting String
+	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ### Command name: `clear`
 * Description: Clears messages from a channel.
-	* Required Member Permissions: Manage Messages
+* Required Member Permissions: Manage Messages
 
-	* Arguments:
-		* `messages` - Number of messages to delete - Int
+* Arguments:
+	* `messages` - Number of messages to delete - Int
 
 ### Command name: `timeout`
 * Description: Times out a user.
-	* Required Member Permissions: Moderate Members
+* Required Member Permissions: Moderate Members
 
-	* Arguments:
-		* `user` - Person to timeout - User
-		* `duration` - Duration of timeout - Coalescing Optional Duration
-		* `reason` - Reason for timeout - Defaulting String
-		* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
-		* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
+* Arguments:
+	* `user` - Person to timeout - User
+	* `duration` - Duration of timeout - Coalescing Optional Duration
+	* `reason` - Reason for timeout - Defaulting String
+	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ### Command name: `remove-timeout`
 * Description: Removes a timeout from a user
-	* Required Member Permissions: Moderate Members
+* Required Member Permissions: Moderate Members
 
-	* Arguments:
-		* `user` - Person to remove timeout from - User
-		* `dm` - Whether to dm the user about this or not - Defaulting Boolean
+* Arguments:
+	* `user` - Person to remove timeout from - User
+	* `dm` - Whether to dm the user about this or not - Defaulting Boolean
 
 ### Command name: `warn`
 * Description: Warns a user.
-	* Required Member Permissions: Moderate Members
+* Required Member Permissions: Moderate Members
 
-	* Arguments:
-		* `user` - Person to warn - User
-		* `reason` - Reason for warn - Defaulting String
-		* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
-		* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
+* Arguments:
+	* `user` - Person to warn - User
+	* `reason` - Reason for warn - Defaulting String
+	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ### Command name: `remove-warn`
 * Description: Removes a user's warnings
-	* Required Member Permissions: Moderate Members
+* Required Member Permissions: Moderate Members
 
-	* Arguments:
-		* `user` - Person to remove warn from - User
-		* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+* Arguments:
+	* `user` - Person to remove warn from - User
+	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
 
 ### Command name: `say`
 * Description: Say something through Lily.
-	* Required Member Permissions: Moderate Members
+* Required Member Permissions: Moderate Members
 
-	* Arguments:
-		* `message` - The text of the message to be sent. - String
-		* `channel` - The channel the message should be sent in. - Optional Channel
-		* `embed` - If the message should be sent as an embed. - Defaulting Boolean
-		* `timestamp` - If the message should be sent with a timestamp. Only works with embeds. - Defaulting Boolean
-		* `color` - The color of the embed. Can be either a hex code or one of Discord's supported colors. Embeds only - Defaulting Color
+* Arguments:
+	* `message` - The text of the message to be sent. - String
+	* `channel` - The channel the message should be sent in. - Optional Channel
+	* `embed` - If the message should be sent as an embed. - Defaulting Boolean
+	* `timestamp` - If the message should be sent with a timestamp. Only works with embeds. - Defaulting Boolean
+	* `color` - The color of the embed. Can be either a hex code or one of Discord's supported colors. Embeds only - Defaulting Color
 
 ### Command name: `edit-say`
 * Description: Edit a message created by /say
-	* Required Member Permissions: Moderate Members
+* Required Member Permissions: Moderate Members
 
-	* Arguments:
-		* `message-to-edit` - The ID of the message you'd like to edit - Snowflake
-		* `new-content` - The new content of the message - Optional String
-		* `new-color` - The new color of the embed. Embeds only - Optional Color
-		* `channel-of-message` - The channel of the message - Optional Channel
-		* `timestamp` - Whether to timestamp the embed or not. Embeds only - Optional Boolean
+* Arguments:
+	* `message-to-edit` - The ID of the message you'd like to edit - Snowflake
+	* `new-content` - The new content of the message - Optional String
+	* `new-color` - The new color of the embed. Embeds only - Optional Color
+	* `channel-of-message` - The channel of the message - Optional Channel
+	* `timestamp` - Whether to timestamp the embed or not. Embeds only - Optional Boolean
 
 ### Parent command name: `status`
 * **Parent command description**: Set Lily's current presence/status.
@@ -302,96 +302,96 @@ None
 	* **Sub-command description**: Set a custom status for Lily.
 	* Required Member Permissions: Administrator
 
-		* **Arguments**:
-			* `presence` - The new value Lily's presence should be set to - String
+	* **Arguments**:
+		* `presence` - The new value Lily's presence should be set to - String
 
 	#### Sub-command name: `reset`
 	* **Sub-command description**: Reset Lily's presence to the default status.
 	* Required Member Permissions: Administrator
 
-		* **Arguments**:
+	* **Arguments**:
 None
 ### Command name: `reset`
 * Description: 'Resets' Lily for this guild by deleting all database information relating to this guild
-	* Required Member Permissions: Administrator
+* Required Member Permissions: Administrator
 
-	* Arguments:
+* Arguments:
 None
 ### Command name: `ping`
 * Description: Am I alive?
 
-	* Arguments:
+* Arguments:
 None
 ### Parent command name: `nickname`
 * **Parent command description**: The parent command for all nickname commands
 	#### Sub-command name: `request`
 	* **Sub-command description**: Request a new nickname for the server!
 
-		* **Arguments**:
-			* `nickname` - The new nickname you would like - String
+	* **Arguments**:
+		* `nickname` - The new nickname you would like - String
 
 	#### Sub-command name: `clear`
 	* **Sub-command description**: Clear your current nickname
 
-		* **Arguments**:
+	* **Arguments**:
 None
 ### Parent command name: `reminder`
 * **Parent command description**: The parent command for all reminder commands
 	#### Sub-command name: `set`
 	* **Sub-command description**: Set a reminder for some time in the future!
 
-		* **Arguments**:
-			* `time` - How long until reminding? Format: 1d12h30m / 3d / 26m30s - Coalescing Duration
-			* `remind-in-dm` - Whether to remind in DMs or not - Boolean
-			* `custom-message` - A message to attach to your reminder - Optional String
-			* `repeat` - Whether to repeat the reminder or not - Defaulting Boolean
-			* `repeat-interval` - The interval to repeat the reminder at. Format: 1d / 1h / 5d - Coalescing Optional Duration
+	* **Arguments**:
+		* `time` - How long until reminding? Format: 1d12h30m / 3d / 26m30s - Coalescing Duration
+		* `remind-in-dm` - Whether to remind in DMs or not - Boolean
+		* `custom-message` - A message to attach to your reminder - Optional String
+		* `repeat` - Whether to repeat the reminder or not - Defaulting Boolean
+		* `repeat-interval` - The interval to repeat the reminder at. Format: 1d / 1h / 5d - Coalescing Optional Duration
 
 	#### Sub-command name: `list`
 	* **Sub-command description**: List your reminders for this guild
 
-		* **Arguments**:
+	* **Arguments**:
 None
 	#### Sub-command name: `remove`
 	* **Sub-command description**: Remove a reminder you have set from this guild
 
-		* **Arguments**:
-			* `reminder-number` - The number of the reminder to remove. Use '/reminder list' to get this - Long
+	* **Arguments**:
+		* `reminder-number` - The number of the reminder to remove. Use '/reminder list' to get this - Long
 
 	#### Sub-command name: `remove-all`
 	* **Sub-command description**: Remove all a specific type of reminder from this guild
 
-		* **Arguments**:
-			* `reminder-type` - The type of reminder to remove - String Choice
+	* **Arguments**:
+		* `reminder-type` - The type of reminder to remove - String Choice
 
 	#### Sub-command name: `mod-list`
 	* **Sub-command description**: List all reminders for a user, if you're a moderator
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
-			* `user` - The user to view reminders for - User
+	* **Arguments**:
+		* `user` - The user to view reminders for - User
 
 	#### Sub-command name: `mod-remove`
 	* **Sub-command description**: Remove a reminder for a user, if you're a moderator
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
-			* `user` - The user to remove the reminder for - User
-			* `reminder-number` - The number of the reminder to remove. Use '/reminder mod-list' to get this - Long
+	* **Arguments**:
+		* `user` - The user to remove the reminder for - User
+		* `reminder-number` - The number of the reminder to remove. Use '/reminder mod-list' to get this - Long
 
 	#### Sub-command name: `mod-remove-all`
 	* **Sub-command description**: Remove all a specific type of reminder for a user, if you're a moderator
 	* Required Member Permissions: Moderate Members
 
-		* **Arguments**:
-			* `user` - The user to remove the reminders for - User
-			* `reminder-type` - The type of reminder to remove - String Choice
+	* **Arguments**:
+		* `user` - The user to remove the reminders for - User
+		* `reminder-type` - The type of reminder to remove - String Choice
 
 ### Command name: `manual-report`
 * Description: Report a message, using a link instead of the message command
 
-	* Arguments:
-		* `message-link` - Link to the message to report - String
+* Arguments:
+	* `message-link` - Link to the message to report - String
 
 ### Parent command name: `role-menu`
 * **Parent command description**: The parent command for managing role menus.
@@ -399,181 +399,182 @@ None
 	* **Sub-command description**: Create a new role menu in this channel. A channel can have any number of role menus.
 	* Required Member Permissions: Manage Roles
 
-		* **Arguments**:
-			* `role` - The first role to start the menu with. Add more via `/role-menu add` - Role
-			* `content` - The content of the embed or message. - String
-			* `embed` - If the message containing the role menu should be sent as an embed. - Defaulting Boolean
-			* `color` - The color for the message to be. Embed only. - Defaulting Color
+	* **Arguments**:
+		* `role` - The first role to start the menu with. Add more via `/role-menu add` - Role
+		* `content` - The content of the embed or message. - String
+		* `embed` - If the message containing the role menu should be sent as an embed. - Defaulting Boolean
+		* `color` - The color for the message to be. Embed only. - Defaulting Color
 
 	#### Sub-command name: `add`
 	* **Sub-command description**: Add a role to the existing role menu in this channel.
 	* Required Member Permissions: Manage Roles
 
-		* **Arguments**:
-			* `menu-id` - The message ID of the role menu you'd like to edit. - Snowflake
-			* `role` - The role you'd like to add to the selected role menu. - Role
+	* **Arguments**:
+		* `menu-id` - The message ID of the role menu you'd like to edit. - Snowflake
+		* `role` - The role you'd like to add to the selected role menu. - Role
 
 	#### Sub-command name: `remove`
 	* **Sub-command description**: Remove a role from the existing role menu in this channel.
 	* Required Member Permissions: Manage Messages
 
-		* **Arguments**:
-			* `menu-id` - The message ID of the menu you'd like to edit. - Snowflake
-			* `role` - The role you'd like to remove from the selected role menu. - Role
+	* **Arguments**:
+		* `menu-id` - The message ID of the menu you'd like to edit. - Snowflake
+		* `role` - The role you'd like to remove from the selected role menu. - Role
 
 	#### Sub-command name: `pronouns`
 	* **Sub-command description**: Create a pronoun selection role menu and the roles to go with it.
 	* Required Member Permissions: Manage Messages
 
-		* **Arguments**:
+	* **Arguments**:
 None
 ### Command name: `tag-preview`
 * Description: Preview a tag's contents without sending it publicly.
 
-	* Arguments:
-		* `name` - The name of the tag - String
+* Arguments:
+	* `name` - The name of the tag - String
 
 ### Command name: `tag`
 * Description: Call a tag from this guild! Use /tag-help for more info.
 
-	* Arguments:
-		* `name` - The name of the tag you want to call - String
-		* `user` - The user to mention with the tag (optional) - Optional User
+* Arguments:
+	* `name` - The name of the tag you want to call - String
+	* `user` - The user to mention with the tag (optional) - Optional User
 
 ### Command name: `tag-help`
 * Description: Explains how the tag command works!
 
-	* Arguments:
+* Arguments:
 None
 ### Command name: `tag-create`
 * Description: Create a tag for your guild! Use /tag-help for more info.
-	* Required Member Permissions: Moderate Members
+* Required Member Permissions: Moderate Members
 
-	* Arguments:
-		* `name` - The name of the tag you're making - String
-		* `title` - The title of the tag embed you're making - String
-		* `value` - The content of the tag embed you're making - String
-		* `appearance` - The appearance of the tag embed you're making - String Choice
+* Arguments:
+	* `name` - The name of the tag you're making - String
+	* `title` - The title of the tag embed you're making - String
+	* `value` - The content of the tag embed you're making - String
+	* `appearance` - The appearance of the tag embed you're making - String Choice
 
 ### Command name: `tag-delete`
 * Description: Delete a tag from your guild. Use /tag-help for more info.
-	* Required Member Permissions: Moderate Members
+* Required Member Permissions: Moderate Members
 
-	* Arguments:
-		* `name` - The name of the tag - String
+* Arguments:
+	* `name` - The name of the tag - String
 
 ### Command name: `tag-edit`
 * Description: Edit a tag in your guild. Use /tag-help for more info.
-	* Required Member Permissions: Moderate Members
+* Required Member Permissions: Moderate Members
 
-	* Arguments:
-		* `name` - The name of the tag you're editing - String
-		* `new-name` - The new name for the tag you're editing - Optional String
-		* `new-title` - The new title for the tag you're editing - Optional String
-		* `new-value` - The new value for the tag you're editing - Optional String
-		* `new-appearance` - The new appearance for the tag you're editing - Optional String
+* Arguments:
+	* `name` - The name of the tag you're editing - String
+	* `new-name` - The new name for the tag you're editing - Optional String
+	* `new-title` - The new title for the tag you're editing - Optional String
+	* `new-value` - The new value for the tag you're editing - Optional String
+	* `new-appearance` - The new appearance for the tag you're editing - Optional String
 
 ### Command name: `tag-list`
 * Description: List all tags for this guild
 
-	* Arguments:
+* Arguments:
 None
 ### Parent command name: `thread`
 * **Parent command description**: The parent command for all /thread commands
 	#### Sub-command name: `rename`
 	* **Sub-command description**: Rename a thread!
 
-		* **Arguments**:
-			* `new-name` - The new name to give to the thread - String
+	* **Arguments**:
+		* `new-name` - The new name to give to the thread - String
 
 	#### Sub-command name: `archive`
 	* **Sub-command description**: Archive this thread
 
-		* **Arguments**:
-			* `lock` - Whether to lock the thread if you are a moderator. Default is false - Defaulting Boolean
+	* **Arguments**:
+		* `lock` - Whether to lock the thread if you are a moderator. Default is false - Defaulting Boolean
 
 	#### Sub-command name: `transfer`
 	* **Sub-command description**: Transfer ownership of this thread
 
-		* **Arguments**:
-			* `new-owner` - The user you want to transfer ownership of the thread to - Member
+	* **Arguments**:
+		* `new-owner` - The user you want to transfer ownership of the thread to - Member
 
 	#### Sub-command name: `prevent-archiving`
 	* **Sub-command description**: Stop a thread from being archived
 
-		* **Arguments**:
+	* **Arguments**:
 None
 ### Command name: `blocks`
 * Description: Get a list of the configured blocks
 
-	* Arguments:
-		* `channel` - Channel representing a welcome channel - Channel
+* Arguments:
+	* `channel` - Channel representing a welcome channel - Channel
 
 ### Parent command name: `welcome-channels`
 * **Parent command description**: Manage welcome channels
 	#### Sub-command name: `delete`
 	* **Sub-command description**: Delete a welcome channel configuration
 
-		* **Arguments**:
-			* `channel` - Channel representing a welcome channel - Channel
+	* **Arguments**:
+		* `channel` - Channel representing a welcome channel - Channel
 
 	#### Sub-command name: `get`
 	* **Sub-command description**: Get the url for a welcome channel, if it's configured
 
-		* **Arguments**:
-			* `channel` - Channel representing a welcome channel - Channel
+	* **Arguments**:
+		* `channel` - Channel representing a welcome channel - Channel
 
 	#### Sub-command name: `refresh`
 	* **Sub-command description**: Manually repopulate the given welcome channel
 
-		* **Arguments**:
-			* `channel` - Channel representing a welcome channel - Channel
-			* `clear` - Whether to clear the channel before repopulating it - Defaulting Boolean
+	* **Arguments**:
+		* `channel` - Channel representing a welcome channel - Channel
+		* `clear` - Whether to clear the channel before repopulating it - Defaulting Boolean
 
 	#### Sub-command name: `set`
 	* **Sub-command description**: Set the URL for a welcome channel, and populate it
 
-		* **Arguments**:
-			* `channel` - Channel representing a welcome channel - Channel
-			* `url` - Public link to a YAML file used to configure a welcome channel - String
-			* `clear` - Whether to clear the channel before repopulating it - Defaulting Boolean
+	* **Arguments**:
+		* `channel` - Channel representing a welcome channel - Channel
+		* `url` - Public link to a YAML file used to configure a welcome channel - String
+		* `clear` - Whether to clear the channel before repopulating it - Defaulting Boolean
 
 ### Command name: `phishing-check`
 * Description: Check whether a given domain is a known phishing domain.
 
-	* Arguments:
-		* `domain` - Domain to check - String
+* Arguments:
+	* `domain` - Domain to check - String
 
 ### Parent command name: `command.pluralkit.name`
 * **Parent command description**: command.pluralkit.description
 	#### Sub-command name: `command.pluralkit.api-url.name`
 	* **Sub-command description**: command.pluralkit.api-url.description
 
-		* **Arguments**:
-			* `argument.api-url.name` - argument.api-url.description - Optional String
+	* **Arguments**:
+		* `argument.api-url.name` - argument.api-url.description - Optional String
 
 	#### Sub-command name: `command.pluralkit.bot.name`
 	* **Sub-command description**: command.pluralkit.bot.description
 
-		* **Arguments**:
-			* `argument.bot.name` - argument.bot.description - Optional User
+	* **Arguments**:
+		* `argument.bot.name` - argument.bot.description - Optional User
 
 	#### Sub-command name: `command.pluralkit.status.name`
 	* **Sub-command description**: command.pluralkit.status.description
 
-		* **Arguments**:
+	* **Arguments**:
 None
 	#### Sub-command name: `command.pluralkit.toggle-support.name`
 	* **Sub-command description**: command.pluralkit.toggle-support.description
 
-		* **Arguments**:
-			* `argument.toggle.name` - argument.toggle.description - Optional Boolean
+	* **Arguments**:
+		* `argument.toggle.name` - argument.toggle.description - Optional Boolean
 
 ## Message Commands
 
 ### Message Command: `Moderate`
-	* Required Member Permissions: Kick Members, Ban Members, Moderate Members
+* Required Member Permissions: Kick Members, Ban Members, Moderate Members
 ### Message Command: `Report`
 ### Message Command: `Phishing Check`
 ## User Commands
 
+None
