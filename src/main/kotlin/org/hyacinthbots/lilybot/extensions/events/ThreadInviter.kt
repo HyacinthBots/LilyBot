@@ -76,19 +76,20 @@ class ThreadInviter : Extension() {
 							event.message.author?.id == kord.selfId ||
 							// Make use of getChannelOrNull here because the channel "may not exist". This is to help
 							// fix an issue with the new ViT channels in Discord.
-							event.message.getChannel().type == ChannelType.GuildNews ||
-							event.message.getChannel().type == ChannelType.GuildVoice ||
-							event.message.getChannel().type == ChannelType.PublicGuildThread ||
-							event.message.getChannel().type == ChannelType.PublicNewsThread
+							event.message.getChannelOrNull()?.type == ChannelType.GuildNews ||
+							event.message.getChannelOrNull()?.type == ChannelType.GuildVoice ||
+							event.message.getChannelOrNull()?.type == ChannelType.PublicGuildThread ||
+							event.message.getChannelOrNull()?.type == ChannelType.PublicNewsThread
 				}
 			}
 			action {
-				val config = SupportConfigCollection().getConfig(event.getGuild().id)!!
+				val guild = event.getGuildOrNull() ?: return@action
+
+				val config = SupportConfigCollection().getConfig(guild.id)!!
 
 				config.role ?: return@action
 				config.channel ?: return@action
 
-				val guild = event.getGuildOrNull() ?: return@action
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
 				val textChannel: TextChannel = guild.getChannelOfOrNull(event.pkMessage.channel) ?: return@action
@@ -128,7 +129,7 @@ class ThreadInviter : Extension() {
 							"Support thread for ${
 								event.pkMessage.member?.name ?: event.kord.getUser(event.pkMessage.sender)?.username
 							}",
-							event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
+							event.message.getChannelOrNull()?.data?.defaultAutoArchiveDuration?.value ?: ArchiveDuration.Day
 						)
 
 					ThreadsCollection().setThreadOwner(guild.id, thread.id, userId)
@@ -140,7 +141,7 @@ class ThreadInviter : Extension() {
 					startMessage.edit {
 						content =
 							"${user.asUser().mention}, the ${
-								event.getGuildOrNull()?.getRole(config.role)?.mention
+								event.getGuildOrNull()?.getRoleOrNull(config.role)?.mention ?: "`unable to get role`"
 							} will be with you shortly!"
 					}
 
@@ -198,7 +199,7 @@ class ThreadInviter : Extension() {
 
 				var userThreadExists = false
 				var existingUserThread: TextChannelThread? = null
-				val textChannel = event.message.getChannel().asChannelOfOrNull<TextChannel>()
+				val textChannel = event.message.getChannelOrNull()?.asChannelOfOrNull<TextChannel>()
 				val guild = event.getGuildOrNull() ?: return@action
 
 				val supportChannel = getLoggingChannelWithPerms(ConfigOptions.SUPPORT_CHANNEL, guild) ?: return@action
@@ -206,7 +207,7 @@ class ThreadInviter : Extension() {
 				if (textChannel != supportChannel) return@action
 
 				val userId = event.getUser().id
-				val user = UserBehavior(userId, kord)
+				val user = event.getUser()
 
 				ThreadsCollection().getOwnerThreads(userId).forEach {
 					try {
@@ -237,7 +238,7 @@ class ThreadInviter : Extension() {
 						textChannel.startPublicThreadWithMessage(
 							event.message.id,
 							"Support thread for " + user.asUser().username,
-							event.message.getChannel().data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
+							event.message.getChannelOrNull()?.data?.defaultAutoArchiveDuration?.value ?: ArchiveDuration.Day
 						)
 
 					ThreadsCollection().setThreadOwner(guild.id, thread.id, userId)
@@ -249,11 +250,11 @@ class ThreadInviter : Extension() {
 						content = if (config.message.isNullOrEmpty()) {
 							"${user.asUser().mention}, the ${
 								event.getGuildOrNull()
-									?.getRole(config.role!!)?.mention
+									?.getRoleOrNull(config.role!!)?.mention ?: "`unable to get role`"
 							} will be with you shortly!"
 						} else {
 							"${user.asUser().mention} ${
-								event.getGuildOrNull()?.getRole(config.role!!)?.mention
+								event.getGuildOrNull()?.getRoleOrNull(config.role!!)?.mention ?: "`unable to get role`"
 							}\n${config.message}"
 						}
 					}
@@ -295,7 +296,7 @@ class ThreadInviter : Extension() {
 				ThreadsCollection().setThreadOwner(event.channel.guildId, event.channel.id, threadOwner.id)
 
 				if (supportConfig != null && supportConfig.enabled && event.channel.parentId == supportConfig.channel) {
-					val supportRole = event.channel.guild.getRole(supportConfig.role!!)
+					val supportRole = event.channel.guild.getRoleOrNull(supportConfig.role!!)
 
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
@@ -304,15 +305,15 @@ class ThreadInviter : Extension() {
 					)
 
 					event.channel.withTyping { delay(4.seconds) }
-					message.edit { content = "${supportRole.mention}, please help this person!" }
+					message.edit { content = "${supportRole?.mention ?: "`Unable to get role`"}, please help this person!" }
 
 					event.channel.withTyping { delay(3.seconds) }
 					message.edit {
 						content = "Welcome to your support thread, ${threadOwner.mention}\nNext time though," +
 								" you can just send a message in ${
-									event.channel.guild.getChannel(
+									event.channel.guild.getChannelOrNull(
 										supportConfig.channel
-									).mention
+									)?.mention ?: "`Unable to get channel`"
 								} and I'll automatically make a thread for you!\n\nOnce you're finished, use" +
 								" `/thread archive` to close  " +
 								" your thread. If you want to change the thread name, use `/thread rename` to do so."
@@ -322,14 +323,14 @@ class ThreadInviter : Extension() {
 				if (moderationConfig != null || supportConfig == null ||
 					!supportConfig.enabled || event.channel.parentId != supportConfig.channel
 				) {
-					val modRole = event.channel.guild.getRole(moderationConfig?.role!!)
+					val modRole = event.channel.guild.getRoleOrNull(moderationConfig?.role!!)
 					event.channel.withTyping { delay(2.seconds) }
 					val message = event.channel.createMessage(
 						content = "Hello there! Lemme just grab the moderators..."
 					)
 
 					event.channel.withTyping { delay(4.seconds) }
-					message.edit { content = "${modRole.mention}, welcome to the thread!" }
+					message.edit { content = "${modRole?.mention ?: "`Unable to get role`"}, welcome to the thread!" }
 
 					event.channel.withTyping { delay(4.seconds) }
 					message.edit {

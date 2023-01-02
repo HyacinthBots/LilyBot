@@ -60,12 +60,12 @@ class LockingCommands : Extension() {
 				}
 
 				action {
-					val channelArg = arguments.channel ?: event.interaction.getChannel()
+					val channelArg = arguments.channel ?: event.interaction.getChannelOrNull()
 					var channelParent: TextChannel? = null
 					if (channelArg is TextChannelThread) {
 						channelParent = channelArg.getParent()
 					}
-					val targetChannel = channelParent ?: channelArg.asChannelOfOrNull()
+					val targetChannel = channelParent ?: channelArg?.asChannelOfOrNull()
 					if (targetChannel == null) {
 						respond {
 							content = "I can't fetch the targeted channel properly."
@@ -79,8 +79,11 @@ class LockingCommands : Extension() {
 						return@action
 					}
 
-					val everyoneRole = guild!!.getRole(guild!!.id)
-					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
+					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
+					if (everyoneRole == null) {
+						respond { content = "I was unable to get the `@everyone` role. Please try again." }
+						return@action
+					} else if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
 						respond { content = "The server is locked, so I cannot lock this channel." }
 						return@action
 					}
@@ -135,10 +138,13 @@ class LockingCommands : Extension() {
 				}
 
 				action {
-					val everyoneRole = guild!!.getRole(guild!!.id)
+					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
 
-					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
-						respond { content = "The server is already locked!" }
+					if (everyoneRole == null) {
+						respond { content = "I was unable to get the `@everyone` role. Please try again." }
+						return@action
+					} else if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
+						respond { content = "The server is already locked." }
 						return@action
 					}
 
@@ -197,12 +203,12 @@ class LockingCommands : Extension() {
 				}
 
 				action {
-					val channelArg = arguments.channel ?: event.interaction.getChannel()
+					val channelArg = arguments.channel ?: event.interaction.getChannelOrNull()
 					var channelParent: TextChannel? = null
 					if (channelArg is TextChannelThread) {
 						channelParent = channelArg.getParent()
 					}
-					val targetChannel = channelParent ?: channelArg.asChannelOfOrNull()
+					val targetChannel = channelParent ?: channelArg?.asChannelOfOrNull()
 					if (targetChannel == null) {
 						respond {
 							content = "I can't fetch the targeted channel properly."
@@ -210,8 +216,11 @@ class LockingCommands : Extension() {
 						}
 					}
 
-					val everyoneRole = guild!!.getRole(guild!!.id)
-					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
+					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
+					if (everyoneRole == null) {
+						respond { content = "Unable to get `@everyone` role. Please try again" }
+						return@action
+					} else if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
 						respond { content = "Please unlock the server to unlock this channel." }
 						return@action
 					}
@@ -277,9 +286,11 @@ class LockingCommands : Extension() {
 				}
 
 				action {
-					val everyoneRole = guild!!.getRole(guild!!.id)
-
-					if (everyoneRole.permissions.contains(Permission.SendMessages)) {
+					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
+					if (everyoneRole == null) {
+						respond { content = "Unable to get `@everyone` role. Please try again" }
+						return@action
+					} else if (everyoneRole.permissions.contains(Permission.SendMessages)) {
 						respond { content = "The server isn't locked!" }
 						return@action
 					}

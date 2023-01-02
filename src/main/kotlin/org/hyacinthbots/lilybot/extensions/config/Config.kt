@@ -848,8 +848,8 @@ class Config : Extension() {
 										name = "Message delete logs"
 										value = if (config.enableMessageDeleteLogs) {
 											"Enabled\n" +
-													"${guild!!.getChannel(config.messageChannel!!).mention} (" +
-													"${guild!!.getChannel(config.messageChannel).name})"
+													"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
+													"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel name"})"
 										} else {
 											"Disabled"
 										}
@@ -858,8 +858,8 @@ class Config : Extension() {
 										name = "Message edit logs"
 										value = if (config.enableMessageEditLogs) {
 											"Enabled\n" +
-													"${guild!!.getChannel(config.messageChannel!!).mention} (" +
-													"${guild!!.getChannel(config.messageChannel).name})"
+													"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention" } (" +
+													"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel mention"})"
 										} else {
 											"Disabled"
 										}
@@ -868,8 +868,8 @@ class Config : Extension() {
 										name = "Member logs"
 										value = if (config.enableMemberLogs) {
 											"Enabled\n" +
-													"${guild!!.getChannel(config.memberLog!!).mention} (" +
-													"${guild!!.getChannel(config.memberLog).name})"
+													"* ${guild!!.getChannelOrNull(config.memberLog!!)?.mention ?: "Unable to get channel mention"} (" +
+													"${guild!!.getChannelOrNull(config.memberLog)?.name ?: "Unable to get channel mention."})"
 										} else {
 											"Disabled"
 										}
