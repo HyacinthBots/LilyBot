@@ -29,7 +29,6 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
-import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
@@ -41,7 +40,6 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
-import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
@@ -187,22 +185,15 @@ class ModUtilities : Extension() {
 				// The channel the message was sent in. Either the channel provided, or if null, the channel the
 				// command was executed in.
 				val channelOfMessage = if (arguments.channelOfMessage != null) {
-					guild!!.getChannel(arguments.channelOfMessage!!.id) as MessageChannelBehavior
+					guild!!.getChannelOfOrNull<GuildMessageChannel>(arguments.channelOfMessage!!.id)
 				} else {
 					channel
 				}
-				val message: Message
+				val message = channelOfMessage?.getMessageOrNull(arguments.messageToEdit)
 
-				try {
-					message = channelOfMessage.getMessage(arguments.messageToEdit)
-				} catch (e: KtorRequestException) { // In the event of the message being in a channel the bot can't see
+				if (message == null) {
 					respond {
-						content = "Sorry, I can't properly access this message."
-					}
-					return@action
-				} catch (e: EntityNotFoundException) { // In the event of the message already being deleted.
-					respond {
-						content = "Sorry, I can't find this message."
+						content = "I was unable to get the target message! Please check the message exists"
 					}
 					return@action
 				}

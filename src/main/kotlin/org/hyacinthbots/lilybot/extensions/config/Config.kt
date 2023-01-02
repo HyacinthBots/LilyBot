@@ -29,10 +29,12 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
+import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.database.entities.PublicMemberLogData
@@ -54,7 +56,7 @@ class Config : Extension() {
 
 			unsafeSubCommand(::SupportArgs) {
 				name = "support"
-				description = "Configure Lily's support system"
+				description = "Deprecated: Configure Lily's support system"
 
 				initialResponse = InitialSlashCommandResponse.None
 
@@ -65,13 +67,16 @@ class Config : Extension() {
 					hasPermission(Permission.ManageGuild)
 				}
 
+				val deprecationNotice = "This command is deprecated and will be removed in version [TODO]! Please use" +
+						" the `/autothreading` to fully configure thread inviting for a channel!"
+
 				action {
 					val supportConfig = SupportConfigCollection().getConfig(guild!!.id)
 					if (supportConfig != null) {
 						ackEphemeral()
 						respondEphemeral {
 							content = "You already have a support configuration set. " +
-									"Please clear it before attempting to set a new one."
+									"Please clear it before attempting to set a new one.\n$deprecationNotice"
 						}
 						return@action
 					}
@@ -80,7 +85,7 @@ class Config : Extension() {
 						SupportConfigCollection().setConfig(SupportConfigData(guild!!.id, false, null, null, null))
 						ackEphemeral()
 						respondEphemeral {
-							content = "Support system disabled."
+							content = "Support system disabled.\n$deprecationNotice"
 						}
 						return@action
 					}
@@ -90,7 +95,8 @@ class Config : Extension() {
 						respondEphemeral {
 							content =
 								"I cannot use the role: ${arguments.role!!.mention}, because it is not mentionable by " +
-										"regular users. Please enable this in the role settings, or use a different role."
+										"regular users. Please enable this in the role settings, or use a different " +
+										"role.\n$deprecationNotice"
 						}
 						return@action
 					}
@@ -106,7 +112,7 @@ class Config : Extension() {
 							ackEphemeral()
 							respondEphemeral {
 								content = "The mod action log you've selected is invalid, or I can't view it. " +
-										"Please attempt to resolve this and try again."
+										"Please attempt to resolve this and try again.\n$deprecationNotice"
 							}
 							return@action
 						}
@@ -114,6 +120,7 @@ class Config : Extension() {
 
 					suspend fun EmbedBuilder.supportEmbed() {
 						title = "Configuration: Support"
+						description = deprecationNotice
 						field {
 							name = "Support Team"
 							value = arguments.role?.mention ?: "Disabled"
@@ -153,13 +160,16 @@ class Config : Extension() {
 							}
 						}
 
-						SupportConfigCollection().setConfig(
-							SupportConfigData(
+						AutoThreadingCollection().setAutoThread(
+							AutoThreadingData(
 								guild!!.id,
-								arguments.enable,
-								arguments.channel?.id,
+								arguments.channel?.id!!,
 								arguments.role?.id,
-								modalObj.msgInput.value!!
+								preventDuplicates = true,
+								archive = false,
+								contentAwareNaming = false,
+								mention = true,
+								creationMessage = modalObj.msgInput.value!!
 							)
 						)
 					} else {
@@ -174,13 +184,16 @@ class Config : Extension() {
 							}
 						}
 
-						SupportConfigCollection().setConfig(
-							SupportConfigData(
+						AutoThreadingCollection().setAutoThread(
+							AutoThreadingData(
 								guild!!.id,
-								arguments.enable,
-								arguments.channel?.id,
+								arguments.channel?.id!!,
 								arguments.role?.id,
-								null
+								preventDuplicates = true,
+								archive = false,
+								contentAwareNaming = false,
+								mention = true,
+								creationMessage = null
 							)
 						)
 					}
@@ -848,8 +861,8 @@ class Config : Extension() {
 										name = "Message delete logs"
 										value = if (config.enableMessageDeleteLogs) {
 											"Enabled\n" +
-													"${guild!!.getChannel(config.messageChannel!!).mention} (" +
-													"${guild!!.getChannel(config.messageChannel).name})"
+													"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
+													"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel name"})"
 										} else {
 											"Disabled"
 										}
@@ -858,8 +871,8 @@ class Config : Extension() {
 										name = "Message edit logs"
 										value = if (config.enableMessageEditLogs) {
 											"Enabled\n" +
-													"${guild!!.getChannel(config.messageChannel!!).mention} (" +
-													"${guild!!.getChannel(config.messageChannel).name})"
+													"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention" } (" +
+													"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel mention"})"
 										} else {
 											"Disabled"
 										}
@@ -868,8 +881,8 @@ class Config : Extension() {
 										name = "Member logs"
 										value = if (config.enableMemberLogs) {
 											"Enabled\n" +
-													"${guild!!.getChannel(config.memberLog!!).mention} (" +
-													"${guild!!.getChannel(config.memberLog).name})"
+													"* ${guild!!.getChannelOrNull(config.memberLog!!)?.mention ?: "Unable to get channel mention"} (" +
+													"${guild!!.getChannelOrNull(config.memberLog)?.name ?: "Unable to get channel mention."})"
 										} else {
 											"Disabled"
 										}

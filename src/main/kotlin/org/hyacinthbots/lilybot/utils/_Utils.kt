@@ -44,7 +44,8 @@ internal val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 4.1.0
  */
-suspend inline fun canPingRole(role: RoleBehavior?) = role != null && role.guild.getRole(role.id).mentionable
+suspend inline fun canPingRole(role: RoleBehavior?) =
+	role != null && role.guild.getRoleOrNull(role.id)?.mentionable == true
 
 /**
  * Get the number of guilds the bot is in.
