@@ -5,7 +5,8 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
-suspend fun mainV2(db: CoroutineDatabase) {
+@Suppress("UnusedPrivateMember")
+suspend fun mainV2(db: CoroutineDatabase, configDb: CoroutineDatabase) {
 	with(db.getCollection<ThreadData>()) {
 		updateMany(ThreadData::guildId exists false, setValue(ThreadData::guildId, null))
 	}

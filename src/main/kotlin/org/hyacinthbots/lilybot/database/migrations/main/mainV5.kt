@@ -1,14 +1,34 @@
 package org.hyacinthbots.lilybot.database.migrations.main
 
+import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
+import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
-suspend fun mainV5(db: CoroutineDatabase) {
+@Suppress("UnusedPrivateMember")
+suspend fun mainV5(db: CoroutineDatabase, configDb: CoroutineDatabase) {
 	db.createCollection("autoThreadingData")
 
 	with(db.getCollection<ThreadData>()) {
 		updateMany(ThreadData::parentChannelId exists false, setValue(ThreadData::parentChannelId, null))
+	}
+
+	with(configDb.getCollection<SupportConfigData>()) {
+		find().toList().forEach {
+			db.getCollection<AutoThreadingData>().insertOne(
+				AutoThreadingData(
+					it.guildId,
+					it.channel!!,
+					it.role,
+					preventDuplicates = true,
+					archive = false,
+					contentAwareNaming = false,
+					mention = true,
+					it.message
+				)
+			)
+		}
 	}
 }

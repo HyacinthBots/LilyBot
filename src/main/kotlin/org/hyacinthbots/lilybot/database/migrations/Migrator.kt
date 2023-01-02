@@ -19,6 +19,7 @@ import org.hyacinthbots.lilybot.database.entities.MainMetaData
 import org.hyacinthbots.lilybot.database.migrations.config.configV1
 import org.hyacinthbots.lilybot.database.migrations.config.configV2
 import org.hyacinthbots.lilybot.database.migrations.config.configV3
+import org.hyacinthbots.lilybot.database.migrations.config.configV4
 import org.hyacinthbots.lilybot.database.migrations.main.mainV1
 import org.hyacinthbots.lilybot.database.migrations.main.mainV2
 import org.hyacinthbots.lilybot.database.migrations.main.mainV3
@@ -60,7 +61,7 @@ object Migrator : KordExKoinComponent {
 					4 -> ::mainV4
 					5 -> ::mainV5
 					else -> break
-				}(db.mainDatabase)
+				}(db.mainDatabase, db.configDatabase)
 
 				logger.info { "Migrated main database to version $nextVersion." }
 			} catch (t: Throwable) {
@@ -105,8 +106,9 @@ object Migrator : KordExKoinComponent {
 					1 -> ::configV1
 					2 -> ::configV2
 					3 -> ::configV3
+					4 -> ::configV4
 					else -> break
-				}(db.configDatabase)
+				}(db.configDatabase, db.mainDatabase)
 
 				logger.info { "Migrated config database to version $nextVersion" }
 			} catch (t: Throwable) {
