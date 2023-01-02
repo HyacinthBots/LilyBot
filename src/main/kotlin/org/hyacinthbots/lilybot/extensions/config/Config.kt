@@ -67,7 +67,7 @@ class Config : Extension() {
 					hasPermission(Permission.ManageGuild)
 				}
 
-				val deprecationNotice = "This command is deprecated and will be removed in version [TODO]! Please use" +
+				val deprecationNotice = "This command is deprecated and will be removed in version v4.7.0! Please use" +
 						" the `/autothreading` to fully configure thread inviting for a channel!"
 
 				action {
