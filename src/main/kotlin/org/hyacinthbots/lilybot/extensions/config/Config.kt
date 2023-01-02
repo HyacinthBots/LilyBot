@@ -68,7 +68,7 @@ class Config : Extension() {
 				}
 
 				val deprecationNotice = "This command is deprecated and will be removed in version v4.7.0! Please use" +
-						" the `/autothreading` to fully configure thread inviting for a channel!"
+						" the `/autothreading` command to fully configure thread inviting for a channel!"
 
 				action {
 					val supportConfig = SupportConfigCollection().getConfig(guild!!.id)
