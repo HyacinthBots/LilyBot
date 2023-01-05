@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
-import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.annotations.DoNotChain
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
@@ -392,15 +391,53 @@ class ModerationCommands : Extension() {
 
 										val dm = sender.dm {
 											embed {
-												title = "Warning strike $strikes in ${guild?.asGuild()?.name}"
+												title = "Warning $strikes in ${guild?.asGuild()?.name}"
 												description =
-													"Quick warned $reasonSuffix\nYou now have $strikes strike(s)"
+													"Quick warned $reasonSuffix\n $warnSuffix"
+											}
+										}
+
+										if (modConfig?.autoPunishOnWarn == true && strikes!! > 1) {
+											val duration = when (strikes) {
+												2 -> "PT3H"
+												3 -> "PT12H"
+												else -> "P3D"
+											}
+											guild?.getMemberOrNull(senderId)?.edit {
+												timeoutUntil = Clock.System.now().plus(Duration.parse(duration))
 											}
 										}
 
 										val dmResult = getDmResult(true, dm)
 
-										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
+										loggingChannel.createMessage {
+											embed {
+												title = "Warning"
+												baseModerationEmbed(
+													"Quick warned via moderate menu $reasonSuffix",
+													sender,
+													user
+												)
+												dmNotificationStatusEmbedField(dmResult)
+												timestamp = Clock.System.now()
+												field {
+													name = "Total strikes"
+													value = strikes.toString()
+												}
+											}
+											if (modConfig?.autoPunishOnWarn == true && strikes != 1) {
+												embed {
+													warnTimeoutLog(strikes!!, user.asUser(), sender.asUser(), "Quick warned via moderate menu $reasonSuffix")
+												}
+											}
+										}
+
+										menuMessage?.edit {
+											content = "Warned a user."
+											components { removeAll() }
+										}
+
+										if (modConfig?.publicLogging == true) {
 											try {
 												targetMessage.reply {
 													embed {
@@ -416,25 +453,6 @@ class ModerationCommands : Extension() {
 															"for sending a deleted message."
 												}
 											}
-										}
-
-										loggingChannel.createEmbed {
-											title = "Warned user"
-											description = "${
-												sender.mention
-											} has been warned.\nStrikes: $strikes"
-											baseModerationEmbed(
-												"Quick warned via moderate menu $reasonSuffix",
-												sender,
-												user
-											)
-											dmNotificationStatusEmbedField(dmResult)
-											timestamp = Clock.System.now()
-										}
-
-										menuMessage?.edit {
-											content = "Warned a user."
-											components { removeAll() }
 										}
 									}
 								}
@@ -873,82 +891,34 @@ class ModerationCommands : Extension() {
 
 				var dm: Message? = null
 
-				when (strikes) {
-					1 -> if (arguments.dm) {
-						dm = arguments.userArgument.dm {
-							embed {
-								title = "1st warning in $guildName"
-								description = "**Reason:** ${arguments.reason}\n\n" +
-										"No moderation action has been taken. $warnSuffix"
-							}
+				if (arguments.dm) {
+					val warnText = if (config.autoPunishOnWarn == false) {
+						"No moderation action has been taken.\n $warnSuffix"
+					} else {
+						when (strikes) {
+							1 -> "No moderation action has been taken.\n $warnSuffix"
+							2 -> "You have been timed out for 3 hours.\n $warnSuffix"
+							3 -> "You have been timed out for 12 hours.\n $warnSuffix"
+							else -> "You have been timed out for 3 days.\n $warnSuffix"
 						}
 					}
 
-					2 -> {
-						if (arguments.dm) {
-							dm = arguments.userArgument.dm {
-								embed {
-									title = "2nd warning in $guildName"
-									description = "**Reason:** ${arguments.reason}\n\n" +
-											if (config.autoPunishOnWarn == true) {
-												"You have been timed out for 3 hours. $warnSuffix"
-											} else {
-											    warnSuffix
-											}
-								}
-							}
-						}
-
-						if (config.autoPunishOnWarn == true) {
-							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-								timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
-							}
+					dm = arguments.userArgument.dm {
+						embed {
+							title = "Warning $strikes in $guildName"
+							description = "**Reason:** ${arguments.reason}\n\n" + warnText
 						}
 					}
+				}
 
-					3 -> {
-						if (arguments.dm) {
-							dm = arguments.userArgument.dm {
-								embed {
-									title = "3rd warning in $guildName"
-									description = "**Reason:** ${arguments.reason}\n\n" +
-											if (config.autoPunishOnWarn == true) {
-												"You have been timed-out for 12 hours. $warnSuffix"
-											} else {
-											    warnSuffix
-											}
-									color = DISCORD_RED
-								}
-							}
-						}
-
-						if (config.autoPunishOnWarn == true) {
-							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-								timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
-							}
-						}
+				if (config.autoPunishOnWarn == true && strikes!! > 1) {
+					val duration = when (strikes) {
+						2 -> "PT3H"
+						3 -> "PT12H"
+						else -> "P3D"
 					}
-
-					else -> {
-						if (arguments.dm) {
-							dm = arguments.userArgument.dm {
-								embed {
-									title = "Warning $strikes in $guildName"
-									description = "**Reason:** ${arguments.reason}\n\n" +
-											if (config.autoPunishOnWarn == true) {
-												"You have been timed-out for 3 days. $warnSuffix"
-											} else {
-											    warnSuffix
-											}
-								}
-							}
-						}
-
-						if (config.autoPunishOnWarn == true) {
-							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-								timeoutUntil = Clock.System.now().plus(Duration.parse("PT3D"))
-							}
-						}
+					guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse(duration))
 					}
 				}
 
