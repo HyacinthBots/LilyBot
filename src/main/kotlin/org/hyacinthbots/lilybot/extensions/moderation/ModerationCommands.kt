@@ -906,7 +906,7 @@ class ModerationCommands : Extension() {
 					dm = arguments.userArgument.dm {
 						embed {
 							title = "Warning $strikes in $guildName"
-							description = "**Reason:** ${arguments.reason}\n\n" + warnText
+							description = "**Reason:** ${arguments.reason}\n\n$warnText"
 						}
 					}
 				}
