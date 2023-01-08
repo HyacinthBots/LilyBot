@@ -9,6 +9,6 @@ suspend fun configV4(db: CoroutineDatabase, mainDb: CoroutineDatabase) {
 	if (db.getCollection<SupportConfigData>().find().toList().isEmpty()) {
 		db.dropCollection("supportConfigData")
 	} else {
-		utilsLogger.info { "Support database was not empty!" }
+		utilsLogger.warn { "Support database was not empty!" }
 	}
 }

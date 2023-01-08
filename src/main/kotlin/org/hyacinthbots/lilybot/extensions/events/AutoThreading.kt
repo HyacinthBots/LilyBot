@@ -116,7 +116,7 @@ class AutoThreading : Extension() {
 
 						message = modalObj.msgInput.value!!
 					} else {
-					    ackEphemeral()
+						ackEphemeral()
 					}
 
 					respondEphemeral {
@@ -444,12 +444,18 @@ class AutoThreading : Extension() {
 			}
 
 			if (previousUserThread != null) {
-				val response = event.message.respond {
-					content = "Please use your existing thread in this channel ${previousUserThread.mention}"
+				val archiveDuration = previousUserThread.autoArchiveDuration.duration
+				val lastMessageTimestamp = previousUserThread.lastMessage?.asMessageOrNull()?.timestamp
+
+				@Suppress("UnnecessaryParentheses") // Shut up
+				if ((Clock.System.now() - lastMessageTimestamp!!) > archiveDuration) {
+					val response = event.message.respond {
+						content = "Please use your existing thread in this channel ${previousUserThread.mention}"
+					}
+					event.message.delete("User already has a thread")
+					response.delete(10000L, false)
+					return
 				}
-				event.message.delete("User already has a thread")
-				response.delete(10000L, false)
-				return
 			}
 		}
 
