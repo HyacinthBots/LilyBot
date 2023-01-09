@@ -1,4 +1,3 @@
-
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileOutputStream
 import java.util.*
@@ -76,8 +75,8 @@ dependencies {
     // TOML Reader
     implementation(libs.koma)
 
-	// Cozy's welcome module
-	implementation(libs.cozy.welcome)
+    // Cozy's welcome module
+    implementation(libs.cozy.welcome)
 
     implementation(libs.dma)
 }
