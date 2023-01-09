@@ -115,7 +115,7 @@ class ModerationCommands : Extension() {
 				val sender = guild!!.getMemberOrNull(senderId)
 					?: run { respond { content = "Unable to find user" }; return@action }
 
-				isBotOrModerator(event.kord, sender.asUser(), guild, "moderate") ?: return@action
+				isBotOrModerator(event.kord, sender.asUserOrNull(), guild, "moderate") ?: return@action
 
 				menuMessage = respond {
 					content = "How would you like to moderate this message?"
@@ -159,7 +159,7 @@ class ModerationCommands : Extension() {
 									ModerationActions.BAN.name -> {
 										val dm = sender.dm {
 											embed {
-												title = "You have been banned from ${guild?.asGuild()?.name}"
+												title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
 												description =
 													"Quick banned $reasonSuffix"
 												color = DISCORD_GREEN
@@ -214,7 +214,7 @@ class ModerationCommands : Extension() {
 									ModerationActions.SOFT_BAN.name -> {
 										val dm = sender.dm {
 											embed {
-												title = "You have been soft-banned from ${guild?.asGuild()?.name}"
+												title = "You have been soft-banned from ${guild?.asGuildOrNull()?.name}"
 												description =
 													"Quick soft-banned $reasonSuffix. This is a soft-ban, you are " +
 															"free to rejoin at any time"
@@ -271,7 +271,7 @@ class ModerationCommands : Extension() {
 									ModerationActions.KICK.name -> {
 										val dm = sender.dm {
 											embed {
-												title = "You have been kicked from ${guild?.asGuild()?.name}"
+												title = "You have been kicked from ${guild?.asGuildOrNull()?.name}"
 												description = "Quick kicked $reasonSuffix."
 											}
 										}
@@ -332,7 +332,7 @@ class ModerationCommands : Extension() {
 
 										val dm = sender.dm {
 											embed {
-												title = "You have been timed-out in ${guild?.asGuild()?.name}"
+												title = "You have been timed-out in ${guild?.asGuildOrNull()?.name}"
 												description =
 													"Quick timed out for ${timeoutTime.interval()} $reasonSuffix."
 											}
@@ -391,7 +391,7 @@ class ModerationCommands : Extension() {
 
 										val dm = sender.dm {
 											embed {
-												title = "Warning $strikes in ${guild?.asGuild()?.name}"
+												title = "Warning $strikes in ${guild?.asGuildOrNull()?.name}"
 												description =
 													"Quick warned $reasonSuffix\n $warnSuffix"
 											}
@@ -427,7 +427,12 @@ class ModerationCommands : Extension() {
 											}
 											if (modConfig?.autoPunishOnWarn == true && strikes != 1) {
 												embed {
-													warnTimeoutLog(strikes!!, user.asUser(), sender.asUser(), "Quick warned via moderate menu $reasonSuffix")
+													warnTimeoutLog(
+														strikes!!,
+														event.interaction.user.asUserOrNull(),
+														sender.asUserOrNull(),
+														"Quick warned via moderate menu $reasonSuffix"
+													)
 												}
 											}
 										}
@@ -512,7 +517,7 @@ class ModerationCommands : Extension() {
 					}
 
 					dmEmbed {
-						title = "You have been banned from ${guild?.asGuild()?.name}"
+						title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
 						description = "**Reason:**\n${arguments.reason}"
 					}
 				}
@@ -622,8 +627,8 @@ class ModerationCommands : Extension() {
 							value = arguments.reason
 						}
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_GREEN
@@ -744,8 +749,8 @@ class ModerationCommands : Extension() {
 					title = "$messageAmount messages have been cleared."
 					description = "Action occurred in ${textChannel.mention}"
 					footer {
-						text = user.asUser().tag
-						icon = user.asUser().avatar?.url
+						text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+						icon = user.asUserOrNull()?.avatar?.url
 					}
 					color = DISCORD_BLACK
 				}
@@ -841,14 +846,14 @@ class ModerationCommands : Extension() {
 							inline = false
 						}
 						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Requested by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_BLACK
 					}
 					dmEmbed {
-						title = "Timeout removed in ${guild!!.asGuild().name}"
+						title = "Timeout removed in ${guild!!.asGuildOrNull()?.name}"
 						description = "Your timeout has been manually removed in this guild."
 					}
 				}
@@ -878,7 +883,7 @@ class ModerationCommands : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
-				val guildName = guild?.asGuild()?.name
+				val guildName = guild?.asGuildOrNull()?.name
 
 				isBotOrModerator(event.kord, arguments.userArgument, guild, "warn") ?: return@action
 
@@ -938,7 +943,12 @@ class ModerationCommands : Extension() {
 					}
 					if (config.autoPunishOnWarn == true && strikes != 1) {
 						embed {
-							warnTimeoutLog(strikes!!, user.asUser(), arguments.userArgument, arguments.reason)
+							warnTimeoutLog(
+								strikes!!,
+								event.interaction.user.asUserOrNull(),
+								arguments.userArgument,
+								arguments.reason
+							)
 						}
 					}
 				}

@@ -64,7 +64,7 @@ class GuildAnnouncements : Extension() {
 											description = modal?.body?.value
 											color = Color(0x7B52AE)
 											footer {
-												text = "Sent by ${user.asUser().tag}"
+												text = "Sent by ${user.asUserOrNull()?.tag}"
 											}
 										}
 									}

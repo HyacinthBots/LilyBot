@@ -129,7 +129,8 @@ class ThreadInviter : Extension() {
 							"Support thread for ${
 								event.pkMessage.member?.name ?: event.kord.getUser(event.pkMessage.sender)?.username
 							}",
-							event.message.getChannelOrNull()?.data?.defaultAutoArchiveDuration?.value ?: ArchiveDuration.Day
+							event.message.getChannelOrNull()?.data?.defaultAutoArchiveDuration?.value
+								?: ArchiveDuration.Day
 						)
 
 					ThreadsCollection().setThreadOwner(guild.id, thread.id, userId)
@@ -140,7 +141,7 @@ class ThreadInviter : Extension() {
 
 					startMessage.edit {
 						content =
-							"${user.asUser().mention}, the ${
+							"${user.asUserOrNull()?.mention}, the ${
 								event.getGuildOrNull()?.getRoleOrNull(config.role)?.mention ?: "`unable to get role`"
 							} will be with you shortly!"
 					}
@@ -206,8 +207,10 @@ class ThreadInviter : Extension() {
 
 				if (textChannel != supportChannel) return@action
 
-				val userId = event.getUser().id
-				val user = event.getUser()
+				val userId = event.getUserOrNull()?.id
+				val user = event.getUserOrNull()
+
+				userId ?: return@action
 
 				ThreadsCollection().getOwnerThreads(userId).forEach {
 					try {
@@ -237,8 +240,9 @@ class ThreadInviter : Extension() {
 						// duration to the channels settings. If they're null, set it to one day
 						textChannel.startPublicThreadWithMessage(
 							event.message.id,
-							"Support thread for " + user.asUser().username,
-							event.message.getChannelOrNull()?.data?.defaultAutoArchiveDuration?.value ?: ArchiveDuration.Day
+							"Support thread for " + user?.asUserOrNull()?.username,
+							event.message.getChannelOrNull()?.data?.defaultAutoArchiveDuration?.value
+								?: ArchiveDuration.Day
 						)
 
 					ThreadsCollection().setThreadOwner(guild.id, thread.id, userId)
@@ -248,12 +252,12 @@ class ThreadInviter : Extension() {
 
 					startMessage.edit {
 						content = if (config.message.isNullOrEmpty()) {
-							"${user.asUser().mention}, the ${
+							"${user?.asUserOrNull()?.mention}, the ${
 								event.getGuildOrNull()
 									?.getRoleOrNull(config.role!!)?.mention ?: "`unable to get role`"
 							} will be with you shortly!"
 						} else {
-							"${user.asUser().mention} ${
+							"${user?.asUserOrNull()?.mention} ${
 								event.getGuildOrNull()?.getRoleOrNull(config.role!!)?.mention ?: "`unable to get role`"
 							}\n${config.message}"
 						}
@@ -291,7 +295,7 @@ class ThreadInviter : Extension() {
 			action {
 				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
 				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
-				val threadOwner = event.channel.owner.asUser()
+				val threadOwner = event.channel.owner.asUserOrNull() ?: return@action
 
 				ThreadsCollection().setThreadOwner(event.channel.guildId, event.channel.id, threadOwner.id)
 
@@ -305,7 +309,9 @@ class ThreadInviter : Extension() {
 					)
 
 					event.channel.withTyping { delay(4.seconds) }
-					message.edit { content = "${supportRole?.mention ?: "`Unable to get role`"}, please help this person!" }
+					message.edit {
+						content = "${supportRole?.mention ?: "`Unable to get role`"}, please help this person!"
+					}
 
 					event.channel.withTyping { delay(3.seconds) }
 					message.edit {
