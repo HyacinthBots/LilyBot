@@ -29,12 +29,10 @@ import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.threads.edit
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.entity.Message
@@ -412,10 +410,12 @@ class AutoThreading : Extension() {
 		val memberFromPk = if (proxiedMessage != null) event.getGuild().getMember(proxiedMessage.sender) else null
 
 		val channel: TextChannel = if (proxiedMessage == null) {
-			message?.channel?.asChannelOf() ?: return
+			message?.channel?.asChannelOfOrNull() ?: return
 		} else {
 			// Check the real message member too, despite the pk message not being null, we may still be able to use the original
-			message?.channel?.asChannelOf() ?: event.getGuild().getChannelOf(proxiedMessage.channel) ?: return
+			message?.channel?.asChannelOfOrNull()
+				?: event.getGuild().getChannelOfOrNull(proxiedMessage.channel)
+				?: return
 		}
 
 		val authorId: Snowflake = if (proxiedMessage == null) {
