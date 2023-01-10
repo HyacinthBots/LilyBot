@@ -73,7 +73,7 @@ class ThreadControl : Extension() {
 						}
 					}
 
-					val member = user.asMember(guild!!.id)
+					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
 
 					threadChannel.edit {
@@ -106,7 +106,7 @@ class ThreadControl : Extension() {
 						}
 					}
 
-					val member = user.asMember(guild!!.id)
+					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
 
 					ThreadsCollection().getAllThreads().forEach {
@@ -118,20 +118,20 @@ class ThreadControl : Extension() {
 								guild!!.getChannelOfOrNull<GuildMessageChannel>(
 									ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!
 								)?.createEmbed {
-										title = "Thread archive prevention disabled"
-										description =
-											"Archive prevention has been disabled, as `/thread archive` was used."
-										color = DISCORD_FUCHSIA
+									title = "Thread archive prevention disabled"
+									description =
+										"Archive prevention has been disabled, as `/thread archive` was used."
+									color = DISCORD_FUCHSIA
 
-										field {
-											name = "User"
-											value = user.asUser().tag
-										}
-										field {
-											name = "Thread"
-											value = "${threadChannel.mention} ${threadChannel.name}"
-										}
+									field {
+										name = "User"
+										value = user.asUserOrNull()?.tag ?: "Unable to get user tag"
 									}
+									field {
+										name = "Thread"
+										value = "${threadChannel.mention} ${threadChannel.name}"
+									}
+								}
 							}
 						}
 					}
@@ -145,7 +145,7 @@ class ThreadControl : Extension() {
 						this.archived = true
 						this.locked = arguments.lock && member.hasPermission(Permission.ModerateMembers)
 
-						reason = "Archived by ${user.asUser().tag}"
+						reason = "Archived by ${user.asUserOrNull()?.tag}"
 					}
 
 					respond {
@@ -176,7 +176,7 @@ class ThreadControl : Extension() {
 							return@action
 						}
 					}
-					val member = user.asMember(guild!!.id)
+					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 
 					val oldOwnerId = ThreadsCollection().getThread(threadChannel!!.id)?.ownerId ?: threadChannel.ownerId
 					val oldOwner = guild!!.getMemberOrNull(oldOwnerId)
@@ -248,7 +248,7 @@ class ThreadControl : Extension() {
 							return@action
 						}
 					}
-					val member = user.asMember(guild!!.id)
+					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
 
 					if (threadChannel.isArchived) {
@@ -293,7 +293,7 @@ class ThreadControl : Extension() {
 
 												field {
 													name = "User"
-													value = user.asUser().tag
+													value = user.asUserOrNull()?.tag ?: "Unable to get user tag"
 												}
 												field {
 													name = "Thread"
@@ -328,7 +328,7 @@ class ThreadControl : Extension() {
 
 									field {
 										name = "User"
-										value = user.asUser().tag
+										value = user.asUserOrNull()?.tag ?: "Unable to get user tag"
 									}
 									field {
 										name = "Thread"

@@ -130,7 +130,7 @@ class Config : Extension() {
 							value = arguments.channel?.mention ?: "Disabled"
 						}
 						footer {
-							text = "Configured by: ${user.asUser().tag}"
+							text = "Configured by: ${user.asUserOrNull()?.tag}"
 						}
 					}
 
@@ -321,7 +321,7 @@ class Config : Extension() {
 							}
 						}
 						footer {
-							text = "Configured by ${user.asUser().tag}"
+							text = "Configured by ${user.asUserOrNull()?.tag}"
 						}
 					}
 
@@ -501,8 +501,8 @@ class Config : Extension() {
 						}
 
 						footer {
-							text = "Configured by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Configured by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 					}
 
@@ -622,8 +622,8 @@ class Config : Extension() {
 						}
 
 						footer {
-							text = "Configured by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Configured by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 					}
 
@@ -677,8 +677,8 @@ class Config : Extension() {
 									arguments.config.substring(1, arguments.config.length).lowercase()
 								}"
 								footer {
-									text = "Config cleared by ${user.asUser().tag}"
-									icon = user.asUser().avatar?.url
+									text = "Config cleared by ${user.asUserOrNull()?.tag}"
+									icon = user.asUserOrNull()?.avatar?.url
 								}
 							}
 						}
@@ -700,8 +700,8 @@ class Config : Extension() {
 								embed {
 									title = "Config cleared: Moderation"
 									footer {
-										text = "Config cleared by ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
+										text = "Config cleared by ${user.asUserOrNull()?.tag}"
+										icon = user.asUserOrNull()?.avatar?.url
 									}
 								}
 							}
@@ -722,8 +722,8 @@ class Config : Extension() {
 								embed {
 									title = "Config cleared: Logging"
 									footer {
-										text = "Config cleared by ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
+										text = "Config cleared by ${user.asUserOrNull()?.tag}"
+										icon = user.asUserOrNull()?.avatar?.url
 									}
 								}
 							}
@@ -744,8 +744,8 @@ class Config : Extension() {
 								embed {
 									title = "Config cleared: Support"
 									footer {
-										text = "Config cleared by ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
+										text = "Config cleared by ${user.asUserOrNull()?.tag}"
+										icon = user.asUserOrNull()?.avatar?.url
 									}
 								}
 							}
@@ -766,8 +766,8 @@ class Config : Extension() {
 								embed {
 									title = "Config cleared: Utility"
 									footer {
-										text = "Config cleared by ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
+										text = "Config cleared by ${user.asUserOrNull()?.tag}"
+										icon = user.asUserOrNull()?.avatar?.url
 									}
 								}
 							}
@@ -782,8 +782,8 @@ class Config : Extension() {
 								embed {
 									title = "All configs cleared"
 									footer {
-										text = "Configs cleared by ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
+										text = "Configs cleared by ${user.asUserOrNull()?.tag}"
+										icon = user.asUserOrNull()?.avatar?.url
 									}
 								}
 							}
@@ -871,7 +871,7 @@ class Config : Extension() {
 										name = "Message edit logs"
 										value = if (config.enableMessageEditLogs) {
 											"Enabled\n" +
-													"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention" } (" +
+													"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
 													"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel mention"})"
 										} else {
 											"Disabled"

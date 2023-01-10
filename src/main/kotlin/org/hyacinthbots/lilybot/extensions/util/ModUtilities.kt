@@ -96,10 +96,10 @@ class ModUtilities : Extension() {
 			}
 			action {
 				val targetChannel: GuildMessageChannel = if (arguments.channel != null) {
-						guild!!.getChannelOfOrNull(arguments.channel!!.id) ?: return@action
-					} else {
-						channel.asChannelOfOrNull() ?: return@action
-					}
+					guild!!.getChannelOfOrNull(arguments.channel!!.id) ?: return@action
+				} else {
+					channel.asChannelOfOrNull() ?: return@action
+				}
 				val createdMessage: Message
 
 				try {
@@ -123,7 +123,8 @@ class ModUtilities : Extension() {
 
 				respond { content = "Message sent." }
 
-				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
+				val utilityLog =
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createMessage {
 					embed {
 						title = "Say command used"
@@ -139,8 +140,8 @@ class ModUtilities : Extension() {
 							inline = true
 						}
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						if (arguments.embed) {
@@ -235,8 +236,8 @@ class ModUtilities : Extension() {
 								value = "```${arguments.newContent.trimmedContents(500)}```"
 							}
 							footer {
-								text = "Edited by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
+								text = "Edited by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 							color = DISCORD_WHITE
 							timestamp = Clock.System.now()
@@ -306,8 +307,8 @@ class ModUtilities : Extension() {
 								}
 							}
 							footer {
-								text = "Edited by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
+								text = "Edited by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 							timestamp = Clock.System.now()
 							color = DISCORD_WHITE
@@ -365,8 +366,8 @@ class ModUtilities : Extension() {
 						title = "Presence changed"
 						description = "Lily's presence has been set to `${arguments.presenceArgument}`"
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						color = DISCORD_BLACK
 					}
@@ -403,8 +404,8 @@ class ModUtilities : Extension() {
 							value = "Watching over $guilds servers."
 						}
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						color = DISCORD_BLACK
 					}
@@ -449,8 +450,8 @@ class ModUtilities : Extension() {
 								}
 
 								guild!!.getChannelOfOrNull<GuildMessageChannel>(
-									ModerationConfigCollection().getConfig(guild!!.id)?.channel ?: guild!!.asGuild()
-										.getSystemChannel()!!.id
+									ModerationConfigCollection().getConfig(guild!!.id)?.channel ?: guild!!.asGuildOrNull()
+										?.getSystemChannel()!!.id
 								)?.createMessage {
 									embed {
 										title = "Database Reset!"
