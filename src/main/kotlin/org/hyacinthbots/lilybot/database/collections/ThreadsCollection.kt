@@ -61,8 +61,10 @@ class ThreadsCollection : KordExKoinComponent {
 	/**
 	 * Add or update the ownership of the given [inputThreadId] to the given [newOwnerId].
 	 *
+	 * @param inputGuildId The ID of the guild the thread is in
 	 * @param inputThreadId The ID of the thread you wish to update or set the owner for
 	 * @param newOwnerId The new owner of the thread
+	 * @param parentChannelId The ID of the parent channel of the thread
 	 * @param preventArchiving Whether to stop the thread from being archived or not
 	 *
 	 * @return null or the thread owner's ID
@@ -73,10 +75,11 @@ class ThreadsCollection : KordExKoinComponent {
 		inputGuildId: Snowflake,
 		inputThreadId: Snowflake,
 		newOwnerId: Snowflake,
+		parentChannelId: Snowflake?,
 		preventArchiving: Boolean = false
 	) {
 		collection.deleteOne(ThreadData::threadId eq inputThreadId)
-		collection.insertOne(ThreadData(inputGuildId, inputThreadId, newOwnerId, preventArchiving))
+		collection.insertOne(ThreadData(inputGuildId, inputThreadId, newOwnerId, parentChannelId, preventArchiving))
 	}
 
 	/**

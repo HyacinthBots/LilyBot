@@ -119,6 +119,11 @@ class ModerationConfigCollection : KordExKoinComponent {
  * @see setConfig
  * @see clearConfig
  */
+@Deprecated(
+	"Replaced with auto threading collection",
+	ReplaceWith("AutoThreadingCollection", "org.hyacinthbots.database.collections.AutoThreadingCollection"),
+	DeprecationLevel.WARNING
+)
 class SupportConfigCollection : KordExKoinComponent {
 	private val configDb: Database by inject()
 

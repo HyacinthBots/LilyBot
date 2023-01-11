@@ -98,6 +98,7 @@ class PublicUtilities : Extension() {
 					val requesterAsMember = requester?.asMemberOrNull(guild!!.id)
 					val self = this@PublicUtilities.kord.getSelf().asMemberOrNull(guild!!.id)
 
+					@Suppress("UnclearPrecedenceOfBinaryExpression")
 					if (requesterAsMember?.getTopRole()?.getPosition() != null &&
 						self?.getTopRole()?.getPosition() == null
 					) {

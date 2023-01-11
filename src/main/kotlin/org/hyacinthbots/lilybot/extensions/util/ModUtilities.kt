@@ -45,6 +45,7 @@ import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
@@ -461,6 +462,7 @@ class ModUtilities : Extension() {
 								}
 
 								// Reset
+								AutoThreadingCollection().deleteGuildAutoThreads(guild!!.id)
 								LoggingConfigCollection().clearConfig(guild!!.id)
 								ModerationConfigCollection().clearConfig(guild!!.id)
 								SupportConfigCollection().clearConfig(guild!!.id)
