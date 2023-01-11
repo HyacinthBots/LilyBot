@@ -72,7 +72,7 @@ class ThreadsCollection : KordExKoinComponent {
 	 * @since 3.2.0
 	 */
 	suspend inline fun setThreadOwner(
-		inputGuildId: Snowflake,
+		inputGuildId: Snowflake?,
 		inputThreadId: Snowflake,
 		newOwnerId: Snowflake,
 		parentChannelId: Snowflake?,
