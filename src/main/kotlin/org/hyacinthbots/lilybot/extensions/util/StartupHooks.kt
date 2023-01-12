@@ -79,6 +79,10 @@ class StartupHooks : Extension() {
 				 * @since v4.6.0
 				 */
 				ThreadsCollection().getAllThreads().forEach {
+					if (it.guildId == null) {
+						ThreadsCollection().removeThread(it.threadId)
+						return@forEach
+					}
 					val guild = kord.getGuildOrNull(it.guildId) ?: run {
 						ThreadsCollection().removeThread(it.threadId)
 						return@forEach
