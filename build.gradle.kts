@@ -73,14 +73,12 @@ dependencies {
     // KMongo
     implementation(libs.kmongo)
 
-    // TOML Reader
-    implementation(libs.koma)
-
 	// Cozy's welcome module
 	implementation(libs.cozy.welcome)
 
     implementation(libs.dma)
     implementation(libs.docgenerator)
+    //implementation(files("./build/doc-generator-0.1.0.jar"))
 }
 
 application {

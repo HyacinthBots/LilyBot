@@ -5,19 +5,13 @@ import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
-import com.kotlindiscord.kord.extensions.pagination.PublicResponsePaginator
-import com.kotlindiscord.kord.extensions.pagination.pages.Page
-import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.types.respond
-import dev.kord.common.Locale
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.create.embed
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.hyacinthbots.lilybot.commandDocs
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.utils.BUILD_ID
 import java.util.Properties
@@ -37,67 +31,6 @@ class InfoCommands : Extension() {
 	}
 
 	override suspend fun setup() {
-		val pagesObj = Pages()
-
-		for (it in commandDocs!!.command) {
-			if (it.name.isNullOrEmpty() && it.result.isNullOrEmpty() && it.permissions.isNullOrEmpty() &&
-				it.args.isNullOrEmpty() && it.category.isNotEmpty() && it.description!!.isNotEmpty()
-			) {
-				continue
-			}
-			pagesObj.addPage(
-				Page {
-					title = it.category
-					description = "**Name:** `${it.name}`"
-					field {
-						name = "Arguments:"
-						value = it.args?.replace("*", "•") ?: "None"
-					}
-					field {
-						name = "Permissions:"
-						value = it.permissions ?: "None"
-					}
-					field {
-						name = "Result"
-						value =
-							if (it.name != "warn") {
-								it.result!!
-							} else {
-								// Embeds don't support Markdown tables, so we have to get creative and make
-								// it looks nice ourselves
-								val result = it.result!!.split(".\n")
-								"${result[0]}\n```markdown\n${result[1].replace(":", "-")}\n```"
-							}
-					}
-					timestamp = Clock.System.now()
-				}
-			)
-		}
-
-		/**
-		 * The command that generates the command list paginator, after getting it from `./docs/commanddocs.toml`
-		 *
-		 * @author NoComment1105
-		 * @since 3.3.0
-		 */
-		publicSlashCommand {
-			name = "command-list"
-			description = "Show a list of Lily's commands!"
-
-			action {
-				val paginator = PublicResponsePaginator(
-					pages = pagesObj,
-					keepEmbed = true,
-					owner = event.interaction.user,
-					timeoutSeconds = 500,
-					locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
-					interaction = interactionResponse
-				)
-
-				paginator.send()
-			}
-		}
-
 		/**
 		 * A command that creates an embed providing help with using Lily
 		 *

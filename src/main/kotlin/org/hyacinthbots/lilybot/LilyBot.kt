@@ -2,8 +2,6 @@
 
 package org.hyacinthbots.lilybot
 
-import cc.ekblad.toml.decode
-import cc.ekblad.toml.tomlMapper
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
@@ -44,7 +42,6 @@ import org.hyacinthbots.lilybot.utils.BOT_TOKEN
 import org.hyacinthbots.lilybot.utils.ENVIRONMENT
 import org.hyacinthbots.lilybot.utils.SENTRY_DSN
 import org.hyacinthbots.lilybot.utils.database
-import org.hyacinthbots.lilybot.utils.docs.CommandDocs
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -56,16 +53,9 @@ import kotlin.time.Duration.Companion.minutes
 lateinit var github: GitHub
 private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
 
-var commandDocs: CommandDocs? = null
-
 val docFile = Path("./docs/commands.md")
 
 suspend fun main() {
-	val mapper = tomlMapper { }
-	val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
-
-	commandDocs = mapper.decode<CommandDocs>(stream)
-
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		database(true)
 		dataAdapter(::MongoDBDataAdapter)
@@ -145,6 +135,7 @@ suspend fun main() {
 			commandTypes = CommandType.ALL
 			filePath = docFile
 			environment = ENVIRONMENT
+			useBuiltinCommandList = true
 		}
 
 		// Connect to GitHub to allow the GitHub commands to function
@@ -157,10 +148,5 @@ suspend fun main() {
 		}
 	}
 
-	// DocsGenerator.clearDocs(ENVIRONMENT)
-	// DocsGenerator.writeNewDocs(ENVIRONMENT)
-
 	bot.start()
 }
-
-object LilyBot
