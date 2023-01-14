@@ -10,7 +10,6 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
-import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Guild
@@ -125,7 +124,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		return
 	}
 
-	val eventChannel = channelFor(event)?.asChannel() ?: return
+	val eventChannel = channelFor(event)?.asChannelOrNull() ?: return
 
 	val permissionsSet: MutableSet<String> = mutableSetOf()
 	var count = 0
@@ -144,8 +143,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 
 	/* Use `TextChannel` when the channel is a Text channel */
 	if (eventChannel is TextChannel) {
-		if (eventChannel.asChannelOf<TextChannel>().getEffectivePermissions(event.kord.selfId)
-				.contains(Permissions(permissions))
+		if (eventChannel.asChannelOfOrNull<TextChannel>()?.getEffectivePermissions(event.kord.selfId)
+				?.contains(Permissions(permissions)) == true
 		) {
 			pass()
 		} else {
@@ -154,8 +153,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 			)
 		}
 	} else if (eventChannel is NewsChannel) {
-		if (eventChannel.asChannelOf<NewsChannel>().getEffectivePermissions(event.kord.selfId)
-				.contains(Permissions(permissions))
+		if (eventChannel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(event.kord.selfId)
+				?.contains(Permissions(permissions)) == true
 		) {
 			pass()
 		} else {
@@ -164,8 +163,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 			)
 		}
 	} else if (eventChannel is ThreadChannel) {
-		if (eventChannel.asChannelOf<ThreadChannel>().getParent().getEffectivePermissions(event.kord.selfId)
-				.contains(Permissions(permissions))
+		if (eventChannel.asChannelOfOrNull<ThreadChannel>()?.getParent()?.getEffectivePermissions(event.kord.selfId)
+				?.contains(Permissions(permissions)) == true
 		) {
 			pass()
 		} else {

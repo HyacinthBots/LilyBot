@@ -1,4 +1,3 @@
-
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileOutputStream
 import java.util.*
@@ -17,7 +16,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "4.5.0"
+version = "4.6.0"
 
 repositories {
     mavenCentral()
@@ -73,13 +72,12 @@ dependencies {
     // KMongo
     implementation(libs.kmongo)
 
-    // TOML Reader
-    implementation(libs.koma)
-
-	// Cozy's welcome module
-	implementation(libs.cozy.welcome)
+	  // Cozy's welcome module
+	  implementation(libs.cozy.welcome)
 
     implementation(libs.dma)
+    implementation(libs.docgenerator)
+    //implementation(files("./build/doc-generator-0.1.0.jar"))
 }
 
 application {

@@ -5,7 +5,8 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
-suspend fun configV3(db: CoroutineDatabase) {
+@Suppress("UnusedPrivateMember")
+suspend fun configV3(db: CoroutineDatabase, mainDb: CoroutineDatabase) {
 	with(db.getCollection<LoggingConfigData>("loggingConfigData")) {
 		updateMany(
 			LoggingConfigData::enablePublicMemberLogs exists false,

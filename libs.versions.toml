@@ -1,13 +1,13 @@
 [versions]
-kord-extensions = "1.5.5-20221205.192723-47"
+kord-extensions = "1.5.6-20230102.101158-6"
 logging = "3.0.4"
 logback = "1.4.5"
 github-api = "1.313"
-kmongo = "4.7.2"
+kmongo = "4.8.0"
 detekt = "1.22.0"
-koma = "1.1.0"
-cozy-welcome = "1.0-20221208.222216-97" # Just until we update KordEx, since it throws stuff if kordex's are different
-dma = "0.1.0"
+cozy-welcome = "1.0-SNAPSHOT"
+dma = "main-SNAPSHOT"
+docgenerator = "0.1.0"
 
 [libraries]
 kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
@@ -20,6 +20,6 @@ logging = { module = "io.github.microutils:kotlin-logging", version.ref = "loggi
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
 kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
 detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
-koma = { module = "cc.ekblad:4koma", version.ref = "koma" }
 cozy-welcome = {module = "org.quiltmc.community:module-welcome", version.ref = "cozy-welcome"}
 dma = { module = "com.github.nocomment1105:discord-moderation-actions", version.ref = "dma"}
+docgenerator = { module = "com.github.hyacinthbots:doc-generator", version.ref = "docgenerator" }

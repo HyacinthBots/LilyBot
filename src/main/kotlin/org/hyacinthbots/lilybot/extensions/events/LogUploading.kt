@@ -24,7 +24,6 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
@@ -111,7 +110,7 @@ class LogUploading : Extension() {
 				}
 
 				val eventMessage = event.message.asMessageOrNull() // Get the message
-				var uploadChannel = eventMessage.channel.asChannel()
+				var uploadChannel = eventMessage.channel.asChannelOrNull()
 				val eventMember = event.member ?: event.author
 
 				if (deferUploadUntilThread) {
@@ -121,7 +120,8 @@ class LogUploading : Extension() {
 							event.getGuildOrNull()?.getChannelOfOrNull<TextChannelThread>(it.threadId) ?: return@forEach
 						if (thread.parentId == supportConfig?.channel) {
 							uploadChannel =
-								event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId) ?: return@forEach
+								event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId)
+									?: return@forEach
 							return@forEach
 						}
 					}
@@ -152,7 +152,7 @@ class LogUploading : Extension() {
 						val necText = "at Not Enough Crashes"
 						val indexOfNECText = logContent.indexOf(necText)
 						if (indexOfNECText != -1) {
-							uploadChannel.createEmbed {
+							uploadChannel?.createEmbed {
 								title = "Not Enough Crashes detected in logs"
 								description = "Not Enough Crashes (NEC) is well known to cause issues and often " +
 										"makes the debugging process more difficult. " +
@@ -168,7 +168,7 @@ class LogUploading : Extension() {
 							// Ask the user if they're ok with uploading their log to a paste site
 							var confirmationMessage: Message? = null
 
-							confirmationMessage = uploadChannel.createMessage {
+							confirmationMessage = uploadChannel?.createMessage {
 								embed {
 									title = "Do you want to upload this file to mclo.gs?"
 									description =
@@ -176,8 +176,10 @@ class LogUploading : Extension() {
 												"through public posts.\nIt's easier for the support team to view " +
 												"the file on mclo.gs, do you want it to be uploaded?"
 									footer {
-										text = "Uploaded by ${eventMessage.author?.tag ?: eventMember?.asUser()?.tag}"
-										icon = eventMessage.author?.avatar?.url ?: eventMember?.asUser()?.avatar?.url
+										text =
+											"Uploaded by ${eventMessage.author?.tag ?: eventMember?.asUserOrNull()?.tag}"
+										icon =
+											eventMessage.author?.avatar?.url ?: eventMember?.asUserOrNull()?.avatar?.url
 									}
 									color = DISCORD_PINK
 								}
@@ -193,13 +195,13 @@ class LogUploading : Extension() {
 												// Delete the confirmation and proceed to upload
 												confirmationMessage!!.delete()
 
-												val uploadMessage = uploadChannel.createEmbed {
+												val uploadMessage = uploadChannel!!.createEmbed {
 													title = "Uploading `$attachmentFileName` to mclo.gs..."
 													footer {
 														text =
-															"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
+															"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"
 														icon = eventMessage.author?.avatar?.url
-															?: eventMember.asUser().avatar?.url
+															?: eventMember.asUserOrNull()?.avatar?.url
 													}
 													timestamp = Clock.System.now()
 													color = DISCORD_PINK
@@ -213,9 +215,9 @@ class LogUploading : Extension() {
 															title = "`$attachmentFileName` uploaded to mclo.gs"
 															footer {
 																text =
-																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
+																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"
 																icon = eventMessage.author?.avatar?.url
-																	?: eventMember.asUser().avatar?.url
+																	?: eventMember.asUserOrNull()?.avatar?.url
 															}
 															timestamp = Clock.System.now()
 															color = DISCORD_PINK
@@ -236,9 +238,9 @@ class LogUploading : Extension() {
 															description = "Error: $e"
 															footer {
 																text =
-																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
+																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"
 																icon = eventMessage.author?.avatar?.url
-																	?: eventMember.asUser().avatar?.url
+																	?: eventMember.asUserOrNull()?.avatar?.url
 															}
 															timestamp = Clock.System.now()
 															color = DISCORD_RED
@@ -312,13 +314,13 @@ class LogUploading : Extension() {
 
 					if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
 
-					guild!!.getChannelOf<GuildMessageChannel>(utilityConfig.utilityLogChannel!!).createEmbed {
+					guild!!.getChannelOfOrNull<GuildMessageChannel>(utilityConfig.utilityLogChannel!!)?.createEmbed {
 						title = "Log uploading disabled"
 						description = "Log uploading was disabled in ${channel.mention}"
 						color = DISCORD_RED
 						footer {
-							text = "Disabled by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Disabled by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 					}
 				}
@@ -353,13 +355,13 @@ class LogUploading : Extension() {
 
 					if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
 
-					guild!!.getChannelOf<GuildMessageChannel>(utilityConfig.utilityLogChannel!!).createEmbed {
+					guild!!.getChannelOfOrNull<GuildMessageChannel>(utilityConfig.utilityLogChannel!!)?.createEmbed {
 						title = "Log uploading re-enabled"
 						description = "Log uploading was re-enabled in ${channel.mention}"
 						color = DISCORD_GREEN
 						footer {
-							text = "Enabled by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Enabled by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 					}
 				}

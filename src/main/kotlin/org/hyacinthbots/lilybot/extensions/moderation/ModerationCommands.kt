@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
-import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.annotations.DoNotChain
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
@@ -33,7 +32,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
@@ -116,7 +115,7 @@ class ModerationCommands : Extension() {
 				val sender = guild!!.getMemberOrNull(senderId)
 					?: run { respond { content = "Unable to find user" }; return@action }
 
-				isBotOrModerator(event.kord, sender.asUser(), guild, "moderate") ?: return@action
+				isBotOrModerator(event.kord, sender.asUserOrNull(), guild, "moderate") ?: return@action
 
 				menuMessage = respond {
 					content = "How would you like to moderate this message?"
@@ -160,7 +159,7 @@ class ModerationCommands : Extension() {
 									ModerationActions.BAN.name -> {
 										val dm = sender.dm {
 											embed {
-												title = "You have been banned from ${guild?.asGuild()?.name}"
+												title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
 												description =
 													"Quick banned $reasonSuffix"
 												color = DISCORD_GREEN
@@ -215,7 +214,7 @@ class ModerationCommands : Extension() {
 									ModerationActions.SOFT_BAN.name -> {
 										val dm = sender.dm {
 											embed {
-												title = "You have been soft-banned from ${guild?.asGuild()?.name}"
+												title = "You have been soft-banned from ${guild?.asGuildOrNull()?.name}"
 												description =
 													"Quick soft-banned $reasonSuffix. This is a soft-ban, you are " +
 															"free to rejoin at any time"
@@ -272,7 +271,7 @@ class ModerationCommands : Extension() {
 									ModerationActions.KICK.name -> {
 										val dm = sender.dm {
 											embed {
-												title = "You have been kicked from ${guild?.asGuild()?.name}"
+												title = "You have been kicked from ${guild?.asGuildOrNull()?.name}"
 												description = "Quick kicked $reasonSuffix."
 											}
 										}
@@ -333,7 +332,7 @@ class ModerationCommands : Extension() {
 
 										val dm = sender.dm {
 											embed {
-												title = "You have been timed-out in ${guild?.asGuild()?.name}"
+												title = "You have been timed-out in ${guild?.asGuildOrNull()?.name}"
 												description =
 													"Quick timed out for ${timeoutTime.interval()} $reasonSuffix."
 											}
@@ -392,15 +391,58 @@ class ModerationCommands : Extension() {
 
 										val dm = sender.dm {
 											embed {
-												title = "Warning strike $strikes in ${guild?.asGuild()?.name}"
+												title = "Warning $strikes in ${guild?.asGuildOrNull()?.name}"
 												description =
-													"Quick warned $reasonSuffix\nYou now have $strikes strike(s)"
+													"Quick warned $reasonSuffix\n $warnSuffix"
+											}
+										}
+
+										if (modConfig?.autoPunishOnWarn == true && strikes!! > 1) {
+											val duration = when (strikes) {
+												2 -> "PT3H"
+												3 -> "PT12H"
+												else -> "P3D"
+											}
+											guild?.getMemberOrNull(senderId)?.edit {
+												timeoutUntil = Clock.System.now().plus(Duration.parse(duration))
 											}
 										}
 
 										val dmResult = getDmResult(true, dm)
 
-										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
+										loggingChannel.createMessage {
+											embed {
+												title = "Warning"
+												baseModerationEmbed(
+													"Quick warned via moderate menu $reasonSuffix",
+													sender,
+													user
+												)
+												dmNotificationStatusEmbedField(dmResult)
+												timestamp = Clock.System.now()
+												field {
+													name = "Total strikes"
+													value = strikes.toString()
+												}
+											}
+											if (modConfig?.autoPunishOnWarn == true && strikes != 1) {
+												embed {
+													warnTimeoutLog(
+														strikes!!,
+														event.interaction.user.asUserOrNull(),
+														sender.asUserOrNull(),
+														"Quick warned via moderate menu $reasonSuffix"
+													)
+												}
+											}
+										}
+
+										menuMessage?.edit {
+											content = "Warned a user."
+											components { removeAll() }
+										}
+
+										if (modConfig?.publicLogging == true) {
 											try {
 												targetMessage.reply {
 													embed {
@@ -416,25 +458,6 @@ class ModerationCommands : Extension() {
 															"for sending a deleted message."
 												}
 											}
-										}
-
-										loggingChannel.createEmbed {
-											title = "Warned user"
-											description = "${
-												sender.mention
-											} has been warned.\nStrikes: $strikes"
-											baseModerationEmbed(
-												"Quick warned via moderate menu $reasonSuffix",
-												sender,
-												user
-											)
-											dmNotificationStatusEmbedField(dmResult)
-											timestamp = Clock.System.now()
-										}
-
-										menuMessage?.edit {
-											content = "Warned a user."
-											components { removeAll() }
 										}
 									}
 								}
@@ -494,7 +517,7 @@ class ModerationCommands : Extension() {
 					}
 
 					dmEmbed {
-						title = "You have been banned from ${guild?.asGuild()?.name}"
+						title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
 						description = "**Reason:**\n${arguments.reason}"
 					}
 				}
@@ -604,8 +627,8 @@ class ModerationCommands : Extension() {
 							value = arguments.reason
 						}
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_GREEN
@@ -694,7 +717,14 @@ class ModerationCommands : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val messageAmount = arguments.messages
-				val textChannel = channel.asChannelOf<GuildMessageChannel>()
+				val textChannel = channel.asChannelOfOrNull<GuildMessageChannel>()
+
+				if (textChannel == null) {
+					respond {
+						content = "Could not get the channel to clear messages from."
+					}
+					return@action
+				}
 
 				// Get the specified amount of messages into an array list of Snowflakes and delete them
 				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
@@ -719,8 +749,8 @@ class ModerationCommands : Extension() {
 					title = "$messageAmount messages have been cleared."
 					description = "Action occurred in ${textChannel.mention}"
 					footer {
-						text = user.asUser().tag
-						icon = user.asUser().avatar?.url
+						text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+						icon = user.asUserOrNull()?.avatar?.url
 					}
 					color = DISCORD_BLACK
 				}
@@ -816,14 +846,14 @@ class ModerationCommands : Extension() {
 							inline = false
 						}
 						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Requested by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_BLACK
 					}
 					dmEmbed {
-						title = "Timeout removed in ${guild!!.asGuild().name}"
+						title = "Timeout removed in ${guild!!.asGuildOrNull()?.name}"
 						description = "Your timeout has been manually removed in this guild."
 					}
 				}
@@ -853,7 +883,7 @@ class ModerationCommands : Extension() {
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
-				val guildName = guild?.asGuild()?.name
+				val guildName = guild?.asGuildOrNull()?.name
 
 				isBotOrModerator(event.kord, arguments.userArgument, guild, "warn") ?: return@action
 
@@ -866,82 +896,34 @@ class ModerationCommands : Extension() {
 
 				var dm: Message? = null
 
-				when (strikes) {
-					1 -> if (arguments.dm) {
-						dm = arguments.userArgument.dm {
-							embed {
-								title = "1st warning in $guildName"
-								description = "**Reason:** ${arguments.reason}\n\n" +
-										"No moderation action has been taken. $warnSuffix"
-							}
+				if (arguments.dm) {
+					val warnText = if (config.autoPunishOnWarn == false) {
+						"No moderation action has been taken.\n $warnSuffix"
+					} else {
+						when (strikes) {
+							1 -> "No moderation action has been taken.\n $warnSuffix"
+							2 -> "You have been timed out for 3 hours.\n $warnSuffix"
+							3 -> "You have been timed out for 12 hours.\n $warnSuffix"
+							else -> "You have been timed out for 3 days.\n $warnSuffix"
 						}
 					}
 
-					2 -> {
-						if (arguments.dm) {
-							dm = arguments.userArgument.dm {
-								embed {
-									title = "2nd warning in $guildName"
-									description = "**Reason:** ${arguments.reason}\n\n" +
-											if (config.autoPunishOnWarn == true) {
-												"You have been timed out for 3 hours. $warnSuffix"
-											} else {
-											    warnSuffix
-											}
-								}
-							}
-						}
-
-						if (config.autoPunishOnWarn == true) {
-							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-								timeoutUntil = Clock.System.now().plus(Duration.parse("PT3H"))
-							}
+					dm = arguments.userArgument.dm {
+						embed {
+							title = "Warning $strikes in $guildName"
+							description = "**Reason:** ${arguments.reason}\n\n$warnText"
 						}
 					}
+				}
 
-					3 -> {
-						if (arguments.dm) {
-							dm = arguments.userArgument.dm {
-								embed {
-									title = "3rd warning in $guildName"
-									description = "**Reason:** ${arguments.reason}\n\n" +
-											if (config.autoPunishOnWarn == true) {
-												"You have been timed-out for 12 hours. $warnSuffix"
-											} else {
-											    warnSuffix
-											}
-									color = DISCORD_RED
-								}
-							}
-						}
-
-						if (config.autoPunishOnWarn == true) {
-							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-								timeoutUntil = Clock.System.now().plus(Duration.parse("PT12H"))
-							}
-						}
+				if (config.autoPunishOnWarn == true && strikes!! > 1) {
+					val duration = when (strikes) {
+						2 -> "PT3H"
+						3 -> "PT12H"
+						else -> "P3D"
 					}
-
-					else -> {
-						if (arguments.dm) {
-							dm = arguments.userArgument.dm {
-								embed {
-									title = "Warning $strikes in $guildName"
-									description = "**Reason:** ${arguments.reason}\n\n" +
-											if (config.autoPunishOnWarn == true) {
-												"You have been timed-out for 3 days. $warnSuffix"
-											} else {
-											    warnSuffix
-											}
-								}
-							}
-						}
-
-						if (config.autoPunishOnWarn == true) {
-							guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
-								timeoutUntil = Clock.System.now().plus(Duration.parse("PT3D"))
-							}
-						}
+					guild?.getMemberOrNull(arguments.userArgument.id)?.edit {
+						timeoutUntil = Clock.System.now().plus(Duration.parse(duration))
 					}
 				}
 
@@ -961,7 +943,12 @@ class ModerationCommands : Extension() {
 					}
 					if (config.autoPunishOnWarn == true && strikes != 1) {
 						embed {
-							warnTimeoutLog(strikes!!, user.asUser(), arguments.userArgument, arguments.reason)
+							warnTimeoutLog(
+								strikes!!,
+								event.interaction.user.asUserOrNull(),
+								arguments.userArgument,
+								arguments.reason
+							)
 						}
 					}
 				}

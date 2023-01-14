@@ -15,11 +15,14 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.dm
+import com.kotlindiscord.kord.extensions.utils.getTopRole
+import com.kotlindiscord.kord.extensions.utils.hasPermission
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.create.embed
@@ -89,10 +92,37 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = UtilityConfigCollection().getConfig(guildFor(event)!!.id)!!
-					val utilityLog = guild?.getChannelOf<GuildMessageChannel>(config.utilityLogChannel!!)
+					val utilityLog = guild?.getChannelOfOrNull<GuildMessageChannel>(config.utilityLogChannel!!)
 
-					val requester = user.asUser()
-					val requesterAsMember = requester.asMember(guild!!.id)
+					val requester = user.asUserOrNull()
+					val requesterAsMember = requester?.asMemberOrNull(guild!!.id)
+					val self = this@PublicUtilities.kord.getSelf().asMemberOrNull(guild!!.id)
+
+					@Suppress("UnclearPrecedenceOfBinaryExpression")
+					if (requesterAsMember?.getTopRole()?.getPosition() != null &&
+						self?.getTopRole()?.getPosition() == null
+					) {
+						respond {
+							content = "You have a role and Lily does not, so she cannot change your nickname."
+						}
+						return@action
+					} else if (requesterAsMember?.getTopRole()?.getPosition() ?: 0 >
+						self?.getTopRole()?.getPosition() ?: 0
+					) {
+						respond {
+							content = "Your highest role is above Lily's, so she cannot change your nickname."
+						}
+						return@action
+					}
+
+					if (requesterAsMember?.hasPermission(Permission.ChangeNickname) == true) {
+						requesterAsMember.edit { nickname = arguments.newNick }
+						respond {
+							content = "You have permission to change your own nickname, so I've just made the change."
+							return@action
+						}
+					}
+
 					// Declare the embed outside the action to allow us to reference it inside the action
 					var actionLogEmbed: Message? = null
 
@@ -108,13 +138,14 @@ class PublicUtilities : Extension() {
 
 									field {
 										name = "User:"
-										value = "${requester.mention}\n${requester.asUser().tag}\n${requester.id}"
+										value =
+											"${requester?.mention}\n${requester?.asUserOrNull()?.tag}\n${requester?.id}"
 										inline = false
 									}
 
 									field {
 										name = "Current Nickname:"
-										value = "`${requesterAsMember.nickname}`"
+										value = "`${requesterAsMember?.nickname}`"
 										inline = false
 									}
 
@@ -129,14 +160,35 @@ class PublicUtilities : Extension() {
 										label = "Accept"
 										style = ButtonStyle.Success
 
-										action {
-											requesterAsMember.edit { nickname = arguments.newNick }
+										action button@{
+											if (requesterAsMember?.getTopRole()?.getPosition() != null &&
+												self?.getTopRole()?.getPosition() == null
+											) {
+												respond {
+													content = "This user has a role and Lily does not, " +
+															"so she cannot change their nickname. " +
+															"Please fix Lily's permissions and try again"
+												}
+												return@button
+											} else if (requesterAsMember?.getTopRole()?.getPosition() ?: 0 >
+												self?.getTopRole()?.getPosition() ?: 0
+											) {
+												respond {
+													content = "This user's highest role is above Lily's, " +
+															"so she cannot change their nickname. " +
+															"Please fix Lily's permissions and try again."
+												}
+												return@button
+											}
 
-											requester.dm {
+											requesterAsMember?.edit { nickname = arguments.newNick }
+
+											requester?.dm {
 												embed {
-													title = "Nickname Change Accepted in ${guild!!.asGuild().name}"
+													title =
+														"Nickname Change Accepted in ${guild!!.asGuildOrNull()?.name}"
 													description =
-														"Nickname updated from `${requesterAsMember.nickname}` to " +
+														"Nickname updated from `${requesterAsMember?.nickname}` to " +
 																"`${arguments.newNick}`"
 													color = DISCORD_GREEN
 												}
@@ -151,15 +203,16 @@ class PublicUtilities : Extension() {
 
 													field {
 														name = "User:"
-														value = "${requester.mention}\n${requester.asUser().tag}\n" +
-																"${requester.id}"
+														value =
+															"${requester?.mention}\n${requester?.asUserOrNull()?.tag}\n" +
+																	"${requester?.id}"
 														inline = false
 													}
 
 													// these two fields should be the same and exist as a sanity check
 													field {
 														name = "Previous Nickname:"
-														value = "`${requesterAsMember.nickname}`"
+														value = "`${requesterAsMember?.nickname}`"
 														inline = false
 													}
 
@@ -170,8 +223,8 @@ class PublicUtilities : Extension() {
 													}
 
 													footer {
-														text = "Nickname accepted by ${user.asUser().tag}"
-														icon = user.asUser().avatar?.url
+														text = "Nickname accepted by ${user.asUserOrNull()?.tag}"
+														icon = user.asUserOrNull()?.avatar?.url
 													}
 
 													timestamp = Clock.System.now()
@@ -185,7 +238,7 @@ class PublicUtilities : Extension() {
 										style = ButtonStyle.Danger
 
 										action {
-											requester.dm {
+											requester?.dm {
 												embed {
 													title = "Nickname Request Denied"
 													description = "Moderators have reviewed your nickname request (`${
@@ -201,14 +254,14 @@ class PublicUtilities : Extension() {
 
 													field {
 														name = "User:"
-														value = "${requester.mention}\n" +
-																"${requester.asUser().tag}\n${requester.id}"
+														value = "${requester?.mention}\n" +
+																"${requester?.asUserOrNull()?.tag}\n${requester?.id}"
 														inline = false
 													}
 
 													field {
 														name = "Current Nickname:"
-														value = "`${requesterAsMember.nickname}`"
+														value = "`${requesterAsMember?.nickname}`"
 														inline = false
 													}
 
@@ -219,8 +272,8 @@ class PublicUtilities : Extension() {
 													}
 
 													footer {
-														text = "Nickname denied by ${user.asUser().tag}"
-														icon = user.asUser().avatar?.url
+														text = "Nickname denied by ${user.asUserOrNull()?.tag}"
+														icon = user.asUserOrNull()?.avatar?.url
 													}
 
 													timestamp = Clock.System.now()
@@ -253,7 +306,7 @@ class PublicUtilities : Extension() {
 
 				action {
 					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
-					val utilityLog = guild?.getChannelOf<GuildMessageChannel>(config.utilityLogChannel!!)
+					val utilityLog = guild?.getChannelOfOrNull<GuildMessageChannel>(config.utilityLogChannel!!)
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {
@@ -271,13 +324,13 @@ class PublicUtilities : Extension() {
 
 							field {
 								name = "User:"
-								value = "${user.mention}\n${user.asUser().tag}\n${user.id}"
+								value = "${user.mention}\n${user.asUserOrNull()?.tag}\n${user.id}"
 								inline = false
 							}
 
 							field {
 								name = "New Nickname:"
-								value = "Nickname changed from `${user.asMember(guild!!.id).nickname}` to `null`"
+								value = "Nickname changed from `${user.asMemberOrNull(guild!!.id)?.nickname}` to `null`"
 								inline = false
 							}
 						}
@@ -289,7 +342,7 @@ class PublicUtilities : Extension() {
 						}
 						return@action
 					}
-					user.asMember(guild!!.id).edit { nickname = null }
+					user.asMemberOrNull(guild!!.id)?.edit { nickname = null }
 				}
 			}
 		}

@@ -10,7 +10,7 @@ import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageUpdateEvent
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageUpdateEvent
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
@@ -41,8 +41,8 @@ class MessageEdit : Extension() {
 				anyGuild()
 				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
-					val message = event.message.asMessage()
-					message.author?.isBot == true || event.old?.content == message.content
+					val message = event.message.asMessageOrNull()
+					message?.author?.isBot == true || event.old?.content == message?.content
 				}
 			}
 			action {
@@ -60,7 +60,7 @@ class MessageEdit : Extension() {
 				anyGuild()
 				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
-					event.old?.content == event.message.asMessage().content
+					event.old?.content == event.message.asMessageOrNull()?.content
 				}
 			}
 			action {
@@ -92,7 +92,8 @@ class MessageEdit : Extension() {
 				}
 				description =
 					"Location: ${message.channel.mention} " +
-							"(${message.channel.asChannelOf<GuildMessageChannel>().name})"
+							"(${message.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
+								?: "Could not get channel name"})"
 				timestamp = Clock.System.now()
 
 				field {

@@ -7,6 +7,7 @@ package org.hyacinthbots.lilybot.extensions.config
  */
 enum class ConfigType {
 	/** The entry for the support config. */
+	@Deprecated("Support configuration is deprecated and will be removed in a future update.")
 	SUPPORT,
 
 	/** The entry for the moderation config. */
