@@ -7,7 +7,7 @@ kmongo = "4.7.2"
 detekt = "1.22.0"
 cozy-welcome = "1.0-SNAPSHOT"
 dma = "main-SNAPSHOT"
-docgenerator = "b42cf77227"
+docgenerator = "0.1.0"
 
 [libraries]
 kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
