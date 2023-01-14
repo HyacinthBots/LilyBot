@@ -1,4 +1,3 @@
-
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileOutputStream
 import java.util.*
@@ -73,8 +72,8 @@ dependencies {
     // KMongo
     implementation(libs.kmongo)
 
-	// Cozy's welcome module
-	implementation(libs.cozy.welcome)
+	  // Cozy's welcome module
+	  implementation(libs.cozy.welcome)
 
     implementation(libs.dma)
     implementation(libs.docgenerator)

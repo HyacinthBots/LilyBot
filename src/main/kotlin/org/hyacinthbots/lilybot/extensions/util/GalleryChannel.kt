@@ -62,7 +62,7 @@ class GalleryChannel : Extension() {
 
 				action {
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
-						if (channel.asChannel().id == it.channelId) {
+						if (channel.asChannelOrNull()?.id == it.channelId) {
 							respond {
 								content = "This channel is already a gallery channel!"
 							}
@@ -70,7 +70,7 @@ class GalleryChannel : Extension() {
 						}
 					}
 
-					GalleryChannelCollection().setChannel(guild!!.id, channel.asChannel().id)
+					GalleryChannelCollection().setChannel(guild!!.id, channel.asChannelOrNull()!!.id)
 
 					respond {
 						content = "Set channel as gallery channel."
@@ -82,8 +82,8 @@ class GalleryChannel : Extension() {
 						title = "New Gallery channel"
 						description = "${channel.mention} was added as a Gallery channel"
 						footer {
-							text = "Requested by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Requested by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						color = DISCORD_GREEN
 					}
@@ -110,8 +110,8 @@ class GalleryChannel : Extension() {
 					var channelFound = false
 
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
-						if (channel.asChannel().id == it.channelId) {
-							GalleryChannelCollection().removeChannel(guild!!.id, channel.asChannel().id)
+						if (channel.asChannelOrNull()?.id == it.channelId) {
+							GalleryChannelCollection().removeChannel(guild!!.id, channel.asChannelOrNull()!!.id)
 							channelFound = true
 						}
 					}
@@ -127,8 +127,8 @@ class GalleryChannel : Extension() {
 							title = "Removed Gallery channel"
 							description = "${channel.mention} was removed as a Gallery channel"
 							footer {
-								text = "Requested by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
+								text = "Requested by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 							color = DISCORD_RED
 						}

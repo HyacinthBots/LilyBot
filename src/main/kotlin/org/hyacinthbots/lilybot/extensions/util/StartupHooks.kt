@@ -10,10 +10,12 @@ import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.NewsChannel
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.Cleanups
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
+import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
@@ -69,6 +71,34 @@ class StartupHooks : Extension() {
 					description =
 						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
 					color = DISCORD_GREEN
+				}
+
+				/**
+				 * Fill in data for threads missing a parentId.
+				 * @author tempest15
+				 * @since v4.6.0
+				 */
+				ThreadsCollection().getAllThreads().forEach {
+					if (it.guildId == null) {
+						ThreadsCollection().removeThread(it.threadId)
+						return@forEach
+					}
+					val guild = kord.getGuildOrNull(it.guildId) ?: run {
+						ThreadsCollection().removeThread(it.threadId)
+						return@forEach
+					}
+					val threadChannel = guild.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: run {
+						ThreadsCollection().removeThread(it.threadId)
+						return@forEach
+					}
+
+					ThreadsCollection().setThreadOwner(
+						inputGuildId = it.guildId,
+						inputThreadId = it.threadId,
+						newOwnerId = it.ownerId,
+						parentChannelId = threadChannel.parentId,
+						preventArchiving = it.preventArchiving
+					)
 				}
 			}
 		}

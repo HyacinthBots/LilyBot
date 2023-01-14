@@ -73,7 +73,7 @@ class ThreadControl : Extension() {
 						}
 					}
 
-					val member = user.asMember(guild!!.id)
+					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
 
 					threadChannel.edit {
@@ -106,32 +106,32 @@ class ThreadControl : Extension() {
 						}
 					}
 
-					val member = user.asMember(guild!!.id)
+					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
 
 					ThreadsCollection().getAllThreads().forEach {
 						if (it.threadId == threadChannel.id) {
 							val preventingArchiving = ThreadsCollection().getThread(it.threadId)?.preventArchiving
 							ThreadsCollection().removeThread(it.threadId)
-							ThreadsCollection().setThreadOwner(it.guildId, it.threadId, it.ownerId, false)
+							ThreadsCollection().setThreadOwner(it.guildId, it.threadId, it.ownerId, it.parentChannelId)
 							if (preventingArchiving == true) {
 								guild!!.getChannelOfOrNull<GuildMessageChannel>(
 									ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!
 								)?.createEmbed {
-										title = "Thread archive prevention disabled"
-										description =
-											"Archive prevention has been disabled, as `/thread archive` was used."
-										color = DISCORD_FUCHSIA
+									title = "Thread archive prevention disabled"
+									description =
+										"Archive prevention has been disabled, as `/thread archive` was used."
+									color = DISCORD_FUCHSIA
 
-										field {
-											name = "User"
-											value = user.asUser().tag
-										}
-										field {
-											name = "Thread"
-											value = "${threadChannel.mention} ${threadChannel.name}"
-										}
+									field {
+										name = "User"
+										value = user.asUserOrNull()?.tag ?: "Unable to get user tag"
 									}
+									field {
+										name = "Thread"
+										value = "${threadChannel.mention} ${threadChannel.name}"
+									}
+								}
 							}
 						}
 					}
@@ -145,7 +145,7 @@ class ThreadControl : Extension() {
 						this.archived = true
 						this.locked = arguments.lock && member.hasPermission(Permission.ModerateMembers)
 
-						reason = "Archived by ${user.asUser().tag}"
+						reason = "Archived by ${user.asUserOrNull()?.tag}"
 					}
 
 					respond {
@@ -176,7 +176,7 @@ class ThreadControl : Extension() {
 							return@action
 						}
 					}
-					val member = user.asMember(guild!!.id)
+					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 
 					val oldOwnerId = ThreadsCollection().getThread(threadChannel!!.id)?.ownerId ?: threadChannel.ownerId
 					val oldOwner = guild!!.getMemberOrNull(oldOwnerId)
@@ -193,7 +193,7 @@ class ThreadControl : Extension() {
 						return@action
 					}
 
-					ThreadsCollection().setThreadOwner(guild!!.id, threadChannel.id, arguments.newOwner.id)
+					ThreadsCollection().setThreadOwner(guild!!.id, threadChannel.id, arguments.newOwner.id, threadChannel.parentId)
 
 					respond { content = "Ownership transferred." }
 
@@ -248,7 +248,7 @@ class ThreadControl : Extension() {
 							return@action
 						}
 					}
-					val member = user.asMember(guild!!.id)
+					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
 
 					if (threadChannel.isArchived) {
@@ -262,7 +262,12 @@ class ThreadControl : Extension() {
 					var message: EphemeralMessageInteractionResponse? = null
 					var thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					if (thread == null) {
-						ThreadsCollection().setThreadOwner(threadChannel.guildId, threadChannel.id, threadChannel.ownerId, false)
+						ThreadsCollection().setThreadOwner(
+							threadChannel.guildId,
+							threadChannel.id,
+							threadChannel.ownerId,
+							threadChannel.parentId
+						)
 						thread = threads.firstOrNull { it.threadId == threadChannel.id }
 					}
 					if (thread?.preventArchiving == true) {
@@ -275,7 +280,7 @@ class ThreadControl : Extension() {
 									style = ButtonStyle.Primary
 
 									action button@{
-										ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, false)
+										ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, threadChannel.parentId)
 										edit { content = "Thread archiving will no longer be prevented" }
 										val utilityLog = getLoggingChannelWithPerms(
 											ConfigOptions.UTILITY_LOG,
@@ -288,7 +293,7 @@ class ThreadControl : Extension() {
 
 												field {
 													name = "User"
-													value = user.asUser().tag
+													value = user.asUserOrNull()?.tag ?: "Unable to get user tag"
 												}
 												field {
 													name = "Thread"
@@ -312,7 +317,7 @@ class ThreadControl : Extension() {
 						}
 						return@action
 					} else if (thread?.preventArchiving == false) {
-						ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, true)
+						ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, threadChannel.parentId)
 						try {
 							val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 								?: return@action
@@ -323,7 +328,7 @@ class ThreadControl : Extension() {
 
 									field {
 										name = "User"
-										value = user.asUser().tag
+										value = user.asUserOrNull()?.tag ?: "Unable to get user tag"
 									}
 									field {
 										name = "Thread"

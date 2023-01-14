@@ -2,7 +2,8 @@
 
 <img src="docs/lily-logo-transparent.png" alt="The LilyBot Logo" style="width: 128px"/>
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/HyacinthBots/LilyBot/Build%20Only?label=Build%20Only) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/HyacinthBots/LilyBot/Build%20&%20Deploy?label=Build%20and%20Deploy)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/HyacinthBots/LilyBot/main.yml?label=Build%20Main)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/HyacinthBots/LilyBot/gradle.yml?label=Build%20Develop)
 
 ![GitHub issues](https://img.shields.io/github/issues/HyacinthBots/LilyBot?label=Issues) ![GitHub pull requests](https://img.shields.io/github/issues-pr/HyacinthBots/LilyBot?label=Pull%20Requests)
 

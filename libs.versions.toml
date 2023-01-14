@@ -1,9 +1,9 @@
 [versions]
-kord-extensions = "1.5.6-20221216.114038-3"
+kord-extensions = "1.5.6-20230102.101158-6"
 logging = "3.0.4"
 logback = "1.4.5"
 github-api = "1.313"
-kmongo = "4.7.2"
+kmongo = "4.8.0"
 detekt = "1.22.0"
 cozy-welcome = "1.0-SNAPSHOT"
 dma = "main-SNAPSHOT"

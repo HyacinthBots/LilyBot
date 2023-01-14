@@ -67,6 +67,11 @@ data class ModerationConfigData(
  * @property message The support message as a string, nullable
  * @since 4.0.0
  */
+@Deprecated(
+	"Replace with AutoThreading data",
+	ReplaceWith("AutoThreadingData", "org.hyacinthbots.lilybot.database.entities.AutoThreadingData"),
+	DeprecationLevel.WARNING
+)
 @Serializable
 data class SupportConfigData(
 	val guildId: Snowflake,

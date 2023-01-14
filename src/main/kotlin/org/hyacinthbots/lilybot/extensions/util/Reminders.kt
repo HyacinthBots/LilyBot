@@ -175,7 +175,7 @@ class Reminders : Extension() {
 							setTime,
 							user.id,
 							channel.id,
-							reminderEmbed.message.asMessage().id,
+							reminderEmbed.message.asMessageOrNull().id,
 							arguments.dm,
 							arguments.customMessage,
 							arguments.repeating,
@@ -415,9 +415,9 @@ class Reminders : Extension() {
 					if (reminders.isEmpty()) {
 						respond {
 							content = when (arguments.type) {
-								"all" -> "${user.asUser().username} does not have any reminders for this guild!"
-								"repeating" -> "${user.asUser().username} does not have any repeating reminders for this guild"
-								"non-repeating" -> "${user.asUser().username} does not have any regular reminders for this guild"
+								"all" -> "${user.asUserOrNull()?.username} does not have any reminders for this guild!"
+								"repeating" -> "${user.asUserOrNull()?.username} does not have any repeating reminders for this guild"
+								"non-repeating" -> "${user.asUserOrNull()?.username} does not have any regular reminders for this guild"
 								// This is impossible but the compiler complains otherwise
 								else -> "You do not have any reminders for this guild"
 							}
@@ -602,7 +602,7 @@ class Reminders : Extension() {
 						if (wasCancelled) {
 							"cancelled ${if (byModerator) "by moderator" else ""}."
 						} else {
-						    "completed."
+							"completed."
 						}
 					}**"
 		}
@@ -647,7 +647,7 @@ class Reminders : Extension() {
 
 				pagesObj.addPage(
 					Page {
-						title = "Reminders for ${guildFor(event)?.asGuild()?.name ?: "this guild"}"
+						title = "Reminders for ${guildFor(event)?.asGuildOrNull()?.name ?: "this guild"}"
 						description = response
 					}
 				)
