@@ -448,7 +448,7 @@ class AutoThreading : Extension() {
 				val lastMessageTimestamp = previousUserThread.lastMessage?.asMessageOrNull()?.timestamp
 
 				@Suppress("UnnecessaryParentheses") // Shut up
-				if ((Clock.System.now() - lastMessageTimestamp!!) > archiveDuration) {
+				if ((Clock.System.now() - (lastMessageTimestamp ?: Clock.System.now())) > archiveDuration) {
 					val response = event.message.respond {
 						content = "Please use your existing thread in this channel ${previousUserThread.mention}"
 					}
