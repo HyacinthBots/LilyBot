@@ -17,11 +17,12 @@ suspend fun mainV5(db: CoroutineDatabase, configDb: CoroutineDatabase) {
 	}
 
 	with(configDb.getCollection<SupportConfigData>()) {
-		find().toList().forEach {
+		for (it in find().toList()) {
+			if (it.channel == null) continue
 			db.getCollection<AutoThreadingData>().insertOne(
 				AutoThreadingData(
 					it.guildId,
-					it.channel!!,
+					it.channel,
 					it.role,
 					preventDuplicates = true,
 					archive = false,
