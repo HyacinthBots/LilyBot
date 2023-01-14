@@ -1,5 +1,6 @@
 package org.hyacinthbots.lilybot.extensions.config
 
+import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.event.guild.GuildCreateEvent
@@ -25,7 +26,10 @@ class GuildLogging : Extension() {
 		 */
 		event<GuildDeleteEvent> {
 			action {
-				GuildLeaveTimeCollection().setLeaveTime(event.guildId, Clock.System.now())
+				val guildId = guildFor(event)?.asGuildOrNull()?.id
+				if (guildId != null) {
+					GuildLeaveTimeCollection().setLeaveTime(guildId, Clock.System.now())
+				}
 			}
 		}
 
@@ -37,7 +41,10 @@ class GuildLogging : Extension() {
 		 */
 		event<GuildCreateEvent> {
 			action {
-				GuildLeaveTimeCollection().removeLeaveTime(event.guild.id)
+				val guildId = guildFor(event)?.asGuildOrNull()?.id
+				if (guildId != null) {
+					GuildLeaveTimeCollection().removeLeaveTime(guildId)
+				}
 			}
 		}
 	}
