@@ -9,7 +9,7 @@ import org.litote.kmongo.setValue
 
 @Suppress("UnusedPrivateMember")
 suspend fun mainV5(db: CoroutineDatabase, configDb: CoroutineDatabase) {
-	db.createCollection("autoThreadingData")
+	// db.createCollection("autoThreadingData")
 
 	with(db.getCollection<ThreadData>()) {
 		updateMany(ThreadData::parentChannelId exists false, setValue(ThreadData::parentChannelId, null))
