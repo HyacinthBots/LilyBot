@@ -31,6 +31,11 @@ repositories {
         url = uri("https://oss.sonatype.org/content/repositories/snapshots")
     }
 
+	maven {
+		name = "Sonatype Snapshots S01"
+		url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+	}
+
     maven {
         name = "Fabric"
         url = uri("https://maven.fabricmc.net/")

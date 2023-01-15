@@ -6,7 +6,7 @@ import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.rest.builder.message.EmbedBuilder
-import io.github.nocomment1105.discordmoderationactions.enums.DmResult
+import org.hyacinthbots.discordmoderationactions.enums.DmResult
 
 /**
  * This is the base moderation embed for all moderation actions. This should be posted to the action log of a guild.
