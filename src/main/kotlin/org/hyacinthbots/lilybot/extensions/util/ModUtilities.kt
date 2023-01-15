@@ -67,6 +67,7 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.trimmedContents
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
+import java.util.concurrent.CancellationException
 
 /**
  * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
@@ -450,8 +451,9 @@ class ModUtilities : Extension() {
 								}
 
 								guild!!.getChannelOfOrNull<GuildMessageChannel>(
-									ModerationConfigCollection().getConfig(guild!!.id)?.channel ?: guild!!.asGuildOrNull()
-										?.getSystemChannel()!!.id
+									ModerationConfigCollection().getConfig(guild!!.id)?.channel
+										?: guild!!.asGuildOrNull()
+											?.getSystemChannel()!!.id
 								)?.createMessage {
 									embed {
 										title = "Database Reset!"
@@ -503,7 +505,11 @@ class ModUtilities : Extension() {
 		 */
 		event<GuildCreateEvent> {
 			action {
-				updateDefaultPresence()
+				try {
+					updateDefaultPresence()
+				} catch (_: CancellationException) {
+				} catch (_: KtorRequestException) {
+				}
 			}
 		}
 
@@ -514,8 +520,10 @@ class ModUtilities : Extension() {
 		 * @since 3.4.5
 		 */
 		event<GuildDeleteEvent> {
-			action {
+			try {
 				updateDefaultPresence()
+			} catch (_: CancellationException) {
+			} catch (_: KtorRequestException) {
 			}
 		}
 	}
