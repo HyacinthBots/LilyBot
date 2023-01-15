@@ -16,7 +16,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "4.6.0"
+version = "4.6.1"
 
 repositories {
     mavenCentral()
@@ -30,6 +30,11 @@ repositories {
         name = "Sonatype Snapshots"
         url = uri("https://oss.sonatype.org/content/repositories/snapshots")
     }
+
+	maven {
+		name = "Sonatype Snapshots S01"
+		url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+	}
 
     maven {
         name = "Fabric"
