@@ -25,15 +25,19 @@ class StatusPing : Extension() {
 	private val logger = KotlinLogging.logger("Status ping")
 
 	override suspend fun setup() {
-		task = scheduler.schedule(30.seconds, repeat = true, callback = ::post)
+		if (env != null) {
+			task = scheduler.schedule(30.seconds, repeat = true, callback = ::post)
+		}
 	}
 
 	private suspend fun post() {
+		logger.debug { "POST FUNCTION" }
 		if (kord.getSelf().asMemberOrNull(TEST_GUILD_ID)
-				?.getPresenceOrNull()?.status == PresenceStatus.Online && env != null
+				?.getPresenceOrNull()?.status == PresenceStatus.Online
 		) {
 			logger.debug { "Pinging!" }
-			client.post(env)
+			client.post(env!!)
 		}
+		logger.debug { "POST FUNCTION END" }
 	}
 }
