@@ -31,7 +31,9 @@ class ModThreadInviting : Extension() {
 
 				val channel = event.channel
 
-				if (AutoThreadingCollection().getSingleAutoThread(channel.id) != null) return@action
+				AutoThreadingCollection().getAllAutoThreads(channel.guildId).forEach {
+					if (it.channelId == channel.parentId) return@action
+				}
 
 				val config = ModerationConfigCollection().getConfig(channel.guildId) ?: return@action
 

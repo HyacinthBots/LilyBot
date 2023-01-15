@@ -1,6 +1,5 @@
 package org.hyacinthbots.lilybot.database.migrations.main
 
-import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
 import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.litote.kmongo.coroutine.CoroutineDatabase
@@ -19,18 +18,19 @@ suspend fun mainV5(db: CoroutineDatabase, configDb: CoroutineDatabase) {
 	with(configDb.getCollection<SupportConfigData>()) {
 		for (it in find().toList()) {
 			if (it.channel == null) continue
-			db.getCollection<AutoThreadingData>().insertOne(
-				AutoThreadingData(
-					it.guildId,
-					it.channel,
-					it.role,
-					preventDuplicates = true,
-					archive = false,
-					contentAwareNaming = false,
-					mention = true,
-					it.message
-				)
-			)
+			// THIS MIGRATION IS COMPLETE. AWAY WITH THIS CODE IS FINE
+// 			db.getCollection<AutoThreadingData>().insertOne(
+// 				AutoThreadingData(
+// 					it.guildId,
+// 					it.channel,
+// 					it.role,
+// 					preventDuplicates = true,
+// 					archive = false,
+// 					contentAwareNaming = false,
+// 					mention = true,
+// 					it.message
+// 				)
+// 			)
 			configDb.getCollection<SupportConfigData>().deleteOne(SupportConfigData::guildId eq it.guildId)
 		}
 	}
