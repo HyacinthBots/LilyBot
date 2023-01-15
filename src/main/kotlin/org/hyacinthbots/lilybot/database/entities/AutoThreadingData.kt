@@ -14,6 +14,7 @@ import kotlinx.serialization.Serializable
  * @property contentAwareNaming If the threads should use a content-aware naming scheme
  * @property mention If the user who created the thread should be welcomed in the first message
  * @property creationMessage The message to send in the thread when it is created
+ * @property addModsAndRole Whether to add the moderators to the thread alongside the [roleId]
  *
  * @since 4.6.0
  */
@@ -26,5 +27,6 @@ data class AutoThreadingData(
 	val archive: Boolean,
 	val contentAwareNaming: Boolean,
 	val mention: Boolean,
-	val creationMessage: String?
+	val creationMessage: String?,
+	val addModsAndRole: Boolean
 )

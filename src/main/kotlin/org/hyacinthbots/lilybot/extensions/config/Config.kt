@@ -38,7 +38,6 @@ import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.database.entities.PublicMemberLogData
-import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.hyacinthbots.lilybot.utils.canPingRole
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
@@ -82,7 +81,8 @@ class Config : Extension() {
 					}
 
 					if (!arguments.enable) {
-						SupportConfigCollection().setConfig(SupportConfigData(guild!!.id, false, null, null, null))
+						// We don't want this getting set because it doesn't get used
+						// SupportConfigCollection().setConfig(SupportConfigData(guild!!.id, false, null, null, null))
 						ackEphemeral()
 						respondEphemeral {
 							content = "Support system disabled.\n$deprecationNotice"
@@ -169,7 +169,8 @@ class Config : Extension() {
 								archive = false,
 								contentAwareNaming = false,
 								mention = true,
-								creationMessage = modalObj.msgInput.value!!
+								creationMessage = modalObj.msgInput.value!!,
+								addModsAndRole = false
 							)
 						)
 					} else {
@@ -193,7 +194,8 @@ class Config : Extension() {
 								archive = false,
 								contentAwareNaming = false,
 								mention = true,
-								creationMessage = null
+								creationMessage = null,
+								addModsAndRole = false
 							)
 						)
 					}

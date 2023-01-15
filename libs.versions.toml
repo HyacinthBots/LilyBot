@@ -22,4 +22,4 @@ kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.
 detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
 cozy-welcome = {module = "org.quiltmc.community:module-welcome", version.ref = "cozy-welcome"}
 dma = { module = "com.github.nocomment1105:discord-moderation-actions", version.ref = "dma"}
-docgenerator = { module = "com.github.hyacinthbots:doc-generator", version.ref = "docgenerator" }
+docgenerator = { module = "org.hyacinthbots:doc-generator", version.ref = "docgenerator" }

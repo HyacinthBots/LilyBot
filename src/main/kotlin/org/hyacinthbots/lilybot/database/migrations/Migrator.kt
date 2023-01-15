@@ -25,6 +25,7 @@ import org.hyacinthbots.lilybot.database.migrations.main.mainV2
 import org.hyacinthbots.lilybot.database.migrations.main.mainV3
 import org.hyacinthbots.lilybot.database.migrations.main.mainV4
 import org.hyacinthbots.lilybot.database.migrations.main.mainV5
+import org.hyacinthbots.lilybot.database.migrations.main.mainV6
 import org.koin.core.component.inject
 
 object Migrator : KordExKoinComponent {
@@ -60,6 +61,7 @@ object Migrator : KordExKoinComponent {
 					3 -> ::mainV3
 					4 -> ::mainV4
 					5 -> ::mainV5
+					6 -> ::mainV6
 					else -> break
 				}(db.mainDatabase, db.configDatabase)
 

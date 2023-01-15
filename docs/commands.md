@@ -1,7 +1,7 @@
 ## Slash Commands
 
 #### Command name: `config support`
-**Description**: Configure Lily's support system
+**Description**: Deprecated: Configure Lily's support system
 Required Member Permissions: Manage Server
 
 * **Arguments**:
@@ -537,6 +537,31 @@ None
 ---
 #### Command name: `thread prevent-archiving`
 **Description**: Stop a thread from being archived
+
+* **Arguments**:
+None
+---
+#### Command name: `auto-threading enable`
+**Description**: Automatically create a thread for each message sent in this channel.
+
+* **Arguments**:
+	* `role` - The role, if any, to invite to threads created in this channel. - Optional Role
+	* `add-mods-and-role` - Whether to add moderators to the thread alongside the role - Defaulting Boolean
+	* `prevent-duplicates` - If users should be stopped from having multiple open threads in this channel. Default false. - Defaulting Boolean
+	* `archive` - If threads should be archived on creation to avoid filling the sidebar. Default false. - Defaulting Boolean
+	* `content-aware-naming` - If Lily should use content-aware thread titles. Default false - Defaulting Boolean
+	* `mention` - If the creator should be mentioned in new threads in this channel. Default false. - Defaulting Boolean
+	* `message` - Whether to send a custom message on thread creation or not. Default false. - Defaulting Boolean
+
+---
+#### Command name: `auto-threading disable`
+**Description**: Stop automatically creating threads in this channel.
+
+* **Arguments**:
+None
+---
+#### Command name: `auto-threading list`
+**Description**: List all the auto-threaded channels in this server, if any.
 
 * **Arguments**:
 None

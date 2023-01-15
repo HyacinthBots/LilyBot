@@ -40,6 +40,7 @@ import dev.kord.core.entity.Role
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.create.embed
@@ -131,7 +132,8 @@ class AutoThreading : Extension() {
 							archive = arguments.archive,
 							contentAwareNaming = arguments.contentAwareNaming,
 							mention = arguments.mention,
-							creationMessage = message
+							creationMessage = message,
+							addModsAndRole = arguments.addModsAndRole
 						)
 					)
 
@@ -352,6 +354,12 @@ class AutoThreading : Extension() {
 			description = "The role, if any, to invite to threads created in this channel."
 		}
 
+		val addModsAndRole by defaultingBoolean {
+			name = "add-mods-and-role"
+			description = "Whether to add moderators to the thread alongside the role"
+			defaultValue = false
+		}
+
 		val preventDuplicates by defaultingBoolean {
 			name = "prevent-duplicates"
 			description = "If users should be stopped from having multiple open threads in this channel. Default false."
@@ -435,27 +443,28 @@ class AutoThreading : Extension() {
 		}
 
 		if (options.preventDuplicates) {
-			var previousUserThread: TextChannelThread? = null
+			var previousThreadExists = false
+			var previousUserThread: ThreadChannel? = null
 			val ownerThreads = ThreadsCollection().getOwnerThreads(authorId)
 
-			val threadData = ownerThreads.find { it.parentChannelId == channel.id }
-			if (threadData != null) {
-				previousUserThread = event.getGuild().getChannelOfOrNull(threadData.threadId)
+			ownerThreads.forEach {
+				val thread = event.guild?.getChannelOfOrNull<ThreadChannel>(it.threadId)
+				if (thread == null) {
+					ThreadsCollection().removeThread(it.threadId)
+				} else if (thread.parentId == channel.id && !thread.isArchived) {
+					previousThreadExists = true
+					previousUserThread = thread
+				}
 			}
 
-			if (previousUserThread != null) {
-				val archiveDuration = previousUserThread.autoArchiveDuration.duration
-				val lastMessageTimestamp = previousUserThread.lastMessage?.asMessageOrNull()?.timestamp
-
-				@Suppress("UnnecessaryParentheses") // Shut up
-				if ((Clock.System.now() - (lastMessageTimestamp ?: Clock.System.now())) > archiveDuration) {
-					val response = event.message.respond {
-						content = "Please use your existing thread in this channel ${previousUserThread.mention}"
-					}
-					event.message.delete("User already has a thread")
-					response.delete(10000L, false)
-					return
+			if (previousThreadExists) {
+				val response = event.message.respond {
+					// There is a not-null call because the compiler knows it's not null if the boolean is true.
+					content = "Please use your existing thread in this channel ${previousUserThread!!.mention}"
 				}
+				event.message.delete("User already has a thread")
+				response.delete(10000L, false)
+				return
 			}
 		}
 
@@ -489,7 +498,7 @@ class AutoThreading : Extension() {
 				moderatorRole = inputThread.guild.getRole(moderatorRoleId)
 			}
 
-			if (moderatorRole != null && moderatorRole.mentionable) {
+			if (moderatorRole != null && moderatorRole.mentionable && inputOptions.addModsAndRole) {
 				threadMessage.edit {
 					content = role.mention + moderatorRole.mention
 				}
