@@ -493,10 +493,10 @@ class RoleMenu : Extension() {
 									return@SelectMenu
 								}
 
-								val rolesToAdd = if (userRoles?.isNotEmpty() == true) {
+								val rolesToAdd = if (userRoles != null) {
 									selectedRoles.filterNot { it in userRoles }
 								} else {
-									listOf()
+									emptyList()
 								}
 								val rolesToRemove = userRoles?.filterNot { it in selectedRoles }
 
