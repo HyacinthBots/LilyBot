@@ -507,8 +507,12 @@ class ModUtilities : Extension() {
 			action {
 				try {
 					updateDefaultPresence()
+				} catch (_: UninitializedPropertyAccessException) {
+					return@action
 				} catch (_: CancellationException) {
+					return@action
 				} catch (_: KtorRequestException) {
+					return@action
 				}
 			}
 		}
@@ -520,10 +524,16 @@ class ModUtilities : Extension() {
 		 * @since 3.4.5
 		 */
 		event<GuildDeleteEvent> {
-			try {
-				updateDefaultPresence()
-			} catch (_: CancellationException) {
-			} catch (_: KtorRequestException) {
+			action {
+				try {
+					updateDefaultPresence()
+				} catch (_: UninitializedPropertyAccessException) {
+					return@action
+				} catch (_: CancellationException) {
+					return@action
+				} catch (_: KtorRequestException) {
+					return@action
+				}
 			}
 		}
 	}
