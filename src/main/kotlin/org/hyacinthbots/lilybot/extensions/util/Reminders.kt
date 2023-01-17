@@ -498,11 +498,12 @@ class Reminders : Extension() {
 			reminders.filter { it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0 }
 
 		for (it in dueReminders) {
-			var guild: Guild? = null
+			var guild: Guild?
 			try {
 				guild = kord.getGuildOrNull(it.guildId)
 			} catch (_: KtorRequestException) {
 				ReminderCollection().removeReminder(it.id)
+				continue
 			}
 
 			if (guild == null) {
@@ -533,7 +534,7 @@ class Reminders : Extension() {
 					content = guild.getMemberOrNull(it.userId)?.mention
 					reminderEmbed(it)
 				}
-				markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, false)
+				markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, false, it.repeating)
 			}
 
 			if (it.repeating) {
@@ -581,6 +582,7 @@ class Reminders : Extension() {
 	 * @param channelId THe ID of the channel the reminder was in
 	 * @param messageId The ID of the message for the reminder
 	 * @param wasCancelled Whether the reminder was cancelled or not
+	 * @param isRepeating Whether this was a repeating reminder or not. Leave null if irrelevant in the context
 	 * @param byModerator Whether the reminder was cancelled by a moderator, defaults false
 	 *
 	 * @author NoComment1105
@@ -591,8 +593,10 @@ class Reminders : Extension() {
 		channelId: Snowflake,
 		messageId: Snowflake,
 		wasCancelled: Boolean,
+		isRepeating: Boolean? = null,
 		byModerator: Boolean = false
 	) {
+		if (isRepeating == true) return
 		val guild = kord.getGuildOrNull(guildId) ?: return
 		val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return
 		val message = channel.getMessageOrNull(messageId) ?: return
