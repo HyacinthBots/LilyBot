@@ -82,4 +82,3 @@ echo "Cleaning up"
     echo "Unable to clean working repository. The files will remain on this system."
     echo "If this is a GitHub actions runner, you can safely ignore this message."
 }
-
