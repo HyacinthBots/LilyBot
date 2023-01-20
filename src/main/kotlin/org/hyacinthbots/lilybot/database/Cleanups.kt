@@ -62,16 +62,16 @@ object Cleanups : KordExKoinComponent {
 
 			if (leaveDuration.inWholeDays > 30) {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
-				ModerationConfigCollection().clearConfig(it.guildId)
-				SupportConfigCollection().clearConfig(it.guildId)
+				GithubCollection().removeDefaultRepo(it.guildId)
 				LoggingConfigCollection().clearConfig(it.guildId)
-				UtilityConfigCollection().clearConfig(it.guildId)
+				ModerationConfigCollection().clearConfig(it.guildId)
+				ReminderCollection().removeGuildReminders(it.guildId)
+				RoleMenuCollection().removeAllRoleMenus(it.guildId)
+				SupportConfigCollection().clearConfig(it.guildId)
 				TagsCollection().clearTags(it.guildId)
+				UtilityConfigCollection().clearConfig(it.guildId)
 				WarnCollection().clearWarns(it.guildId)
 				WelcomeChannelCollection().removeWelcomeChannelsForGuild(it.guildId, kord)
-				RoleMenuCollection().removeAllRoleMenus(it.guildId)
-				ReminderCollection().removeGuildReminders(it.guildId)
-				GithubCollection().removeDefaultRepo(it.guildId)
 				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
 			}
