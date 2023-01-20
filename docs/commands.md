@@ -353,6 +353,20 @@ Required Member Permissions: Manage Server
 	* `channel` - The channel to stop auto-publishing for - Channel
 
 ---
+#### Command name: `news-publishing list`
+**Description**: List Auto-publishing channels
+Required Member Permissions: Manage Server
+
+* **Arguments**:
+None
+---
+#### Command name: `news-publishing remove-all`
+**Description**: Remove all auto-publishing channels for this guild
+Required Member Permissions: Manage Server
+
+* **Arguments**:
+None
+---
 ### Command name: `ping`
 Description: Am I alive?
 

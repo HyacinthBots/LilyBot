@@ -11,7 +11,11 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.pagination.EphemeralResponsePaginator
+import com.kotlindiscord.kord.extensions.pagination.pages.Page
+import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.common.Locale
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -123,6 +127,13 @@ class NewsChannelPublishing : Extension() {
 				}
 
 				action {
+					if (NewsChannelPublishingCollection().getAutoPublishingChannel(guild!!.id, arguments.channel.id) == null) {
+						respond {
+							content = "**Error:** ${arguments.channel.mention} does not automatically publish messages!"
+						}
+						return@action
+					}
+
 					NewsChannelPublishingCollection().removeAutoPublishingChannel(guild!!.id, arguments.channel.id)
 
 					respond {
@@ -141,6 +152,81 @@ class NewsChannelPublishing : Extension() {
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_YELLOW
+					}
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "list"
+				description = "List Auto-publishing channels"
+
+				requirePermission(Permission.ManageGuild)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageGuild)
+				}
+
+				action {
+					val pagesObj = Pages()
+					val channelsData = NewsChannelPublishingCollection().getAutoPublishingChannels(guild!!.id)
+
+					if (channelsData.isEmpty()) {
+						pagesObj.addPage(
+							Page {
+								description = "There are no news channels set for this guild."
+							}
+						)
+					} else {
+						channelsData.chunked(10).forEach { channelDataChunk ->
+							var response = ""
+							channelDataChunk.forEach { data ->
+								val channel = guild!!.getChannelOrNull(data.channelId)
+								response += "${channel?.mention ?: "Unable to get channel!"} (${channel?.name ?: ""}"
+							}
+							pagesObj.addPage(
+								Page {
+									title = "Auto-publishing channels for this guild"
+									description = "These are all news channels that automatically publish messages"
+									field {
+										value = response
+									}
+								}
+							)
+						}
+					}
+
+					EphemeralResponsePaginator(
+						pages = pagesObj,
+						owner = event.interaction.user,
+						timeoutSeconds = 500,
+						locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
+						interaction = interactionResponse
+					).send()
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "remove-all"
+				description = "Remove all auto-publishing channels for this guild"
+
+				requirePermission(Permission.ManageGuild)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageGuild)
+				}
+
+				action {
+					if (NewsChannelPublishingCollection().getAutoPublishingChannels(guild!!.id).isEmpty()) {
+						respond {
+							content = "**Error**: There are no auto-publishing channels for this guild!"
+						}
+					} else {
+						NewsChannelPublishingCollection().clearAutoPublishingForGuild(guild!!.id)
+						respond {
+							content = "Cleared all auto-publishing channels from this guild!"
+						}
 					}
 				}
 			}

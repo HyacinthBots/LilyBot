@@ -14,6 +14,7 @@ import org.litote.kmongo.eq
  * @since 4.7.0
  * @see addAutoPublishingChannel
  * @see removeAutoPublishingChannel
+ * @see getAutoPublishingChannel
  * @see getAutoPublishingChannels
  * @see clearAutoPublishingForGuild
  */
