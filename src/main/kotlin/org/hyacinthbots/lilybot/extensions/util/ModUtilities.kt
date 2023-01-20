@@ -29,7 +29,6 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
-import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
@@ -41,12 +40,12 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
-import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
@@ -68,6 +67,7 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.trimmedContents
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
+import java.util.concurrent.CancellationException
 
 /**
  * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
@@ -97,10 +97,10 @@ class ModUtilities : Extension() {
 			}
 			action {
 				val targetChannel: GuildMessageChannel = if (arguments.channel != null) {
-						guild!!.getChannelOfOrNull(arguments.channel!!.id) ?: return@action
-					} else {
-						channel.asChannelOfOrNull() ?: return@action
-					}
+					guild!!.getChannelOfOrNull(arguments.channel!!.id) ?: return@action
+				} else {
+					channel.asChannelOfOrNull() ?: return@action
+				}
 				val createdMessage: Message
 
 				try {
@@ -124,7 +124,8 @@ class ModUtilities : Extension() {
 
 				respond { content = "Message sent." }
 
-				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
+				val utilityLog =
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createMessage {
 					embed {
 						title = "Say command used"
@@ -140,8 +141,8 @@ class ModUtilities : Extension() {
 							inline = true
 						}
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						if (arguments.embed) {
@@ -186,22 +187,15 @@ class ModUtilities : Extension() {
 				// The channel the message was sent in. Either the channel provided, or if null, the channel the
 				// command was executed in.
 				val channelOfMessage = if (arguments.channelOfMessage != null) {
-					guild!!.getChannel(arguments.channelOfMessage!!.id) as MessageChannelBehavior
+					guild!!.getChannelOfOrNull<GuildMessageChannel>(arguments.channelOfMessage!!.id)
 				} else {
 					channel
 				}
-				val message: Message
+				val message = channelOfMessage?.getMessageOrNull(arguments.messageToEdit)
 
-				try {
-					message = channelOfMessage.getMessage(arguments.messageToEdit)
-				} catch (e: KtorRequestException) { // In the event of the message being in a channel the bot can't see
+				if (message == null) {
 					respond {
-						content = "Sorry, I can't properly access this message."
-					}
-					return@action
-				} catch (e: EntityNotFoundException) { // In the event of the message already being deleted.
-					respond {
-						content = "Sorry, I can't find this message."
+						content = "I was unable to get the target message! Please check the message exists"
 					}
 					return@action
 				}
@@ -243,8 +237,8 @@ class ModUtilities : Extension() {
 								value = "```${arguments.newContent.trimmedContents(500)}```"
 							}
 							footer {
-								text = "Edited by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
+								text = "Edited by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 							color = DISCORD_WHITE
 							timestamp = Clock.System.now()
@@ -314,8 +308,8 @@ class ModUtilities : Extension() {
 								}
 							}
 							footer {
-								text = "Edited by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
+								text = "Edited by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 							timestamp = Clock.System.now()
 							color = DISCORD_WHITE
@@ -373,8 +367,8 @@ class ModUtilities : Extension() {
 						title = "Presence changed"
 						description = "Lily's presence has been set to `${arguments.presenceArgument}`"
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						color = DISCORD_BLACK
 					}
@@ -411,8 +405,8 @@ class ModUtilities : Extension() {
 							value = "Watching over $guilds servers."
 						}
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						color = DISCORD_BLACK
 					}
@@ -457,8 +451,9 @@ class ModUtilities : Extension() {
 								}
 
 								guild!!.getChannelOfOrNull<GuildMessageChannel>(
-									ModerationConfigCollection().getConfig(guild!!.id)?.channel ?: guild!!.asGuild()
-										.getSystemChannel()!!.id
+									ModerationConfigCollection().getConfig(guild!!.id)?.channel
+										?: guild!!.asGuildOrNull()
+											?.getSystemChannel()!!.id
 								)?.createMessage {
 									embed {
 										title = "Database Reset!"
@@ -469,6 +464,7 @@ class ModUtilities : Extension() {
 								}
 
 								// Reset
+								AutoThreadingCollection().deleteGuildAutoThreads(guild!!.id)
 								LoggingConfigCollection().clearConfig(guild!!.id)
 								ModerationConfigCollection().clearConfig(guild!!.id)
 								SupportConfigCollection().clearConfig(guild!!.id)
@@ -509,7 +505,15 @@ class ModUtilities : Extension() {
 		 */
 		event<GuildCreateEvent> {
 			action {
-				updateDefaultPresence()
+				try {
+					updateDefaultPresence()
+				} catch (_: UninitializedPropertyAccessException) {
+					return@action
+				} catch (_: CancellationException) {
+					return@action
+				} catch (_: KtorRequestException) {
+					return@action
+				}
 			}
 		}
 
@@ -521,7 +525,15 @@ class ModUtilities : Extension() {
 		 */
 		event<GuildDeleteEvent> {
 			action {
-				updateDefaultPresence()
+				try {
+					updateDefaultPresence()
+				} catch (_: UninitializedPropertyAccessException) {
+					return@action
+				} catch (_: CancellationException) {
+					return@action
+				} catch (_: KtorRequestException) {
+					return@action
+				}
 			}
 		}
 	}

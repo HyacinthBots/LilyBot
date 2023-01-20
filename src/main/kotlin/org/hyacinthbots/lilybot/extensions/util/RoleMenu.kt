@@ -144,8 +144,8 @@ class RoleMenu : Extension() {
 								inline = true
 							}
 							footer {
-								icon = user.asUser().avatar?.url
-								text = "Created by ${user.asUser().tag}"
+								text = "Created by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 						}
 						components {
@@ -220,8 +220,8 @@ class RoleMenu : Extension() {
 							description = "The ${arguments.role.mention} role was added to a role menu in " +
 									"${channel.mention}."
 							footer {
-								icon = user.asUser().avatar?.url
-								text = "Added by ${user.asUser().tag}"
+								text = "Added by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 						}
 						components {
@@ -286,8 +286,8 @@ class RoleMenu : Extension() {
 							description = "The ${arguments.role.mention} role was removed from a role menu in " +
 									"${channel.mention}."
 							footer {
-								icon = user.asUser().avatar?.url
-								text = "Removed by ${user.asUser().tag}"
+								text = "Removed by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 						}
 						components {
@@ -387,8 +387,8 @@ class RoleMenu : Extension() {
 							title = "Pronoun Role Menu Created"
 							description = "A pronoun role menu was created in ${channel.mention}."
 							footer {
-								icon = user.asUser().avatar?.url
-								text = "Created by ${user.asUser().tag}"
+								text = "Created by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 						}
 						components {
@@ -457,8 +457,8 @@ class RoleMenu : Extension() {
 					.filter { role -> role.id in data.roles.map { it }.toList().associateBy { it } }
 					.toList()
 					.associateBy { it.id }
-				val member = event.interaction.user.asMember(guild.id)
-				val userRoles = member.roleIds.filter { it in guildRoles.keys }
+				val member = event.interaction.user.asMemberOrNull(guild.id)
+				val userRoles = member?.roleIds?.filter { it in guildRoles.keys }
 
 				event.interaction.respondEphemeral {
 					content = "Use the menu below to select roles."
@@ -473,7 +473,9 @@ class RoleMenu : Extension() {
 									label = "@${it.name}",
 									value = it.id.toString()
 								) {
-									default = it.id in userRoles
+									if (userRoles != null) {
+										default = it.id in userRoles
+									}
 								}
 							}
 
@@ -482,7 +484,7 @@ class RoleMenu : Extension() {
 									.filter { it in guildRoles.keys }
 
 								if (event.interaction.values.isEmpty()) {
-									member.edit {
+									member?.edit {
 										roles.forEach {
 											member.removeRole(it.id)
 										}
@@ -491,22 +493,26 @@ class RoleMenu : Extension() {
 									return@SelectMenu
 								}
 
-								val rolesToAdd = selectedRoles.filterNot { it in userRoles }
-								val rolesToRemove = userRoles.filterNot { it in selectedRoles }
+								val rolesToAdd = if (userRoles != null) {
+									selectedRoles.filterNot { it in userRoles }
+								} else {
+									emptyList()
+								}
+								val rolesToRemove = userRoles?.filterNot { it in selectedRoles }
 
-								if (rolesToAdd.isEmpty() && rolesToRemove.isEmpty()) {
+								if (rolesToAdd.isEmpty() && rolesToRemove?.isEmpty() == true) {
 									respond {
 										content = "You didn't select any different roles, so no changes were made."
 									}
 									return@SelectMenu
 								}
 
-								member.edit {
+								member?.edit {
 									this@edit.roles = member.roleIds.toMutableSet()
 
 									// toSet() to increase performance. Idea advised this.
 									this@edit.roles!!.addAll(rolesToAdd.toSet())
-									this@edit.roles!!.removeAll(rolesToRemove.toSet())
+									rolesToRemove?.toSet()?.let { it1 -> this@edit.roles!!.removeAll(it1) }
 								}
 								respond { content = "Your roles have been adjusted." }
 							}

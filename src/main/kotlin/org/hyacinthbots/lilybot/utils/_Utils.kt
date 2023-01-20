@@ -7,11 +7,11 @@ import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.RoleBehavior
 import dev.kord.core.entity.Message
 import dev.kord.core.supplier.EntitySupplyStrategy
-import io.github.nocomment1105.discordmoderationactions.enums.DmResult
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.DateTimePeriod
 import mu.KotlinLogging
+import org.hyacinthbots.discordmoderationactions.enums.DmResult
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
@@ -44,7 +44,8 @@ internal val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 4.1.0
  */
-suspend inline fun canPingRole(role: RoleBehavior?) = role != null && role.guild.getRole(role.id).mentionable
+suspend inline fun canPingRole(role: RoleBehavior?) =
+	role != null && role.guild.getRoleOrNull(role.id)?.mentionable == true
 
 /**
  * Get the number of guilds the bot is in.

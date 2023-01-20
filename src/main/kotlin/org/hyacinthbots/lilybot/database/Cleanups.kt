@@ -1,8 +1,6 @@
 package org.hyacinthbots.lilybot.database
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
-import com.kotlindiscord.kord.extensions.sentry.SentryContext
 import dev.kord.core.Kord
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.thread.ThreadChannel
@@ -54,21 +52,11 @@ object Cleanups : KordExKoinComponent {
 	 * @since 3.2.0
 	 */
 	suspend fun cleanupGuildData(kord: Kord) {
-		SentryContext().breadcrumb(BreadcrumbType.Info) {
-			category = "cleanupGuildData"
-			message = "Starting cleanup of guilds"
-		}
-
 		cleanupsLogger.info("Starting guild cleanup...")
 		val leaveTimeData = guildLeaveTimeCollection.find().toList()
 		var deletedGuildData = 0
 
 		leaveTimeData.forEach {
-			SentryContext().breadcrumb(BreadcrumbType.Info) {
-				category = "cleanupGuildData/forEach"
-				message = "Cleaning ${it.guildId}"
-			}
-
 			// Calculate the time since Lily left the guild.
 			val leaveDuration = Clock.System.now() - it.guildLeaveTime
 
@@ -87,18 +75,9 @@ object Cleanups : KordExKoinComponent {
 				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
 			}
-			SentryContext().breadcrumb(BreadcrumbType.Info) {
-				category = "cleanupGuildData/forEach"
-				message = "Cleaned ${it.guildId}"
-			}
 		}
 
 		cleanupsLogger.info("Deleted old data for $deletedGuildData guilds from the database")
-
-		SentryContext().breadcrumb(BreadcrumbType.Info) {
-			category = "cleanupGuildData"
-			message = "Finished cleanup"
-		}
 	}
 
 	/**
@@ -108,19 +87,15 @@ object Cleanups : KordExKoinComponent {
 	 * @since 3.2.0
 	 */
 	suspend fun cleanupThreadData(kordInstance: Kord) {
-		SentryContext().breadcrumb(BreadcrumbType.Info) {
-			category = "cleanupThreadData"
-			message = "Starting cleanup of threads"
-		}
-
 		cleanupsLogger.info("Starting thread cleanup...")
 		val threads = threadDataCollection.find().toList()
 		var deletedThreads = 0
 		for (it in threads) {
 			try {
-				SentryContext().breadcrumb(BreadcrumbType.Info) {
-					category = "cleanupThreadData"
-					message = "Cleaning thread ${it.threadId}"
+				if (it.guildId == null) {
+					ThreadsCollection().removeThread(it.threadId)
+					deletedThreads++
+					return
 				}
 				val guild = kordInstance.getGuildOrNull(it.guildId) ?: return
 				val thread = guild.getChannelOfOrNull<ThreadChannel>(it.threadId) ?: continue
@@ -137,10 +112,5 @@ object Cleanups : KordExKoinComponent {
 			}
 		}
 		cleanupsLogger.info("Deleted $deletedThreads old threads from the database")
-
-		SentryContext().breadcrumb(BreadcrumbType.Info) {
-			category = "cleanupThreadData"
-			message = "Finished cleanup"
-		}
 	}
 }

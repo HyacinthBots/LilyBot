@@ -7,7 +7,7 @@ tab_width = 4
 max_line_length = 120
 insert_final_newline = true
 
-[*.gradle]
+[*.gradle.kts]
 indent_style = tab
 
 [*.kt]
@@ -23,5 +23,9 @@ indent_size = 2
 indent_style = tab
 
 [.editorconfig]
+indent_style = tab
+indent_size = 4
+
+[*.sh]
 indent_style = tab
 indent_size = 4

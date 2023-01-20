@@ -5,7 +5,8 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
-suspend fun configV2(db: CoroutineDatabase) {
+@Suppress("UnusedPrivateMember")
+suspend fun configV2(db: CoroutineDatabase, mainDb: CoroutineDatabase) {
 	with(db.getCollection<ModerationConfigData>("moderationConfigData")) {
 		updateMany(
 			ModerationConfigData::quickTimeoutLength exists false,

@@ -6,7 +6,7 @@ import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.rest.builder.message.EmbedBuilder
-import io.github.nocomment1105.discordmoderationactions.enums.DmResult
+import org.hyacinthbots.discordmoderationactions.enums.DmResult
 
 /**
  * This is the base moderation embed for all moderation actions. This should be posted to the action log of a guild.
@@ -30,8 +30,8 @@ suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser:
 		inline = false
 	}
 	footer {
-		text = "Requested by ${commandUser.asUser().tag}"
-		icon = commandUser.asUser().avatar?.url
+		text = "Requested by ${commandUser.asUserOrNull()?.tag}"
+		icon = commandUser.asUserOrNull()?.avatar?.url
 	}
 }
 
