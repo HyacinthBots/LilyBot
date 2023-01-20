@@ -337,6 +337,36 @@ Description: 'Resets' Lily for this guild by deleting all database information r
 * Arguments:
 None
 ---
+#### Command name: `news-publishing set`
+**Description**: Set this channel to automatically publish messages.
+Required Member Permissions: Manage Server
+
+* **Arguments**:
+	* `channel` - The channel to set auto-publishing for - Channel
+
+---
+#### Command name: `news-publishing remove`
+**Description**: Stop a news channel from auto-publishing messages
+Required Member Permissions: Manage Server
+
+* **Arguments**:
+	* `channel` - The channel to stop auto-publishing for - Channel
+
+---
+#### Command name: `news-publishing list`
+**Description**: List Auto-publishing channels
+Required Member Permissions: Manage Server
+
+* **Arguments**:
+None
+---
+#### Command name: `news-publishing remove-all`
+**Description**: Remove all auto-publishing channels for this guild
+Required Member Permissions: Manage Server
+
+* **Arguments**:
+None
+---
 ### Command name: `ping`
 Description: Am I alive?
 
