@@ -33,6 +33,7 @@ import org.hyacinthbots.lilybot.extensions.util.Github
 import org.hyacinthbots.lilybot.extensions.util.GuildAnnouncements
 import org.hyacinthbots.lilybot.extensions.util.InfoCommands
 import org.hyacinthbots.lilybot.extensions.util.ModUtilities
+import org.hyacinthbots.lilybot.extensions.util.NewsChannelPublishing
 import org.hyacinthbots.lilybot.extensions.util.PublicUtilities
 import org.hyacinthbots.lilybot.extensions.util.Reminders
 import org.hyacinthbots.lilybot.extensions.util.RoleMenu
@@ -87,6 +88,7 @@ suspend fun main() {
 			add(::MessageEdit)
 			add(::ModerationCommands)
 			add(::ModUtilities)
+			add(::NewsChannelPublishing)
 			add(::PublicUtilities)
 			add(::Reminders)
 			add(::Report)

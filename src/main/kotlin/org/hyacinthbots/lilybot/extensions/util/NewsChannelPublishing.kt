@@ -1,0 +1,165 @@
+package org.hyacinthbots.lilybot.extensions.util
+
+import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
+import com.kotlindiscord.kord.extensions.checks.anyGuild
+import com.kotlindiscord.kord.extensions.checks.channelType
+import com.kotlindiscord.kord.extensions.checks.hasPermission
+import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
+import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
+import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.extensions.event
+import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.common.entity.ChannelType
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
+import dev.kord.core.behavior.channel.asChannelOfOrNull
+import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.entity.channel.NewsChannel
+import dev.kord.core.event.message.MessageCreateEvent
+import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+
+class NewsChannelPublishing : Extension() {
+	override val name = "news-channel-publishing"
+
+	override suspend fun setup() {
+		event<MessageCreateEvent> {
+			check {
+				anyGuild()
+				channelType(ChannelType.GuildNews)
+				failIf(event.message.author == null)
+			}
+
+			action {
+				if (event.guildId == null) return@action
+				NewsChannelPublishingCollection().getAutoPublishingChannel(event.guildId!!, event.message.channelId)
+					?: return@action
+
+				val permissions =
+					event.message.channel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(kord.selfId)
+
+				if (permissions?.contains(Permissions(Permission.SendMessages, Permission.ManageChannels)) == false) {
+					val channel =
+						getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.getGuild()!!) ?: return@action
+					channel.createEmbed {
+						title = "Unable to Auto-publish news channel!"
+						description = "Please ensure I have the `Send Messages` or `Manage Channel` permission"
+						field {
+							name = "Channel:"
+							value = event.message.channel.mention
+						}
+						color = DISCORD_RED
+						timestamp = Clock.System.now()
+					}
+					return@action
+				}
+
+				event.message.publish()
+			}
+		}
+
+		ephemeralSlashCommand {
+			name = "news-publishing"
+			description = "The parent command for news publishing channels"
+
+			ephemeralSubCommand(::PublishingSetArgs) {
+				name = "set"
+				description = "Set this channel to automatically publish messages."
+
+				requirePermission(Permission.ManageGuild)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageGuild)
+				}
+
+				action {
+					if (channel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(event.kord.selfId)
+							?.contains(Permissions(Permission.SendMessages, Permission.ManageChannels)) == false
+					) {
+						respond {
+							content = "I don't have permission for this channel; Please ensure I have the " +
+									"`Send Messages` or `Manage Channel` permission"
+						}
+						return@action
+					}
+
+					NewsChannelPublishingCollection().addAutoPublishingChannel(guild!!.id, arguments.channel.id)
+
+					respond {
+						content = "${arguments.channel.mention} has been set to automatically publish messages!"
+					}
+
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
+						title = "News Channel set to Auto-Publish"
+						field {
+							name = "Channel:"
+							value = arguments.channel.mention
+						}
+						footer {
+							text = "Set by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_YELLOW
+					}
+				}
+			}
+
+			ephemeralSubCommand(::PublishingRemoveArgs) {
+				name = "remove"
+				description = "Stop a news channel from auto-publishing messages"
+
+				requirePermission(Permission.ManageGuild)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageGuild)
+				}
+
+				action {
+					NewsChannelPublishingCollection().removeAutoPublishingChannel(guild!!.id, arguments.channel.id)
+
+					respond {
+						content = "${arguments.channel.mention} will no longer automatically publish messages!"
+					}
+
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
+						title = "News Channel will no longer Auto-Publish"
+						field {
+							name = "Channel:"
+							value = arguments.channel.mention
+						}
+						footer {
+							text = "Removed by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_YELLOW
+					}
+				}
+			}
+		}
+	}
+
+	inner class PublishingSetArgs : Arguments() {
+		val channel by channel {
+			name = "channel"
+			description = "The channel to set auto-publishing for"
+			requiredChannelTypes = mutableSetOf(ChannelType.GuildNews)
+		}
+	}
+
+	inner class PublishingRemoveArgs : Arguments() {
+		val channel by channel {
+			name = "channel"
+			description = "The channel to stop auto-publishing for"
+			requiredChannelTypes = mutableSetOf(ChannelType.GuildNews)
+		}
+	}
+}
