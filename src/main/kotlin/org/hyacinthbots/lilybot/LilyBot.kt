@@ -75,19 +75,21 @@ suspend fun main() {
 
 		// Add the extensions to the bot
 		extensions {
+			add(::AutoThreading)
 			add(::Config)
-			add(::Github)
 			add(::GalleryChannel)
-			add(::InfoCommands)
+			add(::Github)
 			add(::GuildAnnouncements)
 			add(::GuildLogging)
+			add(::InfoCommands)
 			add(::LockingCommands)
 			add(::LogUploading)
 			add(::MemberLogging)
 			add(::MessageDelete)
 			add(::MessageEdit)
-			add(::ModerationCommands)
+			add(::ModThreadInviting)
 			add(::ModUtilities)
+			add(::ModerationCommands)
 			add(::NewsChannelPublishing)
 			add(::PublicUtilities)
 			add(::Reminders)
@@ -97,8 +99,6 @@ suspend fun main() {
 			add(::StatusPing)
 			add(::Tags)
 			add(::ThreadControl)
-			add(::AutoThreading)
-			add(::ModThreadInviting)
 
 			/*
 			The welcome channel extension allows users to designate a YAML file to create a channel with
