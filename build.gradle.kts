@@ -145,7 +145,7 @@ tasks {
          * scripts suitably
          * `./gradlew wrapper`
          */
-        gradleVersion = "8.0-rc-1"
+        gradleVersion = "8.0-rc-2"
         distributionType = Wrapper.DistributionType.BIN
     }
 
