@@ -1,6 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.io.FileOutputStream
-import java.util.*
 
 plugins {
     application
@@ -87,7 +85,6 @@ dependencies {
 
     implementation(libs.dma)
     implementation(libs.docgenerator)
-    //implementation(files("./build/doc-generator-0.1.0.jar"))
 }
 
 application {
@@ -99,17 +96,6 @@ gitHooks {
         mapOf("pre-commit" to "detekt")
     )
 }
-
-val generatedVersionDir = "$buildDir/generated-version"
-
-sourceSets {
-    main {
-        kotlin {
-            output.dir(generatedVersionDir)
-        }
-    }
-}
-
 
 tasks {
     withType<KotlinCompile> {
@@ -123,10 +109,6 @@ tasks {
         }
     }
 
-    processResources {
-        from("docs/commanddocs.toml")
-    }
-
     jar {
         manifest {
             attributes(
@@ -136,30 +118,8 @@ tasks {
     }
 
     wrapper {
-        /*
-         * To update the gradle wrapper version, change
-         * the `gradleVersion` below
-         *
-         * Then run the following command twice to update the gradle
-         * scripts suitably
-         * `./gradlew wrapper`
-         */
-        gradleVersion = "7.6"
+        // To update the gradle wrapper version run `./gradlew wrapper --gradle-version=<NEW_VERSION>`
         distributionType = Wrapper.DistributionType.BIN
-    }
-
-    register("generateVersionProperties") {
-        doLast {
-            val propertiesFile = file("$generatedVersionDir/version.properties")
-            propertiesFile.parentFile.mkdirs()
-            val properties = Properties()
-            properties.setProperty("version", "$version")
-            properties.store(FileOutputStream(propertiesFile), null)
-        }
-    }
-
-    named("processResources") {
-        dependsOn("generateVersionProperties")
     }
 }
 
@@ -171,5 +131,6 @@ detekt {
 }
 
 blossom {
-    replaceToken("@version@", grgit.head().abbreviatedId)
+    replaceToken("@build_id@", grgit.head().abbreviatedId)
+	replaceToken("@version@", project.version.toString())
 }
