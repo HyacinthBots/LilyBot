@@ -298,43 +298,43 @@ class AutoThreading : Extension() {
 							content = "**Error:** This is not an auto-threaded channel!"
 						}
 						return@action
-					} else {
-						respond {
-							embed {
-								title = "Auto-Threaded channel settings"
-								description = "These are the settings for channel: ${arguments.channel.mention}"
-								field {
-									name = "Ping role"
-									value = if (autoThread.roleId != null) {
-										guild!!.getRoleOrNull(autoThread.roleId)?.mention ?: "Unable to get role!"
-									} else {
-										"None"
-									}
+					}
+
+					respond {
+						embed {
+							title = "Auto-Threaded channel settings"
+							description = "These are the settings for channel: ${arguments.channel.mention}"
+							field {
+								name = "Ping role"
+								value = if (autoThread.roleId != null) {
+									guild!!.getRoleOrNull(autoThread.roleId)?.mention ?: "Unable to get role!"
+								} else {
+									"None"
 								}
-								field {
-									name = "Prevent duplicates"
-									value = autoThread.preventDuplicates.toString()
-								}
-								field {
-									name = "Archive on creation"
-									value = autoThread.archive.toString()
-								}
-								field {
-									name = "Content aware naming"
-									value = autoThread.contentAwareNaming.toString()
-								}
-								field {
-									name = "Mention creator on creation"
-									value = autoThread.mention.toString()
-								}
-								field {
-									name = "Creation message"
-									value = autoThread.creationMessage ?: "Default"
-								}
-								field {
-									name = "Add mods and ping role"
-									value = autoThread.addModsAndRole.toString()
-								}
+							}
+							field {
+								name = "Prevent duplicates"
+								value = autoThread.preventDuplicates.toString()
+							}
+							field {
+								name = "Archive on creation"
+								value = autoThread.archive.toString()
+							}
+							field {
+								name = "Content aware naming"
+								value = autoThread.contentAwareNaming.toString()
+							}
+							field {
+								name = "Mention creator on creation"
+								value = autoThread.mention.toString()
+							}
+							field {
+								name = "Creation message"
+								value = autoThread.creationMessage ?: "Default"
+							}
+							field {
+								name = "Add mods and ping role"
+								value = autoThread.addModsAndRole.toString()
 							}
 						}
 					}
