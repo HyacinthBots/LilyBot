@@ -604,7 +604,7 @@ class Reminders : Extension() {
 			content = "${message.content} **Reminder " +
 					"${
 						if (wasCancelled) {
-							"cancelled ${if (byModerator) "by moderator" else ""}."
+							"cancelled${if (byModerator) " by moderator" else ""}."
 						} else {
 							"completed."
 						}
@@ -638,7 +638,7 @@ class Reminders : Extension() {
 					description = if (userId == null) {
 						"You have no reminders set for this guild."
 					} else {
-						"<@$userId> has no reminders set for this guild"
+						"<@$userId> has no reminders set for this guild."
 					}
 				}
 			)
