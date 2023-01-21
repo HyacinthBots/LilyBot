@@ -34,3 +34,10 @@ jobs:
         with:
           files: 'build/libs/*-all.jar'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Grant execution permissions to updateWebDocs.sh
+        run: chmod +x updateWebDocs.sh
+
+        # TODO Make sure the website branch is set correctly. Main is incorrect for now, hopefully the website will be in a reasonable state before next release
+      - name: Update web docs
+        run: ./updateWebDocs improvements ${{ secrets.CR_PAT }}

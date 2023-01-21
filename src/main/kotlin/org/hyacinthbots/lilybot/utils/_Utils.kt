@@ -20,6 +20,7 @@ import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
@@ -216,21 +217,22 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 			}
 
 			loadModule {
-				single { ModerationConfigCollection() } bind ModerationConfigCollection::class
-				single { SupportConfigCollection() } bind SupportConfigCollection::class
-				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
-				single { UtilityConfigCollection() } bind UtilityConfigCollection::class
+				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
 				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
 				single { GithubCollection() } bind GithubCollection::class
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
+				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
-				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
+				single { ModerationConfigCollection() } bind ModerationConfigCollection::class
+				single { NewsChannelPublishingCollection() } bind NewsChannelPublishingCollection::class
 				single { ReminderCollection() } bind ReminderCollection::class
 				single { RoleMenuCollection() } bind RoleMenuCollection::class
 				single { StatusCollection() } bind StatusCollection::class
+				single { SupportConfigCollection() } bind SupportConfigCollection::class
 				single { TagsCollection() } bind TagsCollection::class
 				single { ThreadsCollection() } bind ThreadsCollection::class
 				single { UptimeCollection() } bind UptimeCollection::class
+				single { UtilityConfigCollection() } bind UtilityConfigCollection::class
 				single { WarnCollection() } bind WarnCollection::class
 				single { WelcomeChannelCollection() } bind WelcomeChannelCollection::class
 			}
