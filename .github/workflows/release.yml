@@ -40,4 +40,4 @@ jobs:
 
         # TODO Make sure the website branch is set correctly. Main is incorrect for now, hopefully the website will be in a reasonable state before next release
       - name: Update web docs
-        run: ./updateWebDocs main ${{ secrets.CR_PAT }}
+        run: ./updateWebDocs improvements ${{ secrets.CR_PAT }}
