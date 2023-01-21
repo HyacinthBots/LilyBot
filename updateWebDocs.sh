@@ -1,4 +1,4 @@
-#!/bin/sh -l
+#!/bin/sh
 
 set -e # End immediately if a command fails
 set -u # End if trying to access an undefined variable
