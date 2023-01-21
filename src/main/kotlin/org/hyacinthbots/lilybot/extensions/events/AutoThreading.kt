@@ -5,6 +5,7 @@ import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
+import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
 import com.kotlindiscord.kord.extensions.components.forms.ModalForm
@@ -68,6 +69,8 @@ class AutoThreading : Extension() {
 				description = "Automatically create a thread for each message sent in this channel."
 
 				initialResponse = InitialSlashCommandResponse.None
+
+				requirePermission(Permission.ManageChannels)
 
 				check {
 					anyGuild()
@@ -192,6 +195,8 @@ class AutoThreading : Extension() {
 				name = "disable"
 				description = "Stop automatically creating threads in this channel."
 
+				requirePermission(Permission.ManageChannels)
+
 				check {
 					anyGuild()
 					hasPermission(Permission.ManageChannels)
@@ -267,6 +272,69 @@ class AutoThreading : Extension() {
 							} else {
 								title = "Auto-threaded channels in this guild:"
 								description = responseContent.replace("null", "")
+							}
+						}
+					}
+				}
+			}
+
+			ephemeralSubCommand(::AutoThreadingViewArgs) {
+				name = "view"
+				description = "View the settings of an auto-threaded channel"
+
+				requirePermission(Permission.ManageChannels)
+
+				check {
+					anyGuild()
+					requirePermission(Permission.ManageChannels)
+					requireBotPermissions(Permission.SendMessages)
+					botHasChannelPerms(Permissions(Permission.SendMessages))
+				}
+
+				action {
+					val autoThread = AutoThreadingCollection().getSingleAutoThread(arguments.channel.id)
+					if (autoThread == null) {
+						respond {
+							content = "**Error:** This is not an auto-threaded channel!"
+						}
+						return@action
+					}
+
+					respond {
+						embed {
+							title = "Auto-Threaded channel settings"
+							description = "These are the settings for channel: ${arguments.channel.mention}"
+							field {
+								name = "Ping role"
+								value = if (autoThread.roleId != null) {
+									guild!!.getRoleOrNull(autoThread.roleId)?.mention ?: "Unable to get role!"
+								} else {
+									"None"
+								}
+							}
+							field {
+								name = "Prevent duplicates"
+								value = autoThread.preventDuplicates.toString()
+							}
+							field {
+								name = "Archive on creation"
+								value = autoThread.archive.toString()
+							}
+							field {
+								name = "Content aware naming"
+								value = autoThread.contentAwareNaming.toString()
+							}
+							field {
+								name = "Mention creator on creation"
+								value = autoThread.mention.toString()
+							}
+							field {
+								name = "Creation message"
+								value = autoThread.creationMessage ?: "Default"
+							}
+							field {
+								name = "Add mods and ping role"
+								value = autoThread.addModsAndRole.toString()
 							}
 						}
 					}
@@ -388,6 +456,13 @@ class AutoThreading : Extension() {
 			name = "message"
 			description = "Whether to send a custom message on thread creation or not. Default false."
 			defaultValue = false
+		}
+	}
+
+	inner class AutoThreadingViewArgs : Arguments() {
+		val channel by channel {
+			name = "channel"
+			description = "The channel to view the auto-threading settings for."
 		}
 	}
 

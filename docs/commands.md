@@ -1,5 +1,40 @@
 ## Slash Commands
 
+#### Command name: `auto-threading enable`
+**Description**: Automatically create a thread for each message sent in this channel.
+Required Member Permissions: Manage Channels
+
+* **Arguments**:
+	* `role` - The role, if any, to invite to threads created in this channel. - Optional Role
+	* `add-mods-and-role` - Whether to add moderators to the thread alongside the role - Defaulting Boolean
+	* `prevent-duplicates` - If users should be stopped from having multiple open threads in this channel. Default false. - Defaulting Boolean
+	* `archive` - If threads should be archived on creation to avoid filling the sidebar. Default false. - Defaulting Boolean
+	* `content-aware-naming` - If Lily should use content-aware thread titles. Default false - Defaulting Boolean
+	* `mention` - If the creator should be mentioned in new threads in this channel. Default false. - Defaulting Boolean
+	* `message` - Whether to send a custom message on thread creation or not. Default false. - Defaulting Boolean
+
+---
+#### Command name: `auto-threading disable`
+**Description**: Stop automatically creating threads in this channel.
+Required Member Permissions: Manage Channels
+
+* **Arguments**:
+None
+---
+#### Command name: `auto-threading list`
+**Description**: List all the auto-threaded channels in this server, if any.
+
+* **Arguments**:
+None
+---
+#### Command name: `auto-threading view`
+**Description**: View the settings of an auto-threaded channel
+Required Member Permissions: Manage Channels
+
+* **Arguments**:
+	* `channel` - The channel to view the auto-threading settings for. - Channel
+
+---
 #### Command name: `config support`
 **Description**: Deprecated: Configure Lily's support system
 Required Member Permissions: Manage Server
@@ -63,6 +98,26 @@ Required Member Permissions: Manage Server
 	* `config-type` - The type of config to clear - String Choice
 
 ---
+#### Command name: `gallery-channel set`
+**Description**: Set a channel as a gallery channel
+Required Member Permissions: Manage Server
+
+* **Arguments**:
+None
+---
+#### Command name: `gallery-channel unset`
+**Description**: Unset a channel as a gallery channel.
+Required Member Permissions: Manage Server
+
+* **Arguments**:
+None
+---
+#### Command name: `gallery-channel list`
+**Description**: List all gallery channels in the guild
+
+* **Arguments**:
+None
+---
 #### Command name: `github issue`
 **Description**: Look up an issue on a specific repository
 
@@ -100,24 +155,11 @@ Required Member Permissions: Moderate Members
 * **Arguments**:
 None
 ---
-#### Command name: `gallery-channel set`
-**Description**: Set a channel as a gallery channel
-Required Member Permissions: Manage Server
+### Command name: `announcement`
+Description: Send an announcement to all guilds Lily is in
+**Required Member Permissions**: Administrator
 
-* **Arguments**:
-None
----
-#### Command name: `gallery-channel unset`
-**Description**: Unset a channel as a gallery channel.
-Required Member Permissions: Manage Server
-
-* **Arguments**:
-None
----
-#### Command name: `gallery-channel list`
-**Description**: List all gallery channels in the guild
-
-* **Arguments**:
+* Arguments:
 None
 ---
 ### Command name: `help`
@@ -134,13 +176,6 @@ None
 ---
 ### Command name: `invite`
 Description: Get an invite link for Lily!
-
-* Arguments:
-None
----
-### Command name: `announcement`
-Description: Send an announcement to all guilds Lily is in
-**Required Member Permissions**: Administrator
 
 * Arguments:
 None
@@ -196,6 +231,52 @@ None
 Required Member Permissions: Moderate Members
 
 * **Arguments**:
+None
+---
+### Command name: `say`
+Description: Say something through Lily.
+**Required Member Permissions**: Moderate Members
+
+* Arguments:
+	* `message` - The text of the message to be sent. - String
+	* `channel` - The channel the message should be sent in. - Optional Channel
+	* `embed` - If the message should be sent as an embed. - Defaulting Boolean
+	* `timestamp` - If the message should be sent with a timestamp. Only works with embeds. - Defaulting Boolean
+	* `color` - The color of the embed. Can be either a hex code or one of Discord's supported colors. Embeds only - Defaulting Color
+
+---
+### Command name: `edit-say`
+Description: Edit a message created by /say
+**Required Member Permissions**: Moderate Members
+
+* Arguments:
+	* `message-to-edit` - The ID of the message you'd like to edit - Snowflake
+	* `new-content` - The new content of the message - Optional String
+	* `new-color` - The new color of the embed. Embeds only - Optional Color
+	* `channel-of-message` - The channel of the message - Optional Channel
+	* `timestamp` - Whether to timestamp the embed or not. Embeds only - Optional Boolean
+
+---
+#### Command name: `status set`
+**Description**: Set a custom status for Lily.
+Required Member Permissions: Administrator
+
+* **Arguments**:
+	* `presence` - The new value Lily's presence should be set to - String
+
+---
+#### Command name: `status reset`
+**Description**: Reset Lily's presence to the default status.
+Required Member Permissions: Administrator
+
+* **Arguments**:
+None
+---
+### Command name: `reset`
+Description: 'Resets' Lily for this guild by deleting all database information relating to this guild
+**Required Member Permissions**: Administrator
+
+* Arguments:
 None
 ---
 ### Command name: `ban`
@@ -290,52 +371,6 @@ Description: Removes a user's warnings
 	* `user` - Person to remove warn from - User
 	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
 
----
-### Command name: `say`
-Description: Say something through Lily.
-**Required Member Permissions**: Moderate Members
-
-* Arguments:
-	* `message` - The text of the message to be sent. - String
-	* `channel` - The channel the message should be sent in. - Optional Channel
-	* `embed` - If the message should be sent as an embed. - Defaulting Boolean
-	* `timestamp` - If the message should be sent with a timestamp. Only works with embeds. - Defaulting Boolean
-	* `color` - The color of the embed. Can be either a hex code or one of Discord's supported colors. Embeds only - Defaulting Color
-
----
-### Command name: `edit-say`
-Description: Edit a message created by /say
-**Required Member Permissions**: Moderate Members
-
-* Arguments:
-	* `message-to-edit` - The ID of the message you'd like to edit - Snowflake
-	* `new-content` - The new content of the message - Optional String
-	* `new-color` - The new color of the embed. Embeds only - Optional Color
-	* `channel-of-message` - The channel of the message - Optional Channel
-	* `timestamp` - Whether to timestamp the embed or not. Embeds only - Optional Boolean
-
----
-#### Command name: `status set`
-**Description**: Set a custom status for Lily.
-Required Member Permissions: Administrator
-
-* **Arguments**:
-	* `presence` - The new value Lily's presence should be set to - String
-
----
-#### Command name: `status reset`
-**Description**: Reset Lily's presence to the default status.
-Required Member Permissions: Administrator
-
-* **Arguments**:
-None
----
-### Command name: `reset`
-Description: 'Resets' Lily for this guild by deleting all database information relating to this guild
-**Required Member Permissions**: Administrator
-
-* Arguments:
-None
 ---
 #### Command name: `news-publishing set`
 **Description**: Set this channel to automatically publish messages.
@@ -571,31 +606,6 @@ None
 * **Arguments**:
 None
 ---
-#### Command name: `auto-threading enable`
-**Description**: Automatically create a thread for each message sent in this channel.
-
-* **Arguments**:
-	* `role` - The role, if any, to invite to threads created in this channel. - Optional Role
-	* `add-mods-and-role` - Whether to add moderators to the thread alongside the role - Defaulting Boolean
-	* `prevent-duplicates` - If users should be stopped from having multiple open threads in this channel. Default false. - Defaulting Boolean
-	* `archive` - If threads should be archived on creation to avoid filling the sidebar. Default false. - Defaulting Boolean
-	* `content-aware-naming` - If Lily should use content-aware thread titles. Default false - Defaulting Boolean
-	* `mention` - If the creator should be mentioned in new threads in this channel. Default false. - Defaulting Boolean
-	* `message` - Whether to send a custom message on thread creation or not. Default false. - Defaulting Boolean
-
----
-#### Command name: `auto-threading disable`
-**Description**: Stop automatically creating threads in this channel.
-
-* **Arguments**:
-None
----
-#### Command name: `auto-threading list`
-**Description**: List all the auto-threaded channels in this server, if any.
-
-* **Arguments**:
-None
----
 ### Command name: `blocks`
 Description: Get a list of the configured blocks
 
@@ -669,7 +679,7 @@ None
 
 ---
 ### Command name: `command-list`
-Description: Shows a list of HyacinthDev1's commands!
+Description: Shows a list of HyacinthDev2's commands!
 
 * Arguments:
 None
