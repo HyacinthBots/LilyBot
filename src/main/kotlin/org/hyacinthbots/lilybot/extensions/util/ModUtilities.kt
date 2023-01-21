@@ -51,6 +51,7 @@ import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
@@ -470,6 +471,7 @@ class ModUtilities : Extension() {
 								LogUploadingBlacklistCollection().clearBlacklist(guild!!.id)
 								LoggingConfigCollection().clearConfig(guild!!.id)
 								ModerationConfigCollection().clearConfig(guild!!.id)
+								NewsChannelPublishingCollection().clearAutoPublishingForGuild(guild!!.id)
 								ReminderCollection().removeGuildReminders(guild!!.id)
 								RoleMenuCollection().removeAllRoleMenus(guild!!.id)
 								SupportConfigCollection().clearConfig(guild!!.id)
