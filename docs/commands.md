@@ -679,7 +679,7 @@ None
 
 ---
 ### Command name: `command-list`
-Description: Shows a list of HyacinthDev2's commands!
+Description: Shows a list of HyacinthDev1's commands!
 
 * Arguments:
 None

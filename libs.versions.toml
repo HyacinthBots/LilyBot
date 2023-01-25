@@ -6,7 +6,7 @@ github-api = "1.313"
 kmongo = "4.8.0"
 detekt = "1.22.0"
 cozy-welcome = "1.0-SNAPSHOT"
-dma = "main-SNAPSHOT"
+dma = "v0.2.0"
 docgenerator = "0.1.1"
 
 [libraries]
