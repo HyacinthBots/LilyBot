@@ -57,31 +57,6 @@ data class ModerationConfigData(
 )
 
 /**
- * The data for support configuration. The support config stores the data for support functionality. Channel for the
- * place to create threads to and team for pinging into support threads.
- *
- * @property guildId The ID of the guild the config is for
- * @property enabled If the support module is enabled or not
- * @property channel The ID of the support channel for the guild
- * @property role The ID of the support team for the guild
- * @property message The support message as a string, nullable
- * @since 4.0.0
- */
-@Deprecated(
-	"Replace with AutoThreading data",
-	ReplaceWith("AutoThreadingData", "org.hyacinthbots.lilybot.database.entities.AutoThreadingData"),
-	DeprecationLevel.WARNING
-)
-@Serializable
-data class SupportConfigData(
-	val guildId: Snowflake,
-	val enabled: Boolean,
-	val channel: Snowflake?,
-	val role: Snowflake?,
-	val message: String?
-)
-
-/**
  * The data for miscellaneous configuration. The miscellaneous config stores the data for enabling or disabling log
  * uploading.
  *

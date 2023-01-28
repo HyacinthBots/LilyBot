@@ -21,7 +21,6 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
-import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 
@@ -46,7 +45,6 @@ suspend inline fun getLoggingChannelWithPerms(
 	if (!configIsUsable(channelType, guildId)) return null
 
 	val channelId = when (channelType) {
-		ConfigOptions.SUPPORT_CHANNEL -> SupportConfigCollection().getConfig(guildId)?.channel ?: return null
 		ConfigOptions.ACTION_LOG -> ModerationConfigCollection().getConfig(guildId)?.channel ?: return null
 		ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().getConfig(guildId)?.utilityLogChannel ?: return null
 		ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().getConfig(guildId)?.messageChannel ?: return null
@@ -58,7 +56,6 @@ suspend inline fun getLoggingChannelWithPerms(
 	if (!channel.botHasPermissions(Permission.ViewChannel) || !channel.botHasPermissions(Permission.SendMessages)) {
 		if (resetConfig == true) {
 			when (channelType) {
-				ConfigOptions.SUPPORT_CHANNEL -> SupportConfigCollection().clearConfig(guildId)
 				ConfigOptions.ACTION_LOG -> ModerationConfigCollection().clearConfig(guildId)
 				ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().clearConfig(guildId)
 				ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().clearConfig(guildId)

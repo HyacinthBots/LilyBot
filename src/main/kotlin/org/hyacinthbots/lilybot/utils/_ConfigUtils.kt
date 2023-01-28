@@ -5,7 +5,6 @@ import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import dev.kord.common.entity.Snowflake
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
-import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 
@@ -32,45 +31,6 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 	// Look at the config options and check the presence of the config in the database.
 	for (option in configOptions) {
 		when (option) {
-			ConfigOptions.SUPPORT_ENABLED -> {
-				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
-				if (supportConfig == null) {
-					fail("Unable to access support config for this guild! Please inform a member of staff.")
-					break
-				} else if (!supportConfig.enabled) {
-					fail("Support is disabled for this guild!")
-					break
-				} else {
-					pass()
-				}
-			}
-
-			ConfigOptions.SUPPORT_CHANNEL -> {
-				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
-				if (supportConfig == null) {
-					fail("Unable to access support config for this guild! Please inform a member of staff.")
-					break
-				} else if (supportConfig.channel == null) {
-					fail("A support channel has not been set for this guild!")
-					break
-				} else {
-					pass()
-				}
-			}
-
-			ConfigOptions.SUPPORT_ROLE -> {
-				val supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)
-				if (supportConfig == null) {
-					fail("Unable to access support config for this guild! Please inform a member of staff.")
-					break
-				} else if (supportConfig.role == null) {
-					fail("A support role has not been set for this guild!")
-					break
-				} else {
-					pass()
-				}
-			}
-
 			ConfigOptions.MODERATION_ENABLED -> {
 				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
 				if (moderationConfig == null) {
@@ -227,18 +187,6 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
  */
 suspend inline fun configIsUsable(option: ConfigOptions, guildId: Snowflake): Boolean {
 	when (option) {
-		ConfigOptions.SUPPORT_ENABLED -> return SupportConfigCollection().getConfig(guildId)?.enabled ?: false
-
-		ConfigOptions.SUPPORT_CHANNEL -> {
-			val supportConfig = SupportConfigCollection().getConfig(guildId) ?: return false
-			return supportConfig.channel != null
-		}
-
-		ConfigOptions.SUPPORT_ROLE -> {
-			val supportConfig = SupportConfigCollection().getConfig(guildId) ?: return false
-			return supportConfig.role != null
-		}
-
 		ConfigOptions.MODERATION_ENABLED -> return ModerationConfigCollection().getConfig(guildId)?.enabled ?: false
 
 		ConfigOptions.MODERATOR_ROLE -> {

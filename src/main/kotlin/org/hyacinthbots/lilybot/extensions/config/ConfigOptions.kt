@@ -6,18 +6,6 @@ package org.hyacinthbots.lilybot.extensions.config
  * @since 4.0.0
  */
 enum class ConfigOptions {
-	/** The option that stores whether the support config is enabled or not. */
-	@Deprecated("Support config is deprecated and will be removed in a future update")
-	SUPPORT_ENABLED,
-
-	/** The option that stores the support channel. */
-	@Deprecated("Support config is deprecated and will be removed in a future update")
-	SUPPORT_CHANNEL,
-
-	/** The option that stores the support team role. */
-	@Deprecated("Support config is deprecated and will be removed in a future update")
-	SUPPORT_ROLE,
-
 	/** The options that stores whether the moderation config is enabled or not.*/
 	MODERATION_ENABLED,
 

@@ -1,9 +1,7 @@
 package org.hyacinthbots.lilybot.database.migrations.main
 
-import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.litote.kmongo.coroutine.CoroutineDatabase
-import org.litote.kmongo.eq
 import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
@@ -15,10 +13,10 @@ suspend fun mainV5(db: CoroutineDatabase, configDb: CoroutineDatabase) {
 		updateMany(ThreadData::parentChannelId exists false, setValue(ThreadData::parentChannelId, null))
 	}
 
-	with(configDb.getCollection<SupportConfigData>()) {
-		for (it in find().toList()) {
-			if (it.channel == null) continue
-			// THIS MIGRATION IS COMPLETE. AWAY WITH THIS CODE IS FINE
+// 	with(configDb.getCollection<SupportConfigData>()) {
+// 		for (it in find().toList()) {
+// 			if (it.channel == null) continue
+	// THIS MIGRATION IS COMPLETE. AWAY WITH THIS CODE IS FINE
 // 			db.getCollection<AutoThreadingData>().insertOne(
 // 				AutoThreadingData(
 // 					it.guildId,
@@ -31,7 +29,5 @@ suspend fun mainV5(db: CoroutineDatabase, configDb: CoroutineDatabase) {
 // 					it.message
 // 				)
 // 			)
-			configDb.getCollection<SupportConfigData>().deleteOne(SupportConfigData::guildId eq it.guildId)
-		}
-	}
+// 			configDb.getCollection<SupportConfigData>().deleteOne(SupportConfigData::guildId eq it.guildId)
 }
