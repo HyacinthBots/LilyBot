@@ -47,12 +47,16 @@ class NewsChannelPublishing : Extension() {
 				val permissions =
 					event.message.channel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(kord.selfId)
 
-				if (permissions?.contains(Permissions(Permission.SendMessages, Permission.ManageChannels)) == false) {
+				if (permissions?.contains(
+						Permissions(Permission.SendMessages, Permission.ManageChannels, Permission.ManageMessages)
+					) == false
+				) {
 					val channel =
 						getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.getGuild()!!) ?: return@action
 					channel.createEmbed {
 						title = "Unable to Auto-publish news channel!"
-						description = "Please ensure I have the `Send Messages` or `Manage Channel` permission"
+						description =
+							"Please ensure I have the `Send Messages`, `Manage Channel` or `Manage Messages` permission"
 						field {
 							name = "Channel:"
 							value = event.message.channel.mention
@@ -127,7 +131,11 @@ class NewsChannelPublishing : Extension() {
 				}
 
 				action {
-					if (NewsChannelPublishingCollection().getAutoPublishingChannel(guild!!.id, arguments.channel.id) == null) {
+					if (NewsChannelPublishingCollection().getAutoPublishingChannel(
+							guild!!.id,
+							arguments.channel.id
+						) == null
+					) {
 						respond {
 							content = "**Error:** ${arguments.channel.mention} does not automatically publish messages!"
 						}
