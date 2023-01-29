@@ -1,10 +1,18 @@
 [versions]
-kord-extensions = "1.5.6-20230102.101158-6"
+# Plugins
+kotlin = "1.8.0"
+shadow = "7.1.2"
+detekt = "1.22.0"
+git-hooks = "0.0.2"
+grgit = "5.0.0"
+blossom = "1.3.1"
+
+# Libraries
+kord-extensions = "1.5.6-20230128.152526-9"
 logging = "3.0.4"
 logback = "1.4.5"
 github-api = "1.313"
 kmongo = "4.8.0"
-detekt = "1.22.0"
 cozy-welcome = "1.0-SNAPSHOT"
 dma = "main-20230115.175545-1"
 docgenerator = "0.1.1"
@@ -14,7 +22,7 @@ kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extens
 kord-extensions-phishing = { module = "com.kotlindiscord.kord.extensions:extra-phishing", version.ref = "kord-extensions" }
 kord-extensions-pluralkit = { module = "com.kotlindiscord.kord.extensions:extra-pluralkit", version.ref = "kord-extensions"}
 kord-extensions-unsafe = { module = "com.kotlindiscord.kord.extensions:unsafe", version.ref = "kord-extensions"}
-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logging = { module = "io.github.microutils:kotlin-logging", version.ref = "logging" }
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
@@ -23,3 +31,12 @@ detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref
 cozy-welcome = {module = "org.quiltmc.community:module-welcome", version.ref = "cozy-welcome"}
 dma = { module = "org.hyacinthbots:discord-moderation-actions", version.ref = "dma"}
 docgenerator = { module = "org.hyacinthbots:doc-generator", version.ref = "docgenerator" }
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+git-hooks = { id = "com.github.jakemarsden.git-hooks", version.ref = "git-hooks" }
+grgit = { id = "org.ajoberstar.grgit", version.ref = "grgit" }
+blossom = { id = "net.kyori.blossom", version.ref = "blossom" }

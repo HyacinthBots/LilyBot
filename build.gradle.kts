@@ -1,16 +1,16 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
 	application
 
-	kotlin("jvm")
-	kotlin("plugin.serialization")
-
-	id("com.github.johnrengelman.shadow")
-	id("io.gitlab.arturbosch.detekt")
-	id("com.github.jakemarsden.git-hooks")
-	id("org.ajoberstar.grgit") version "5.0.0"
-	id("net.kyori.blossom") version "1.3.1"
+	alias(libs.plugins.kotlin)
+	alias(libs.plugins.kotlinx.serialization)
+	alias(libs.plugins.shadow)
+	alias(libs.plugins.detekt)
+	alias(libs.plugins.git.hooks)
+	alias(libs.plugins.grgit)
+	alias(libs.plugins.blossom)
 }
 
 group = "org.hyacinthbots.lilybot"
@@ -91,7 +91,7 @@ tasks {
 	withType<KotlinCompile> {
 		kotlinOptions {
 			jvmTarget = "17"
-			languageVersion = "1.7"
+			languageVersion = libs.plugins.kotlin.get().version.requiredVersion.substringBeforeLast(".")
 			incremental = true
 			freeCompilerArgs = listOf(
 				"-opt-in=kotlin.RequiresOptIn"
