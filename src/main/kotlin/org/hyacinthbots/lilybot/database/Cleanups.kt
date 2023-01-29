@@ -10,8 +10,10 @@ import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
+import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
@@ -62,16 +64,19 @@ object Cleanups : KordExKoinComponent {
 
 			if (leaveDuration.inWholeDays > 30) {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
-				ModerationConfigCollection().clearConfig(it.guildId)
-				SupportConfigCollection().clearConfig(it.guildId)
+				GithubCollection().removeDefaultRepo(it.guildId)
 				LoggingConfigCollection().clearConfig(it.guildId)
-				UtilityConfigCollection().clearConfig(it.guildId)
+				LogUploadingBlacklistCollection().clearBlacklist(it.guildId)
+				ModerationConfigCollection().clearConfig(it.guildId)
+				NewsChannelPublishingCollection().clearAutoPublishingForGuild(it.guildId)
+				ReminderCollection().removeGuildReminders(it.guildId)
+				RoleMenuCollection().removeAllRoleMenus(it.guildId)
+				SupportConfigCollection().clearConfig(it.guildId)
 				TagsCollection().clearTags(it.guildId)
+				ThreadsCollection().removeGuildThreads(it.guildId)
+				UtilityConfigCollection().clearConfig(it.guildId)
 				WarnCollection().clearWarns(it.guildId)
 				WelcomeChannelCollection().removeWelcomeChannelsForGuild(it.guildId, kord)
-				RoleMenuCollection().removeAllRoleMenus(it.guildId)
-				ReminderCollection().removeGuildReminders(it.guildId)
-				GithubCollection().removeDefaultRepo(it.guildId)
 				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
 				deletedGuildData += 1 // Increment the counter for logging
 			}

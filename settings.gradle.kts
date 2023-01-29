@@ -1,9 +1,10 @@
 rootProject.name = "LilyBot"
 
 dependencyResolutionManagement {
-    versionCatalogs {
-        create("libs") {
-            from(files("libs.versions.toml"))
-        }
-    }
+	@Suppress("UnstableApiUsage")
+	versionCatalogs {
+		create("libs") {
+			from(files("libs.versions.toml"))
+		}
+	}
 }

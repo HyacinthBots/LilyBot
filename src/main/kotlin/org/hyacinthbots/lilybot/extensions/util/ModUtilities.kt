@@ -51,6 +51,7 @@ import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
@@ -465,17 +466,18 @@ class ModUtilities : Extension() {
 
 								// Reset
 								AutoThreadingCollection().deleteGuildAutoThreads(guild!!.id)
-								LoggingConfigCollection().clearConfig(guild!!.id)
-								ModerationConfigCollection().clearConfig(guild!!.id)
-								SupportConfigCollection().clearConfig(guild!!.id)
-								UtilityConfigCollection().clearConfig(guild!!.id)
 								GalleryChannelCollection().removeAll(guild!!.id)
 								GithubCollection().removeDefaultRepo(guild!!.id)
 								LogUploadingBlacklistCollection().clearBlacklist(guild!!.id)
+								LoggingConfigCollection().clearConfig(guild!!.id)
+								ModerationConfigCollection().clearConfig(guild!!.id)
+								NewsChannelPublishingCollection().clearAutoPublishingForGuild(guild!!.id)
 								ReminderCollection().removeGuildReminders(guild!!.id)
 								RoleMenuCollection().removeAllRoleMenus(guild!!.id)
+								SupportConfigCollection().clearConfig(guild!!.id)
 								TagsCollection().clearTags(guild!!.id)
 								ThreadsCollection().removeGuildThreads(guild!!.id)
+								UtilityConfigCollection().clearConfig(guild!!.id)
 								WarnCollection().clearWarns(guild!!.id)
 								WelcomeChannelCollection().removeWelcomeChannelsForGuild(guild!!.id, kord)
 							}

@@ -14,7 +14,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.utils.BUILD_ID
-import java.util.Properties
+import org.hyacinthbots.lilybot.utils.LILY_VERSION
 
 /**
  * This class contains the info commands that allow users to get a better idea of how to use the bot.
@@ -23,12 +23,6 @@ import java.util.Properties
  */
 class InfoCommands : Extension() {
 	override val name = "info-commands"
-
-	private val versionProperties = Properties()
-
-	init {
-		versionProperties.load(this.javaClass.getResourceAsStream("/version.properties"))
-	}
 
 	override suspend fun setup() {
 		/**
@@ -133,7 +127,7 @@ class InfoCommands : Extension() {
 						field {
 							name = "Version"
 							value =
-								"${versionProperties.getProperty("version") ?: "??"} ($BUILD_ID)"
+								"$LILY_VERSION ($BUILD_ID)"
 							inline = true
 						}
 						field {

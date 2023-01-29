@@ -2,6 +2,7 @@ package org.hyacinthbots.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.annotations.DoNotChain
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
@@ -940,6 +941,7 @@ class ModerationCommands : Extension() {
 							name = "Total strikes"
 							value = strikes.toString()
 						}
+						color = DISCORD_RED
 					}
 					if (config.autoPunishOnWarn == true && strikes != 1) {
 						embed {
@@ -957,7 +959,7 @@ class ModerationCommands : Extension() {
 					channel.createEmbed {
 						title = "Warning"
 						description = "${arguments.userArgument.mention} has been warned by a moderator"
-						color = DISCORD_BLACK
+						color = DISCORD_RED
 					}
 				}
 			}
@@ -1014,7 +1016,7 @@ class ModerationCommands : Extension() {
 				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
 					title = "Warning Removal"
-					color = DISCORD_BLACK
+					color = DISCORD_GREEN
 					timestamp = Clock.System.now()
 					baseModerationEmbed(null, targetUser, user)
 					dmNotificationStatusEmbedField(dmResult)
@@ -1029,7 +1031,7 @@ class ModerationCommands : Extension() {
 					channel.createEmbed {
 						title = "Warning Removal"
 						description = "${arguments.userArgument.mention} had a warn strike removed by a moderator."
-						color = DISCORD_BLACK
+						color = DISCORD_GREEN
 					}
 				}
 			}
