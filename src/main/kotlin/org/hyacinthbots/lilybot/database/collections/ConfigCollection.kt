@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION_ERROR")
-
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
