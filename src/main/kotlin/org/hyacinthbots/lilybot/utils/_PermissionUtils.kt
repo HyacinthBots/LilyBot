@@ -88,10 +88,16 @@ suspend inline fun getLoggingChannelWithPerms(
  * @author tempest15
  * @since 3.5.4
  */
-suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessageChannel? =
-	inputGuild.channels.toList().sorted().firstOrNull {
-		it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)
-	}?.asChannelOfOrNull()
+suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessageChannel? {
+	var firstUsable: GuildMessageChannel? = null
+	inputGuild.channels.toList().toSortedSet().forEach {
+		if (it.botHasPermissions(Permission.ViewChannel) && it.botHasPermissions(Permission.SendMessages)) {
+			firstUsable = it.asChannelOfOrNull()
+			return@forEach
+		}
+	}
+	return firstUsable
+}
 
 /**
  * Gets a guild's system channel as designated by Discord, or null if said channel is invalid or doesn't exist.
