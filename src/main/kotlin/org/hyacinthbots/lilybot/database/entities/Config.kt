@@ -37,7 +37,7 @@ data class LoggingConfigData(
  * channel for logging and the team for pinging.
  *
  * @property guildId The ID of the guild the config is for
- * @property enabled If the support module is enabled or not
+ * @property enabled If the moderation module is enabled or not
  * @property channel The ID of the action log for the guild
  * @property role The ID of the moderation role for the guild
  * @property quickTimeoutLength The length of timeout to apply when using the moderate menu

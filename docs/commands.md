@@ -35,17 +35,6 @@ Required Member Permissions: Manage Channels
 	* `channel` - The channel to view the auto-threading settings for. - Channel
 
 ---
-#### Command name: `config support`
-**Description**: Deprecated: Configure Lily's support system
-Required Member Permissions: Manage Server
-
-* **Arguments**:
-	* `enable-support` - Whether to enable the support system - Boolean
-	* `custom-message` - True if you'd like to add a custom message, false if you'd like the default. - Boolean
-	* `support-channel` - The channel to be used for creating support threads in. - Optional Channel
-	* `support-role` - The role to add to support threads, when one is created. - Optional Role
-
----
 #### Command name: `config moderation`
 **Description**: Configure Lily's moderation system
 Required Member Permissions: Manage Server
@@ -679,7 +668,7 @@ None
 
 ---
 ### Command name: `command-list`
-Description: Shows a list of HyacinthDev2's commands!
+Description: Shows a list of HyacinthDev1's commands!
 
 * Arguments:
 None

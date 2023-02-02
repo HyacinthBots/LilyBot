@@ -141,7 +141,7 @@ class LogUploading : Extension() {
 							gis.readAllBytes().decodeToString()
 						}
 
-						// Ask the user to remove NEC to ease the debugging on the support team
+						// Ask the user to remove NEC to ease the debugging on mobile users and others
 						val necText = "at Not Enough Crashes"
 						val indexOfNECText = logContent.indexOf(necText)
 						if (indexOfNECText != -1) {
@@ -166,7 +166,7 @@ class LogUploading : Extension() {
 									title = "Do you want to upload this file to mclo.gs?"
 									description =
 										"mclo.gs is a website that allows users to share minecraft logs " +
-												"through public posts.\nIt's easier for the support team to view " +
+												"through public posts.\nIt's easier for the mobile users to view " +
 												"the file on mclo.gs, do you want it to be uploaded?"
 									footer {
 										text =
