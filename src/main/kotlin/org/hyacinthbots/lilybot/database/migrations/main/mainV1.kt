@@ -3,7 +3,7 @@ package org.hyacinthbots.lilybot.database.migrations.main
 import org.hyacinthbots.lilybot.database.entities.StatusData
 import org.litote.kmongo.coroutine.CoroutineDatabase
 
-@Suppress("UnusedPrivateMember")
+@Suppress("UnusedPrivateMember", "UNUSED_PARAMETER")
 // This was commented out due to the remindme data class being removed
 suspend fun mainV1(db: CoroutineDatabase, configDb: CoroutineDatabase) {
 // 	val reminders = db.getCollection<RemindMeData>("remindMeData")

@@ -31,7 +31,7 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: If your running your own LilyBot instance, please provide some logs that generated when your issue occured. This will be automatically formatted into code, so no need for backticks.
+      description: If your running your own LilyBot instance, please provide some logs that generated when your issue occurred. This will be automatically formatted into code, so no need for backticks.
       render: bash
   - type: input
     id: lily-version
