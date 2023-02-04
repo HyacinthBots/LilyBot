@@ -98,7 +98,6 @@ class PublicUtilities : Extension() {
 					val requesterAsMember = requester?.asMemberOrNull(guild!!.id)
 					val self = this@PublicUtilities.kord.getSelf().asMemberOrNull(guild!!.id)
 
-					@Suppress("UnclearPrecedenceOfBinaryExpression")
 					if (requesterAsMember?.getTopRole()?.getPosition() != null &&
 						self?.getTopRole()?.getPosition() == null
 					) {
@@ -106,8 +105,8 @@ class PublicUtilities : Extension() {
 							content = "You have a role and Lily does not, so she cannot change your nickname."
 						}
 						return@action
-					} else if (requesterAsMember?.getTopRole()?.getPosition() ?: 0 >
-						self?.getTopRole()?.getPosition() ?: 0
+					} else if ((requesterAsMember?.getTopRole()?.getPosition() ?: 0) >
+						(self?.getTopRole()?.getPosition() ?: 0)
 					) {
 						respond {
 							content = "Your highest role is above Lily's, so she cannot change your nickname."
@@ -170,8 +169,8 @@ class PublicUtilities : Extension() {
 															"Please fix Lily's permissions and try again"
 												}
 												return@button
-											} else if (requesterAsMember?.getTopRole()?.getPosition() ?: 0 >
-												self?.getTopRole()?.getPosition() ?: 0
+											} else if ((requesterAsMember?.getTopRole()?.getPosition() ?: 0) >
+												(self?.getTopRole()?.getPosition() ?: 0)
 											) {
 												respond {
 													content = "This user's highest role is above Lily's, " +

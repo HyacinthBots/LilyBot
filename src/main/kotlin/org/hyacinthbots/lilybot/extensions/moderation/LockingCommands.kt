@@ -10,6 +10,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingStri
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -17,6 +18,7 @@ import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
+import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import kotlinx.datetime.Clock
@@ -61,17 +63,8 @@ class LockingCommands : Extension() {
 
 				action {
 					val channelArg = arguments.channel ?: event.interaction.getChannelOrNull()
-					var channelParent: TextChannel? = null
-					if (channelArg is TextChannelThread) {
-						channelParent = channelArg.getParent()
-					}
-					val targetChannel = channelParent ?: channelArg?.asChannelOfOrNull()
-					if (targetChannel == null) {
-						respond {
-							content = "I can't fetch the targeted channel properly."
-							return@action
-						}
-					}
+					val channelParent = getChannelParent(channelArg)
+					val targetChannel = getTargetChannel(channelParent, channelArg)
 
 					val channelPerms = targetChannel!!.getPermissionOverwritesForRole(guild!!.id)
 					if (channelPerms != null && channelPerms.denied.contains(Permission.SendMessages)) {
@@ -204,17 +197,8 @@ class LockingCommands : Extension() {
 
 				action {
 					val channelArg = arguments.channel ?: event.interaction.getChannelOrNull()
-					var channelParent: TextChannel? = null
-					if (channelArg is TextChannelThread) {
-						channelParent = channelArg.getParent()
-					}
-					val targetChannel = channelParent ?: channelArg?.asChannelOfOrNull()
-					if (targetChannel == null) {
-						respond {
-							content = "I can't fetch the targeted channel properly."
-							return@action
-						}
-					}
+					val channelParent = getChannelParent(channelArg)
+					val targetChannel = getTargetChannel(channelParent, channelArg)
 
 					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
 					if (everyoneRole == null) {
@@ -319,6 +303,49 @@ class LockingCommands : Extension() {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Gets the parent of the channel argument.
+	 *
+	 * @param channelArg The channel to get the parent of
+	 * @return The channel parent as a [TextChannel]
+	 *
+	 * @author NoComment1105
+	 * @since 4.8.0
+	 */
+	private suspend inline fun getChannelParent(channelArg: Channel?): TextChannel? {
+		var channelParent: TextChannel? = null
+		if (channelArg is TextChannelThread) {
+			channelParent = channelArg.getParent()
+		}
+
+		return channelParent
+	}
+
+	/**
+	 * Gets the target channel and responds appropriately if unable to get it.
+	 *
+	 * @param channelParent The parent channel if that is the target
+	 * @param channelArg The channel argument, if that is the target
+	 * @return The channel as a [TextChannel]
+	 *
+	 * @author NoComment1105
+	 * @since 4.8.0
+	 */
+	private suspend inline fun EphemeralInteractionContext.getTargetChannel(
+        channelParent: TextChannel?,
+        channelArg: Channel?
+    ): TextChannel? {
+		val targetChannel = channelParent ?: channelArg?.asChannelOfOrNull()
+		if (targetChannel == null) {
+			respond {
+				content = "I can't fetch the targeted channel properly."
+				return null
+			}
+		}
+
+		return targetChannel
 	}
 
 	inner class LockChannelArgs : Arguments() {

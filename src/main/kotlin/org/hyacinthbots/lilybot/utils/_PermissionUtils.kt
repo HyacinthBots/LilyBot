@@ -216,7 +216,6 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 	// Get the users roles into a List of Snowflakes
 	val roles = member.roles.toList().map { it.id }
 	// If the user is a bot, return
-	@Suppress("UnnecessaryParentheses")
 	if (member.isBot) {
 		respond {
 			content = "You cannot $commandName bot users!"

@@ -154,7 +154,7 @@ fun DateTimePeriod?.interval(): String? {
 /**
  * Get this message's contents, trimmed to the [desiredLength] of characters.
  * If the message exceeds that length, it will be truncated and an ellipsis appended.
- * If the message is smaller than the [desiredLength], the content length is used and an elipsis appended
+ * If the message is smaller than the [desiredLength], the content length is used and an ellipsis appended
  *
  * @param desiredLength The desired length to limit the string too
  * @author NoComment1105
