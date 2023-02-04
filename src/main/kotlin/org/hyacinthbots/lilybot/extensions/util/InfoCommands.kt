@@ -165,7 +165,7 @@ class InfoCommands : Extension() {
 		 */
 		publicSlashCommand {
 			name = "invite"
-			description = "Get an invite link for Lily!"
+			description = "Get an invitation link for Lily!"
 
 			action {
 				respond {

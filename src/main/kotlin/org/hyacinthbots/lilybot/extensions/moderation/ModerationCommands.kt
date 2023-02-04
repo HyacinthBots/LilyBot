@@ -1106,7 +1106,7 @@ class ModerationCommands : Extension() {
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the ban"
 			defaultValue = true
 		}
 
@@ -1140,7 +1140,7 @@ class ModerationCommands : Extension() {
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the soft-ban"
 			defaultValue = true
 		}
 
@@ -1183,7 +1183,7 @@ class ModerationCommands : Extension() {
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the kick"
 			defaultValue = true
 		}
 
@@ -1225,7 +1225,7 @@ class ModerationCommands : Extension() {
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the timeout"
 			defaultValue = true
 		}
 
@@ -1261,14 +1261,14 @@ class ModerationCommands : Extension() {
 		/** The reason for the warning. */
 		val reason by defaultingString {
 			name = "reason"
-			description = "Reason for warn"
+			description = "Reason for warning"
 			defaultValue = "No reason provided"
 		}
 
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the warning"
 			defaultValue = true
 		}
 
@@ -1289,7 +1289,7 @@ class ModerationCommands : Extension() {
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the warning"
 			defaultValue = true
 		}
 	}

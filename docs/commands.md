@@ -134,7 +134,7 @@ None
 
 ---
 #### Command name: `github user`
-**Description**: Search github for a User/Organisation
+**Description**: Search GitHub for a User/Organisation
 
 * **Arguments**:
 	* `username` - The name of the User/Organisation you wish to search for - String
@@ -175,7 +175,7 @@ Description: Learn about Lily, and get uptime data!
 None
 ---
 ### Command name: `invite`
-Description: Get an invite link for Lily!
+Description: Get an invitation link for Lily!
 
 * Arguments:
 None
@@ -287,7 +287,7 @@ Description: Bans a user.
 	* `user` - Person to ban - User
 	* `delete-message-days` - The number of days worth of messages to delete - Int
 	* `reason` - The reason for the ban - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the ban - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -299,7 +299,7 @@ Description: Soft-bans a user.
 	* `user` - Person to Soft ban - User
 	* `delete-message-days` - The number of days worth of messages to delete - Optional Int/Long
 	* `reason` - The reason for the ban - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the soft-ban - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -319,7 +319,7 @@ Description: Kicks a user.
 * Arguments:
 	* `user` - Person to kick - User
 	* `reason` - The reason for the Kick - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the kick - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -339,7 +339,7 @@ Description: Times out a user.
 	* `user` - Person to timeout - User
 	* `duration` - Duration of timeout - Coalescing Optional Duration
 	* `reason` - Reason for timeout - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the timeout - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -358,8 +358,8 @@ Description: Warns a user.
 
 * Arguments:
 	* `user` - Person to warn - User
-	* `reason` - Reason for warn - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `reason` - Reason for warning - Defaulting String
+	* `dm` - Whether to send a direct message to the user about the warning - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -369,7 +369,7 @@ Description: Removes a user's warnings
 
 * Arguments:
 	* `user` - Person to remove warn from - User
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the warning - Defaulting Boolean
 
 ---
 #### Command name: `news-publishing set`

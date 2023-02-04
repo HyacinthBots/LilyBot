@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION_ERROR")
-
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
@@ -148,6 +146,7 @@ class SupportConfigCollection : KordExKoinComponent {
 	 * @author Miss Corruption
 	 * @since 4.0.0
 	 */
+	@Suppress("MemberVisibilityCanBePrivate")
 	suspend inline fun setConfig(supportConfig: SupportConfigData) {
 		collection.deleteOne(SupportConfigData::guildId eq supportConfig.guildId)
 		collection.insertOne(supportConfig)
