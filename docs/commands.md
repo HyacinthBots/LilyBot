@@ -160,7 +160,8 @@ Description: Send an announcement to all guilds Lily is in
 **Required Member Permissions**: Administrator
 
 * Arguments:
-None
+	* `target-guild` - The guild to send the announcement too - Optional Snowflake
+
 ---
 ### Command name: `help`
 Description: Get help with using Lily!
