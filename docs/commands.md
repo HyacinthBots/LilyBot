@@ -680,7 +680,7 @@ None
 
 ---
 ### Command name: `command-list`
-Description: Shows a list of HyacinthDev1's commands!
+Description: Shows a list of LilyBot's commands!
 
 * Arguments:
 None

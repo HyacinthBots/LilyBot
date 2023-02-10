@@ -15,7 +15,7 @@ github-api = "1.313"
 kmongo = "4.8.0"
 cozy-welcome = "1.0-SNAPSHOT"
 dma = "v0.2.0"
-docgenerator = "0.1.1"
+docgenerator = "0.1.2"
 
 [libraries]
 kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }

@@ -25,11 +25,6 @@ repositories {
 	}
 
 	maven {
-		name = "Sonatype Releases"
-		url = uri("https://s01.oss.sonatype.org/content/repositories/releases/")
-	}
-
-	maven {
 		name = "Sonatype Snapshots"
 		url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
 	}
