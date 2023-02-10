@@ -65,13 +65,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannelOfOrNull<ThreadChannel>()
-					if (threadChannel == null) {
-						respond {
-							content = "Are you sure this channel is a thread? If it is, I can't fetch it properly."
-							return@action
-						}
-					}
+					val threadChannel = getAsThreadChannel()
 
 					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
@@ -98,13 +92,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannelOfOrNull<ThreadChannel>()
-					if (threadChannel == null) {
-						respond {
-							content = "Are you sure this channel is a thread? If it is, I can't fetch it properly."
-							return@action
-						}
-					}
+					val threadChannel = getAsThreadChannel()
 
 					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
@@ -169,13 +157,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannelOfOrNull<ThreadChannel>()
-					if (threadChannel == null) {
-						respond {
-							content = "Are you sure this channel is a thread? If it is, I can't fetch it properly."
-							return@action
-						}
-					}
+					val threadChannel = getAsThreadChannel()
 					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 
 					val oldOwnerId = ThreadsCollection().getThread(threadChannel!!.id)?.ownerId ?: threadChannel.ownerId
@@ -241,13 +223,7 @@ class ThreadControl : Extension() {
 				}
 
 				action {
-					val threadChannel = channel.asChannelOfOrNull<ThreadChannel>()
-					if (threadChannel == null) {
-						respond {
-							content = "Are you sure this channel is a thread? If it is, I can't fetch it properly."
-							return@action
-						}
-					}
+					val threadChannel = getAsThreadChannel()
 					val member = user.asMemberOrNull(guild!!.id) ?: return@action
 					if (!ownsThreadOrModerator(threadChannel!!, member)) return@action
 
@@ -362,6 +338,26 @@ class ThreadControl : Extension() {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Gets the event channel as a thread channel, and responds appropriately if it cannot be gotten.
+	 *
+	 * @return The channel as a [ThreadChannel]
+	 *
+	 * @author NoComment1105
+	 * @since 4.8.0
+	 */
+	private suspend inline fun EphemeralSlashCommandContext<*, *>.getAsThreadChannel(): ThreadChannel? {
+		val threadChannel = channel.asChannelOfOrNull<ThreadChannel>()
+		if (threadChannel == null) {
+			respond {
+				content = "Are you sure this channel is a thread? If it is, I can't fetch it properly."
+				return null
+			}
+		}
+
+		return threadChannel
 	}
 
 	inner class ThreadRenameArgs : Arguments() {

@@ -490,7 +490,7 @@ class AutoThreading : Extension() {
 		message: Message?,
 		proxiedMessage: PKMessage? = null
 	) {
-		val memberFromPk = if (proxiedMessage != null) event.getGuild().getMember(proxiedMessage.sender) else null
+		val memberFromPk = if (proxiedMessage != null) event.getGuild().getMemberOrNull(proxiedMessage.sender) else null
 
 		val channel: TextChannel = if (proxiedMessage == null) {
 			message?.channel?.asChannelOfOrNull() ?: return
