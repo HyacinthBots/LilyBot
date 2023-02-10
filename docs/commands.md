@@ -35,17 +35,6 @@ Required Member Permissions: Manage Channels
 	* `channel` - The channel to view the auto-threading settings for. - Channel
 
 ---
-#### Command name: `config support`
-**Description**: Deprecated: Configure Lily's support system
-Required Member Permissions: Manage Server
-
-* **Arguments**:
-	* `enable-support` - Whether to enable the support system - Boolean
-	* `custom-message` - True if you'd like to add a custom message, false if you'd like the default. - Boolean
-	* `support-channel` - The channel to be used for creating support threads in. - Optional Channel
-	* `support-role` - The role to add to support threads, when one is created. - Optional Role
-
----
 #### Command name: `config moderation`
 **Description**: Configure Lily's moderation system
 Required Member Permissions: Manage Server
@@ -134,7 +123,7 @@ None
 
 ---
 #### Command name: `github user`
-**Description**: Search github for a User/Organisation
+**Description**: Search GitHub for a User/Organisation
 
 * **Arguments**:
 	* `username` - The name of the User/Organisation you wish to search for - String
@@ -160,7 +149,8 @@ Description: Send an announcement to all guilds Lily is in
 **Required Member Permissions**: Administrator
 
 * Arguments:
-None
+	* `target-guild` - The guild to send the announcement too - Optional Snowflake
+
 ---
 ### Command name: `help`
 Description: Get help with using Lily!
@@ -175,7 +165,7 @@ Description: Learn about Lily, and get uptime data!
 None
 ---
 ### Command name: `invite`
-Description: Get an invite link for Lily!
+Description: Get an invitation link for Lily!
 
 * Arguments:
 None
@@ -287,7 +277,7 @@ Description: Bans a user.
 	* `user` - Person to ban - User
 	* `delete-message-days` - The number of days worth of messages to delete - Int
 	* `reason` - The reason for the ban - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the ban - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -299,7 +289,7 @@ Description: Soft-bans a user.
 	* `user` - Person to Soft ban - User
 	* `delete-message-days` - The number of days worth of messages to delete - Optional Int/Long
 	* `reason` - The reason for the ban - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the soft-ban - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -319,7 +309,7 @@ Description: Kicks a user.
 * Arguments:
 	* `user` - Person to kick - User
 	* `reason` - The reason for the Kick - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the kick - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -339,7 +329,7 @@ Description: Times out a user.
 	* `user` - Person to timeout - User
 	* `duration` - Duration of timeout - Coalescing Optional Duration
 	* `reason` - Reason for timeout - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the timeout - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -358,8 +348,8 @@ Description: Warns a user.
 
 * Arguments:
 	* `user` - Person to warn - User
-	* `reason` - Reason for warn - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `reason` - Reason for warning - Defaulting String
+	* `dm` - Whether to send a direct message to the user about the warning - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -369,7 +359,7 @@ Description: Removes a user's warnings
 
 * Arguments:
 	* `user` - Person to remove warn from - User
-	* `dm` - Whether to send a direct message to the user about the warn - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the warning - Defaulting Boolean
 
 ---
 #### Command name: `news-publishing set`
@@ -679,7 +669,7 @@ None
 
 ---
 ### Command name: `command-list`
-Description: Shows a list of HyacinthDev2's commands!
+Description: Shows a list of LilyBot's commands!
 
 * Arguments:
 None

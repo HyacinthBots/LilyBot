@@ -16,7 +16,6 @@ import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
-import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -71,7 +70,6 @@ object Cleanups : KordExKoinComponent {
 				NewsChannelPublishingCollection().clearAutoPublishingForGuild(it.guildId)
 				ReminderCollection().removeGuildReminders(it.guildId)
 				RoleMenuCollection().removeAllRoleMenus(it.guildId)
-				SupportConfigCollection().clearConfig(it.guildId)
 				TagsCollection().clearTags(it.guildId)
 				ThreadsCollection().removeGuildThreads(it.guildId)
 				UtilityConfigCollection().clearConfig(it.guildId)

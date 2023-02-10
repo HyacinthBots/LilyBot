@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION_ERROR")
-
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
@@ -7,7 +5,6 @@ import dev.kord.common.entity.Snowflake
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
-import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
@@ -108,60 +105,6 @@ class ModerationConfigCollection : KordExKoinComponent {
 	 */
 	suspend inline fun clearConfig(inputGuildId: Snowflake) =
 		collection.deleteOne(ModerationConfigData::guildId eq inputGuildId)
-}
-
-/**
- * This class contains the functions for interacting with the [Support Config Database][SupportConfigData]. This class
- * contains functions for getting, setting and removing support config.
- *
- * @since 4.0.0
- * @see getConfig
- * @see setConfig
- * @see clearConfig
- */
-@Deprecated(
-	"Replaced with auto threading collection",
-	ReplaceWith("AutoThreadingCollection", "org.hyacinthbots.database.collections.AutoThreadingCollection"),
-	DeprecationLevel.WARNING
-)
-class SupportConfigCollection : KordExKoinComponent {
-	private val configDb: Database by inject()
-
-	@PublishedApi
-	internal val collection = configDb.configDatabase.getCollection<SupportConfigData>()
-
-	/**
-	 * Gets the support config for the given guild using the [guildId][inputGuildId].
-	 *
-	 * @param inputGuildId The guild id to get the config for.
-	 * @return The support config for the given guild.
-	 * @author NoComment1105
-	 * @since 4.0.0
-	 */
-	suspend inline fun getConfig(inputGuildId: Snowflake): SupportConfigData? =
-		collection.findOne(SupportConfigData::guildId eq inputGuildId)
-
-	/**
-	 * Adds the given [supportConfig] to the database.
-	 *
-	 * @param supportConfig The new config values for the support config you want to set.
-	 * @author Miss Corruption
-	 * @since 4.0.0
-	 */
-	suspend inline fun setConfig(supportConfig: SupportConfigData) {
-		collection.deleteOne(SupportConfigData::guildId eq supportConfig.guildId)
-		collection.insertOne(supportConfig)
-	}
-
-	/**
-	 * Clears the support config for the given guild using the [guildId][inputGuildId].
-	 *
-	 * @param inputGuildId The guild id to clear the config for.
-	 * @author NoComment1105
-	 * @since 4.0.0
-	 */
-	suspend inline fun clearConfig(inputGuildId: Snowflake) =
-		collection.deleteOne(SupportConfigData::guildId eq inputGuildId)
 }
 
 /**

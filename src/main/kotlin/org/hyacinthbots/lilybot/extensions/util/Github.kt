@@ -393,7 +393,7 @@ class Github : Extension() {
 
 			publicSubCommand(::UserArgs) {
 				name = "user"
-				description = "Search github for a User/Organisation"
+				description = "Search GitHub for a User/Organisation"
 
 				action {
 					val ghUser: GHUser?

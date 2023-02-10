@@ -3,13 +3,30 @@ package org.hyacinthbots.lilybot.utils
 import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.utils.loadModule
+import com.kotlindiscord.kord.extensions.utils.toDuration
+import dev.kord.common.entity.ChannelType
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.RoleBehavior
+import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import mu.KotlinLogging
 import org.hyacinthbots.discordmoderationactions.enums.DmResult
 import org.hyacinthbots.lilybot.database.Database
@@ -24,7 +41,6 @@ import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollec
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
-import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
@@ -155,7 +171,7 @@ fun DateTimePeriod?.interval(): String? {
 /**
  * Get this message's contents, trimmed to the [desiredLength] of characters.
  * If the message exceeds that length, it will be truncated and an ellipsis appended.
- * If the message is smaller than the [desiredLength], the content length is used and an elipsis appended
+ * If the message is smaller than the [desiredLength], the content length is used and an ellipsis appended
  *
  * @param desiredLength The desired length to limit the string too
  * @author NoComment1105
@@ -202,6 +218,65 @@ suspend inline fun Extension.updateDefaultPresence() {
 }
 
 /**
+ * A quick function to generate the contents of the bulk delete file.
+ *
+ * @param messages The set of message being deleted
+ * @return A string of the file content
+ *
+ * @author NoComment1105
+ * @since 4.7.0
+ */
+fun generateBulkDeleteFile(messages: Set<Message>): String =
+	"# Messages\n\n**Total:** ${messages.size}\n\n" +
+			messages.reversed().joinToString("\n") { // Reversed for chronology
+				"*  [${
+					it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
+				} UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
+			}
+
+/**
+ * Gets the messages from the guild channels that will be deleted.
+ * **This function is very, very intensive** It should be used in minimal quantities and future efforts should be made
+ * to optimise it further. Yes, it was worse that its current state.
+ *
+ * @param guild The guild to get the messages from
+ * @param user The user that send the messages
+ * @param messages The number of days worth of messages to delete
+ * @param kord The kord instance
+ * @return A [MutableSet] of [Message]s that are being deleted
+ *
+ * @author NoComment1105
+ * @since 4.7.0
+ */
+suspend inline fun getMessagesForBanDelete(
+	guild: GuildBehavior?,
+	user: User,
+	messages: Int?,
+	kord: Kord
+): MutableSet<Message> {
+	if (messages == null || messages == 0) return mutableSetOf()
+
+	val checkTime = Clock.System.now().minus(DateTimePeriod(days = messages).toDuration(TimeZone.UTC))
+
+	val fullSet = mutableSetOf<Message>()
+
+	val shortList = guild!!.channels.filter {
+		it.type == ChannelType.GuildText &&
+				it.asChannelOf<TextChannel>().getEffectivePermissions(kord.selfId).contains(Permission.ViewChannel)
+	}.map { it.asChannelOfOrNull<GuildMessageChannel>() }.toList()
+
+	shortList.forEach {
+		val messagesSet = it?.getMessagesBefore(Snowflake.max)?.filter { message ->
+			message.author == user && message.timestamp.epochSeconds > checkTime.epochSeconds && message.content.isNotEmpty()
+		}?.toSet()?.reversed() // Glorious chronology
+
+		if (messagesSet != null) fullSet.addAll(messagesSet)
+	}
+
+	return fullSet
+}
+
+/**
  * This function loads the database and checks if it is up-to-date. If it isn't, it will update the database via
  * migrations.
  *
@@ -228,7 +303,6 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { ReminderCollection() } bind ReminderCollection::class
 				single { RoleMenuCollection() } bind RoleMenuCollection::class
 				single { StatusCollection() } bind StatusCollection::class
-				single { SupportConfigCollection() } bind SupportConfigCollection::class
 				single { TagsCollection() } bind TagsCollection::class
 				single { ThreadsCollection() } bind ThreadsCollection::class
 				single { UptimeCollection() } bind UptimeCollection::class

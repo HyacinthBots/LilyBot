@@ -1,6 +1,6 @@
 # Using LilyBot
 
-This is a guide on how to **add the official instance of Lily to your sever**.
+This is a guide on how to **add the official instance of Lily to your Discord sever**.
 If you're looking to set up a development environment for Lily,
 try our [development guide](https://github.com/HyacinthBots/LilyBot/blob/main/docs/development-guide.md).
 

@@ -2,6 +2,7 @@ package org.hyacinthbots.lilybot.extensions.moderation
 
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.annotations.DoNotChain
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
@@ -46,6 +47,8 @@ import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
+import io.ktor.client.request.forms.ChannelProvider
+import io.ktor.util.cio.toByteReadChannel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
@@ -65,8 +68,10 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
+import org.hyacinthbots.lilybot.utils.generateBulkDeleteFile
 import org.hyacinthbots.lilybot.utils.getDmResult
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.getMessagesForBanDelete
 import org.hyacinthbots.lilybot.utils.interval
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 import org.hyacinthbots.lilybot.utils.requiredConfigs
@@ -488,6 +493,10 @@ class ModerationCommands : Extension() {
 					return@action
 				}
 
+				val fullSet = getMessagesForBanDelete(guild, arguments.userArgument, arguments.messages, event.kord)
+
+				val messages = if (fullSet.isNotEmpty()) generateBulkDeleteFile(fullSet) else null
+
 				val action = ban(arguments.userArgument) {
 					reason = arguments.reason
 					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
@@ -497,23 +506,34 @@ class ModerationCommands : Extension() {
 					deleteMessageDuration = DateTimePeriod(days = arguments.messages)
 					this.loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
 					actionEmbed {
-						title = "Banned a user"
-						description = "${arguments.userArgument.mention} has been banned!"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmResult)
-						timestamp = Clock.System.now()
-						field {
-							name = "Days of messages deleted:"
-							value = arguments.messages.toString()
-							inline = false
+						embed {
+							title = "Banned a user"
+							description = "${arguments.userArgument.mention} has been banned!"
+							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+							image = arguments.image?.url
+
+							dmNotificationStatusEmbedField(dmResult)
+							timestamp = Clock.System.now()
+							field {
+								name = "Days of messages deleted:"
+								value = arguments.messages.toString()
+								inline = false
+							}
+						}
+						if (messages != null) {
+							addFile(
+								"messages.md",
+								ChannelProvider { messages.byteInputStream().toByteReadChannel() }
+							)
 						}
 					}
 
 					publicActionEmbed {
-						title = "Banned a user"
-						description = "${arguments.userArgument.mention} has been banned!"
-						color = DISCORD_BLACK
+						embed {
+							title = "Banned a user"
+							description = "${arguments.userArgument.mention} has been banned!"
+							color = DISCORD_BLACK
+						}
 					}
 
 					dmEmbed {
@@ -555,6 +575,10 @@ class ModerationCommands : Extension() {
 					return@action
 				}
 
+				val fullSet = getMessagesForBanDelete(guild, arguments.userArgument, arguments.messages, event.kord)
+
+				val messages = if (fullSet.isNotEmpty()) generateBulkDeleteFile(fullSet) else null
+
 				val action = softban(arguments.userArgument) {
 					reason = arguments.reason
 					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
@@ -564,22 +588,32 @@ class ModerationCommands : Extension() {
 					if (arguments.messages != null) deleteMessageDuration = DateTimePeriod(days = arguments.messages!!)
 					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
 					actionEmbed {
-						title = "Soft-Banned a user"
-						description = "${arguments.userArgument.mention} has been soft-banned!"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmResult)
-						timestamp = Clock.System.now()
-						field {
-							name = "Days of messages deleted"
-							value = "${arguments.messages ?: deleteMessageDuration.days}"
-							inline = false
+						embed {
+							title = "Soft-Banned a user"
+							description = "${arguments.userArgument.mention} has been soft-banned!"
+							image = arguments.image?.url
+							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+							dmNotificationStatusEmbedField(dmResult)
+							timestamp = Clock.System.now()
+							field {
+								name = "Days of messages deleted"
+								value = "${arguments.messages ?: deleteMessageDuration.days}"
+								inline = false
+							}
+						}
+						if (messages != null) {
+							addFile(
+								"messages.md",
+								ChannelProvider { messages.byteInputStream().toByteReadChannel() }
+							)
 						}
 					}
 
 					publicActionEmbed {
-						title = "Soft-Banned a user"
-						description = "${arguments.userArgument.mention} has been soft-banned!"
+						embed {
+							title = "Soft-Banned a user"
+							description = "${arguments.userArgument.mention} has been soft-banned!"
+						}
 					}
 
 					dmEmbed {
@@ -618,20 +652,22 @@ class ModerationCommands : Extension() {
 					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
 
 					actionEmbed {
-						title = "Unbanned a user"
-						description = "${arguments.userArgument.mention} has been unbanned!\n${
-							arguments.userArgument.id
-						} (${arguments.userArgument.tag})"
-						field {
-							name = "Reason:"
-							value = arguments.reason
+						embed {
+							title = "Unbanned a user"
+							description = "${arguments.userArgument.mention} has been unbanned!\n${
+								arguments.userArgument.id
+							} (${arguments.userArgument.tag})"
+							field {
+								name = "Reason:"
+								value = arguments.reason
+							}
+							footer {
+								text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+								icon = user.asUserOrNull()?.avatar?.url
+							}
+							timestamp = Clock.System.now()
+							color = DISCORD_GREEN
 						}
-						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
-							icon = user.asUserOrNull()?.avatar?.url
-						}
-						timestamp = Clock.System.now()
-						color = DISCORD_GREEN
 					}
 				}
 
@@ -672,17 +708,21 @@ class ModerationCommands : Extension() {
 					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
 
 					actionEmbed {
-						title = "Kicked a user"
-						description = "${arguments.userArgument.mention} has been kicked!"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmResult)
-						timestamp = Clock.System.now()
+						embed {
+							title = "Kicked a user"
+							description = "${arguments.userArgument.mention} has been kicked!"
+							image = arguments.image?.url
+							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+							dmNotificationStatusEmbedField(dmResult)
+							timestamp = Clock.System.now()
+						}
 					}
 
 					publicActionEmbed {
-						title = "Kicked a user"
-						description = "${arguments.userArgument.mention} has been kicked!"
+						embed {
+							title = "Kicked a user"
+							description = "${arguments.userArgument.mention} has been kicked!"
+						}
 					}
 
 					dmEmbed {
@@ -782,25 +822,29 @@ class ModerationCommands : Extension() {
 					sendDm = arguments.dm
 					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
 					actionEmbed {
-						title = "Timeout"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmResult)
-						timestamp = Clock.System.now()
-						field {
-							name = "Duration:"
-							value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
-							inline = false
+						embed {
+							title = "Timeout"
+							image = arguments.image?.url
+							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+							dmNotificationStatusEmbedField(dmResult)
+							timestamp = Clock.System.now()
+							field {
+								name = "Duration:"
+								value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
+								inline = false
+							}
 						}
 					}
 					publicActionEmbed {
-						title = "Timeout"
-						description = "${arguments.userArgument.mention} was timed out by a moderator"
-						color = DISCORD_BLACK
-						field {
-							name = "Duration:"
-							value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
-							inline = false
+						embed {
+							title = "Timeout"
+							description = "${arguments.userArgument.mention} was timed out by a moderator"
+							color = DISCORD_BLACK
+							field {
+								name = "Duration:"
+								value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
+								inline = false
+							}
 						}
 					}
 					dmEmbed {
@@ -838,19 +882,21 @@ class ModerationCommands : Extension() {
 					sendDm = arguments.dm
 					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
 					actionEmbed {
-						title = "Timeout Removed"
-						dmNotificationStatusEmbedField(dmResult)
-						field {
-							name = "User:"
-							value = "${arguments.userArgument.tag} \n${arguments.userArgument.id}"
-							inline = false
+						embed {
+							title = "Timeout Removed"
+							dmNotificationStatusEmbedField(dmResult)
+							field {
+								name = "User:"
+								value = "${arguments.userArgument.tag} \n${arguments.userArgument.id}"
+								inline = false
+							}
+							footer {
+								text = "Requested by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
+							}
+							timestamp = Clock.System.now()
+							color = DISCORD_BLACK
 						}
-						footer {
-							text = "Requested by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
-						}
-						timestamp = Clock.System.now()
-						color = DISCORD_BLACK
 					}
 					dmEmbed {
 						title = "Timeout removed in ${guild!!.asGuildOrNull()?.name}"
@@ -940,6 +986,7 @@ class ModerationCommands : Extension() {
 							name = "Total strikes"
 							value = strikes.toString()
 						}
+						color = DISCORD_RED
 					}
 					if (config.autoPunishOnWarn == true && strikes != 1) {
 						embed {
@@ -957,7 +1004,7 @@ class ModerationCommands : Extension() {
 					channel.createEmbed {
 						title = "Warning"
 						description = "${arguments.userArgument.mention} has been warned by a moderator"
-						color = DISCORD_BLACK
+						color = DISCORD_RED
 					}
 				}
 			}
@@ -1014,7 +1061,7 @@ class ModerationCommands : Extension() {
 				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
 					title = "Warning Removal"
-					color = DISCORD_BLACK
+					color = DISCORD_GREEN
 					timestamp = Clock.System.now()
 					baseModerationEmbed(null, targetUser, user)
 					dmNotificationStatusEmbedField(dmResult)
@@ -1029,7 +1076,7 @@ class ModerationCommands : Extension() {
 					channel.createEmbed {
 						title = "Warning Removal"
 						description = "${arguments.userArgument.mention} had a warn strike removed by a moderator."
-						color = DISCORD_BLACK
+						color = DISCORD_GREEN
 					}
 				}
 			}
@@ -1059,7 +1106,7 @@ class ModerationCommands : Extension() {
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the ban"
 			defaultValue = true
 		}
 
@@ -1093,7 +1140,7 @@ class ModerationCommands : Extension() {
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the soft-ban"
 			defaultValue = true
 		}
 
@@ -1136,7 +1183,7 @@ class ModerationCommands : Extension() {
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the kick"
 			defaultValue = true
 		}
 
@@ -1178,7 +1225,7 @@ class ModerationCommands : Extension() {
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the timeout"
 			defaultValue = true
 		}
 
@@ -1214,14 +1261,14 @@ class ModerationCommands : Extension() {
 		/** The reason for the warning. */
 		val reason by defaultingString {
 			name = "reason"
-			description = "Reason for warn"
+			description = "Reason for warning"
 			defaultValue = "No reason provided"
 		}
 
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the warning"
 			defaultValue = true
 		}
 
@@ -1242,7 +1289,7 @@ class ModerationCommands : Extension() {
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
-			description = "Whether to send a direct message to the user about the warn"
+			description = "Whether to send a direct message to the user about the warning"
 			defaultValue = true
 		}
 	}

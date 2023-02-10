@@ -55,7 +55,6 @@ import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollec
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
-import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -474,7 +473,6 @@ class ModUtilities : Extension() {
 								NewsChannelPublishingCollection().clearAutoPublishingForGuild(guild!!.id)
 								ReminderCollection().removeGuildReminders(guild!!.id)
 								RoleMenuCollection().removeAllRoleMenus(guild!!.id)
-								SupportConfigCollection().clearConfig(guild!!.id)
 								TagsCollection().clearTags(guild!!.id)
 								ThreadsCollection().removeGuildThreads(guild!!.id)
 								UtilityConfigCollection().clearConfig(guild!!.id)

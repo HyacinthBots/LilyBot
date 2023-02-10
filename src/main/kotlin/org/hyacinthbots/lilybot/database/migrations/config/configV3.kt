@@ -5,7 +5,7 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
-@Suppress("UnusedPrivateMember")
+@Suppress("UnusedPrivateMember", "UNUSED_PARAMETER")
 suspend fun configV3(db: CoroutineDatabase, mainDb: CoroutineDatabase) {
 	with(db.getCollection<LoggingConfigData>("loggingConfigData")) {
 		updateMany(
