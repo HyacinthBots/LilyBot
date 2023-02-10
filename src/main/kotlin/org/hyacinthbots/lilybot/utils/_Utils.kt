@@ -3,13 +3,30 @@ package org.hyacinthbots.lilybot.utils
 import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.utils.loadModule
+import com.kotlindiscord.kord.extensions.utils.toDuration
+import dev.kord.common.entity.ChannelType
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.RoleBehavior
+import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import mu.KotlinLogging
 import org.hyacinthbots.discordmoderationactions.enums.DmResult
 import org.hyacinthbots.lilybot.database.Database
@@ -198,6 +215,65 @@ suspend inline fun Extension.updateDefaultPresence() {
 	kord.editPresence {
 		watching("${getGuildCount()} servers")
 	}
+}
+
+/**
+ * A quick function to generate the contents of the bulk delete file.
+ *
+ * @param messages The set of message being deleted
+ * @return A string of the file content
+ *
+ * @author NoComment1105
+ * @since 4.7.0
+ */
+fun generateBulkDeleteFile(messages: Set<Message>): String =
+	"# Messages\n\n**Total:** ${messages.size}\n\n" +
+			messages.reversed().joinToString("\n") { // Reversed for chronology
+				"*  [${
+					it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
+				} UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
+			}
+
+/**
+ * Gets the messages from the guild channels that will be deleted.
+ * **This function is very, very intensive** It should be used in minimal quantities and future efforts should be made
+ * to optimise it further. Yes, it was worse that its current state.
+ *
+ * @param guild The guild to get the messages from
+ * @param user The user that send the messages
+ * @param messages The number of days worth of messages to delete
+ * @param kord The kord instance
+ * @return A [MutableSet] of [Message]s that are being deleted
+ *
+ * @author NoComment1105
+ * @since 4.7.0
+ */
+suspend inline fun getMessagesForBanDelete(
+	guild: GuildBehavior?,
+	user: User,
+	messages: Int?,
+	kord: Kord
+): MutableSet<Message> {
+	if (messages == null || messages == 0) return mutableSetOf()
+
+	val checkTime = Clock.System.now().minus(DateTimePeriod(days = messages).toDuration(TimeZone.UTC))
+
+	val fullSet = mutableSetOf<Message>()
+
+	val shortList = guild!!.channels.filter {
+		it.type == ChannelType.GuildText &&
+				it.asChannelOf<TextChannel>().getEffectivePermissions(kord.selfId).contains(Permission.ViewChannel)
+	}.map { it.asChannelOfOrNull<GuildMessageChannel>() }.toList()
+
+	shortList.forEach {
+		val messagesSet = it?.getMessagesBefore(Snowflake.max)?.filter { message ->
+			message.author == user && message.timestamp.epochSeconds > checkTime.epochSeconds && message.content.isNotEmpty()
+		}?.toSet()?.reversed() // Glorious chronology
+
+		if (messagesSet != null) fullSet.addAll(messagesSet)
+	}
+
+	return fullSet
 }
 
 /**

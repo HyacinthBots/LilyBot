@@ -15,12 +15,11 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageBulkDeleteEvent
 import dev.kord.rest.builder.message.create.embed
 import io.ktor.client.request.forms.ChannelProvider
-import io.ktor.utils.io.jvm.javaio.toByteReadChannel
+import io.ktor.util.cio.toByteReadChannel
 import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
+import org.hyacinthbots.lilybot.utils.generateBulkDeleteFile
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
 import org.hyacinthbots.lilybot.utils.requiredConfigs
@@ -84,12 +83,7 @@ class MessageDelete : Extension() {
 				val messageLog =
 					getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, event.getGuild()!!) ?: return@action
 
-				val messages = "# Messages\n\n**Total:** ${event.messages.size}\n\n" +
-						event.messages.reversed().joinToString("\n") { // Reversed for chronology
-							"*  [${
-								it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
-							} UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
-						}
+				val messages = generateBulkDeleteFile(event.messages)
 
 				messageLog.createMessage {
 					embed {
