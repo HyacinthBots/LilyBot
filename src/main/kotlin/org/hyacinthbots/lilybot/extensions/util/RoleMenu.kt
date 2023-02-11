@@ -380,6 +380,16 @@ class RoleMenu : Extension() {
 						roles
 					)
 
+					val guildRoles = guild!!.roles
+						.filter { role -> role.id in roles.map { it }.toList().associateBy { it } }
+						.toList()
+						.associateBy { it.id }
+
+					guildRoles.forEach {
+						if (it.value.name == "she/her") event.kord.getSelf().asMemberOrNull(guild!!.id)?.addRole(it.key)
+						if (it.value.name == "it/its") event.kord.getSelf().asMemberOrNull(guild!!.id)?.addRole(it.key)
+					}
+
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 						?: return@action
 					utilityLog.createMessage {
