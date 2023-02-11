@@ -5,8 +5,7 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
-@Suppress("UnusedPrivateMember")
-suspend fun mainV5(db: CoroutineDatabase, configDb: CoroutineDatabase) {
+suspend fun mainV5(db: CoroutineDatabase) {
 	// db.createCollection("autoThreadingData")
 
 	with(db.getCollection<ThreadData>()) {
