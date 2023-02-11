@@ -511,6 +511,28 @@ Required Member Permissions: Manage Messages
 * **Arguments**:
 None
 ---
+#### Command name: `role-subscription update`
+**Description**: Update your role subscription
+
+* **Arguments**:
+None
+---
+#### Command name: `role-subscription add-subscribable-role`
+**Description**: Add a role that can be added through role subscription commands
+Required Member Permissions: Manage Server, Manage Roles
+
+* **Arguments**:
+	* `role` - A role to make subscribable - Role
+
+---
+#### Command name: `role-subscription remove-subscribable-role`
+**Description**: Remove a role that can be added through role subscription commands
+Required Member Permissions: Manage Server, Manage Roles
+
+* **Arguments**:
+	* `role` - A role to make subscribable - Role
+
+---
 ### Command name: `tag-preview`
 Description: Preview a tag's contents without sending it publicly.
 

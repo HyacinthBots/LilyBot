@@ -3,6 +3,7 @@ package org.hyacinthbots.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.hasPermission
+import com.kotlindiscord.kord.extensions.checks.hasPermissions
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
@@ -26,6 +27,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.createRole
 import dev.kord.core.behavior.edit
@@ -38,6 +40,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
+import org.hyacinthbots.lilybot.database.collections.RoleSubscriptionCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
@@ -521,6 +524,207 @@ class RoleMenu : Extension() {
 				}
 			}
 		}
+
+		ephemeralSlashCommand {
+			name = "role-subscription"
+			description = "The parent command for role-subscription commands"
+
+			ephemeralSubCommand {
+				name = "update"
+				description = "Update your role subscription"
+
+				check {
+					anyGuild()
+				}
+
+				action {
+					val guild = guild ?: return@action
+					val data = RoleSubscriptionCollection().getSubscribableRoles(guild.id)
+
+					if (data == null) {
+						respond {
+							content = "This guild does not have any subscribable roles."
+						}
+						return@action
+					}
+
+					val subscribableRoles = mutableListOf<Role>()
+					data.subscribableRoles.forEach {
+						val role = guild.getRoleOrNull(it)
+						if (role == null) {
+							RoleSubscriptionCollection().removeSubscribableRole(guild.id, it)
+						} else {
+							subscribableRoles.add(role)
+						}
+					}
+
+					val guildRoles = guild.roles
+						.filter { role -> role.id in data.subscribableRoles.map { it }.toList().associateBy { it } }
+						.toList()
+						.associateBy { it.id }
+					val member = user.asMemberOrNull(guild.id)
+					val userRoles = member?.roleIds?.filter { it in guildRoles.keys }
+
+					respond {
+						content = "Use the menu below to subscribe to roles."
+						components {
+							ephemeralSelectMenu {
+								placeholder = "Select roles to subscribe to..."
+								minimumChoices = 0
+
+								subscribableRoles.forEach {
+									option(
+										label = "@${it.name}",
+										value = it.id.toString()
+									) {
+										if (userRoles != null) {
+											default = it.id in userRoles
+										}
+									}
+								}
+
+								action SelectMenu@{
+									val selectedRoles = selected.map { Snowflake(it) }.toList()
+										.filter { it in guildRoles.keys }
+
+									if (selectedRoles.isEmpty()) {
+										member?.edit {
+											subscribableRoles.forEach {
+												member.removeRole(it.id)
+											}
+										}
+										respond { content = "Your roles have been adjusted" }
+										return@SelectMenu
+									}
+
+									val rolesToAdd = if (userRoles == null) {
+										emptyList()
+									} else {
+										selectedRoles.filterNot { it in userRoles }
+									}
+
+									val rolesToRemove = userRoles?.filterNot { it in selectedRoles }
+
+									if (rolesToAdd.isEmpty() && rolesToRemove?.isEmpty() == true) {
+										respond {
+											content = "You didn't select any different roles, so no changes were made."
+										}
+										return@SelectMenu
+									}
+
+									member?.edit {
+										this@edit.roles = member.roleIds.toMutableSet()
+
+										// toSet() to increase performance. Idea advised this.
+										this@edit.roles!!.addAll(rolesToAdd.toSet())
+										rolesToRemove?.toSet()?.let { this@edit.roles!!.removeAll(it) }
+									}
+									respond { content = "Your role subscription has been adjusted." }
+								}
+							}
+						}
+					}
+				}
+			}
+
+			ephemeralSubCommand(::RoleSubscriptionRoleArgs) {
+				name = "add-subscribable-role"
+				description = "Add a role that can be added through role subscription commands"
+
+				requirePermission(Permission.ManageRoles, Permission.ManageGuild)
+
+				check {
+					anyGuild()
+					hasPermissions(Permissions(Permission.ManageRoles, Permission.ManageGuild))
+				}
+
+				action {
+					val guild = guild ?: return@action
+					var config = RoleSubscriptionCollection().getSubscribableRoles(guild.id)
+					val utilityConfig = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+					if (config == null) {
+						RoleSubscriptionCollection().createSubscribableRoleRecord(guild.id)
+					}
+
+					RoleSubscriptionCollection().addSubscribableRole(guild.id, arguments.role.id)
+					config = RoleSubscriptionCollection().getSubscribableRoles(guild.id)!!
+
+					val formattedRoleList = config.subscribableRoles.map { guild.getRoleOrNull(it)?.mention }
+
+					respond {
+						content =
+							"${arguments.role.mention} was added as a subscribable role. Current subscribable roles are:\n${
+								formattedRoleList.joinToString("\n")
+							}"
+					}
+
+					utilityConfig?.createEmbed {
+						title = "Subscribable Role added"
+						description = "${arguments.role.mention} was added as a subscribable role"
+						footer {
+							text = "Added by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
+						}
+					}
+				}
+			}
+
+			ephemeralSubCommand(::RoleSubscriptionRoleArgs) {
+				name = "remove-subscribable-role"
+				description = "Remove a role that can be added through role subscription commands"
+
+				requirePermission(Permission.ManageRoles, Permission.ManageGuild)
+
+				check {
+					anyGuild()
+					hasPermissions(Permissions(Permission.ManageRoles, Permission.ManageGuild))
+				}
+
+				action {
+					val guild = guild ?: return@action
+					var config = RoleSubscriptionCollection().getSubscribableRoles(guild.id)
+					val utilityConfig = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+					if (config == null) {
+						respond {
+							content = "There are no subscribable roles for this guild."
+						}
+						return@action
+					}
+
+					if (!config!!.subscribableRoles.contains(arguments.role.id)) {
+						respond {
+							content = "That is not a subscribable role."
+						}
+						return@action
+					}
+
+					RoleSubscriptionCollection().removeSubscribableRole(guild.id, arguments.role.id)
+					config = RoleSubscriptionCollection().getSubscribableRoles(guild.id)
+
+					val formattedRoleList = config!!.subscribableRoles.map { guild.getRoleOrNull(it)?.mention }
+
+					respond {
+						content =
+							"${arguments.role.mention} was removed as a subscribable role. Current subscribable roles are:\n${
+								if (formattedRoleList.isNotEmpty()) {
+									formattedRoleList.joinToString("\n")
+								} else {
+									"None"
+								}
+							}"
+					}
+
+					utilityConfig?.createEmbed {
+						title = "Subscribable Role Removed"
+						description = "${arguments.role.mention} was removed as a subscribable role"
+						footer {
+							text = "Removed by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
+						}
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -636,6 +840,13 @@ class RoleMenu : Extension() {
 		val role by role {
 			name = "role"
 			description = "The role you'd like to remove from the selected role menu."
+		}
+	}
+
+	inner class RoleSubscriptionRoleArgs : Arguments() {
+		val role by role {
+			name = "role"
+			description = "A role to make subscribable"
 		}
 	}
 }
