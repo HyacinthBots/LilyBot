@@ -93,7 +93,7 @@ class MessageDelete : Extension() {
 							name = "Location"
 							value = "${event.channel.mention} " +
 									"(${event.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
-										?: "Could not get channel name})"}"
+										?: "Could not get channel name"})"
 						}
 						field {
 							name = "Number of messages"
@@ -104,7 +104,7 @@ class MessageDelete : Extension() {
 					}
 					addFile(
 						"messages.md",
-						ChannelProvider { messages.byteInputStream().toByteReadChannel() }
+						ChannelProvider { messages!!.byteInputStream().toByteReadChannel() }
 					)
 				}
 			}
