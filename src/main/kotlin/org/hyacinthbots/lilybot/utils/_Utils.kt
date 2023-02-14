@@ -41,7 +41,6 @@ import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollec
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
-import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
@@ -304,7 +303,6 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { ReminderCollection() } bind ReminderCollection::class
 				single { RoleMenuCollection() } bind RoleMenuCollection::class
 				single { StatusCollection() } bind StatusCollection::class
-				single { SupportConfigCollection() } bind SupportConfigCollection::class
 				single { TagsCollection() } bind TagsCollection::class
 				single { ThreadsCollection() } bind ThreadsCollection::class
 				single { UptimeCollection() } bind UptimeCollection::class
