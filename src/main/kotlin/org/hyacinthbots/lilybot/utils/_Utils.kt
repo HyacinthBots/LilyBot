@@ -3,9 +3,11 @@ package org.hyacinthbots.lilybot.utils
 import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.utils.loadModule
+import com.kotlindiscord.kord.extensions.utils.permissionsForMember
 import com.kotlindiscord.kord.extensions.utils.toDuration
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
@@ -15,12 +17,11 @@ import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.GuildMessageChannel
-import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
@@ -227,13 +228,17 @@ suspend inline fun Extension.updateDefaultPresence() {
  * @author NoComment1105
  * @since 4.7.0
  */
-fun generateBulkDeleteFile(messages: Set<Message>): String =
-	"# Messages\n\n**Total:** ${messages.size}\n\n" +
-			messages.reversed().joinToString("\n") { // Reversed for chronology
-				"*  [${
-					it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
-				} UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
-			}
+fun generateBulkDeleteFile(messages: Set<Message>): String? =
+	if (messages.isNotEmpty()) {
+		"# Messages\n\n**Total:** ${messages.size}\n\n" +
+				messages.reversed().joinToString("\n") { // Reversed for chronology
+					"*  [${
+						it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
+					} UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
+				}
+	} else {
+		null
+	}
 
 /**
  * Gets the messages from the guild channels that will be deleted.
@@ -257,18 +262,20 @@ suspend inline fun getMessagesForBanDelete(
 ): MutableSet<Message> {
 	if (messages == null || messages == 0) return mutableSetOf()
 
+	val snowflakeMax = Snowflake.max
 	val checkTime = Clock.System.now().minus(DateTimePeriod(days = messages).toDuration(TimeZone.UTC))
 
 	val fullSet = mutableSetOf<Message>()
 
 	val shortList = guild!!.channels.filter {
 		it.type == ChannelType.GuildText &&
-				it.asChannelOf<TextChannel>().getEffectivePermissions(kord.selfId).contains(Permission.ViewChannel)
-	}.map { it.asChannelOfOrNull<GuildMessageChannel>() }.toList()
+				it.asChannelOf<GuildMessageChannel>().permissionsForMember(kord.selfId)
+					.contains(Permissions(Permission.ViewChannel, Permission.ManageMessages))
+	}.map { it.asChannelOfOrNull<GuildMessageChannel>() }.toSet()
 
 	shortList.forEach {
-		val messagesSet = it?.getMessagesBefore(Snowflake.max)?.filter { message ->
-			message.author == user && message.timestamp.epochSeconds > checkTime.epochSeconds && message.content.isNotEmpty()
+		val messagesSet = it?.getMessagesBefore(snowflakeMax)?.takeWhile { message ->
+			message.author == user && message.timestamp > checkTime
 		}?.toSet()?.reversed() // Glorious chronology
 
 		if (messagesSet != null) fullSet.addAll(messagesSet)
