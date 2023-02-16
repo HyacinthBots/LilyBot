@@ -495,7 +495,7 @@ class ModerationCommands : Extension() {
 
 				val fullSet = getMessagesForBanDelete(guild, arguments.userArgument, arguments.messages, event.kord)
 
-				val messages = if (fullSet.isNotEmpty()) generateBulkDeleteFile(fullSet) else null
+				val messages = generateBulkDeleteFile(fullSet)
 
 				val action = ban(arguments.userArgument) {
 					reason = arguments.reason
@@ -577,7 +577,7 @@ class ModerationCommands : Extension() {
 
 				val fullSet = getMessagesForBanDelete(guild, arguments.userArgument, arguments.messages, event.kord)
 
-				val messages = if (fullSet.isNotEmpty()) generateBulkDeleteFile(fullSet) else null
+				val messages = generateBulkDeleteFile(fullSet)
 
 				val action = softban(arguments.userArgument) {
 					reason = arguments.reason
