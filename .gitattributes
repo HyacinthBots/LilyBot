@@ -1,0 +1,14 @@
+*.kt            text    eol=lf  diff=kotlin
+*.kts           text    eol=lf  diff=kotlin
+
+gradlew         text    eol=lf
+*.bat           text    eol=crlf
+
+*.md            text    eol=lf  diff=markdown
+
+*.properties    text    eol=lf
+*.yml           text    eol=lf
+
+*.class         binary
+*.jar           binary
+*.png           binary

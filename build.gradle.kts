@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 @Suppress("DSL_SCOPE_VIOLATION")
@@ -84,13 +86,11 @@ gitHooks {
 
 tasks {
 	withType<KotlinCompile> {
-		kotlinOptions {
-			jvmTarget = "17"
-			languageVersion = libs.plugins.kotlin.get().version.requiredVersion.substringBeforeLast(".")
+		compilerOptions {
+			jvmTarget.set(JvmTarget.fromTarget("17"))
+			languageVersion.set(KotlinVersion.fromVersion(libs.plugins.kotlin.get().version.requiredVersion.substringBeforeLast(".")))
 			incremental = true
-			freeCompilerArgs = listOf(
-				"-opt-in=kotlin.RequiresOptIn"
-			)
+			freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
 		}
 	}
 
