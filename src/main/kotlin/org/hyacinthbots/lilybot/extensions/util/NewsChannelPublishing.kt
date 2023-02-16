@@ -52,7 +52,7 @@ class NewsChannelPublishing : Extension() {
 					) == false
 				) {
 					val channel =
-						getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.getGuild()!!) ?: return@action
+						getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.getGuildOrNull()!!) ?: return@action
 					channel.createEmbed {
 						title = "Unable to Auto-publish news channel!"
 						description =

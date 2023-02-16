@@ -81,7 +81,7 @@ class MessageDelete : Extension() {
 
 			action {
 				val messageLog =
-					getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, event.getGuild()!!) ?: return@action
+					getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, event.getGuildOrNull()!!) ?: return@action
 
 				val messages = generateBulkDeleteFile(event.messages)
 
