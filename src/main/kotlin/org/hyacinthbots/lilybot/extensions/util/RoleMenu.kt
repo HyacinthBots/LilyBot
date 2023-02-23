@@ -571,6 +571,7 @@ class RoleMenu : Extension() {
 							ephemeralSelectMenu {
 								placeholder = "Select roles to subscribe to..."
 								minimumChoices = 0
+								maximumChoices = subscribableRoles.size
 
 								subscribableRoles.forEach {
 									option(
@@ -593,7 +594,7 @@ class RoleMenu : Extension() {
 												member.removeRole(it.id)
 											}
 										}
-										respond { content = "Your roles have been adjusted" }
+										respond { content = "Your role subscription has been adjusted" }
 										return@SelectMenu
 									}
 
@@ -628,7 +629,7 @@ class RoleMenu : Extension() {
 			}
 
 			ephemeralSubCommand(::RoleSubscriptionRoleArgs) {
-				name = "add-subscribable-role"
+				name = "add-role"
 				description = "Add a role that can be added through role subscription commands"
 
 				requirePermission(Permission.ManageRoles, Permission.ManageGuild)
@@ -670,7 +671,7 @@ class RoleMenu : Extension() {
 			}
 
 			ephemeralSubCommand(::RoleSubscriptionRoleArgs) {
-				name = "remove-subscribable-role"
+				name = "remove-role"
 				description = "Remove a role that can be added through role subscription commands"
 
 				requirePermission(Permission.ManageRoles, Permission.ManageGuild)
@@ -846,7 +847,7 @@ class RoleMenu : Extension() {
 	inner class RoleSubscriptionRoleArgs : Arguments() {
 		val role by role {
 			name = "role"
-			description = "A role to make subscribable"
+			description = "A role to add or remove from the subscribable roles"
 		}
 	}
 }

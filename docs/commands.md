@@ -517,20 +517,20 @@ None
 * **Arguments**:
 None
 ---
-#### Command name: `role-subscription add-subscribable-role`
+#### Command name: `role-subscription add-role`
 **Description**: Add a role that can be added through role subscription commands
 Required Member Permissions: Manage Server, Manage Roles
 
 * **Arguments**:
-	* `role` - A role to make subscribable - Role
+	* `role` - A role to add or remove from the subscribable roles - Role
 
 ---
-#### Command name: `role-subscription remove-subscribable-role`
+#### Command name: `role-subscription remove-role`
 **Description**: Remove a role that can be added through role subscription commands
 Required Member Permissions: Manage Server, Manage Roles
 
 * **Arguments**:
-	* `role` - A role to make subscribable - Role
+	* `role` - A role to add or remove from the subscribable roles - Role
 
 ---
 ### Command name: `tag-preview`
