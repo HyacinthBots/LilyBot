@@ -4,8 +4,10 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
+import java.util.concurrent.CancellationException
 
 /**
  * This class is used to detect when Lily leaves or joins a guild, allowing us to delete old guild data, if Lily has
@@ -25,7 +27,11 @@ class GuildLogging : Extension() {
 		 */
 		event<GuildDeleteEvent> {
 			action {
-				GuildLeaveTimeCollection().setLeaveTime(event.guildId, Clock.System.now())
+				try {
+					GuildLeaveTimeCollection().setLeaveTime(event.guildId, Clock.System.now())
+				} catch (_: CancellationException) {
+				} catch (_: KtorRequestException) {
+				}
 			}
 		}
 
@@ -37,7 +43,11 @@ class GuildLogging : Extension() {
 		 */
 		event<GuildCreateEvent> {
 			action {
-				GuildLeaveTimeCollection().removeLeaveTime(event.guild.id)
+				try {
+					GuildLeaveTimeCollection().removeLeaveTime(event.guild.id)
+				} catch (_: CancellationException) {
+				} catch (_: KtorRequestException) {
+				}
 			}
 		}
 	}

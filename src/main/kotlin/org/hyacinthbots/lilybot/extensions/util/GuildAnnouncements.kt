@@ -1,6 +1,8 @@
 package org.hyacinthbots.lilybot.extensions.util
 
 import com.kotlindiscord.kord.extensions.checks.hasPermission
+import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalSnowflake
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.components.forms.ModalForm
@@ -24,7 +26,7 @@ class GuildAnnouncements : Extension() {
 	override val name = "guild-announcements"
 
 	override suspend fun setup() {
-		ephemeralSlashCommand(::GuildAnnouncementModal) {
+		ephemeralSlashCommand(::GuildAnnouncementArgs, ::GuildAnnouncementModal) {
 			name = "announcement"
 			description = "Send an announcement to all guilds Lily is in"
 
@@ -38,33 +40,65 @@ class GuildAnnouncements : Extension() {
 			action { modal ->
 				var response: EphemeralFollowupMessage? = null
 				response = respond {
-					content = "Would you like to send this message? It will be delivered to all servers this bot is in."
+					content = "Would you like to send this message? " +
+							if (arguments.targetGuild == null) {
+								"It will be delivered to all servers this bot is in."
+							} else {
+								"It will be delivered to your specified target guild: ${arguments.targetGuild}"
+							}
 					components {
 						ephemeralButton {
 							label = "Yes"
 							style = ButtonStyle.Success
 
-							action {
+							action ButtonAction@{
 								response?.edit {
 									content = "Message sent!"
 									components { removeAll() }
 								}
 
-								event.kord.guilds.toList().chunked(15).forEach { chunk ->
-									for (i in chunk) {
-										val channel =
-											getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, i)
-												?: getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, i)
-												?: getSystemChannelWithPerms(i)
-												?: getFirstUsableChannel(i)
-												?: continue
+								if (arguments.targetGuild != null) {
+									val guild = event.kord.getGuildOrNull(arguments.targetGuild!!)
+									if (guild == null) {
+										respond { content = "Target guild not found" }
+										return@ButtonAction
+									}
 
-										channel.createEmbed {
-											title = modal?.header?.value
-											description = modal?.body?.value
-											color = Color(0x7B52AE)
-											footer {
-												text = "Sent by ${user.asUser().tag}"
+									val channel = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+										?: getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild)
+										?: getSystemChannelWithPerms(guild)
+										?: getFirstUsableChannel(guild)
+
+									if (channel == null) {
+										respond { content = "Couldn't find an available channel to send a message in" }
+										return@ButtonAction
+									}
+
+									channel.createEmbed {
+										title = modal?.header?.value
+										description = modal?.body?.value
+										color = Color(0x7B52AE)
+										footer {
+											text = "This message was delivered to this server alone"
+										}
+									}
+								} else {
+								    event.kord.guilds.toList().chunked(15).forEach { chunk ->
+										for (i in chunk) {
+											val channel =
+												getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, i)
+													?: getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, i)
+													?: getSystemChannelWithPerms(i)
+													?: getFirstUsableChannel(i)
+													?: continue
+
+											channel.createEmbed {
+												title = modal?.header?.value
+												description = modal?.body?.value
+												color = Color(0x7B52AE)
+												footer {
+													text = "Sent by ${user.asUserOrNull()?.tag}"
+												}
 											}
 										}
 									}
@@ -86,6 +120,13 @@ class GuildAnnouncements : Extension() {
 					}
 				}
 			}
+		}
+	}
+
+	inner class GuildAnnouncementArgs : Arguments() {
+		val targetGuild by optionalSnowflake {
+			name = "target-guild"
+			description = "The guild to send the announcement too"
 		}
 	}
 

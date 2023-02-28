@@ -1,3 +1,5 @@
+@file:Suppress("NoWildcardImports", "WildcardImport")
+
 /*
  * This source code form has been adapted from QuiltMC's Discord Bot, Cozy (https://github.com/QuiltMC/cozy-discord).
  *
@@ -16,13 +18,8 @@ import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
 import org.hyacinthbots.lilybot.database.entities.ConfigMetaData
 import org.hyacinthbots.lilybot.database.entities.MainMetaData
-import org.hyacinthbots.lilybot.database.migrations.config.configV1
-import org.hyacinthbots.lilybot.database.migrations.config.configV2
-import org.hyacinthbots.lilybot.database.migrations.config.configV3
-import org.hyacinthbots.lilybot.database.migrations.main.mainV1
-import org.hyacinthbots.lilybot.database.migrations.main.mainV2
-import org.hyacinthbots.lilybot.database.migrations.main.mainV3
-import org.hyacinthbots.lilybot.database.migrations.main.mainV4
+import org.hyacinthbots.lilybot.database.migrations.config.*
+import org.hyacinthbots.lilybot.database.migrations.main.*
 import org.koin.core.component.inject
 
 object Migrator : KordExKoinComponent {
@@ -52,12 +49,15 @@ object Migrator : KordExKoinComponent {
 
 			@Suppress("TooGenericExceptionCaught")
 			try {
-				@Suppress("UseIfInsteadOfWhen")
 				when (nextVersion) {
 					1 -> ::mainV1
 					2 -> ::mainV2
 					3 -> ::mainV3
 					4 -> ::mainV4
+					5 -> ::mainV5
+					6 -> ::mainV6
+					7 -> ::mainV7
+					8 -> ::mainV8
 					else -> break
 				}(db.mainDatabase)
 
@@ -100,11 +100,11 @@ object Migrator : KordExKoinComponent {
 
 			@Suppress("TooGenericExceptionCaught")
 			try {
-				@Suppress("UseIfInsteadOfWhen")
 				when (nextVersion) {
 					1 -> ::configV1
 					2 -> ::configV2
 					3 -> ::configV3
+					4 -> ::configV4
 					else -> break
 				}(db.configDatabase)
 
@@ -119,9 +119,9 @@ object Migrator : KordExKoinComponent {
 		}
 
 		if (currentVersion != meta.version) {
-			 meta = meta.copy(version = currentVersion)
+			meta = meta.copy(version = currentVersion)
 
-			 configMetaCollection.update(meta)
+			configMetaCollection.update(meta)
 
 			logger.info { "Finished config database migrations." }
 		}

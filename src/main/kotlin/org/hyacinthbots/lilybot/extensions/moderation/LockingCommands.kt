@@ -10,6 +10,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingStri
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -17,6 +18,7 @@ import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
+import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import kotlinx.datetime.Clock
@@ -60,18 +62,9 @@ class LockingCommands : Extension() {
 				}
 
 				action {
-					val channelArg = arguments.channel ?: event.interaction.getChannel()
-					var channelParent: TextChannel? = null
-					if (channelArg is TextChannelThread) {
-						channelParent = channelArg.getParent()
-					}
-					val targetChannel = channelParent ?: channelArg.asChannelOfOrNull()
-					if (targetChannel == null) {
-						respond {
-							content = "I can't fetch the targeted channel properly."
-							return@action
-						}
-					}
+					val channelArg = arguments.channel ?: event.interaction.getChannelOrNull()
+					val channelParent = getChannelParent(channelArg)
+					val targetChannel = getTargetChannel(channelParent, channelArg)
 
 					val channelPerms = targetChannel!!.getPermissionOverwritesForRole(guild!!.id)
 					if (channelPerms != null && channelPerms.denied.contains(Permission.SendMessages)) {
@@ -79,8 +72,11 @@ class LockingCommands : Extension() {
 						return@action
 					}
 
-					val everyoneRole = guild!!.getRole(guild!!.id)
-					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
+					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
+					if (everyoneRole == null) {
+						respond { content = "I was unable to get the `@everyone` role. Please try again." }
+						return@action
+					} else if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
 						respond { content = "The server is locked, so I cannot lock this channel." }
 						return@action
 					}
@@ -106,8 +102,8 @@ class LockingCommands : Extension() {
 						title = "Channel Locked"
 						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_RED
@@ -135,10 +131,13 @@ class LockingCommands : Extension() {
 				}
 
 				action {
-					val everyoneRole = guild!!.getRole(guild!!.id)
+					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
 
-					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
-						respond { content = "The server is already locked!" }
+					if (everyoneRole == null) {
+						respond { content = "I was unable to get the `@everyone` role. Please try again." }
+						return@action
+					} else if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
+						respond { content = "The server is already locked." }
 						return@action
 					}
 
@@ -158,8 +157,8 @@ class LockingCommands : Extension() {
 						title = "Server locked"
 						description = "**Reason:** ${arguments.reason}"
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_RED
@@ -197,21 +196,15 @@ class LockingCommands : Extension() {
 				}
 
 				action {
-					val channelArg = arguments.channel ?: event.interaction.getChannel()
-					var channelParent: TextChannel? = null
-					if (channelArg is TextChannelThread) {
-						channelParent = channelArg.getParent()
-					}
-					val targetChannel = channelParent ?: channelArg.asChannelOfOrNull()
-					if (targetChannel == null) {
-						respond {
-							content = "I can't fetch the targeted channel properly."
-							return@action
-						}
-					}
+					val channelArg = arguments.channel ?: event.interaction.getChannelOrNull()
+					val channelParent = getChannelParent(channelArg)
+					val targetChannel = getTargetChannel(channelParent, channelArg)
 
-					val everyoneRole = guild!!.getRole(guild!!.id)
-					if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
+					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
+					if (everyoneRole == null) {
+						respond { content = "Unable to get `@everyone` role. Please try again" }
+						return@action
+					} else if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
 						respond { content = "Please unlock the server to unlock this channel." }
 						return@action
 					}
@@ -248,8 +241,8 @@ class LockingCommands : Extension() {
 						title = "Channel Unlocked"
 						description = "${targetChannel.mention} has been unlocked."
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_GREEN
@@ -277,9 +270,11 @@ class LockingCommands : Extension() {
 				}
 
 				action {
-					val everyoneRole = guild!!.getRole(guild!!.id)
-
-					if (everyoneRole.permissions.contains(Permission.SendMessages)) {
+					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
+					if (everyoneRole == null) {
+						respond { content = "Unable to get `@everyone` role. Please try again" }
+						return@action
+					} else if (everyoneRole.permissions.contains(Permission.SendMessages)) {
 						respond { content = "The server isn't locked!" }
 						return@action
 					}
@@ -299,8 +294,8 @@ class LockingCommands : Extension() {
 					actionLog.createEmbed {
 						title = "Server unlocked"
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_GREEN
@@ -308,6 +303,49 @@ class LockingCommands : Extension() {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Gets the parent of the channel argument.
+	 *
+	 * @param channelArg The channel to get the parent of
+	 * @return The channel parent as a [TextChannel]
+	 *
+	 * @author NoComment1105
+	 * @since 4.8.0
+	 */
+	private suspend inline fun getChannelParent(channelArg: Channel?): TextChannel? {
+		var channelParent: TextChannel? = null
+		if (channelArg is TextChannelThread) {
+			channelParent = channelArg.getParent()
+		}
+
+		return channelParent
+	}
+
+	/**
+	 * Gets the target channel and responds appropriately if unable to get it.
+	 *
+	 * @param channelParent The parent channel if that is the target
+	 * @param channelArg The channel argument, if that is the target
+	 * @return The channel as a [TextChannel]
+	 *
+	 * @author NoComment1105
+	 * @since 4.8.0
+	 */
+	private suspend inline fun EphemeralInteractionContext.getTargetChannel(
+        channelParent: TextChannel?,
+        channelArg: Channel?
+    ): TextChannel? {
+		val targetChannel = channelParent ?: channelArg?.asChannelOfOrNull()
+		if (targetChannel == null) {
+			respond {
+				content = "I can't fetch the targeted channel properly."
+				return null
+			}
+		}
+
+		return targetChannel
 	}
 
 	inner class LockChannelArgs : Arguments() {

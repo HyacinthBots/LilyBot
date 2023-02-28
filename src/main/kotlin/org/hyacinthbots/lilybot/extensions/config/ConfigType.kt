@@ -6,9 +6,6 @@ package org.hyacinthbots.lilybot.extensions.config
  * @since 4.0.0
  */
 enum class ConfigType {
-	/** The entry for the support config. */
-	SUPPORT,
-
 	/** The entry for the moderation config. */
 	MODERATION,
 

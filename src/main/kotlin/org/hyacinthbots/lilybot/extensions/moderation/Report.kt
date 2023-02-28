@@ -177,7 +177,9 @@ class Report : Extension() {
 						modLog?.createMessage {
 							embed {
 								title = "Message reported"
-								description = "A message was reported in ${reportedMessage.getChannel().mention}"
+								description = "A message was reported in ${
+									reportedMessage.getChannelOrNull()?.mention ?: "`Unable to get channel`"
+								}"
 								field {
 									name = "Message Content:"
 									value =
@@ -196,8 +198,8 @@ class Report : Extension() {
 									value = reason
 								}
 								footer {
-									text = "Reported by: ${user.asUser().tag}"
-									icon = user.asUser().avatar?.url
+									text = "Reported by: ${user.asUserOrNull()?.tag}"
+									icon = user.asUserOrNull()?.avatar?.url
 								}
 								timestamp = Clock.System.now()
 								color = DISCORD_RED

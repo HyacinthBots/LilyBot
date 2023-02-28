@@ -24,19 +24,16 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.modal
-import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
-import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.database.entities.PublicMemberLogData
-import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.hyacinthbots.lilybot.utils.canPingRole
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
@@ -51,160 +48,6 @@ class Config : Extension() {
 		ephemeralSlashCommand {
 			name = "config"
 			description = "Configure Lily's settings"
-
-			unsafeSubCommand(::SupportArgs) {
-				name = "support"
-				description = "Configure Lily's support system"
-
-				initialResponse = InitialSlashCommandResponse.None
-
-				requirePermission(Permission.ManageGuild)
-
-				check {
-					anyGuild()
-					hasPermission(Permission.ManageGuild)
-				}
-
-				action {
-					val supportConfig = SupportConfigCollection().getConfig(guild!!.id)
-					if (supportConfig != null) {
-						ackEphemeral()
-						respondEphemeral {
-							content = "You already have a support configuration set. " +
-									"Please clear it before attempting to set a new one."
-						}
-						return@action
-					}
-
-					if (!arguments.enable) {
-						SupportConfigCollection().setConfig(SupportConfigData(guild!!.id, false, null, null, null))
-						ackEphemeral()
-						respondEphemeral {
-							content = "Support system disabled."
-						}
-						return@action
-					}
-
-					if (!canPingRole(arguments.role) && arguments.role != null) {
-						ackEphemeral()
-						respondEphemeral {
-							content =
-								"I cannot use the role: ${arguments.role!!.mention}, because it is not mentionable by " +
-										"regular users. Please enable this in the role settings, or use a different role."
-						}
-						return@action
-					}
-
-					val supportChannel: TextChannel?
-					if (arguments.enable && arguments.channel != null) {
-						supportChannel = guild!!.getChannelOfOrNull(arguments.channel!!.id)
-						if (supportChannel?.botHasPermissions(
-								Permission.ViewChannel,
-								Permission.SendMessages
-							) != true
-						) {
-							ackEphemeral()
-							respondEphemeral {
-								content = "The mod action log you've selected is invalid, or I can't view it. " +
-										"Please attempt to resolve this and try again."
-							}
-							return@action
-						}
-					}
-
-					suspend fun EmbedBuilder.supportEmbed() {
-						title = "Configuration: Support"
-						field {
-							name = "Support Team"
-							value = arguments.role?.mention ?: "Disabled"
-						}
-						field {
-							name = "Support Channel"
-							value = arguments.channel?.mention ?: "Disabled"
-						}
-						footer {
-							text = "Configured by: ${user.asUser().tag}"
-						}
-					}
-
-					if (arguments.customMessage) {
-						val modalObj = SupportModal()
-
-						this@unsafeSubCommand.componentRegistry.register(modalObj)
-
-						event.interaction.modal(
-							modalObj.title,
-							modalObj.id
-						) {
-							modalObj.applyToBuilder(this, getLocale(), null)
-						}
-
-						modalObj.awaitCompletion { modalSubmitInteraction ->
-							interactionResponse = modalSubmitInteraction?.deferEphemeralMessageUpdate()
-						}
-
-						interactionResponse?.createEphemeralFollowup {
-							embed {
-								supportEmbed()
-								field {
-									name = "Message"
-									value = modalObj.msgInput.value!!
-								}
-							}
-						}
-
-						SupportConfigCollection().setConfig(
-							SupportConfigData(
-								guild!!.id,
-								arguments.enable,
-								arguments.channel?.id,
-								arguments.role?.id,
-								modalObj.msgInput.value!!
-							)
-						)
-					} else {
-						ackEphemeral()
-						respondEphemeral {
-							embed {
-								supportEmbed()
-								field {
-									name = "Message"
-									value = "default"
-								}
-							}
-						}
-
-						SupportConfigCollection().setConfig(
-							SupportConfigData(
-								guild!!.id,
-								arguments.enable,
-								arguments.channel?.id,
-								arguments.role?.id,
-								null
-							)
-						)
-					}
-
-					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
-
-					if (utilityLog == null) {
-						respondEphemeral {
-							content = "Consider setting a utility config to log changes to configurations."
-						}
-						return@action
-					}
-
-					utilityLog.createMessage {
-						embed {
-							supportEmbed()
-							field {
-								name = "Message"
-								value = SupportConfigCollection().getConfig(guild!!.id)?.message ?: "default"
-							}
-						}
-					}
-				}
-			}
 
 			ephemeralSubCommand(::ModerationArgs) {
 				name = "moderation"
@@ -308,7 +151,7 @@ class Config : Extension() {
 							}
 						}
 						footer {
-							text = "Configured by ${user.asUser().tag}"
+							text = "Configured by ${user.asUserOrNull()?.tag}"
 						}
 					}
 
@@ -488,8 +331,8 @@ class Config : Extension() {
 						}
 
 						footer {
-							text = "Configured by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Configured by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 					}
 
@@ -609,8 +452,8 @@ class Config : Extension() {
 						}
 
 						footer {
-							text = "Configured by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Configured by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 					}
 
@@ -664,8 +507,8 @@ class Config : Extension() {
 									arguments.config.substring(1, arguments.config.length).lowercase()
 								}"
 								footer {
-									text = "Config cleared by ${user.asUser().tag}"
-									icon = user.asUser().avatar?.url
+									text = "Config cleared by ${user.asUserOrNull()?.tag}"
+									icon = user.asUserOrNull()?.avatar?.url
 								}
 							}
 						}
@@ -687,8 +530,8 @@ class Config : Extension() {
 								embed {
 									title = "Config cleared: Moderation"
 									footer {
-										text = "Config cleared by ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
+										text = "Config cleared by ${user.asUserOrNull()?.tag}"
+										icon = user.asUserOrNull()?.avatar?.url
 									}
 								}
 							}
@@ -709,30 +552,8 @@ class Config : Extension() {
 								embed {
 									title = "Config cleared: Logging"
 									footer {
-										text = "Config cleared by ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
-									}
-								}
-							}
-						}
-
-						ConfigType.SUPPORT.name -> {
-							SupportConfigCollection().getConfig(guild!!.id) ?: run {
-								respond {
-									content = "No support configuration exists to clear!"
-								}
-								return@action
-							}
-
-							logClear()
-
-							SupportConfigCollection().clearConfig(guild!!.id)
-							respond {
-								embed {
-									title = "Config cleared: Support"
-									footer {
-										text = "Config cleared by ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
+										text = "Config cleared by ${user.asUserOrNull()?.tag}"
+										icon = user.asUserOrNull()?.avatar?.url
 									}
 								}
 							}
@@ -753,8 +574,8 @@ class Config : Extension() {
 								embed {
 									title = "Config cleared: Utility"
 									footer {
-										text = "Config cleared by ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
+										text = "Config cleared by ${user.asUserOrNull()?.tag}"
+										icon = user.asUserOrNull()?.avatar?.url
 									}
 								}
 							}
@@ -763,14 +584,13 @@ class Config : Extension() {
 						ConfigType.ALL.name -> {
 							ModerationConfigCollection().clearConfig(guild!!.id)
 							LoggingConfigCollection().clearConfig(guild!!.id)
-							SupportConfigCollection().clearConfig(guild!!.id)
 							UtilityConfigCollection().clearConfig(guild!!.id)
 							respond {
 								embed {
 									title = "All configs cleared"
 									footer {
-										text = "Configs cleared by ${user.asUser().tag}"
-										icon = user.asUser().avatar?.url
+										text = "Configs cleared by ${user.asUserOrNull()?.tag}"
+										icon = user.asUserOrNull()?.avatar?.url
 									}
 								}
 							}
@@ -848,8 +668,8 @@ class Config : Extension() {
 										name = "Message delete logs"
 										value = if (config.enableMessageDeleteLogs) {
 											"Enabled\n" +
-													"${guild!!.getChannel(config.messageChannel!!).mention} (" +
-													"${guild!!.getChannel(config.messageChannel).name})"
+													"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
+													"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel name"})"
 										} else {
 											"Disabled"
 										}
@@ -858,8 +678,8 @@ class Config : Extension() {
 										name = "Message edit logs"
 										value = if (config.enableMessageEditLogs) {
 											"Enabled\n" +
-													"${guild!!.getChannel(config.messageChannel!!).mention} (" +
-													"${guild!!.getChannel(config.messageChannel).name})"
+													"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
+													"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel mention"})"
 										} else {
 											"Disabled"
 										}
@@ -868,57 +688,11 @@ class Config : Extension() {
 										name = "Member logs"
 										value = if (config.enableMemberLogs) {
 											"Enabled\n" +
-													"${guild!!.getChannel(config.memberLog!!).mention} (" +
-													"${guild!!.getChannel(config.memberLog).name})"
+													"* ${guild!!.getChannelOrNull(config.memberLog!!)?.mention ?: "Unable to get channel mention"} (" +
+													"${guild!!.getChannelOrNull(config.memberLog)?.name ?: "Unable to get channel mention."})"
 										} else {
 											"Disabled"
 										}
-									}
-									timestamp = Clock.System.now()
-								}
-							}
-						}
-
-						ConfigType.SUPPORT.name -> {
-							val config = SupportConfigCollection().getConfig(guild!!.id)
-							if (config == null) {
-								respond {
-									content = "There is no support config for this guild"
-								}
-								return@action
-							}
-
-							respond {
-								embed {
-									title = "Current support config"
-									description = "This is the current support config for this guild"
-									field {
-										name = "Enabled/Disabled"
-										value = if (config.enabled) "Enabled" else "Disabled"
-									}
-									field {
-										name = "Channel"
-										value = "${config.channel?.let { guild!!.getChannelOrNull(it)?.mention }} " +
-												"${config.channel?.let { guild!!.getChannelOrNull(it)?.name }}"
-									}
-									field {
-										name = "Role"
-										value = "${config.role?.let { guild!!.getRoleOrNull(it)?.mention }} " +
-												"${config.role?.let { guild!!.getRoleOrNull(it)?.name }}"
-									}
-									field {
-										name = "Custom message"
-										value =
-											if (config.message != null) {
-												"${
-													config.message.substring(
-														0,
-														500
-													)
-												} ..."
-											} else {
-												"Default"
-											}
 									}
 									timestamp = Clock.System.now()
 								}
@@ -956,28 +730,6 @@ class Config : Extension() {
 					}
 				}
 			}
-		}
-	}
-
-	inner class SupportArgs : Arguments() {
-		val enable by boolean {
-			name = "enable-support"
-			description = "Whether to enable the support system"
-		}
-
-		val customMessage by boolean {
-			name = "custom-message"
-			description = "True if you'd like to add a custom message, false if you'd like the default."
-		}
-
-		val channel by optionalChannel {
-			name = "support-channel"
-			description = "The channel to be used for creating support threads in."
-		}
-
-		val role by optionalRole {
-			name = "support-role"
-			description = "The role to add to support threads, when one is created."
 		}
 	}
 
@@ -1067,7 +819,6 @@ class Config : Extension() {
 			name = "config-type"
 			description = "The type of config to clear"
 			choices = mutableMapOf(
-				"support" to ConfigType.SUPPORT.name,
 				"moderation" to ConfigType.MODERATION.name,
 				"logging" to ConfigType.LOGGING.name,
 				"utility" to ConfigType.UTILITY.name,
@@ -1081,21 +832,10 @@ class Config : Extension() {
 			name = "config-type"
 			description = "The type of config to clear"
 			choices = mutableMapOf(
-				"support" to ConfigType.SUPPORT.name,
 				"moderation" to ConfigType.MODERATION.name,
 				"logging" to ConfigType.LOGGING.name,
 				"utility" to ConfigType.UTILITY.name,
 			)
-		}
-	}
-
-	inner class SupportModal : ModalForm() {
-		override var title = "Support Message Configuraiton"
-
-		val msgInput = paragraphText {
-			label = "Support Message"
-			placeholder = "Input the content of the message you would like sent when a support thread is created"
-			required = true
 		}
 	}
 

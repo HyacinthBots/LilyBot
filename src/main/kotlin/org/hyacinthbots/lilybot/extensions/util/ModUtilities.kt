@@ -49,15 +49,17 @@ import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
+import org.hyacinthbots.lilybot.database.collections.RoleSubscriptionCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
-import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -70,6 +72,7 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.trimmedContents
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
+import java.util.concurrent.CancellationException
 
 /**
  * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
@@ -99,10 +102,10 @@ class ModUtilities : Extension() {
 			}
 			action {
 				val targetChannel: GuildMessageChannel = if (arguments.channel != null) {
-						guild!!.getChannelOfOrNull(arguments.channel!!.id) ?: return@action
-					} else {
-						channel.asChannelOfOrNull() ?: return@action
-					}
+					guild!!.getChannelOfOrNull(arguments.channel!!.id) ?: return@action
+				} else {
+					channel.asChannelOfOrNull() ?: return@action
+				}
 				val createdMessage: Message
 
 				try {
@@ -126,7 +129,8 @@ class ModUtilities : Extension() {
 
 				respond { content = "Message sent." }
 
-				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
+				val utilityLog =
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createMessage {
 					embed {
 						title = "Say command used"
@@ -142,8 +146,8 @@ class ModUtilities : Extension() {
 							inline = true
 						}
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						timestamp = Clock.System.now()
 						if (arguments.embed) {
@@ -237,8 +241,8 @@ class ModUtilities : Extension() {
 								value = "```${arguments.newBody.trimmedContents(500)}```"
 							}
 							footer {
-								text = "Edited by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
+								text = "Edited by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 							color = DISCORD_WHITE
 							timestamp = Clock.System.now()
@@ -308,8 +312,8 @@ class ModUtilities : Extension() {
 								}
 							}
 							footer {
-								text = "Edited by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
+								text = "Edited by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 							timestamp = Clock.System.now()
 							color = DISCORD_WHITE
@@ -367,8 +371,8 @@ class ModUtilities : Extension() {
 						title = "Presence changed"
 						description = "Lily's presence has been set to `${arguments.presenceArgument}`"
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						color = DISCORD_BLACK
 					}
@@ -405,8 +409,8 @@ class ModUtilities : Extension() {
 							value = "Watching over $guilds servers."
 						}
 						footer {
-							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 						color = DISCORD_BLACK
 					}
@@ -451,8 +455,9 @@ class ModUtilities : Extension() {
 								}
 
 								guild!!.getChannelOfOrNull<GuildMessageChannel>(
-									ModerationConfigCollection().getConfig(guild!!.id)?.channel ?: guild!!.asGuild()
-										.getSystemChannel()!!.id
+									ModerationConfigCollection().getConfig(guild!!.id)?.channel
+										?: guild!!.asGuildOrNull()
+											?.getSystemChannel()!!.id
 								)?.createMessage {
 									embed {
 										title = "Database Reset!"
@@ -463,17 +468,19 @@ class ModUtilities : Extension() {
 								}
 
 								// Reset
-								LoggingConfigCollection().clearConfig(guild!!.id)
-								ModerationConfigCollection().clearConfig(guild!!.id)
-								SupportConfigCollection().clearConfig(guild!!.id)
-								UtilityConfigCollection().clearConfig(guild!!.id)
+								AutoThreadingCollection().deleteGuildAutoThreads(guild!!.id)
 								GalleryChannelCollection().removeAll(guild!!.id)
 								GithubCollection().removeDefaultRepo(guild!!.id)
 								LogUploadingBlacklistCollection().clearBlacklist(guild!!.id)
+								LoggingConfigCollection().clearConfig(guild!!.id)
+								ModerationConfigCollection().clearConfig(guild!!.id)
+								NewsChannelPublishingCollection().clearAutoPublishingForGuild(guild!!.id)
 								ReminderCollection().removeGuildReminders(guild!!.id)
 								RoleMenuCollection().removeAllRoleMenus(guild!!.id)
+								RoleSubscriptionCollection().removeAllSubscribableRoles(guild!!.id)
 								TagsCollection().clearTags(guild!!.id)
 								ThreadsCollection().removeGuildThreads(guild!!.id)
+								UtilityConfigCollection().clearConfig(guild!!.id)
 								WarnCollection().clearWarns(guild!!.id)
 								WelcomeChannelCollection().removeWelcomeChannelsForGuild(guild!!.id, kord)
 							}
@@ -503,7 +510,15 @@ class ModUtilities : Extension() {
 		 */
 		event<GuildCreateEvent> {
 			action {
-				updateDefaultPresence()
+				try {
+					updateDefaultPresence()
+				} catch (_: UninitializedPropertyAccessException) {
+					return@action
+				} catch (_: CancellationException) {
+					return@action
+				} catch (_: KtorRequestException) {
+					return@action
+				}
 			}
 		}
 
@@ -515,7 +530,15 @@ class ModUtilities : Extension() {
 		 */
 		event<GuildDeleteEvent> {
 			action {
-				updateDefaultPresence()
+				try {
+					updateDefaultPresence()
+				} catch (_: UninitializedPropertyAccessException) {
+					return@action
+				} catch (_: CancellationException) {
+					return@action
+				} catch (_: KtorRequestException) {
+					return@action
+				}
 			}
 		}
 	}

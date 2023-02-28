@@ -139,8 +139,8 @@ class Tags : Extension() {
 							title = tagFromDatabase.tagTitle
 							description = tagFromDatabase.tagValue
 							footer {
-								text = "Tag requested by ${user.asUser().tag}"
-								icon = user.asUser().avatar?.url
+								text = "Tag requested by ${user.asUserOrNull()?.tag}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 							color = DISCORD_BLURPLE
 						}
@@ -158,7 +158,7 @@ class Tags : Extension() {
 							title = "Message Tag used"
 							field {
 								name = "User"
-								value = "${user.asUser().mention} (${user.asUser().tag})"
+								value = "${user.asUserOrNull()?.mention} (${user.asUserOrNull()?.tag})"
 							}
 							field {
 								name = "Tag name"
@@ -166,11 +166,11 @@ class Tags : Extension() {
 							}
 							field {
 								name = "Location"
-								value = "${channel.mention} ${channel.asChannel().data.name.value}"
+								value = "${channel.mention} ${channel.asChannelOrNull()?.data?.name?.value}"
 							}
 							footer {
-								text = "User ID: ${user.asUser().id}"
-								icon = user.asUser().avatar?.url
+								text = "User ID: ${user.asUserOrNull()?.id}"
+								icon = user.asUserOrNull()?.avatar?.url
 							}
 							timestamp = Clock.System.now()
 						}
@@ -266,7 +266,8 @@ class Tags : Extension() {
 					arguments.tagAppearance
 				)
 
-				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
+				val utilityLog =
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createEmbed {
 					title = "Tag created!"
 					description = "The tag `${arguments.tagName}` has been created"
@@ -285,8 +286,8 @@ class Tags : Extension() {
 						value = arguments.tagAppearance
 					}
 					footer {
-						icon = user.asUser().avatar?.url
-						text = "Requested by ${user.asUser().tag}"
+						icon = user.asUserOrNull()?.avatar?.url
+						text = "Requested by ${user.asUserOrNull()?.tag}"
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_GREEN
@@ -328,13 +329,14 @@ class Tags : Extension() {
 
 				TagsCollection().removeTag(guild!!.id, arguments.tagName)
 
-				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
+				val utilityLog =
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createEmbed {
 					title = "Tag deleted!"
 					description = "The tag ${arguments.tagName} was deleted"
 					footer {
-						text = user.asUser().tag
-						icon = user.asUser().avatar?.url
+						text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+						icon = user.asUserOrNull()?.avatar?.url
 					}
 					color = DISCORD_RED
 				}
@@ -391,7 +393,8 @@ class Tags : Extension() {
 					content = "Tag edited!"
 				}
 
-				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
+				val utilityLog =
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createEmbed {
 					title = "Tag Edited"
 					description = "The tag `${arguments.tagName}` was edited"
@@ -428,8 +431,8 @@ class Tags : Extension() {
 						}
 					}
 					footer {
-						text = "Edited by ${user.asUser().tag}"
-						icon = user.asUser().avatar?.url
+						text = "Edited by ${user.asUserOrNull()?.tag}"
+						icon = user.asUserOrNull()?.avatar?.url
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_YELLOW

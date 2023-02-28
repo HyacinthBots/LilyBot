@@ -2,13 +2,14 @@
 
 <img src="docs/lily-logo-transparent.png" alt="The LilyBot Logo" style="width: 128px"/>
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/HyacinthBots/LilyBot/Build%20Only?label=Build%20Only) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/HyacinthBots/LilyBot/Build%20&%20Deploy?label=Build%20and%20Deploy)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/HyacinthBots/LilyBot/main.yml?label=Build%20Main)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/HyacinthBots/LilyBot/gradle.yml?label=Build%20Develop)
 
 ![GitHub issues](https://img.shields.io/github/issues/HyacinthBots/LilyBot?label=Issues) ![GitHub pull requests](https://img.shields.io/github/issues-pr/HyacinthBots/LilyBot?label=Pull%20Requests)
 
 ![GitHub](https://img.shields.io/github/license/HyacinthBots/LilyBot?label=License) ![GitHub repo size](https://img.shields.io/github/repo-size/HyacinthBots/LilyBot?label=Repository%20Size)
 
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/HyacinthBots/LilyBot/latest/develop?include_prereleases) ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/HyacinthBots/LilyBot?label=Commit%20Activity)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/HyacinthBots/LilyBot/latest/develop?include_prereleases) ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/HyacinthBots/LilyBot/develop?label=Commit%20Activity)
 
 ## About
 LilyBot, or Lily, is a multipurpose Discord bot. Lily handles moderation, utility, link filtering, and much, much more. Lily is canonically transfem and uses she/her or it/its pronouns.
@@ -32,16 +33,17 @@ If you're looking to set up a development environment for Lily, try our [develop
 Lily makes use of the following tools and frameworks.
 * [Kord](https://github.com/kordlib/kord), the Kotlin API for Discord.
 * [KordEx](https://github.com/Kord-Extensions/kord-extensions), an integrated commands and extensions framework for Kord.
-* KordEx's [Minecraft Mappings](https://github.com/Kord-Extensions/kord-extensions/tree/develop/extra-modules/extra-mappings), [Phishing](https://github.com/Kord-Extensions/kord-extensions/tree/develop/extra-modules/extra-phishing), [PluralKit](https://github.com/Kord-Extensions/kord-extensions/tree/develop/extra-modules/extra-pluralkit) and [Unsafe](https://github.com/Kord-Extensions/kord-extensions/tree/develop/modules/unsafe) modules.
+* KordEx's [Phishing](https://github.com/Kord-Extensions/kord-extensions/tree/develop/extra-modules/extra-phishing), [PluralKit](https://github.com/Kord-Extensions/kord-extensions/tree/develop/extra-modules/extra-pluralkit) and [Unsafe](https://github.com/Kord-Extensions/kord-extensions/tree/develop/modules/unsafe) modules.
 * [MongoDB](https://www.mongodb.com/) and [KMongo](https://litote.org/kmongo/)
   to manage the database.
-* [Groovy](https://www.groovy-lang.org/), allows us to use groovy files for logback,
 * [Logback](https://github.com/qos-ch/logback), a library that makes logging prettier
 * [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging), a lightweight logging that wraps SLF4J with kotlin extensions
 * [Github-API](https://github.com/hub4j/github-api), the API utilized by the GitHub commands
 * [Shadow Gradle Plugin](https://github.com/johnrengelman/shadow), a tool which allows us to make a big fatjar containing all dependencies
 * [detekt](https://detekt.dev/index.html), a static code analysis tool for the Kotlin programming language. This helps us keep our code clean and nicely formatted.
-* [Cozy's Welcome channel module](hhttps://github.com/QuiltMC/cozy-discord/tree/root/module-welcome) made by our friends at [QuiltMC](https://quiltmc.org/)
+* [Cozy's Welcome channel module](https://github.com/QuiltMC/cozy-discord/tree/root/module-welcome) made by our friends at [QuiltMC](https://quiltmc.org/)
+* [Discord Moderator Actions](https://github.com/NoComment1105/discord-moderation-actions), a library for making moderation commands easier, through the use of DSL.
+* [Doc-generator](https://github.com/HyacinthBots/doc-generator), our in-house documentation generator for KordEx bots
 
 #### Contributing
 This repository is open to contributions by the community. If you plan on contributing, please check our

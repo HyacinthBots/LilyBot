@@ -166,7 +166,7 @@ class Reminders : Extension() {
 						}
 					}
 
-					val id = (ReminderCollection().getAllReminders().lastOrNull()?.id ?: 0) + 1
+					val id = (ReminderCollection().getRemindersForUser(user.id).maxByOrNull { it.id }?.id ?: 0) + 1
 
 					ReminderCollection().setReminder(
 						ReminderData(
@@ -175,7 +175,7 @@ class Reminders : Extension() {
 							setTime,
 							user.id,
 							channel.id,
-							reminderEmbed.message.asMessage().id,
+							reminderEmbed.message.asMessageOrNull().id,
 							arguments.dm,
 							arguments.customMessage,
 							arguments.repeating,
@@ -415,9 +415,9 @@ class Reminders : Extension() {
 					if (reminders.isEmpty()) {
 						respond {
 							content = when (arguments.type) {
-								"all" -> "${user.asUser().username} does not have any reminders for this guild!"
-								"repeating" -> "${user.asUser().username} does not have any repeating reminders for this guild"
-								"non-repeating" -> "${user.asUser().username} does not have any regular reminders for this guild"
+								"all" -> "${user.asUserOrNull()?.username} does not have any reminders for this guild!"
+								"repeating" -> "${user.asUserOrNull()?.username} does not have any repeating reminders for this guild"
+								"non-repeating" -> "${user.asUserOrNull()?.username} does not have any regular reminders for this guild"
 								// This is impossible but the compiler complains otherwise
 								else -> "You do not have any reminders for this guild"
 							}
@@ -498,11 +498,12 @@ class Reminders : Extension() {
 			reminders.filter { it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0 }
 
 		for (it in dueReminders) {
-			var guild: Guild? = null
+			var guild: Guild?
 			try {
 				guild = kord.getGuildOrNull(it.guildId)
 			} catch (_: KtorRequestException) {
 				ReminderCollection().removeReminder(it.id)
+				continue
 			}
 
 			if (guild == null) {
@@ -533,7 +534,7 @@ class Reminders : Extension() {
 					content = guild.getMemberOrNull(it.userId)?.mention
 					reminderEmbed(it)
 				}
-				markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, false)
+				markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, false, it.repeating)
 			}
 
 			if (it.repeating) {
@@ -581,6 +582,7 @@ class Reminders : Extension() {
 	 * @param channelId THe ID of the channel the reminder was in
 	 * @param messageId The ID of the message for the reminder
 	 * @param wasCancelled Whether the reminder was cancelled or not
+	 * @param isRepeating Whether this was a repeating reminder or not. Leave null if irrelevant in the context
 	 * @param byModerator Whether the reminder was cancelled by a moderator, defaults false
 	 *
 	 * @author NoComment1105
@@ -591,8 +593,10 @@ class Reminders : Extension() {
 		channelId: Snowflake,
 		messageId: Snowflake,
 		wasCancelled: Boolean,
+		isRepeating: Boolean? = null,
 		byModerator: Boolean = false
 	) {
+		if (isRepeating == true) return
 		val guild = kord.getGuildOrNull(guildId) ?: return
 		val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return
 		val message = channel.getMessageOrNull(messageId) ?: return
@@ -600,9 +604,9 @@ class Reminders : Extension() {
 			content = "${message.content} **Reminder " +
 					"${
 						if (wasCancelled) {
-							"cancelled ${if (byModerator) "by moderator" else ""}."
+							"cancelled${if (byModerator) " by moderator" else ""}."
 						} else {
-						    "completed."
+							"completed."
 						}
 					}**"
 		}
@@ -634,7 +638,7 @@ class Reminders : Extension() {
 					description = if (userId == null) {
 						"You have no reminders set for this guild."
 					} else {
-						"<@$userId> has no reminders set for this guild"
+						"<@$userId> has no reminders set for this guild."
 					}
 				}
 			)
@@ -647,7 +651,7 @@ class Reminders : Extension() {
 
 				pagesObj.addPage(
 					Page {
-						title = "Reminders for ${guildFor(event)?.asGuild()?.name ?: "this guild"}"
+						title = "Reminders for ${guildFor(event)?.asGuildOrNull()?.name ?: "this guild"}"
 						description = response
 					}
 				)

@@ -8,6 +8,8 @@ import kotlinx.serialization.Serializable
  *
  * @property guildId The ID of the guild the data is for
  * @property defaultRepo The Default Repo to search for issues in
+ *
+ * @since 4.3.0
  */
 @Serializable
 data class GithubData(

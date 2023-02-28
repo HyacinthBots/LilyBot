@@ -5,7 +5,6 @@ import com.kotlindiscord.kord.extensions.DISCORD_PINK
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.channelFor
-import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.components.components
@@ -43,11 +42,10 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
-import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
-import org.hyacinthbots.lilybot.database.entities.SupportConfigData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configIsUsable
@@ -99,18 +97,13 @@ class LogUploading : Extension() {
 				}
 
 				var deferUploadUntilThread = false
-				var supportConfig: SupportConfigData? = null
-				if (configIsUsable(ConfigOptions.SUPPORT_ENABLED, event.guildId!!) &&
-					configIsUsable(ConfigOptions.SUPPORT_CHANNEL, event.guildId!!)
-				) {
-					supportConfig = SupportConfigCollection().getConfig(guildFor(event)!!.id)!!
-					if (supportConfig.enabled && event.message.channel.id == supportConfig.channel) {
-						deferUploadUntilThread = true
-					}
+				val autoThreadingConfig = AutoThreadingCollection().getSingleAutoThread(event.message.channelId)
+				if (autoThreadingConfig != null && autoThreadingConfig.channelId == event.message.channelId) {
+					deferUploadUntilThread = true
 				}
 
 				val eventMessage = event.message.asMessageOrNull() // Get the message
-				var uploadChannel = eventMessage.channel.asChannel()
+				var uploadChannel = eventMessage.channel.asChannelOrNull()
 				val eventMember = event.member ?: event.author
 
 				if (deferUploadUntilThread) {
@@ -118,9 +111,10 @@ class LogUploading : Extension() {
 					ThreadsCollection().getOwnerThreads(eventMember!!.id).forEach {
 						val thread =
 							event.getGuildOrNull()?.getChannelOfOrNull<TextChannelThread>(it.threadId) ?: return@forEach
-						if (thread.parentId == supportConfig?.channel) {
+						if (thread.parentId == autoThreadingConfig?.channelId) {
 							uploadChannel =
-								event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId) ?: return@forEach
+								event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId)
+									?: return@forEach
 							return@forEach
 						}
 					}
@@ -147,11 +141,11 @@ class LogUploading : Extension() {
 							gis.readAllBytes().decodeToString()
 						}
 
-						// Ask the user to remove NEC to ease the debugging on the support team
+						// Ask the user to remove NEC to ease the debugging on mobile users and others
 						val necText = "at Not Enough Crashes"
 						val indexOfNECText = logContent.indexOf(necText)
 						if (indexOfNECText != -1) {
-							uploadChannel.createEmbed {
+							uploadChannel?.createEmbed {
 								title = "Not Enough Crashes detected in logs"
 								description = "Not Enough Crashes (NEC) is well known to cause issues and often " +
 										"makes the debugging process more difficult. " +
@@ -167,16 +161,18 @@ class LogUploading : Extension() {
 							// Ask the user if they're ok with uploading their log to a paste site
 							var confirmationMessage: Message? = null
 
-							confirmationMessage = uploadChannel.createMessage {
+							confirmationMessage = uploadChannel?.createMessage {
 								embed {
 									title = "Do you want to upload this file to mclo.gs?"
 									description =
 										"mclo.gs is a website that allows users to share minecraft logs " +
-												"through public posts.\nIt's easier for the support team to view " +
+												"through public posts.\nIt's easier for the mobile users to view " +
 												"the file on mclo.gs, do you want it to be uploaded?"
 									footer {
-										text = "Uploaded by ${eventMessage.author?.tag ?: eventMember?.asUser()?.tag}"
-										icon = eventMessage.author?.avatar?.url ?: eventMember?.asUser()?.avatar?.url
+										text =
+											"Uploaded by ${eventMessage.author?.tag ?: eventMember?.asUserOrNull()?.tag}"
+										icon =
+											eventMessage.author?.avatar?.url ?: eventMember?.asUserOrNull()?.avatar?.url
 									}
 									color = DISCORD_PINK
 								}
@@ -192,13 +188,13 @@ class LogUploading : Extension() {
 												// Delete the confirmation and proceed to upload
 												confirmationMessage!!.delete()
 
-												val uploadMessage = uploadChannel.createEmbed {
+												val uploadMessage = uploadChannel!!.createEmbed {
 													title = "Uploading `$attachmentFileName` to mclo.gs..."
 													footer {
 														text =
-															"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
+															"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"
 														icon = eventMessage.author?.avatar?.url
-															?: eventMember.asUser().avatar?.url
+															?: eventMember.asUserOrNull()?.avatar?.url
 													}
 													timestamp = Clock.System.now()
 													color = DISCORD_PINK
@@ -212,9 +208,9 @@ class LogUploading : Extension() {
 															title = "`$attachmentFileName` uploaded to mclo.gs"
 															footer {
 																text =
-																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
+																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"
 																icon = eventMessage.author?.avatar?.url
-																	?: eventMember.asUser().avatar?.url
+																	?: eventMember.asUserOrNull()?.avatar?.url
 															}
 															timestamp = Clock.System.now()
 															color = DISCORD_PINK
@@ -235,9 +231,9 @@ class LogUploading : Extension() {
 															description = "Error: $e"
 															footer {
 																text =
-																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUser().tag}"
+																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"
 																icon = eventMessage.author?.avatar?.url
-																	?: eventMember.asUser().avatar?.url
+																	?: eventMember.asUserOrNull()?.avatar?.url
 															}
 															timestamp = Clock.System.now()
 															color = DISCORD_RED
@@ -316,8 +312,8 @@ class LogUploading : Extension() {
 						description = "Log uploading was disabled in ${channel.mention}"
 						color = DISCORD_RED
 						footer {
-							text = "Disabled by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Disabled by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 					}
 				}
@@ -357,8 +353,8 @@ class LogUploading : Extension() {
 						description = "Log uploading was re-enabled in ${channel.mention}"
 						color = DISCORD_GREEN
 						footer {
-							text = "Enabled by ${user.asUser().tag}"
-							icon = user.asUser().avatar?.url
+							text = "Enabled by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
 						}
 					}
 				}

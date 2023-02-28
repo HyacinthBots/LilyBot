@@ -2,8 +2,6 @@
 
 package org.hyacinthbots.lilybot
 
-import cc.ekblad.toml.decode
-import cc.ekblad.toml.tomlMapper
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
@@ -13,16 +11,20 @@ import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
+import org.hyacinthbots.docgenerator.docsGenerator
+import org.hyacinthbots.docgenerator.enums.CommandTypes
+import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
 import org.hyacinthbots.lilybot.extensions.config.Config
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.GuildLogging
+import org.hyacinthbots.lilybot.extensions.events.AutoThreading
 import org.hyacinthbots.lilybot.extensions.events.LogUploading
 import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
 import org.hyacinthbots.lilybot.extensions.events.MessageEdit
-import org.hyacinthbots.lilybot.extensions.events.ThreadInviter
+import org.hyacinthbots.lilybot.extensions.events.ModThreadInviting
 import org.hyacinthbots.lilybot.extensions.moderation.LockingCommands
 import org.hyacinthbots.lilybot.extensions.moderation.ModerationCommands
 import org.hyacinthbots.lilybot.extensions.moderation.Report
@@ -31,18 +33,18 @@ import org.hyacinthbots.lilybot.extensions.util.Github
 import org.hyacinthbots.lilybot.extensions.util.GuildAnnouncements
 import org.hyacinthbots.lilybot.extensions.util.InfoCommands
 import org.hyacinthbots.lilybot.extensions.util.ModUtilities
+import org.hyacinthbots.lilybot.extensions.util.NewsChannelPublishing
 import org.hyacinthbots.lilybot.extensions.util.PublicUtilities
 import org.hyacinthbots.lilybot.extensions.util.Reminders
 import org.hyacinthbots.lilybot.extensions.util.RoleMenu
 import org.hyacinthbots.lilybot.extensions.util.StartupHooks
+import org.hyacinthbots.lilybot.extensions.util.StatusPing
 import org.hyacinthbots.lilybot.extensions.util.Tags
 import org.hyacinthbots.lilybot.extensions.util.ThreadControl
 import org.hyacinthbots.lilybot.utils.BOT_TOKEN
 import org.hyacinthbots.lilybot.utils.ENVIRONMENT
 import org.hyacinthbots.lilybot.utils.SENTRY_DSN
 import org.hyacinthbots.lilybot.utils.database
-import org.hyacinthbots.lilybot.utils.docs.CommandDocs
-import org.hyacinthbots.lilybot.utils.docs.DocsGenerator
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -54,16 +56,9 @@ import kotlin.time.Duration.Companion.minutes
 lateinit var github: GitHub
 private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
 
-var commandDocs: CommandDocs? = null
-
 val docFile = Path("./docs/commands.md")
 
 suspend fun main() {
-	val mapper = tomlMapper { }
-	val stream = LilyBot::class.java.getResourceAsStream("/commanddocs.toml")!!
-
-	commandDocs = mapper.decode<CommandDocs>(stream)
-
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		database(true)
 		dataAdapter(::MongoDBDataAdapter)
@@ -80,27 +75,30 @@ suspend fun main() {
 
 		// Add the extensions to the bot
 		extensions {
+			add(::AutoThreading)
 			add(::Config)
-			add(::Github)
 			add(::GalleryChannel)
-			add(::InfoCommands)
+			add(::Github)
 			add(::GuildAnnouncements)
 			add(::GuildLogging)
+			add(::InfoCommands)
 			add(::LockingCommands)
 			add(::LogUploading)
 			add(::MemberLogging)
 			add(::MessageDelete)
 			add(::MessageEdit)
-			add(::ModerationCommands)
+			add(::ModThreadInviting)
 			add(::ModUtilities)
+			add(::ModerationCommands)
+			add(::NewsChannelPublishing)
 			add(::PublicUtilities)
 			add(::Reminders)
 			add(::Report)
 			add(::RoleMenu)
 			add(::StartupHooks)
+			add(::StatusPing)
 			add(::Tags)
 			add(::ThreadControl)
-			add(::ThreadInviter)
 
 			/*
 			The welcome channel extension allows users to designate a YAML file to create a channel with
@@ -137,6 +135,16 @@ suspend fun main() {
 			}
 		}
 
+		docsGenerator {
+			enabled = true
+			fileFormat = SupportedFileFormat.MARKDOWN
+			commandTypes = CommandTypes.ALL
+			filePath = docFile
+			environment = ENVIRONMENT
+			useBuiltinCommandList = true
+			botName = "LilyBot"
+		}
+
 		// Connect to GitHub to allow the GitHub commands to function
 		try {
 			github = GitHubBuilder().build()
@@ -147,10 +155,5 @@ suspend fun main() {
 		}
 	}
 
-	DocsGenerator.clearDocs(ENVIRONMENT)
-	DocsGenerator.writeNewDocs(ENVIRONMENT)
-
 	bot.start()
 }
-
-object LilyBot

@@ -10,7 +10,6 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
-import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Guild
@@ -22,7 +21,6 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
-import org.hyacinthbots.lilybot.database.collections.SupportConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 
@@ -47,7 +45,6 @@ suspend inline fun getLoggingChannelWithPerms(
 	if (!configIsUsable(channelType, guildId)) return null
 
 	val channelId = when (channelType) {
-		ConfigOptions.SUPPORT_CHANNEL -> SupportConfigCollection().getConfig(guildId)?.channel ?: return null
 		ConfigOptions.ACTION_LOG -> ModerationConfigCollection().getConfig(guildId)?.channel ?: return null
 		ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().getConfig(guildId)?.utilityLogChannel ?: return null
 		ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().getConfig(guildId)?.messageChannel ?: return null
@@ -59,7 +56,6 @@ suspend inline fun getLoggingChannelWithPerms(
 	if (!channel.botHasPermissions(Permission.ViewChannel) || !channel.botHasPermissions(Permission.SendMessages)) {
 		if (resetConfig == true) {
 			when (channelType) {
-				ConfigOptions.SUPPORT_CHANNEL -> SupportConfigCollection().clearConfig(guildId)
 				ConfigOptions.ACTION_LOG -> ModerationConfigCollection().clearConfig(guildId)
 				ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().clearConfig(guildId)
 				ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().clearConfig(guildId)
@@ -89,10 +85,16 @@ suspend inline fun getLoggingChannelWithPerms(
  * @author tempest15
  * @since 3.5.4
  */
-suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessageChannel? =
-	inputGuild.channels.toList().sorted().firstOrNull {
-		it.botHasPermissions(Permission.ViewChannel, Permission.SendMessages)
-	}?.asChannelOfOrNull()
+suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessageChannel? {
+	var firstUsable: GuildMessageChannel? = null
+	inputGuild.channels.toList().toSortedSet().forEach {
+		if (it.botHasPermissions(Permission.ViewChannel) && it.botHasPermissions(Permission.SendMessages)) {
+			firstUsable = it.asChannelOfOrNull()
+			return@forEach
+		}
+	}
+	return firstUsable
+}
 
 /**
  * Gets a guild's system channel as designated by Discord, or null if said channel is invalid or doesn't exist.
@@ -125,7 +127,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		return
 	}
 
-	val eventChannel = channelFor(event)?.asChannel() ?: return
+	val eventChannel = channelFor(event)?.asChannelOrNull() ?: return
 
 	val permissionsSet: MutableSet<String> = mutableSetOf()
 	var count = 0
@@ -144,8 +146,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 
 	/* Use `TextChannel` when the channel is a Text channel */
 	if (eventChannel is TextChannel) {
-		if (eventChannel.asChannelOf<TextChannel>().getEffectivePermissions(event.kord.selfId)
-				.contains(Permissions(permissions))
+		if (eventChannel.asChannelOfOrNull<TextChannel>()?.getEffectivePermissions(event.kord.selfId)
+				?.contains(Permissions(permissions)) == true
 		) {
 			pass()
 		} else {
@@ -154,8 +156,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 			)
 		}
 	} else if (eventChannel is NewsChannel) {
-		if (eventChannel.asChannelOf<NewsChannel>().getEffectivePermissions(event.kord.selfId)
-				.contains(Permissions(permissions))
+		if (eventChannel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(event.kord.selfId)
+				?.contains(Permissions(permissions)) == true
 		) {
 			pass()
 		} else {
@@ -164,8 +166,8 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 			)
 		}
 	} else if (eventChannel is ThreadChannel) {
-		if (eventChannel.asChannelOf<ThreadChannel>().getParent().getEffectivePermissions(event.kord.selfId)
-				.contains(Permissions(permissions))
+		if (eventChannel.asChannelOfOrNull<ThreadChannel>()?.getParent()?.getEffectivePermissions(event.kord.selfId)
+				?.contains(Permissions(permissions)) == true
 		) {
 			pass()
 		} else {
@@ -220,7 +222,6 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 	// Get the users roles into a List of Snowflakes
 	val roles = member.roles.toList().map { it.id }
 	// If the user is a bot, return
-	@Suppress("UnnecessaryParentheses")
 	if (member.isBot) {
 		respond {
 			content = "You cannot $commandName bot users!"

@@ -22,4 +22,6 @@ val SENTRY_DSN = envOrNull("SENTRY_DSN")
 /** The environment the bot is being run in. production or development. */
 val ENVIRONMENT = env("ENVIRONMENT")
 
-const val BUILD_ID: String = "@version@"
+const val BUILD_ID: String = "@build_id@"
+
+const val LILY_VERSION: String = "@version@"

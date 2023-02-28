@@ -6,15 +6,6 @@ package org.hyacinthbots.lilybot.extensions.config
  * @since 4.0.0
  */
 enum class ConfigOptions {
-	/** The option that stores whether the support config is enabled or not. */
-	SUPPORT_ENABLED,
-
-	/** The option that stores the support channel. */
-	SUPPORT_CHANNEL,
-
-	/** The option that stores the support team role. */
-	SUPPORT_ROLE,
-
 	/** The options that stores whether the moderation config is enabled or not.*/
 	MODERATION_ENABLED,
 
