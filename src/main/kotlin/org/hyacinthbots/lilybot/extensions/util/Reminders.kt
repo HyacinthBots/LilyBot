@@ -166,7 +166,7 @@ class Reminders : Extension() {
 						}
 					}
 
-					val id = (ReminderCollection().getAllReminders().lastOrNull()?.id ?: 0) + 1
+					val id = (ReminderCollection().getRemindersForUser(user.id).maxByOrNull { it.id }?.id ?: 0) + 1
 
 					ReminderCollection().setReminder(
 						ReminderData(

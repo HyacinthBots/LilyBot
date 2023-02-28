@@ -57,8 +57,9 @@ object Migrator : KordExKoinComponent {
 					5 -> ::mainV5
 					6 -> ::mainV6
 					7 -> ::mainV7
+					8 -> ::mainV8
 					else -> break
-				}(db.mainDatabase, db.configDatabase)
+				}(db.mainDatabase)
 
 				logger.info { "Migrated main database to version $nextVersion." }
 			} catch (t: Throwable) {
@@ -105,7 +106,7 @@ object Migrator : KordExKoinComponent {
 					3 -> ::configV3
 					4 -> ::configV4
 					else -> break
-				}(db.configDatabase, db.mainDatabase)
+				}(db.configDatabase)
 
 				logger.info { "Migrated config database to version $nextVersion" }
 			} catch (t: Throwable) {
