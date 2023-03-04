@@ -15,6 +15,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
+import dev.kord.rest.request.KtorRequestException
 import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
@@ -92,13 +93,17 @@ class GuildAnnouncements : Extension() {
 													?: getFirstUsableChannel(i)
 													?: continue
 
-											channel.createEmbed {
-												title = modal?.header?.value
-												description = modal?.body?.value
-												color = Color(0x7B52AE)
-												footer {
-													text = "Sent by ${user.asUserOrNull()?.tag}"
+											try {
+												channel.createEmbed {
+													title = modal?.header?.value
+													description = modal?.body?.value
+													color = Color(0x7B52AE)
+													footer {
+														text = "Sent by ${user.asUserOrNull()?.tag}"
+													}
 												}
+											} catch (_: KtorRequestException) {
+												continue
 											}
 										}
 									}
