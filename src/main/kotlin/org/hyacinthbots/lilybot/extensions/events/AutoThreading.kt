@@ -497,8 +497,11 @@ class AutoThreading : Extension() {
 		} else {
 			// Check the real message member too, despite the pk message not being null, we may still be able to use the original
 			message?.channel?.asChannelOfOrNull()
-				?: event.getGuild().getChannelOfOrNull(proxiedMessage.channel)
-				?: return
+				?: try {
+					event.getGuild().getChannelOfOrNull(proxiedMessage.channel)
+				} catch (_: IllegalArgumentException) {
+					null
+				} ?: return
 		}
 
 		val authorId: Snowflake = if (proxiedMessage == null) {
@@ -523,7 +526,11 @@ class AutoThreading : Extension() {
 			val ownerThreads = ThreadsCollection().getOwnerThreads(authorId)
 
 			ownerThreads.forEach {
-				val thread = event.guild?.getChannelOfOrNull<ThreadChannel>(it.threadId)
+				val thread = try {
+					event.guild?.getChannelOfOrNull<ThreadChannel>(it.threadId)
+				} catch (_: IllegalArgumentException) {
+					null
+				}
 				if (thread == null) {
 					ThreadsCollection().removeThread(it.threadId)
 				} else if (thread.parentId == channel.id && !thread.isArchived) {

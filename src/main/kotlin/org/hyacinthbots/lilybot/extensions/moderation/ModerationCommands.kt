@@ -47,8 +47,6 @@ import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
-import io.ktor.client.request.forms.ChannelProvider
-import io.ktor.util.cio.toByteReadChannel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
@@ -68,10 +66,8 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
-import org.hyacinthbots.lilybot.utils.generateBulkDeleteFile
 import org.hyacinthbots.lilybot.utils.getDmResult
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.getMessagesForBanDelete
 import org.hyacinthbots.lilybot.utils.interval
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 import org.hyacinthbots.lilybot.utils.requiredConfigs
@@ -493,10 +489,6 @@ class ModerationCommands : Extension() {
 					return@action
 				}
 
-				val fullSet = getMessagesForBanDelete(guild, arguments.userArgument, arguments.messages, event.kord)
-
-				val messages = generateBulkDeleteFile(fullSet)
-
 				val action = ban(arguments.userArgument) {
 					reason = arguments.reason
 					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
@@ -519,12 +511,6 @@ class ModerationCommands : Extension() {
 								value = arguments.messages.toString()
 								inline = false
 							}
-						}
-						if (messages != null) {
-							addFile(
-								"messages.md",
-								ChannelProvider { messages.byteInputStream().toByteReadChannel() }
-							)
 						}
 					}
 
@@ -575,10 +561,6 @@ class ModerationCommands : Extension() {
 					return@action
 				}
 
-				val fullSet = getMessagesForBanDelete(guild, arguments.userArgument, arguments.messages, event.kord)
-
-				val messages = generateBulkDeleteFile(fullSet)
-
 				val action = softban(arguments.userArgument) {
 					reason = arguments.reason
 					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
@@ -600,12 +582,6 @@ class ModerationCommands : Extension() {
 								value = "${arguments.messages ?: deleteMessageDuration.days}"
 								inline = false
 							}
-						}
-						if (messages != null) {
-							addFile(
-								"messages.md",
-								ChannelProvider { messages.byteInputStream().toByteReadChannel() }
-							)
 						}
 					}
 

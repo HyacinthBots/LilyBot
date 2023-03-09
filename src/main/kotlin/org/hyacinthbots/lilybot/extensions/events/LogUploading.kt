@@ -305,7 +305,7 @@ class LogUploading : Extension() {
 						content = "Log uploading is now blocked in this channel!"
 					}
 
-					if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
+					if (!configIsUsable(guild!!.id, ConfigOptions.UTILITY_LOG)) return@action
 
 					guild!!.getChannelOfOrNull<GuildMessageChannel>(utilityConfig.utilityLogChannel!!)?.createEmbed {
 						title = "Log uploading disabled"
@@ -346,7 +346,7 @@ class LogUploading : Extension() {
 						content = "Log uploading is no longer blocked in this channel!"
 					}
 
-					if (!configIsUsable(ConfigOptions.UTILITY_LOG, guild!!.id)) return@action
+					if (!configIsUsable(guild!!.id, ConfigOptions.UTILITY_LOG)) return@action
 
 					guild!!.getChannelOfOrNull<GuildMessageChannel>(utilityConfig.utilityLogChannel!!)?.createEmbed {
 						title = "Log uploading re-enabled"

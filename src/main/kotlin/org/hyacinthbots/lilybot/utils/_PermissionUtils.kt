@@ -42,7 +42,7 @@ suspend inline fun getLoggingChannelWithPerms(
 ): GuildMessageChannel? {
 	val guildId = guild.id
 
-	if (!configIsUsable(channelType, guildId)) return null
+	if (!configIsUsable(guildId, channelType)) return null
 
 	val channelId = when (channelType) {
 		ConfigOptions.ACTION_LOG -> ModerationConfigCollection().getConfig(guildId)?.channel ?: return null
