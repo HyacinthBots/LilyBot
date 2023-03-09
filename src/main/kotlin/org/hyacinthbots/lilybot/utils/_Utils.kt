@@ -3,28 +3,12 @@ package org.hyacinthbots.lilybot.utils
 import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.utils.loadModule
-import com.kotlindiscord.kord.extensions.utils.permissionsForMember
-import com.kotlindiscord.kord.extensions.utils.toDuration
-import dev.kord.common.entity.ChannelType
-import dev.kord.common.entity.Permission
-import dev.kord.common.entity.Permissions
-import dev.kord.common.entity.Snowflake
-import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.RoleBehavior
-import dev.kord.core.behavior.channel.asChannelOf
-import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.User
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.coroutines.flow.count
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -239,50 +223,6 @@ fun generateBulkDeleteFile(messages: Set<Message>): String? =
 	} else {
 		null
 	}
-
-/**
- * Gets the messages from the guild channels that will be deleted.
- * **This function is very, very intensive** It should be used in minimal quantities and future efforts should be made
- * to optimise it further. Yes, it was worse that its current state.
- *
- * @param guild The guild to get the messages from
- * @param user The user that send the messages
- * @param messages The number of days worth of messages to delete
- * @param kord The kord instance
- * @return A [MutableSet] of [Message]s that are being deleted
- *
- * @author NoComment1105
- * @since 4.7.0
- */
-suspend inline fun getMessagesForBanDelete(
-	guild: GuildBehavior?,
-	user: User,
-	messages: Int?,
-	kord: Kord
-): MutableSet<Message> {
-	if (messages == null || messages == 0) return mutableSetOf()
-
-	val snowflakeMax = Snowflake.max
-	val checkTime = Clock.System.now().minus(DateTimePeriod(days = messages).toDuration(TimeZone.UTC))
-
-	val fullSet = mutableSetOf<Message>()
-
-	val shortList = guild!!.channels.filter {
-		it.type == ChannelType.GuildText &&
-				it.asChannelOf<GuildMessageChannel>().permissionsForMember(kord.selfId)
-					.contains(Permissions(Permission.ViewChannel, Permission.ManageMessages))
-	}.map { it.asChannelOfOrNull<GuildMessageChannel>() }.toSet()
-
-	shortList.forEach {
-		val messagesSet = it?.getMessagesBefore(snowflakeMax)?.takeWhile { message ->
-			message.author == user && message.timestamp > checkTime
-		}?.toSet()?.reversed() // Glorious chronology
-
-		if (messagesSet != null) fullSet.addAll(messagesSet)
-	}
-
-	return fullSet
-}
 
 /**
  * This function loads the database and checks if it is up-to-date. If it isn't, it will update the database via

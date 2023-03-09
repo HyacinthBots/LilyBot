@@ -13,12 +13,14 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageBulkDeleteEvent
+import dev.kord.rest.builder.message.create.UserMessageCreateBuilder
 import dev.kord.rest.builder.message.create.embed
 import io.ktor.client.request.forms.ChannelProvider
 import io.ktor.util.cio.toByteReadChannel
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
+import org.hyacinthbots.lilybot.utils.configsAreUsable
 import org.hyacinthbots.lilybot.utils.generateBulkDeleteFile
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
@@ -73,42 +75,74 @@ class MessageDelete : Extension() {
 			}
 		}
 
+		@Suppress("RemoveExplicitTypeArguments") // It is used you absolute buffoon
 		event<MessageBulkDeleteEvent> {
 			check {
 				anyGuild()
-				requiredConfigs(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 			}
 
 			action {
-				val messageLog =
-					getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, event.getGuildOrNull()!!) ?: return@action
+				val configs = configsAreUsable(event.guildId!!, ConfigOptions.MESSAGE_LOG, ConfigOptions.ACTION_LOG)
+				var messageLogsUsable: Boolean? = null
+				var actionLogsUsable: Boolean? = null
+
+				configs.forEach {
+					if (it.key == ConfigOptions.MESSAGE_LOG) { messageLogsUsable = it.value }
+					if (it.key == ConfigOptions.ACTION_LOG) { actionLogsUsable = it.value }
+				}
+
+				val messageLog = if (messageLogsUsable == true) {
+						getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, event.getGuildOrNull()!!) ?: return@action
+				} else {
+				    null
+				}
+
+				val actionLog = if (actionLogsUsable == true) {
+					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.getGuildOrNull()!!) ?: return@action
+				} else {
+				    null
+				}
 
 				val messages = generateBulkDeleteFile(event.messages)
 
-				messageLog.createMessage {
-					embed {
-						title = "Bulk Message Delete"
-						description = "A Bulk delete of messages occurred"
-						field {
-							name = "Location"
-							value = "${event.channel.mention} " +
-									"(${event.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
-										?: "Could not get channel name"})"
-						}
-						field {
-							name = "Number of messages"
-							value = event.messages.size.toString()
-						}
-						color = DISCORD_PINK
-						timestamp = Clock.System.now()
-					}
-					addFile(
-						"messages.md",
-						ChannelProvider { messages!!.byteInputStream().toByteReadChannel() }
-					)
+				messageLog?.createMessage {
+					bulkDeleteEmbed(event, messages)
+				}
+
+				actionLog?.createMessage {
+					bulkDeleteEmbed(event, messages)
 				}
 			}
 		}
+	}
+
+	/**
+	 * Builds the embed for the bulk delete event.
+	 *
+	 * @param event The [MessageBulkDeleteEvent] for the event
+	 * @param messages The messages that were deleted
+	 */
+	private suspend fun UserMessageCreateBuilder.bulkDeleteEmbed(event: MessageBulkDeleteEvent, messages: String?) {
+		embed {
+			title = "Bulk Message Delete"
+			description = "A Bulk delete of messages occurred"
+			field {
+				name = "Location"
+				value = "${event.channel.mention} " +
+						"(${event.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
+							?: "Could not get channel name"})"
+			}
+			field {
+				name = "Number of messages"
+				value = event.messages.size.toString()
+			}
+			color = DISCORD_PINK
+			timestamp = Clock.System.now()
+		}
+		addFile(
+			"messages.md",
+			ChannelProvider { messages!!.byteInputStream().toByteReadChannel() }
+		)
 	}
 
 	/**
