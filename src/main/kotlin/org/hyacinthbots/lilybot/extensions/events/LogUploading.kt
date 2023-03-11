@@ -55,11 +55,19 @@ import java.io.IOException
 import java.util.zip.GZIPInputStream
 import kotlin.time.Duration.Companion.seconds
 
+const val DEPRECATION_MESSAGE =
+	"**Log Uploading is deprecated in LilyBot. It has been implemented in [Allium]" +
+			"(https://github.com/HyacinthBots/Allium) instead. It will be removed in 4.9.0**"
+
 /**
  * The class for the uploading of logs to mclo.gs.
  *
  * @since 2.0
  */
+@Deprecated(
+	"Implemented in Allium",
+	level = DeprecationLevel.WARNING
+)
 class LogUploading : Extension() {
 	override val name = "log-uploading"
 
@@ -150,7 +158,7 @@ class LogUploading : Extension() {
 								description = "Not Enough Crashes (NEC) is well known to cause issues and often " +
 										"makes the debugging process more difficult. " +
 										"Please remove NEC, recreate the issue, and resend the relevant files " +
-										"(i.e. log or crash report) if the issue persists."
+										"(i.e. log or crash report) if the issue persists.\n\n$DEPRECATION_MESSAGE"
 								footer {
 									text = eventMessage.author?.tag ?: ""
 									icon = eventMessage.author?.avatar?.url
@@ -167,7 +175,7 @@ class LogUploading : Extension() {
 									description =
 										"mclo.gs is a website that allows users to share minecraft logs " +
 												"through public posts.\nIt's easier for the mobile users to view " +
-												"the file on mclo.gs, do you want it to be uploaded?"
+												"the file on mclo.gs, do you want it to be uploaded?\n\n$DEPRECATION_MESSAGE"
 									footer {
 										text =
 											"Uploaded by ${eventMessage.author?.tag ?: eventMember?.asUserOrNull()?.tag}"
@@ -206,6 +214,7 @@ class LogUploading : Extension() {
 													uploadMessage.edit {
 														embed {
 															title = "`$attachmentFileName` uploaded to mclo.gs"
+															description = DEPRECATION_MESSAGE
 															footer {
 																text =
 																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"
@@ -228,7 +237,7 @@ class LogUploading : Extension() {
 														embed {
 															title =
 																"Failed to upload `$attachmentFileName` to mclo.gs"
-															description = "Error: $e"
+															description = "Error: $e\n\n$DEPRECATION_MESSAGE"
 															footer {
 																text =
 																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"

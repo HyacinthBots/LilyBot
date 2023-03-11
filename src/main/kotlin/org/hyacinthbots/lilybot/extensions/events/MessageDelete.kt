@@ -139,10 +139,14 @@ class MessageDelete : Extension() {
 			color = DISCORD_PINK
 			timestamp = Clock.System.now()
 		}
-		addFile(
-			"messages.md",
-			ChannelProvider { messages!!.byteInputStream().toByteReadChannel() }
-		)
+		if (messages != null) {
+			addFile(
+				"messages.md",
+				ChannelProvider { messages.byteInputStream().toByteReadChannel() }
+			)
+		} else {
+			content = "The messages from this event could not be gathered and logged."
+		}
 	}
 
 	/**
