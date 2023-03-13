@@ -440,7 +440,7 @@ class RoleMenu : Extension() {
 
 				if (data.roles.isEmpty()) {
 					event.interaction.respondEphemeral {
-						content = "Could not find any roles associated with this menu. Please ask staff to add some " +
+						content = "Could not find any roles associated with this menu. Please ask staff to add some. " +
 								"If this isn't a role menu, or if the issue persists, open a report at " +
 								"<https://github.com/HyacinthBots/LilyBot/issues>"
 					}
@@ -464,6 +464,15 @@ class RoleMenu : Extension() {
 					} else {
 						roles.add(role)
 					}
+				}
+
+				if (roles.isEmpty()) {
+					event.interaction.respondEphemeral {
+						content = "Could not find any roles associated with this menu. Please ask staff to add some. " +
+								"If this isn't a role menu, or if the issue persists, open a report at " +
+								"<https://github.com/HyacinthBots/LilyBot/issues>"
+					}
+					return@Button
 				}
 
 				val guildRoles = guild.roles
