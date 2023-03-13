@@ -47,6 +47,7 @@ import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollec
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
+import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.configIsUsable
 import org.hyacinthbots.lilybot.utils.requiredConfigs
@@ -57,7 +58,7 @@ import kotlin.time.Duration.Companion.seconds
 
 const val DEPRECATION_MESSAGE =
 	"**Log Uploading is deprecated in LilyBot. It has been implemented in [Allium]" +
-			"(https://github.com/HyacinthBots/Allium) instead. It will be removed in 4.9.0**"
+			"($HYACINTH_GITHUB/Allium) instead. It will be removed in 4.9.0**"
 
 /**
  * The class for the uploading of logs to mclo.gs.

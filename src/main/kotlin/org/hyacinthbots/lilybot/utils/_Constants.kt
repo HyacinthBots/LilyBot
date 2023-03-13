@@ -25,3 +25,5 @@ val ENVIRONMENT = env("ENVIRONMENT")
 const val BUILD_ID: String = "@build_id@"
 
 const val LILY_VERSION: String = "@version@"
+
+const val HYACINTH_GITHUB: String = "https://github.com/HyacinthBots"

@@ -63,6 +63,7 @@ import org.hyacinthbots.discordmoderationactions.enums.ActionResults
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
+import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
@@ -79,7 +80,7 @@ class ModerationCommands : Extension() {
 
 	private val warnSuffix = "Please consider your actions carefully.\n\n" +
 			"For more information about the warn system, please see [this document]" +
-			"(https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md#name-warn)"
+			"($HYACINTH_GITHUB/LilyBot/blob/main/docs/commands.md#name-warn)"
 
 	@OptIn(DoNotChain::class)
 	override suspend fun setup() {
