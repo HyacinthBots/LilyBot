@@ -13,7 +13,7 @@ logging = "3.0.5"
 logback = "1.4.5"
 github-api = "1.314"
 kmongo = "4.8.0"
-cozy-welcome = "1.0-SNAPSHOT"
+cozy-welcome = "1.0.1-SNAPSHOT"
 dma = "0.2.0-SNAPSHOT"
 docgenerator = "0.1.2-SNAPSHOT"
 
