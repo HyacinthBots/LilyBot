@@ -552,9 +552,10 @@ class AutoThreading : Extension() {
 
 		val thread = channel.startPublicThreadWithMessage(
 			message?.id ?: proxiedMessage!!.channel,
-			threadName,
-			channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
-		)
+			threadName
+		) {
+			autoArchiveDuration = channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
+		}
 
 		ThreadsCollection().setThreadOwner(event.getGuild().id, thread.id, event.member!!.id, channel.id)
 

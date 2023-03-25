@@ -96,9 +96,7 @@ tasks {
 
 	jar {
 		manifest {
-			attributes(
-				"Main-Class" to "org.hyacinthbots.lilybot.LilyBotKt"
-			)
+			attributes("Main-Class" to "org.hyacinthbots.lilybot.LilyBotKt")
 		}
 	}
 
