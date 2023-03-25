@@ -20,6 +20,7 @@ import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.ThreadParentChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -315,12 +316,12 @@ class LockingCommands : Extension() {
 	 * @since 4.8.0
 	 */
 	private suspend inline fun getChannelParent(channelArg: Channel?): TextChannel? {
-		var channelParent: TextChannel? = null
+		var channelParent: ThreadParentChannel? = null
 		if (channelArg is TextChannelThread) {
 			channelParent = channelArg.getParent()
 		}
 
-		return channelParent
+		return channelParent?.asChannelOfOrNull()
 	}
 
 	/**
