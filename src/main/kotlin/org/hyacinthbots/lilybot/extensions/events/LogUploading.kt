@@ -121,9 +121,13 @@ class LogUploading : Extension() {
 						val thread =
 							event.getGuildOrNull()?.getChannelOfOrNull<TextChannelThread>(it.threadId) ?: return@forEach
 						if (thread.parentId == autoThreadingConfig?.channelId) {
-							uploadChannel =
-								event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId)
-									?: return@forEach
+							try {
+								uploadChannel =
+									event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId)
+										?: return@forEach
+							} catch (_: IllegalArgumentException) {
+								return@forEach
+							}
 							return@forEach
 						}
 					}
