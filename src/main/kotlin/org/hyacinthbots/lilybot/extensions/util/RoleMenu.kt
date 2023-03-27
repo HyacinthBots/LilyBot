@@ -34,7 +34,7 @@ import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.Role
-import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
@@ -419,7 +419,7 @@ class RoleMenu : Extension() {
 		/**
 		 * The button event that allows the user to select roles.
 		 */
-		event<ButtonInteractionCreateEvent> {
+		event<GuildButtonInteractionCreateEvent> {
 			check {
 				anyGuild()
 				failIfNot {
@@ -481,7 +481,7 @@ class RoleMenu : Extension() {
 					.toList()
 					.associateBy { it.id }
 				val member = event.interaction.user.asMemberOrNull(guild.id)
-				val userRoles = member?.roleIds?.filter { it in guildRoles.keys }
+				val userRoles = member.roleIds.filter { it in guildRoles.keys }
 
 				event.interaction.respondEphemeral {
 					content = "Use the menu below to select roles."
@@ -496,9 +496,7 @@ class RoleMenu : Extension() {
 									label = "@${it.name}",
 									value = it.id.toString()
 								) {
-									if (userRoles != null) {
-										default = it.id in userRoles
-									}
+									default = it.id in userRoles
 								}
 							}
 
@@ -507,7 +505,7 @@ class RoleMenu : Extension() {
 									.filter { it in guildRoles.keys }
 
 								if (event.interaction.values.isEmpty()) {
-									member?.edit {
+									member.edit {
 										roles.forEach {
 											member.removeRole(it.id)
 										}
@@ -516,26 +514,22 @@ class RoleMenu : Extension() {
 									return@SelectMenu
 								}
 
-								val rolesToAdd = if (userRoles != null) {
-									selectedRoles.filterNot { it in userRoles }
-								} else {
-									emptyList()
-								}
-								val rolesToRemove = userRoles?.filterNot { it in selectedRoles }
+								val rolesToAdd = selectedRoles.filterNot { it in userRoles }
+								val rolesToRemove = userRoles.filterNot { it in selectedRoles }
 
-								if (rolesToAdd.isEmpty() && rolesToRemove?.isEmpty() == true) {
+								if (rolesToAdd.isEmpty() && rolesToRemove.isEmpty()) {
 									respond {
 										content = "You didn't select any different roles, so no changes were made."
 									}
 									return@SelectMenu
 								}
 
-								member?.edit {
+								member.edit {
 									this@edit.roles = member.roleIds.toMutableSet()
 
 									// toSet() to increase performance. Idea advised this.
 									this@edit.roles!!.addAll(rolesToAdd.toSet())
-									rolesToRemove?.toSet()?.let { it1 -> this@edit.roles!!.removeAll(it1) }
+									this@edit.roles!!.removeAll(rolesToRemove.toSet())
 								}
 								respond { content = "Your roles have been adjusted." }
 							}
