@@ -21,6 +21,7 @@ import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.suggestStringMap
 import dev.kord.common.Locale
+import dev.kord.common.asJavaLocale
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.createEmbed
@@ -34,6 +35,7 @@ import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.trimmedContents
 
 /**
  * The class that holds the commands to create tags commands.
@@ -63,16 +65,16 @@ class Tags : Extension() {
 				val tagFromDatabase = TagsCollection().getTag(guild!!.id, arguments.tagName) ?: run {
 					respond {
 						content = "Unable to find tag `${arguments.tagName}` for preview. " +
-								"Be sure it exists and you've typed it correctly."
+							"Be sure it exists and you've typed it correctly."
 					}
 					return@action
 				}
 
-				if (tagFromDatabase.tagValue.length > 1024) {
+				if (tagFromDatabase.tagValue.length > 4096) {
 					respond {
 						content =
 							"The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
-									"more, which is above the Discord limit. Please re-create this tag!"
+								"more, which is above the Discord limit. Please re-create this tag!"
 					}
 					return@action
 				}
@@ -114,16 +116,16 @@ class Tags : Extension() {
 				val tagFromDatabase = TagsCollection().getTag(guild!!.id, arguments.tagName) ?: run {
 					respond {
 						content = "Unable to find tag `${arguments.tagName}`. " +
-								"Be sure it exists and you've typed it correctly."
+							"Be sure it exists and you've typed it correctly."
 					}
 					return@action
 				}
 
-				if (tagFromDatabase.tagValue.length > 1024) {
+				if (tagFromDatabase.tagValue.length > 4096) {
 					respond {
 						content =
-							"The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
-									"more, which is above the Discord limit. Please re-create this tag!"
+							"The body of this tag is too long! Somehow this tag has a body of 4096 characters or" +
+								"more, which is above the Discord limit. Please re-create this tag!"
 					}
 					return@action
 				}
@@ -200,24 +202,24 @@ class Tags : Extension() {
 						title = "How does the tag system work?"
 						description =
 							"The tag command allows users to add guild specific 'tag' commands at runtime to their " +
-									"guild. **Tags are like custom commands**, they can do say what ever you want " +
-									"them to say.\n\n**To create a tag**, if you have the Moderate Members " +
-									"permission, run the following command:\n`/tag-create <name> <title> <value>`\n " +
-									"You will be prompted to enter a name for the tag, a title for the tag, and the " +
-									"value for the  tag. This is what will appear in the embed of your tag. You can " +
-									"enter any character you like into all of these inputs.\n\n**To use a tag**, " +
-									"run the following command:\n`/tag <name>`\nYou will be prompted to enter a " +
-									"tag name, but will have an autocomplete window to aid you. The window will " +
-									"list all the tags that the guild has.\n\n**To delete a tag**, if you have " +
-									"the Moderate Members permission, run the following command:\n" +
-									"`/tag-delete <name>`\nYou will be prompted to enter the name of the tag, " +
-									"again aided by autocomplete.\n`/tag-edit`\nYou will be prompted to enter a " +
-									"tag name, but will have an autocomplete window to aid you. The window will " +
-									"list all the tags that the guild has. From there you can enter a new name, title " +
-									"or value. None of these are mandatory.\n`/tag-list`\nDisplays a paginated list " +
-									"of all tags for this guild. There are 10 tags on each page.\n\n**Guilds can " +
-									"have any number of tags they like.** The limit on `tagValue` for tags is 1024 " +
-									"characters, which is the embed description limit enforced by Discord."
+								"guild. **Tags are like custom commands**, they can do say what ever you want " +
+								"them to say.\n\n**To create a tag**, if you have the Moderate Members " +
+								"permission, run the following command:\n`/tag-create <name> <title> <value>`\n " +
+								"You will be prompted to enter a name for the tag, a title for the tag, and the " +
+								"value for the  tag. This is what will appear in the embed of your tag. You can " +
+								"enter any character you like into all of these inputs.\n\n**To use a tag**, " +
+								"run the following command:\n`/tag <name>`\nYou will be prompted to enter a " +
+								"tag name, but will have an autocomplete window to aid you. The window will " +
+								"list all the tags that the guild has.\n\n**To delete a tag**, if you have " +
+								"the Moderate Members permission, run the following command:\n" +
+								"`/tag-delete <name>`\nYou will be prompted to enter the name of the tag, " +
+								"again aided by autocomplete.\n`/tag-edit`\nYou will be prompted to enter a " +
+								"tag name, but will have an autocomplete window to aid you. The window will " +
+								"list all the tags that the guild has. From there you can enter a new name, title " +
+								"or value. None of these are mandatory.\n`/tag-list`\nDisplays a paginated list " +
+								"of all tags for this guild. There are 10 tags on each page.\n\n**Guilds can " +
+								"have any number of tags they like.** The limit on `tagValue` for tags is 1024 " +
+								"characters, which is the embed description limit enforced by Discord."
 						color = DISCORD_BLURPLE
 						timestamp = Clock.System.now()
 					}
@@ -250,12 +252,18 @@ class Tags : Extension() {
 					return@action
 				}
 
-				if (arguments.tagValue.length > 1024) {
+				if (arguments.tagValue.length > 4096) {
 					respond {
-						content = "That tag is body is too long! Due to Discord limitations tag bodies can only be " +
-								"1024 characters or less!"
+						content =
+							"That tag's body is too long! Due to Discord limitations tag bodies can only be " +
+								"4096 characters or less!"
 					}
 					return@action
+				} else if (arguments.tagTitle.length > 256) {
+					respond {
+						content = "That tag's title is too long! Due to Discord limitations tag titles can only be " +
+							"256 characters or less"
+					}
 				}
 
 				TagsCollection().setTag(
@@ -268,29 +276,62 @@ class Tags : Extension() {
 
 				val utilityLog =
 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
-				utilityLog.createEmbed {
-					title = "Tag created!"
-					description = "The tag `${arguments.tagName}` has been created"
-					field {
-						name = "Tag title:"
-						value = "`${arguments.tagTitle}`"
-						inline = false
+				if (arguments.tagValue.length <= 1024) {
+					utilityLog.createEmbed {
+						title = "Tag created!"
+						description = "The tag `${arguments.tagName}` has been created"
+						field {
+							name = "Tag title:"
+							value = "`${arguments.tagTitle}`"
+							inline = false
+						}
+						field {
+							name = "Tag value:"
+							value = "```${arguments.tagValue}```"
+							inline = false
+						}
+						field {
+							name = "Tag appearance"
+							value = arguments.tagAppearance
+						}
+						footer {
+							icon = user.asUserOrNull()?.avatar?.url
+							text = "Requested by ${user.asUserOrNull()?.tag}"
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_GREEN
 					}
-					field {
-						name = "Tag value:"
-						value = "```${arguments.tagValue}```"
-						inline = false
+				} else {
+					utilityLog.createMessage {
+						embed {
+							title = "Tag created!"
+							description = "The tag `${arguments.tagName}` has been created"
+							field {
+								name = "Tag title:"
+								value = "`${arguments.tagTitle}`"
+								inline = false
+							}
+							field {
+								name = "Tag value:"
+								value = "${arguments.tagValue.trimmedContents(1024)}"
+								inline = false
+							}
+							color = DISCORD_GREEN
+						}
+						embed {
+							description = arguments.tagValue.substring(1018)
+							field {
+								name = "Tag appearance"
+								value = arguments.tagAppearance
+							}
+							footer {
+								icon = user.asUserOrNull()?.avatar?.url
+								text = "Requested by ${user.asUserOrNull()?.tag}"
+							}
+							timestamp = Clock.System.now()
+							color = DISCORD_GREEN
+						}
 					}
-					field {
-						name = "Tag appearance"
-						value = arguments.tagAppearance
-					}
-					footer {
-						icon = user.asUserOrNull()?.avatar?.url
-						text = "Requested by ${user.asUserOrNull()?.tag}"
-					}
-					timestamp = Clock.System.now()
-					color = DISCORD_GREEN
 				}
 
 				respond {
@@ -360,26 +401,32 @@ class Tags : Extension() {
 			}
 
 			action {
-				if (TagsCollection().getTag(guild!!.id, arguments.tagName) == null) {
+				val originalTag = TagsCollection().getTag(guild!!.id, arguments.tagName)
+				if (originalTag == null) {
 					respond { content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?" }
 					return@action
 				}
 
-				val originalName = TagsCollection().getTag(guild!!.id, arguments.tagName)!!.name
-				val originalTitle = TagsCollection().getTag(guild!!.id, arguments.tagName)!!.tagTitle
-				val originalValue = TagsCollection().getTag(guild!!.id, arguments.tagName)!!.tagValue
-				val originalAppearance = TagsCollection().getTag(guild!!.id, arguments.tagName)!!.tagAppearance
+				val originalName = originalTag.name
+				val originalTitle = originalTag.tagTitle
+				val originalValue = originalTag.tagValue
+				val originalAppearance = originalTag.tagAppearance
 
-				TagsCollection().removeTag(guild!!.id, arguments.tagName)
-
-				if (arguments.newValue != null && arguments.newValue!!.length > 1024) {
+				if (arguments.newValue != null && arguments.newValue!!.length > 4096) {
 					respond {
 						content =
-							"That tag is body is too long! Due to Discord limitations tag bodies can only be " +
-									"1024 characters or less!"
+							"That tag's body is too long! Due to Discord limitations tag bodies can only be " +
+								"4096 characters or less!"
 					}
 					return@action
+				} else if (arguments.newTitle != null && arguments.newTitle!!.length > 256) {
+					respond {
+						content = "That tag's title is too long! Due to Discord limitations tag titles can only be " +
+							"256 characters or less"
+					}
 				}
+
+				TagsCollection().removeTag(guild!!.id, arguments.tagName)
 
 				TagsCollection().setTag(
 					guild!!.id,
@@ -415,14 +462,6 @@ class Tags : Extension() {
 						}
 					}
 					field {
-						name = "Value"
-						value = if (arguments.newValue.isNullOrEmpty()) {
-							originalValue
-						} else {
-							"$originalValue -> ${arguments.newValue!!}"
-						}
-					}
-					field {
 						name = "Tag appearance"
 						value = if (arguments.newAppearance.isNullOrEmpty()) {
 							originalAppearance
@@ -430,12 +469,35 @@ class Tags : Extension() {
 							"$originalAppearance -> ${arguments.newAppearance}"
 						}
 					}
-					footer {
-						text = "Edited by ${user.asUserOrNull()?.tag}"
-						icon = user.asUserOrNull()?.avatar?.url
-					}
-					timestamp = Clock.System.now()
 					color = DISCORD_YELLOW
+				}
+				if (arguments.newValue.isNullOrEmpty()) {
+					utilityLog.createEmbed {
+						title = "Value"
+						description = originalValue
+						footer {
+							text = "Edited by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_YELLOW
+					}
+				} else {
+					utilityLog.createEmbed {
+						title = "Old value"
+						description = originalValue
+						color = DISCORD_YELLOW
+					}
+					utilityLog.createEmbed {
+						title = "New value"
+						description = arguments.newValue
+						footer {
+							text = "Edited by ${user.asUserOrNull()?.tag}"
+							icon = user.asUserOrNull()?.avatar?.url
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_YELLOW
+					}
 				}
 			}
 		}

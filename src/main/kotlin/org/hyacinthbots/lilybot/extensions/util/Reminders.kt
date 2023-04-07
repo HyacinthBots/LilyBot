@@ -45,7 +45,7 @@ import kotlinx.datetime.TimeZone
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.entities.ReminderData
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.fitsEmbed
+import org.hyacinthbots.lilybot.utils.fitsEmbedField
 import org.hyacinthbots.lilybot.utils.interval
 
 class Reminders : Extension() {
@@ -86,7 +86,7 @@ class Reminders : Extension() {
 					val setTime = Clock.System.now()
 					val remindTime = Clock.System.now().plus(arguments.time.toDuration(TimeZone.UTC))
 
-					if (arguments.customMessage != null && arguments.customMessage.fitsEmbed() == false) {
+					if (arguments.customMessage != null && arguments.customMessage.fitsEmbedField() == false) {
 						respond { content = "Custom Message is too long. Message must be 1024 characters or fewer." }
 						return@action
 					}

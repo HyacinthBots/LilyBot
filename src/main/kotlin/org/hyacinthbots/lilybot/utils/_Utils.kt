@@ -92,7 +92,7 @@ fun getDmResult(shouldDm: Boolean, dm: Message?): DmResult =
  * @author NoComment1105
  * @since 4.2.0
  */
-fun String?.fitsEmbed(): Boolean? {
+fun String?.fitsEmbedField(): Boolean? {
 	this ?: return null
 	return this.length <= 1024
 }
@@ -122,7 +122,7 @@ fun String?.ifNullOrEmpty(defaultValue: () -> String): String =
 fun Message?.trimmedContents(): String? {
 	this ?: return null
 	return if (this.content.length > 1024) {
-		this.content.substring(0, 1020) + " ..."
+		this.content.substring(0, 1021) + "..."
 	} else {
 		this.content
 	}
@@ -136,7 +136,7 @@ fun Message?.trimmedContents(): String? {
 fun String?.trimmedContents(): String? {
 	this ?: return null
 	return if (this.length > 1024) {
-		this.substring(0, 1020) + " ..."
+		this.substring(0, 1021) + "..."
 	} else {
 		this
 	}
@@ -167,7 +167,7 @@ fun Message?.trimmedContents(desiredLength: Int): String? {
 	this ?: return null
 	val useRegularLength = this.content.length < desiredLength.coerceIn(1, 1020)
 	return if (this.content.length > desiredLength.coerceIn(1, 1020)) {
-		this.content.substring(0, if (useRegularLength) this.content.length else desiredLength) + "..."
+		this.content.substring(0, if (useRegularLength) this.content.length else desiredLength.minus(3)) + "..."
 	} else {
 		this.content
 	}
@@ -182,7 +182,7 @@ fun String?.trimmedContents(desiredLength: Int): String? {
 	this ?: return null
 	val useRegularLength = this.length < desiredLength.coerceIn(1, 1020)
 	return if (this.length > desiredLength.coerceIn(1, 1020)) {
-		this.substring(0, if (useRegularLength) this.length else desiredLength) + "..."
+		this.substring(0, if (useRegularLength) this.length else desiredLength.minus(3)) + "..."
 	} else {
 		this
 	}
