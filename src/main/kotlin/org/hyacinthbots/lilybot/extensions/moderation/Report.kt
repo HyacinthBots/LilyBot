@@ -199,7 +199,7 @@ class Report : Extension() {
 								}
 								footer {
 									text = "Reported by: ${user.asUserOrNull()?.tag}"
-									icon = user.asUserOrNull()?.avatar?.url
+									icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 								}
 								timestamp = Clock.System.now()
 								color = DISCORD_RED

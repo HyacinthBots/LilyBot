@@ -112,7 +112,7 @@ class NewsChannelPublishing : Extension() {
 						}
 						footer {
 							text = "Set by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_YELLOW
@@ -157,7 +157,7 @@ class NewsChannelPublishing : Extension() {
 						}
 						footer {
 							text = "Removed by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_YELLOW

@@ -104,7 +104,7 @@ class LockingCommands : Extension() {
 						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
 						footer {
 							text = user.asUserOrNull()?.tag ?: "Unable to get tag"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_RED
@@ -159,7 +159,7 @@ class LockingCommands : Extension() {
 						description = "**Reason:** ${arguments.reason}"
 						footer {
 							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_RED
@@ -243,7 +243,7 @@ class LockingCommands : Extension() {
 						description = "${targetChannel.mention} has been unlocked."
 						footer {
 							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_GREEN
@@ -296,7 +296,7 @@ class LockingCommands : Extension() {
 						title = "Server unlocked"
 						footer {
 							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_GREEN

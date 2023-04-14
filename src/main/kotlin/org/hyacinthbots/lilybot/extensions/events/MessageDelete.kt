@@ -75,7 +75,6 @@ class MessageDelete : Extension() {
 			}
 		}
 
-		@Suppress("RemoveExplicitTypeArguments") // It is used you absolute buffoon
 		event<MessageBulkDeleteEvent> {
 			check {
 				anyGuild()
@@ -169,7 +168,7 @@ class MessageDelete : Extension() {
 		messageLog.createEmbed {
 			author {
 				name = "Message deleted"
-				icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.url
+				icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.cdnUrl?.toUrl()
 			}
 			description =
 				"Location: ${message.channel.mention} " +

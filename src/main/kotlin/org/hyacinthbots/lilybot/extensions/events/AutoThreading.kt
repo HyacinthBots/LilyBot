@@ -183,7 +183,7 @@ class AutoThreading : Extension() {
 						}
 						footer {
 							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							icon = user.asUser().avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_BLACK
@@ -235,7 +235,7 @@ class AutoThreading : Extension() {
 						}
 						footer {
 							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							icon = user.asUser().avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_BLACK

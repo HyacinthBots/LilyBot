@@ -640,7 +640,7 @@ class ModerationCommands : Extension() {
 							}
 							footer {
 								text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
-								icon = user.asUserOrNull()?.avatar?.url
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
 							color = DISCORD_GREEN
@@ -767,7 +767,7 @@ class ModerationCommands : Extension() {
 					description = "Action occurred in ${textChannel.mention}"
 					footer {
 						text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
-						icon = user.asUserOrNull()?.avatar?.url
+						icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 					}
 					color = DISCORD_BLACK
 				}
@@ -869,7 +869,7 @@ class ModerationCommands : Extension() {
 							}
 							footer {
 								text = "Requested by ${user.asUserOrNull()?.tag}"
-								icon = user.asUserOrNull()?.avatar?.url
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
 							color = DISCORD_BLACK
@@ -1312,7 +1312,7 @@ private fun EmbedBuilder.warnTimeoutLog(timeoutNumber: Int, moderator: User, tar
 		}
 		footer {
 			text = moderator.tag
-			icon = moderator.avatar?.url
+			icon = moderator.avatar?.cdnUrl?.toUrl()
 		}
 		color = DISCORD_BLACK
 		timestamp = Clock.System.now()

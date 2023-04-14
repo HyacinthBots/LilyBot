@@ -143,7 +143,7 @@ class ModUtilities : Extension() {
 						}
 						footer {
 							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						if (arguments.embed) {
@@ -239,7 +239,7 @@ class ModUtilities : Extension() {
 							}
 							footer {
 								text = "Edited by ${user.asUserOrNull()?.tag}"
-								icon = user.asUserOrNull()?.avatar?.url
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							color = DISCORD_WHITE
 							timestamp = Clock.System.now()
@@ -310,7 +310,7 @@ class ModUtilities : Extension() {
 							}
 							footer {
 								text = "Edited by ${user.asUserOrNull()?.tag}"
-								icon = user.asUserOrNull()?.avatar?.url
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
 							color = DISCORD_WHITE
@@ -369,7 +369,7 @@ class ModUtilities : Extension() {
 						description = "Lily's presence has been set to `${arguments.presenceArgument}`"
 						footer {
 							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						color = DISCORD_BLACK
 					}
@@ -407,7 +407,7 @@ class ModUtilities : Extension() {
 						}
 						footer {
 							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						color = DISCORD_BLACK
 					}

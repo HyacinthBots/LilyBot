@@ -149,7 +149,7 @@ class RoleMenu : Extension() {
 							}
 							footer {
 								text = "Created by ${user.asUserOrNull()?.tag}"
-								icon = user.asUserOrNull()?.avatar?.url
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
 						components {
@@ -225,7 +225,7 @@ class RoleMenu : Extension() {
 									"${channel.mention}."
 							footer {
 								text = "Added by ${user.asUserOrNull()?.tag}"
-								icon = user.asUserOrNull()?.avatar?.url
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
 						components {
@@ -291,7 +291,7 @@ class RoleMenu : Extension() {
 									"${channel.mention}."
 							footer {
 								text = "Removed by ${user.asUserOrNull()?.tag}"
-								icon = user.asUserOrNull()?.avatar?.url
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
 						components {
@@ -402,7 +402,7 @@ class RoleMenu : Extension() {
 							description = "A pronoun role menu was created in ${channel.mention}."
 							footer {
 								text = "Created by ${user.asUserOrNull()?.tag}"
-								icon = user.asUserOrNull()?.avatar?.url
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
 						components {
@@ -678,7 +678,7 @@ class RoleMenu : Extension() {
 						description = "${arguments.role.mention} was added as a subscribable role"
 						footer {
 							text = "Added by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
 				}
@@ -734,7 +734,7 @@ class RoleMenu : Extension() {
 						description = "${arguments.role.mention} was removed as a subscribable role"
 						footer {
 							text = "Removed by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
 				}

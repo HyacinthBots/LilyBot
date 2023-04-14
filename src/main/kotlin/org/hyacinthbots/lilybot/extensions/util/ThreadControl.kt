@@ -202,7 +202,7 @@ class ThreadControl : Extension() {
 							if (member != oldOwner) {
 								footer {
 									text = "Transferred by ${member.mention}"
-									icon = member.avatar?.url
+									icon = member.avatar?.cdnUrl?.toUrl()
 								}
 							}
 							timestamp = Clock.System.now()

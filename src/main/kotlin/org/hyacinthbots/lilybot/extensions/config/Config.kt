@@ -332,7 +332,7 @@ class Config : Extension() {
 
 						footer {
 							text = "Configured by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
 
@@ -453,7 +453,7 @@ class Config : Extension() {
 
 						footer {
 							text = "Configured by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
 
@@ -508,7 +508,7 @@ class Config : Extension() {
 								}"
 								footer {
 									text = "Config cleared by ${user.asUserOrNull()?.tag}"
-									icon = user.asUserOrNull()?.avatar?.url
+									icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 								}
 							}
 						}
@@ -531,7 +531,7 @@ class Config : Extension() {
 									title = "Config cleared: Moderation"
 									footer {
 										text = "Config cleared by ${user.asUserOrNull()?.tag}"
-										icon = user.asUserOrNull()?.avatar?.url
+										icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 									}
 								}
 							}
@@ -553,7 +553,7 @@ class Config : Extension() {
 									title = "Config cleared: Logging"
 									footer {
 										text = "Config cleared by ${user.asUserOrNull()?.tag}"
-										icon = user.asUserOrNull()?.avatar?.url
+										icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 									}
 								}
 							}
@@ -575,7 +575,7 @@ class Config : Extension() {
 									title = "Config cleared: Utility"
 									footer {
 										text = "Config cleared by ${user.asUserOrNull()?.tag}"
-										icon = user.asUserOrNull()?.avatar?.url
+										icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 									}
 								}
 							}
@@ -590,7 +590,7 @@ class Config : Extension() {
 									title = "All configs cleared"
 									footer {
 										text = "Configs cleared by ${user.asUserOrNull()?.tag}"
-										icon = user.asUserOrNull()?.avatar?.url
+										icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 									}
 								}
 							}

@@ -24,10 +24,12 @@ import dev.kord.common.Locale
 import dev.kord.common.asJavaLocale
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
+import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
@@ -142,7 +144,7 @@ class Tags : Extension() {
 							description = tagFromDatabase.tagValue
 							footer {
 								text = "Tag requested by ${user.asUserOrNull()?.tag}"
-								icon = user.asUserOrNull()?.avatar?.url
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							color = DISCORD_BLURPLE
 						}
@@ -172,7 +174,7 @@ class Tags : Extension() {
 							}
 							footer {
 								text = "User ID: ${user.asUserOrNull()?.id}"
-								icon = user.asUserOrNull()?.avatar?.url
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
 						}
@@ -290,16 +292,7 @@ class Tags : Extension() {
 							value = "```${arguments.tagValue}```"
 							inline = false
 						}
-						field {
-							name = "Tag appearance"
-							value = arguments.tagAppearance
-						}
-						footer {
-							icon = user.asUserOrNull()?.avatar?.url
-							text = "Requested by ${user.asUserOrNull()?.tag}"
-						}
-						timestamp = Clock.System.now()
-						color = DISCORD_GREEN
+						appearanceFooter(arguments.tagAppearance, user)
 					}
 				} else {
 					utilityLog.createMessage {
@@ -320,16 +313,7 @@ class Tags : Extension() {
 						}
 						embed {
 							description = arguments.tagValue.substring(1018)
-							field {
-								name = "Tag appearance"
-								value = arguments.tagAppearance
-							}
-							footer {
-								icon = user.asUserOrNull()?.avatar?.url
-								text = "Requested by ${user.asUserOrNull()?.tag}"
-							}
-							timestamp = Clock.System.now()
-							color = DISCORD_GREEN
+							appearanceFooter(arguments.tagAppearance, user)
 						}
 					}
 				}
@@ -377,7 +361,7 @@ class Tags : Extension() {
 					description = "The tag ${arguments.tagName} was deleted"
 					footer {
 						text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
-						icon = user.asUserOrNull()?.avatar?.url
+						icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 					}
 					color = DISCORD_RED
 				}
@@ -477,7 +461,7 @@ class Tags : Extension() {
 						description = originalValue
 						footer {
 							text = "Edited by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_YELLOW
@@ -493,7 +477,7 @@ class Tags : Extension() {
 						description = arguments.newValue
 						footer {
 							text = "Edited by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_YELLOW
@@ -561,6 +545,19 @@ class Tags : Extension() {
 				paginator.send()
 			}
 		}
+	}
+
+	private suspend fun EmbedBuilder.appearanceFooter(tagAppearance: String, user: UserBehavior) {
+		field {
+			name = "Tag appearance"
+			value = tagAppearance
+		}
+		footer {
+			icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+			text = "Requested by ${user.asUserOrNull()?.tag}"
+		}
+		timestamp = Clock.System.now()
+		color = DISCORD_GREEN
 	}
 
 	inner class CallTagArgs : Arguments() {
