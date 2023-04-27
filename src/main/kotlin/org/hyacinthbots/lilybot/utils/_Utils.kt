@@ -2,7 +2,11 @@ package org.hyacinthbots.lilybot.utils
 
 import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
 import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.utils.hasPermission
 import com.kotlindiscord.kord.extensions.utils.loadModule
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.RoleBehavior
 import dev.kord.core.entity.Message
@@ -47,8 +51,12 @@ internal val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @author NoComment1105
  * @since 4.1.0
  */
-suspend inline fun canPingRole(role: RoleBehavior?) =
-	role != null && role.guild.getRoleOrNull(role.id)?.mentionable == true
+suspend inline fun canPingRole(role: RoleBehavior?, guildId: Snowflake, kord: Kord) =
+	if (kord.getSelf().asMemberOrNull(guildId)?.hasPermission(Permission.MentionEveryone) == true) {
+		true
+	} else {
+		role != null && role.guild.getRoleOrNull(role.id)?.mentionable == true
+	}
 
 /**
  * Get the number of guilds the bot is in.
@@ -215,11 +223,11 @@ suspend inline fun Extension.updateDefaultPresence() {
 fun generateBulkDeleteFile(messages: Set<Message>): String? =
 	if (messages.isNotEmpty()) {
 		"# Messages\n\n**Total:** ${messages.size}\n\n" +
-				messages.reversed().joinToString("\n") { // Reversed for chronology
-					"*  [${
-						it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
-					} UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
-				}
+			messages.reversed().joinToString("\n") { // Reversed for chronology
+				"*  [${
+					it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
+				} UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
+			}
 	} else {
 		null
 	}

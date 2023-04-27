@@ -10,6 +10,7 @@ import dev.kord.core.supplier.EntitySupplyStrategy
 import kotlinx.coroutines.delay
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.utils.canPingRole
 
 class ModThreadInviting : Extension() {
 	override val name: String = "mod-thread-inviting"
@@ -41,7 +42,7 @@ class ModThreadInviting : Extension() {
 
 				val moderatorRole = channel.guild.getRoleOrNull(config.role) ?: return@action
 
-				if (!moderatorRole.mentionable) return@action
+				if (!canPingRole(moderatorRole, event.channel.guildId, kord)) return@action
 
 				val message = channel.createMessage {
 					content = "Placeholder message"

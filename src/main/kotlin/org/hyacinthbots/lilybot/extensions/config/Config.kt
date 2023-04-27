@@ -99,7 +99,7 @@ class Config : Extension() {
 						return@action
 					}
 
-					if (!canPingRole(arguments.moderatorRole) && arguments.moderatorRole != null) {
+					if (!canPingRole(arguments.moderatorRole, guild!!.id, this@ephemeralSubCommand.kord)) {
 						respond {
 							content =
 								"I cannot use the role: ${arguments.moderatorRole!!.mention}, because it is not mentionable by " +
