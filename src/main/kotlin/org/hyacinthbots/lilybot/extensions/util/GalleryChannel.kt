@@ -11,11 +11,15 @@ import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.delete
+import com.kotlindiscord.kord.extensions.utils.permissionsForMember
 import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.create.embed
@@ -190,6 +194,16 @@ class GalleryChannel : Extension() {
 				GalleryChannelCollection().getChannels(event.guildId!!).forEach {
 					// If there are no attachments to the message and the channel we're in is an image channel
 					if (event.message.channelId == it.channelId && event.message.attachments.isEmpty()) {
+						if (!event.message.channel.asChannelOf<GuildMessageChannel>().permissionsForMember(kord.selfId)
+								.contains(Permission.ManageMessages)
+						) {
+							event.message.channel.createMessage {
+								"Hi! This is a gallery channel, but I don't have Manage Messages for this " +
+									"channel, therefore I cannot delete messages that don't contain images! Could " +
+									"someone ask staff fix it please? Thanks!"
+							}
+							return@forEach
+						}
 						// We delay to give the message a chance to populate with an embed, if it is a link to imgur etc.
 						delay(0.25.seconds.inWholeMilliseconds)
 						if (event.message.embeds.isEmpty()) { // If there is still no embed, we delete the message
