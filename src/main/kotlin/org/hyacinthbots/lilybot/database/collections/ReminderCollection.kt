@@ -74,11 +74,13 @@ class ReminderCollection : KordExKoinComponent {
 	/**
 	 * Removes a reminder from the database.
 	 *
+	 * @param userId The ID of the user the reminder belongs too
 	 * @param number The reminder to remove
 	 * @author NoComment1105
 	 * @since 4.2.0
 	 */
-	suspend fun removeReminder(number: Long) = collection.deleteOne(ReminderData::id eq number)
+	suspend fun removeReminder(userId: Snowflake, number: Long) =
+		collection.deleteOne(ReminderData::userId eq userId, ReminderData::id eq number)
 
 	/**
 	 * Removes all the reminders for a given guild.
@@ -98,10 +100,7 @@ class ReminderCollection : KordExKoinComponent {
 	 * @since 4.5.0
 	 */
 	suspend fun repeatReminder(originalData: ReminderData, repeatingInterval: DateTimePeriod) {
-		collection.deleteOne(
-			ReminderData::id eq originalData.id,
-			ReminderData::userId eq originalData.userId
-		)
+		removeReminder(originalData.userId, originalData.id)
 
 		collection.insertOne(
 			ReminderData(

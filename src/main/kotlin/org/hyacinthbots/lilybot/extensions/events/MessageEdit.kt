@@ -88,7 +88,7 @@ class MessageEdit : Extension() {
 				color = DISCORD_YELLOW
 				author {
 					name = "Message Edited"
-					icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.url
+					icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.cdnUrl?.toUrl()
 				}
 				description =
 					"Location: ${message.channel.mention} " +

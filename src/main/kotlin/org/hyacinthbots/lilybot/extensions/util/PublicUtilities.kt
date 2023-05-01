@@ -223,7 +223,7 @@ class PublicUtilities : Extension() {
 
 													footer {
 														text = "Nickname accepted by ${user.asUserOrNull()?.tag}"
-														icon = user.asUserOrNull()?.avatar?.url
+														icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 													}
 
 													timestamp = Clock.System.now()
@@ -272,7 +272,7 @@ class PublicUtilities : Extension() {
 
 													footer {
 														text = "Nickname denied by ${user.asUserOrNull()?.tag}"
-														icon = user.asUserOrNull()?.avatar?.url
+														icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 													}
 
 													timestamp = Clock.System.now()

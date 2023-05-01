@@ -41,7 +41,7 @@ class InfoCommands : Extension() {
 				respond {
 					embed {
 						thumbnail {
-							url = event.kord.getSelf().avatar!!.url
+							url = event.kord.getSelf().avatar?.cdnUrl!!.toUrl()
 						}
 						title = "What is LilyBot?"
 						description = "Lily is a FOSS multi-purpose bot for Discord created by " +
@@ -103,7 +103,7 @@ class InfoCommands : Extension() {
 				respond {
 					embed {
 						thumbnail {
-							url = event.kord.getSelf().avatar!!.url
+							url = event.kord.getSelf().avatar?.cdnUrl!!.toUrl()
 						}
 						title = "Info about LilyBot"
 						description = "Lily is a FOSS multi-purpose bot for Discord created by " +

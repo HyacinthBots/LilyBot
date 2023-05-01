@@ -45,7 +45,7 @@ import kotlinx.datetime.TimeZone
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.entities.ReminderData
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
-import org.hyacinthbots.lilybot.utils.fitsEmbed
+import org.hyacinthbots.lilybot.utils.fitsEmbedField
 import org.hyacinthbots.lilybot.utils.interval
 
 class Reminders : Extension() {
@@ -86,7 +86,7 @@ class Reminders : Extension() {
 					val setTime = Clock.System.now()
 					val remindTime = Clock.System.now().plus(arguments.time.toDuration(TimeZone.UTC))
 
-					if (arguments.customMessage != null && arguments.customMessage.fitsEmbed() == false) {
+					if (arguments.customMessage != null && arguments.customMessage.fitsEmbedField() == false) {
 						respond { content = "Custom Message is too long. Message must be 1024 characters or fewer." }
 						return@action
 					}
@@ -245,7 +245,7 @@ class Reminders : Extension() {
 						}
 					}
 
-					ReminderCollection().removeReminder(arguments.reminder)
+					ReminderCollection().removeReminder(user.id, arguments.reminder)
 					markReminderCompleteOrCancelled(reminder.guildId, reminder.channelId, reminder.messageId, true)
 				}
 			}
@@ -280,7 +280,7 @@ class Reminders : Extension() {
 					when (arguments.type) {
 						"all" -> {
 							reminders.forEach {
-								ReminderCollection().removeReminder(it.id)
+								ReminderCollection().removeReminder(it.userId, it.id)
 								markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, true)
 							}
 
@@ -292,7 +292,7 @@ class Reminders : Extension() {
 						"repeating" -> {
 							reminders.forEach {
 								if (it.repeating) {
-									ReminderCollection().removeReminder(it.id)
+									ReminderCollection().removeReminder(it.userId, it.id)
 									markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, true)
 								}
 							}
@@ -305,7 +305,7 @@ class Reminders : Extension() {
 						"non-repeating" -> {
 							reminders.forEach {
 								if (!it.repeating) {
-									ReminderCollection().removeReminder(it.id)
+									ReminderCollection().removeReminder(it.userId, it.id)
 									markReminderCompleteOrCancelled(it.guildId, it.channelId, it.messageId, true)
 								}
 							}
@@ -385,7 +385,7 @@ class Reminders : Extension() {
 						}
 					}
 
-					ReminderCollection().removeReminder(arguments.reminder)
+					ReminderCollection().removeReminder(user.id, arguments.reminder)
 					markReminderCompleteOrCancelled(
 						reminder.guildId, reminder.channelId, reminder.messageId,
 						wasCancelled = true,
@@ -428,7 +428,7 @@ class Reminders : Extension() {
 					when (arguments.type) {
 						"all" -> {
 							reminders.forEach {
-								ReminderCollection().removeReminder(it.id)
+								ReminderCollection().removeReminder(it.userId, it.id)
 								markReminderCompleteOrCancelled(
 									it.guildId, it.channelId, it.messageId,
 									wasCancelled = true,
@@ -446,7 +446,7 @@ class Reminders : Extension() {
 						"repeating" -> {
 							reminders.forEach {
 								if (it.repeating) {
-									ReminderCollection().removeReminder(it.id)
+									ReminderCollection().removeReminder(it.userId, it.id)
 									markReminderCompleteOrCancelled(
 										it.guildId, it.channelId, it.messageId,
 										wasCancelled = true,
@@ -465,7 +465,7 @@ class Reminders : Extension() {
 						"non-repeating" -> {
 							reminders.forEach {
 								if (!it.repeating) {
-									ReminderCollection().removeReminder(it.id)
+									ReminderCollection().removeReminder(it.userId, it.id)
 									markReminderCompleteOrCancelled(
 										it.guildId, it.channelId, it.messageId,
 										wasCancelled = true,
@@ -502,18 +502,18 @@ class Reminders : Extension() {
 			try {
 				guild = kord.getGuildOrNull(it.guildId)
 			} catch (_: KtorRequestException) {
-				ReminderCollection().removeReminder(it.id)
+				ReminderCollection().removeReminder(it.userId, it.id)
 				continue
 			}
 
 			if (guild == null) {
-				ReminderCollection().removeReminder(it.id)
+				ReminderCollection().removeReminder(it.userId, it.id)
 				continue
 			}
 
 			val channel = guild.getChannelOfOrNull<GuildMessageChannel>(it.channelId)
 			if (channel == null) {
-				ReminderCollection().removeReminder(it.id)
+				ReminderCollection().removeReminder(it.userId, it.id)
 				continue
 			}
 
@@ -540,7 +540,7 @@ class Reminders : Extension() {
 			if (it.repeating) {
 				ReminderCollection().repeatReminder(it, it.repeatingInterval!!)
 			} else {
-				ReminderCollection().removeReminder(it.id)
+				ReminderCollection().removeReminder(it.userId, it.id)
 			}
 		}
 	}

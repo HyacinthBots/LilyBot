@@ -53,6 +53,7 @@ import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
+import org.hyacinthbots.lilybot.utils.canPingRole
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 class AutoThreading : Extension() {
@@ -90,7 +91,7 @@ class AutoThreading : Extension() {
 					}
 
 					// Check if the role can be pinged
-					if (arguments.role?.mentionable == false) {
+					if (canPingRole(arguments.role, guild!!.id, this@unsafeSubCommand.kord)) {
 						ackEphemeral()
 						respondEphemeral {
 							content = "Lily cannot mention this role. Please fix the role's permissions and try again."
@@ -183,7 +184,7 @@ class AutoThreading : Extension() {
 						}
 						footer {
 							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							icon = user.asUser().avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_BLACK
@@ -235,7 +236,7 @@ class AutoThreading : Extension() {
 						}
 						footer {
 							text = user.asUser().tag
-							icon = user.asUser().avatar?.url
+							icon = user.asUser().avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_BLACK

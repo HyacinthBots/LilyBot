@@ -31,7 +31,7 @@ suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser:
 	}
 	footer {
 		text = "Requested by ${commandUser.asUserOrNull()?.tag}"
-		icon = commandUser.asUserOrNull()?.avatar?.url
+		icon = commandUser.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 	}
 }
 

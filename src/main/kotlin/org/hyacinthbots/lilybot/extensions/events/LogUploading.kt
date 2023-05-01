@@ -121,9 +121,13 @@ class LogUploading : Extension() {
 						val thread =
 							event.getGuildOrNull()?.getChannelOfOrNull<TextChannelThread>(it.threadId) ?: return@forEach
 						if (thread.parentId == autoThreadingConfig?.channelId) {
-							uploadChannel =
-								event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId)
-									?: return@forEach
+							try {
+								uploadChannel =
+									event.getGuildOrNull()?.getChannelOfOrNull<GuildMessageChannel>(it.threadId)
+										?: return@forEach
+							} catch (_: IllegalArgumentException) {
+								return@forEach
+							}
 							return@forEach
 						}
 					}
@@ -162,7 +166,7 @@ class LogUploading : Extension() {
 										"(i.e. log or crash report) if the issue persists.\n\n$DEPRECATION_MESSAGE"
 								footer {
 									text = eventMessage.author?.tag ?: ""
-									icon = eventMessage.author?.avatar?.url
+									icon = eventMessage.author?.avatar?.cdnUrl?.toUrl()
 								}
 								color = DISCORD_PINK
 							}
@@ -181,7 +185,7 @@ class LogUploading : Extension() {
 										text =
 											"Uploaded by ${eventMessage.author?.tag ?: eventMember?.asUserOrNull()?.tag}"
 										icon =
-											eventMessage.author?.avatar?.url ?: eventMember?.asUserOrNull()?.avatar?.url
+											eventMessage.author?.avatar?.cdnUrl?.toUrl() ?: eventMember?.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 									}
 									color = DISCORD_PINK
 								}
@@ -202,8 +206,8 @@ class LogUploading : Extension() {
 													footer {
 														text =
 															"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"
-														icon = eventMessage.author?.avatar?.url
-															?: eventMember.asUserOrNull()?.avatar?.url
+														icon = eventMessage.author?.avatar?.cdnUrl?.toUrl()
+															?: eventMember.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 													}
 													timestamp = Clock.System.now()
 													color = DISCORD_PINK
@@ -219,8 +223,8 @@ class LogUploading : Extension() {
 															footer {
 																text =
 																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"
-																icon = eventMessage.author?.avatar?.url
-																	?: eventMember.asUserOrNull()?.avatar?.url
+																icon = eventMessage.author?.avatar?.cdnUrl?.toUrl()
+																	?: eventMember.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 															}
 															timestamp = Clock.System.now()
 															color = DISCORD_PINK
@@ -242,8 +246,8 @@ class LogUploading : Extension() {
 															footer {
 																text =
 																	"Uploaded by ${eventMessage.author?.tag ?: eventMember.asUserOrNull()?.tag}"
-																icon = eventMessage.author?.avatar?.url
-																	?: eventMember.asUserOrNull()?.avatar?.url
+																icon = eventMessage.author?.avatar?.cdnUrl?.toUrl()
+																	?: eventMember.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 															}
 															timestamp = Clock.System.now()
 															color = DISCORD_RED
@@ -323,7 +327,7 @@ class LogUploading : Extension() {
 						color = DISCORD_RED
 						footer {
 							text = "Disabled by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
 				}
@@ -364,7 +368,7 @@ class LogUploading : Extension() {
 						color = DISCORD_GREEN
 						footer {
 							text = "Enabled by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
 				}

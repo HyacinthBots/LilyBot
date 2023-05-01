@@ -46,7 +46,7 @@ class MemberLogging : Extension() {
 				memberLog?.createEmbed {
 					author {
 						name = "User joined the server!"
-						icon = event.member.avatar?.url
+						icon = event.member.avatar?.cdnUrl?.toUrl()
 					}
 					field {
 						name = "Welcome:"
@@ -77,7 +77,7 @@ class MemberLogging : Extension() {
 						embed {
 							author {
 								name = "Welcome ${event.member.username}"
-								icon = event.member.avatar?.url
+								icon = event.member.avatar?.cdnUrl?.toUrl()
 							}
 							description = if (config.publicMemberLogData?.joinMessage != null) {
 								config.publicMemberLogData.joinMessage
@@ -110,7 +110,7 @@ class MemberLogging : Extension() {
 				memberLog?.createEmbed {
 					author {
 						name = "User left the server!"
-						icon = event.user.avatar?.url
+						icon = event.user.avatar?.cdnUrl?.toUrl()
 					}
 					field {
 						name = "Goodbye:"
@@ -138,7 +138,7 @@ class MemberLogging : Extension() {
 					publicLog?.createEmbed {
 						author {
 							name = "Goodbye ${event.user.username}"
-							icon = event.user.avatar?.url
+							icon = event.user.avatar?.cdnUrl?.toUrl()
 						}
 						description = if (config.publicMemberLogData?.leaveMessage != null) {
 							config.publicMemberLogData.leaveMessage

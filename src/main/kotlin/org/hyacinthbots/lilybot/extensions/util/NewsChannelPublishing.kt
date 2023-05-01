@@ -16,6 +16,7 @@ import com.kotlindiscord.kord.extensions.pagination.pages.Page
 import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.Locale
+import dev.kord.common.asJavaLocale
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -111,7 +112,7 @@ class NewsChannelPublishing : Extension() {
 						}
 						footer {
 							text = "Set by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_YELLOW
@@ -156,7 +157,7 @@ class NewsChannelPublishing : Extension() {
 						}
 						footer {
 							text = "Removed by ${user.asUserOrNull()?.tag}"
-							icon = user.asUserOrNull()?.avatar?.url
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_YELLOW
