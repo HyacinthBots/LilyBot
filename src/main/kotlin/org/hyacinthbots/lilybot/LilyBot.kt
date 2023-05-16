@@ -20,7 +20,6 @@ import org.hyacinthbots.lilybot.extensions.config.Config
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.GuildLogging
 import org.hyacinthbots.lilybot.extensions.events.AutoThreading
-import org.hyacinthbots.lilybot.extensions.events.LogUploading
 import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
 import org.hyacinthbots.lilybot.extensions.events.MessageEdit
@@ -83,7 +82,6 @@ suspend fun main() {
 			add(::GuildLogging)
 			add(::InfoCommands)
 			add(::LockingCommands)
-			add(::LogUploading)
 			add(::MemberLogging)
 			add(::MessageDelete)
 			add(::MessageEdit)
