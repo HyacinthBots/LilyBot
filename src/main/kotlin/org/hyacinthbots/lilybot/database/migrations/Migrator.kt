@@ -4,9 +4,9 @@
  * This source code form has been adapted from QuiltMC's Discord Bot, Cozy (https://github.com/QuiltMC/cozy-discord).
  *
  * As a result of this, the following license applies to this source code:
-	 * This Source Code Form is subject to the terms of the Mozilla Public
-	 * License, v. 2.0. If a copy of the MPL was not distributed with this
-	 * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 package org.hyacinthbots.lilybot.database.migrations

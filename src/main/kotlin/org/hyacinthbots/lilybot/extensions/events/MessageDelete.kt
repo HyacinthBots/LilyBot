@@ -86,8 +86,8 @@ class MessageDelete : Extension() {
 				var actionLogsUsable: Boolean? = null
 
 				configs.forEach {
-					if (it.key == ConfigOptions.MESSAGE_LOG) { messageLogsUsable = it.value }
-					if (it.key == ConfigOptions.ACTION_LOG) { actionLogsUsable = it.value }
+					if (it.key == ConfigOptions.MESSAGE_LOG) messageLogsUsable = it.value
+					if (it.key == ConfigOptions.ACTION_LOG) actionLogsUsable = it.value
 				}
 
 				val messageLog = if (messageLogsUsable == true) {
