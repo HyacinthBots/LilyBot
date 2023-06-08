@@ -91,7 +91,7 @@ class AutoThreading : Extension() {
 					}
 
 					// Check if the role can be pinged
-					if (canPingRole(arguments.role, guild!!.id, this@unsafeSubCommand.kord)) {
+					if (!canPingRole(arguments.role, guild!!.id, this@unsafeSubCommand.kord)) {
 						ackEphemeral()
 						respondEphemeral {
 							content = "Lily cannot mention this role. Please fix the role's permissions and try again."
