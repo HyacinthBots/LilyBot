@@ -48,7 +48,6 @@ import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
-import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
@@ -468,7 +467,6 @@ class ModUtilities : Extension() {
 								AutoThreadingCollection().deleteGuildAutoThreads(guild!!.id)
 								GalleryChannelCollection().removeAll(guild!!.id)
 								GithubCollection().removeDefaultRepo(guild!!.id)
-								LogUploadingBlacklistCollection().clearBlacklist(guild!!.id)
 								LoggingConfigCollection().clearConfig(guild!!.id)
 								ModerationConfigCollection().clearConfig(guild!!.id)
 								NewsChannelPublishingCollection().clearAutoPublishingForGuild(guild!!.id)

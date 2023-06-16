@@ -65,9 +65,28 @@ data class ModerationConfigData(
  * @property utilityLogChannel The channel to log various utility actions too
  * @since 4.0.0
  */
+@Deprecated(
+	"Replaced by org.hyacinthbots.database.entities.UtilityConfigData",
+	ReplaceWith("UtilityConfigData", "import org.hyacinthbots.lilybot.database.entities.UtilityConfigData"),
+	DeprecationLevel.ERROR
+)
+@Serializable
+data class UtilityConfigDataOld(
+	val guildId: Snowflake,
+	val disableLogUploading: Boolean,
+	val utilityLogChannel: Snowflake?
+)
+
+/**
+ * The data for miscellaneous configuration. The miscellaneous config stores the data for enabling or disabling log
+ * uploading.
+ *
+ * @property guildId The ID of the guild the config is for
+ * @property utilityLogChannel The channel to log various utility actions too
+ * @since 4.9.0
+ */
 @Serializable
 data class UtilityConfigData(
 	val guildId: Snowflake,
-	val disableLogUploading: Boolean,
 	val utilityLogChannel: Snowflake?
 )

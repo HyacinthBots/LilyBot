@@ -435,14 +435,6 @@ class Config : Extension() {
 					suspend fun EmbedBuilder.utilityEmbed() {
 						title = "Configuration: Utility"
 						field {
-							name = "Disable log uploading"
-							value = if (arguments.disableLogUploading) {
-								"True"
-							} else {
-								"false"
-							}
-						}
-						field {
 							name = "Utility Log"
 							value = if (arguments.utilityLogChannel != null) {
 								"${arguments.utilityLogChannel!!.mention} ${arguments.utilityLogChannel!!.data.name.value}"
@@ -466,7 +458,6 @@ class Config : Extension() {
 					UtilityConfigCollection().setConfig(
 						UtilityConfigData(
 							guild!!.id,
-							arguments.disableLogUploading,
 							arguments.utilityLogChannel?.id
 						)
 					)
@@ -713,10 +704,6 @@ class Config : Extension() {
 									title = "Current utility config"
 									description = "This is the current utility config for this guild"
 									field {
-										name = "Log uploading"
-										value = if (config.disableLogUploading) "Disabled" else "Enabled"
-									}
-									field {
 										name = "Channel"
 										value =
 											"${
@@ -804,10 +791,6 @@ class Config : Extension() {
 	}
 
 	inner class UtilityArgs : Arguments() {
-		val disableLogUploading by boolean {
-			name = "disable-log-uploading"
-			description = "Enable or disable log uploading for this guild"
-		}
 		val utilityLogChannel by optionalChannel {
 			name = "utility-log"
 			description = "The channel to log various utility actions too."

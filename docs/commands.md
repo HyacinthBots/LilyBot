@@ -67,7 +67,6 @@ Required Member Permissions: Manage Server
 Required Member Permissions: Manage Server
 
 * **Arguments**:
-	* `disable-log-uploading` - Enable or disable log uploading for this guild - Boolean
 	* `utility-log` - The channel to log various utility actions too. - Optional Channel
 
 ---
@@ -197,27 +196,6 @@ Required Member Permissions: Moderate Members
 ---
 #### Command name: `unlock server`
 **Description**: Unlock the server so everyone can send messages again
-Required Member Permissions: Moderate Members
-
-* **Arguments**:
-None
----
-#### Command name: `log-uploading blacklist-add`
-**Description**: Add a channel to the log uploading blacklist
-Required Member Permissions: Moderate Members
-
-* **Arguments**:
-None
----
-#### Command name: `log-uploading blacklist-remove`
-**Description**: Remove a channel from the log uploading blacklist
-Required Member Permissions: Moderate Members
-
-* **Arguments**:
-None
----
-#### Command name: `log-uploading blacklist-list`
-**Description**: List all channels that block log uploading
 Required Member Permissions: Moderate Members
 
 * **Arguments**:
