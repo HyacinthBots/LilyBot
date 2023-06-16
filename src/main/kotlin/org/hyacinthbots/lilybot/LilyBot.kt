@@ -3,21 +3,17 @@
 package org.hyacinthbots.lilybot
 
 import com.kotlindiscord.kord.extensions.ExtensibleBot
-import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
-import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import mu.KotlinLogging
 import org.hyacinthbots.docgenerator.docsGenerator
 import org.hyacinthbots.docgenerator.enums.CommandTypes
 import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
-import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
 import org.hyacinthbots.lilybot.extensions.config.Config
-import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.GuildLogging
 import org.hyacinthbots.lilybot.extensions.events.AutoThreading
 import org.hyacinthbots.lilybot.extensions.events.MemberLogging
@@ -44,13 +40,10 @@ import org.hyacinthbots.lilybot.utils.BOT_TOKEN
 import org.hyacinthbots.lilybot.utils.ENVIRONMENT
 import org.hyacinthbots.lilybot.utils.SENTRY_DSN
 import org.hyacinthbots.lilybot.utils.database
-import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
-import org.quiltmc.community.cozy.modules.welcome.welcomeChannel
 import java.io.IOException
 import kotlin.io.path.Path
-import kotlin.time.Duration.Companion.minutes
 
 lateinit var github: GitHub
 private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
@@ -102,17 +95,17 @@ suspend fun main() {
 			The welcome channel extension allows users to designate a YAML file to create a channel with
 			a variety of pre-built blocks.
 			 */
-			welcomeChannel(WelcomeChannelCollection()) {
-				staffCommandCheck {
-					hasPermission(Permission.BanMembers)
-				}
-
-				getLogChannel { _, guild ->
-					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
-				}
-
-				refreshDuration = 5.minutes
-			}
+// 			welcomeChannel(WelcomeChannelCollection()) {
+// 				staffCommandCheck {
+// 					hasPermission(Permission.BanMembers)
+// 				}
+//
+// 				getLogChannel { _, guild ->
+// 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+// 				}
+//
+// 				refreshDuration = 5.minutes
+// 			}
 
 			/*
 			The anti-phishing extension automatically deletes and logs scam links. It also allows users to check links
