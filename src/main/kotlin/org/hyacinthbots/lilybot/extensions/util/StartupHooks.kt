@@ -43,19 +43,6 @@ class StartupHooks : Extension() {
 				UptimeCollection().set(now)
 
 				/**
-				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
-				 * else the database value.
-				 */
-// 				updateDefaultPresence()
-// 				if (StatusCollection().getStatus() == null) {
-// 					updateDefaultPresence()
-// 				} else {
-// 					event.kord.editPresence {
-// 						playing(StatusCollection().getStatus()!!)
-// 					}
-// 				}
-
-				/**
 				 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
 				 * @author IMS212
 				 * @since v2.0

@@ -22,9 +22,10 @@ import com.kotlindiscord.kord.extensions.components.forms.ModalForm
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
+import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
+import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -38,8 +39,6 @@ import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
-import dev.kord.core.event.guild.GuildCreateEvent
-import dev.kord.core.event.guild.GuildDeleteEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
@@ -67,6 +66,7 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.trimmedContents
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
@@ -76,7 +76,12 @@ import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 class ModUtilities : Extension() {
 	override val name = "mod-utilities"
 
+	private val presenceScheduler = Scheduler()
+	private lateinit var presenceTask: Task
+
 	override suspend fun setup() {
+		presenceTask = presenceScheduler.schedule(15.minutes, repeat = true, callback = ::updateDefaultPresence)
+
 		/**
 		 * Say Command
 		 * @author NoComment1105, tempest15
@@ -493,46 +498,6 @@ class ModUtilities : Extension() {
 						}
 					}
 				}
-			}
-		}
-
-		/**
-		 * Update the presence to reflect the new number of guilds, if the presence is set to "default"
-		 *
-		 * @author NoComment1105
-		 * @since 3.4.5
-		 */
-		event<GuildCreateEvent> {
-			action {
-// 				try {
-// 					updateDefaultPresence()
-// 				} catch (_: UninitializedPropertyAccessException) {
-// 					return@action
-// 				} catch (_: CancellationException) {
-// 					return@action
-// 				} catch (_: KtorRequestException) {
-// 					return@action
-// 				}
-			}
-		}
-
-		/**
-		 * Update the presence to reflect the new number of guilds, if the presence is set to "default"
-		 *
-		 * @author NoComment1105
-		 * @since 3.4.5
-		 */
-		event<GuildDeleteEvent> {
-			action {
-// 				try {
-// 					updateDefaultPresence()
-// 				} catch (_: UninitializedPropertyAccessException) {
-// 					return@action
-// 				} catch (_: CancellationException) {
-// 					return@action
-// 				} catch (_: KtorRequestException) {
-// 					return@action
-// 				}
 			}
 		}
 	}
