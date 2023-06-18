@@ -151,7 +151,7 @@ class Config : Extension() {
 							}
 						}
 						footer {
-							text = "Configured by ${user.asUserOrNull()?.tag}"
+							text = "Configured by ${user.asUserOrNull()?.username}"
 						}
 					}
 
@@ -331,7 +331,7 @@ class Config : Extension() {
 						}
 
 						footer {
-							text = "Configured by ${user.asUserOrNull()?.tag}"
+							text = "Configured by ${user.asUserOrNull()?.username}"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
@@ -444,7 +444,7 @@ class Config : Extension() {
 						}
 
 						footer {
-							text = "Configured by ${user.asUserOrNull()?.tag}"
+							text = "Configured by ${user.asUserOrNull()?.username}"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
@@ -498,7 +498,7 @@ class Config : Extension() {
 									arguments.config.substring(1, arguments.config.length).lowercase()
 								}"
 								footer {
-									text = "Config cleared by ${user.asUserOrNull()?.tag}"
+									text = "Config cleared by ${user.asUserOrNull()?.username}"
 									icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 								}
 							}
@@ -521,7 +521,7 @@ class Config : Extension() {
 								embed {
 									title = "Config cleared: Moderation"
 									footer {
-										text = "Config cleared by ${user.asUserOrNull()?.tag}"
+										text = "Config cleared by ${user.asUserOrNull()?.username}"
 										icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 									}
 								}
@@ -543,7 +543,7 @@ class Config : Extension() {
 								embed {
 									title = "Config cleared: Logging"
 									footer {
-										text = "Config cleared by ${user.asUserOrNull()?.tag}"
+										text = "Config cleared by ${user.asUserOrNull()?.username}"
 										icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 									}
 								}
@@ -565,7 +565,7 @@ class Config : Extension() {
 								embed {
 									title = "Config cleared: Utility"
 									footer {
-										text = "Config cleared by ${user.asUserOrNull()?.tag}"
+										text = "Config cleared by ${user.asUserOrNull()?.username}"
 										icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 									}
 								}
@@ -580,7 +580,7 @@ class Config : Extension() {
 								embed {
 									title = "All configs cleared"
 									footer {
-										text = "Configs cleared by ${user.asUserOrNull()?.tag}"
+										text = "Configs cleared by ${user.asUserOrNull()?.username}"
 										icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 									}
 								}

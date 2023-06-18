@@ -21,7 +21,7 @@ import org.hyacinthbots.discordmoderationactions.enums.DmResult
 suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User?, commandUser: UserBehavior) {
 	field {
 		name = "User:"
-		value = "${targetUser?.tag ?: "Unable to get user"}\n${targetUser?.id ?: ""}"
+		value = "${targetUser?.username ?: "Unable to get user"}\n${targetUser?.id ?: ""}"
 		inline = false
 	}
 	field {
@@ -30,7 +30,7 @@ suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser:
 		inline = false
 	}
 	footer {
-		text = "Requested by ${commandUser.asUserOrNull()?.tag}"
+		text = "Requested by ${commandUser.asUserOrNull()?.username}"
 		icon = commandUser.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 	}
 }
@@ -73,7 +73,7 @@ suspend inline fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
 		field {
 			name = "Message Author:"
 			value = "System Member: ${proxiedMessage.member?.name}\n" +
-					"Account: ${guild.getMemberOrNull(proxiedMessage.sender)?.tag ?: "Unable to get account"} " +
+					"Account: ${guild.getMemberOrNull(proxiedMessage.sender)?.username ?: "Unable to get account"} " +
 					guild.getMemberOrNull(proxiedMessage.sender)?.mention
 			inline = true
 		}
@@ -85,7 +85,7 @@ suspend inline fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
 	} else {
 		field {
 			name = "Message Author:"
-			value = "${message.author?.tag ?: "Failed to get author of message"} ${message.author?.mention ?: ""}"
+			value = "${message.author?.username ?: "Failed to get author of message"} ${message.author?.mention ?: ""}"
 			inline = true
 		}
 

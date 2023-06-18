@@ -141,7 +141,7 @@ class ModUtilities : Extension() {
 							inline = true
 						}
 						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							text = user.asUserOrNull()?.username ?: "Unable to get user username"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -237,7 +237,7 @@ class ModUtilities : Extension() {
 								value = "```${arguments.newContent.trimmedContents(500)}```"
 							}
 							footer {
-								text = "Edited by ${user.asUserOrNull()?.tag}"
+								text = "Edited by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							color = DISCORD_WHITE
@@ -308,7 +308,7 @@ class ModUtilities : Extension() {
 								}
 							}
 							footer {
-								text = "Edited by ${user.asUserOrNull()?.tag}"
+								text = "Edited by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
@@ -367,7 +367,7 @@ class ModUtilities : Extension() {
 						title = "Presence changed"
 						description = "Lily's presence has been set to `${arguments.presenceArgument}`"
 						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							text = user.asUserOrNull()?.username ?: "Unable to get user username"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						color = DISCORD_BLACK
@@ -405,7 +405,7 @@ class ModUtilities : Extension() {
 							value = "Watching over $guilds servers."
 						}
 						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							text = user.asUserOrNull()?.username ?: "Unable to get user username"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						color = DISCORD_BLACK
@@ -436,7 +436,7 @@ class ModUtilities : Extension() {
 				response = respond {
 					content =
 						"Are you sure you want to reset the database? This will remove all data associated with " +
-								"this guild from Lily's database. This includes configs, user-set reminders, tags and more." +
+								"this guild from Lily's database. This includes configs, user-set reminders, usernames and more." +
 								"This action is **irreversible** and the data **cannot** be recovered."
 
 					components {

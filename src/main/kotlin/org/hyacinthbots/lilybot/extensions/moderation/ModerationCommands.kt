@@ -633,13 +633,13 @@ class ModerationCommands : Extension() {
 							title = "Unbanned a user"
 							description = "${arguments.userArgument.mention} has been unbanned!\n${
 								arguments.userArgument.id
-							} (${arguments.userArgument.tag})"
+							} (${arguments.userArgument.username})"
 							field {
 								name = "Reason:"
 								value = arguments.reason
 							}
 							footer {
-								text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+								text = user.asUserOrNull()?.username ?: "Unable to get user username"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
@@ -766,7 +766,7 @@ class ModerationCommands : Extension() {
 					title = "$messageAmount messages have been cleared."
 					description = "Action occurred in ${textChannel.mention}"
 					footer {
-						text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+						text = user.asUserOrNull()?.username ?: "Unable to get user username"
 						icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 					}
 					color = DISCORD_BLACK
@@ -864,11 +864,11 @@ class ModerationCommands : Extension() {
 							dmNotificationStatusEmbedField(dmResult)
 							field {
 								name = "User:"
-								value = "${arguments.userArgument.tag} \n${arguments.userArgument.id}"
+								value = "${arguments.userArgument.username} \n${arguments.userArgument.id}"
 								inline = false
 							}
 							footer {
-								text = "Requested by ${user.asUserOrNull()?.tag}"
+								text = "Requested by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
@@ -1304,14 +1304,14 @@ private fun EmbedBuilder.warnTimeoutLog(timeoutNumber: Int, moderator: User, tar
 		title = "Timeout"
 		field {
 			name = "User"
-			value = "${targetUser.id} (${targetUser.tag})"
+			value = "${targetUser.id} (${targetUser.username})"
 		}
 		field {
 			name = "Reason"
 			value = reason
 		}
 		footer {
-			text = moderator.tag
+			text = moderator.username
 			icon = moderator.avatar?.cdnUrl?.toUrl()
 		}
 		color = DISCORD_BLACK

@@ -50,7 +50,7 @@ class MemberLogging : Extension() {
 					}
 					field {
 						name = "Welcome:"
-						value = "${event.member.mention} (${event.member.tag})"
+						value = "${event.member.mention} (${event.member.username})"
 						inline = true
 					}
 					field {
@@ -114,7 +114,7 @@ class MemberLogging : Extension() {
 					}
 					field {
 						name = "Goodbye:"
-						value = event.user.tag
+						value = event.user.username
 						inline = true
 					}
 					field {

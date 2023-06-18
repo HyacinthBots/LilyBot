@@ -103,7 +103,7 @@ class LockingCommands : Extension() {
 						title = "Channel Locked"
 						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
 						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get tag"
+							text = user.asUserOrNull()?.username ?: "Unable to get username"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -158,7 +158,7 @@ class LockingCommands : Extension() {
 						title = "Server locked"
 						description = "**Reason:** ${arguments.reason}"
 						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							text = user.asUserOrNull()?.username ?: "Unable to get user username"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -242,7 +242,7 @@ class LockingCommands : Extension() {
 						title = "Channel Unlocked"
 						description = "${targetChannel.mention} has been unlocked."
 						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							text = user.asUserOrNull()?.username ?: "Unable to get user username"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -295,7 +295,7 @@ class LockingCommands : Extension() {
 					actionLog.createEmbed {
 						title = "Server unlocked"
 						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							text = user.asUserOrNull()?.username ?: "Unable to get user username"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()

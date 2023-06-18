@@ -183,7 +183,7 @@ class AutoThreading : Extension() {
 							inline = message == null
 						}
 						footer {
-							text = user.asUser().tag
+							text = user.asUser().username
 							icon = user.asUser().avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -235,7 +235,7 @@ class AutoThreading : Extension() {
 							inline = true
 						}
 						footer {
-							text = user.asUser().tag
+							text = user.asUser().username
 							icon = user.asUser().avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
