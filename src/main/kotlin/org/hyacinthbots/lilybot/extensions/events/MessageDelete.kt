@@ -20,7 +20,6 @@ import io.ktor.util.cio.toByteReadChannel
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
-import org.hyacinthbots.lilybot.utils.configsAreUsable
 import org.hyacinthbots.lilybot.utils.generateBulkDeleteFile
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
@@ -78,37 +77,16 @@ class MessageDelete : Extension() {
 		event<MessageBulkDeleteEvent> {
 			check {
 				anyGuild()
+				requiredConfigs(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 			}
 
 			action {
-				val configs = configsAreUsable(event.guildId!!, ConfigOptions.MESSAGE_LOG, ConfigOptions.ACTION_LOG)
-				var messageLogsUsable: Boolean? = null
-				var actionLogsUsable: Boolean? = null
-
-				configs.forEach {
-					if (it.key == ConfigOptions.MESSAGE_LOG) messageLogsUsable = it.value
-					if (it.key == ConfigOptions.ACTION_LOG) actionLogsUsable = it.value
-				}
-
-				val messageLog = if (messageLogsUsable == true) {
+				val messageLog =
 						getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, event.getGuildOrNull()!!) ?: return@action
-				} else {
-				    null
-				}
-
-				val actionLog = if (actionLogsUsable == true) {
-					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.getGuildOrNull()!!) ?: return@action
-				} else {
-				    null
-				}
 
 				val messages = generateBulkDeleteFile(event.messages)
 
-				messageLog?.createMessage {
-					bulkDeleteEmbed(event, messages)
-				}
-
-				actionLog?.createMessage {
+				messageLog.createMessage {
 					bulkDeleteEmbed(event, messages)
 				}
 			}
