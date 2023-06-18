@@ -13,7 +13,6 @@ import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.Cleanups
-import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
@@ -48,13 +47,14 @@ class StartupHooks : Extension() {
 				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
 				 * else the database value.
 				 */
-				if (StatusCollection().getStatus() == null) {
-					updateDefaultPresence()
-				} else {
-					event.kord.editPresence {
-						playing(StatusCollection().getStatus()!!)
-					}
-				}
+				updateDefaultPresence()
+// 				if (StatusCollection().getStatus() == null) {
+// 					updateDefaultPresence()
+// 				} else {
+// 					event.kord.editPresence {
+// 						playing(StatusCollection().getStatus()!!)
+// 					}
+// 				}
 
 				/**
 				 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
