@@ -16,7 +16,6 @@ import org.hyacinthbots.lilybot.database.Cleanups
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
-import org.hyacinthbots.lilybot.utils.updateDefaultPresence
 import kotlin.time.Duration.Companion.days
 
 /**
@@ -47,7 +46,7 @@ class StartupHooks : Extension() {
 				 * Check the status value in the database. If it is "default", set the status to watching over X guilds,
 				 * else the database value.
 				 */
-				updateDefaultPresence()
+// 				updateDefaultPresence()
 // 				if (StatusCollection().getStatus() == null) {
 // 					updateDefaultPresence()
 // 				} else {
