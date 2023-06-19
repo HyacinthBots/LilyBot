@@ -14,7 +14,7 @@ logback = "1.4.7"
 github-api = "1.314"
 kmongo = "4.9.0"
 cozy-welcome = "1.0.1-SNAPSHOT"
-dma = "0.2.0-SNAPSHOT"
+dma = "v0.2.1"
 docgenerator = "0.1.2-SNAPSHOT"
 
 [libraries]
