@@ -108,7 +108,7 @@ tasks {
 
 detekt {
 	buildUponDefaultConfig = true
-	config = files("$rootDir/detekt.yml")
+	config.setFrom("$rootDir/detekt.yml")
 
 	autoCorrect = true
 }

@@ -8,13 +8,13 @@ grgit = "5.2.0"
 blossom = "1.3.1"
 
 # Libraries
-kord-extensions = "1.5.7-20230506.104616-11"
+kord-extensions = "1.5.8-20230701.153318-4"
 logging = "3.0.5"
-logback = "1.4.7"
-github-api = "1.314"
+logback = "1.4.8"
+github-api = "1.315"
 kmongo = "4.9.0"
 cozy-welcome = "1.0.1-SNAPSHOT"
-dma = "0.2.0-SNAPSHOT"
+dma = "v0.2.1"
 docgenerator = "0.1.2-SNAPSHOT"
 
 [libraries]
