@@ -1,11 +1,12 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import com.mongodb.client.model.Filters.eq
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.ConfigMetaData
 import org.hyacinthbots.lilybot.database.entities.MainMetaData
+import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
-import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with the [main meta database][MainMetaData]. This class
@@ -20,7 +21,7 @@ class MainMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<MainMetaData>()
+	internal val collection = db.mainDatabase.getCollection<MainMetaData>("mainMetaData")
 
 	/**
 	 * Gets the main metadata from the database.
@@ -49,7 +50,7 @@ class MainMetaCollection : KordExKoinComponent {
 	 */
 	suspend fun update(meta: MainMetaData) =
 		collection.findOneAndReplace(
-			MainMetaData::id eq "mainMeta",
+			eq(MainMetaData::id.name, "mainMeta"),
 			meta
 		)
 }
@@ -67,7 +68,7 @@ class ConfigMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.configDatabase.getCollection<ConfigMetaData>()
+	internal val collection = db.configDatabase.getCollection<ConfigMetaData>("configMetaData")
 
 	/**
 	 * Gets the config metadata from the database.
@@ -96,7 +97,7 @@ class ConfigMetaCollection : KordExKoinComponent {
 	 */
 	suspend fun update(meta: ConfigMetaData) =
 		collection.findOneAndReplace(
-			ConfigMetaData::id eq "configMeta",
+			eq(ConfigMetaData::id.name, "configMeta"),
 			meta
 		)
 }

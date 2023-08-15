@@ -8,12 +8,15 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.WelcomeChannelData
+import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
-import org.litote.kmongo.eq
 import org.quiltmc.community.cozy.modules.welcome.data.WelcomeChannelData as CozyWelcomeChannelData
 
 /**
@@ -30,25 +33,25 @@ class WelcomeChannelCollection : KordExKoinComponent, CozyWelcomeChannelData {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<WelcomeChannelData>()
+	internal val collection = db.mainDatabase.getCollection<WelcomeChannelData>("welcomeChannelData")
 
 	override suspend fun getChannelURLs(): Map<Snowflake, String> =
 		collection.find()
 			.toList().associate { it.channelId to it.url }
 
 	override suspend fun getUrlForChannel(channelId: Snowflake): String? =
-		collection.findOne(WelcomeChannelData::channelId eq channelId)
+		collection.findOne(eq(WelcomeChannelData::channelId.name, channelId))
 			?.url
 
 	override suspend fun setUrlForChannel(channelId: Snowflake, url: String) {
-		collection.save(WelcomeChannelData(channelId, url))
+		collection.replaceOne(Filters.empty(), WelcomeChannelData(channelId, url))
 	}
 
 	override suspend fun removeChannel(channelId: Snowflake): String? {
 		val url = getUrlForChannel(channelId)
 			?: return null
 
-		collection.deleteOne(WelcomeChannelData::channelId eq channelId)
+		collection.deleteOne(eq(WelcomeChannelData::channelId.name, channelId))
 
 		return url
 	}
@@ -56,7 +59,7 @@ class WelcomeChannelCollection : KordExKoinComponent, CozyWelcomeChannelData {
 	suspend fun removeWelcomeChannelsForGuild(guildId: Snowflake, kord: Kord) {
 		val guild = kord.getGuildOrNull(guildId) ?: return
 		guild.channels.collect {
-			collection.deleteOne(WelcomeChannelData::channelId eq it.id)
+			collection.deleteOne(eq(WelcomeChannelData::channelId.name, it.id))
 		}
 	}
 }

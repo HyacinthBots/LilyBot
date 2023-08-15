@@ -1,8 +1,8 @@
 package org.hyacinthbots.lilybot.database.migrations.main
 
-import org.litote.kmongo.coroutine.CoroutineDatabase
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 
-suspend fun mainV3(db: CoroutineDatabase) {
-	db.dropCollection("remindMeData")
+suspend fun mainV3(db: MongoDatabase) {
+	// db.getCollection<RemindMeData>("remindMeData")
 	db.createCollection("reminderData")
 }

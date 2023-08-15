@@ -1,23 +1,23 @@
 package org.hyacinthbots.lilybot.database.migrations.config
 
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
-import org.litote.kmongo.coroutine.CoroutineDatabase
-import org.litote.kmongo.exists
-import org.litote.kmongo.setValue
 
-suspend fun configV3(db: CoroutineDatabase) {
+suspend fun configV3(db: MongoDatabase) {
 	with(db.getCollection<LoggingConfigData>("loggingConfigData")) {
 		updateMany(
-			LoggingConfigData::enablePublicMemberLogs exists false,
-			setValue(LoggingConfigData::enablePublicMemberLogs, false)
+			Filters.exists(LoggingConfigData::enablePublicMemberLogs.name, false),
+			Updates.set(LoggingConfigData::enablePublicMemberLogs.name, false)
 		)
 		updateMany(
-			LoggingConfigData::publicMemberLog exists false,
-			setValue(LoggingConfigData::publicMemberLog, null)
+			Filters.exists(LoggingConfigData::publicMemberLog.name, false),
+			Updates.set(LoggingConfigData::publicMemberLog.name, null)
 		)
 		updateMany(
-			LoggingConfigData::publicMemberLogData exists false,
-			setValue(LoggingConfigData::publicMemberLogData, null)
+			Filters.exists(LoggingConfigData::publicMemberLogData.name, false),
+			Updates.set(LoggingConfigData::publicMemberLogData.name, null)
 		)
 	}
 }

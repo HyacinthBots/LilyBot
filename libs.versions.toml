@@ -13,6 +13,7 @@ logging = "5.1.0"
 logback = "1.4.9"
 github-api = "1.315"
 kmongo = "4.9.0"
+mongo-driver = "4.10.1"
 cozy-welcome = "1.0.1-SNAPSHOT"
 dma = "v0.2.1"
 docgenerator = "0.1.2-SNAPSHOT"
@@ -27,6 +28,7 @@ logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logging = { module = "io.github.oshai:kotlin-logging", version.ref = "logging" }
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
 kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
+mongo-driver = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongo-driver" }
 detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
 cozy-welcome = {module = "org.quiltmc.community:module-welcome", version.ref = "cozy-welcome"}
 dma = { module = "org.hyacinthbots:discord-moderation-actions", version.ref = "dma"}

@@ -1,20 +1,20 @@
 package org.hyacinthbots.lilybot.database.migrations.config
 
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
-import org.litote.kmongo.coroutine.CoroutineDatabase
-import org.litote.kmongo.exists
-import org.litote.kmongo.setValue
 
-suspend fun configV2(db: CoroutineDatabase) {
+suspend fun configV2(db: MongoDatabase) {
 	with(db.getCollection<ModerationConfigData>("moderationConfigData")) {
 		updateMany(
-			ModerationConfigData::quickTimeoutLength exists false,
-			setValue(ModerationConfigData::quickTimeoutLength, null)
+			Filters.exists(ModerationConfigData::quickTimeoutLength.name, false),
+			Updates.set(ModerationConfigData::quickTimeoutLength.name, null)
 		)
 
 		updateMany(
-			ModerationConfigData::autoPunishOnWarn exists false,
-			setValue(ModerationConfigData::autoPunishOnWarn, null)
+			Filters.exists(ModerationConfigData::autoPunishOnWarn.name, false),
+			Updates.set(ModerationConfigData::autoPunishOnWarn.name, null)
 		)
 	}
 }

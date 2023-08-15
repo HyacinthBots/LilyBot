@@ -1,11 +1,12 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.GithubData
+import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
-import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with the [GitHub database][GithubData]. This class contains
@@ -20,7 +21,7 @@ class GithubCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<GithubData>()
+	internal val collection = db.mainDatabase.getCollection<GithubData>("githubData")
 
 	/**
 	 * Gets the default repo for GitHub commands.
@@ -31,7 +32,7 @@ class GithubCollection : KordExKoinComponent {
 	 * @since 4.3.0
 	 */
 	suspend inline fun getDefaultRepo(inputGuildId: Snowflake): String? =
-		collection.findOne(GithubData::guildId eq inputGuildId)?.defaultRepo
+		collection.findOne(eq(GithubData::guildId.name, inputGuildId))?.defaultRepo
 
 	/**
 	 * Sets the default repo for GitHub commands.
@@ -42,7 +43,7 @@ class GithubCollection : KordExKoinComponent {
 	 * @since 4.3.0
 	 */
 	suspend inline fun setDefaultRepo(inputGuildId: Snowflake, url: String) {
-		collection.deleteOne(GithubData::guildId eq inputGuildId)
+		collection.deleteOne(eq(GithubData::guildId.name, inputGuildId))
 		collection.insertOne(GithubData(inputGuildId, url))
 	}
 
@@ -54,5 +55,5 @@ class GithubCollection : KordExKoinComponent {
 	 * @since 4.3.0
 	 */
 	suspend inline fun removeDefaultRepo(inputGuildId: Snowflake) =
-		collection.deleteOne(GithubData::guildId eq inputGuildId)
+		collection.deleteOne(eq(GithubData::guildId.name, inputGuildId))
 }

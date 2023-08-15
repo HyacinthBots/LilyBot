@@ -1,11 +1,13 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
+import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.ThreadData
+import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
-import org.litote.kmongo.eq
 
 /**
  * This class stores all the functions for interacting with the [Threads Database][ThreadData]. This class contains
@@ -23,7 +25,7 @@ class ThreadsCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<ThreadData>()
+	internal val collection = db.mainDatabase.getCollection<ThreadData>("threadsData")
 
 	/**
 	 * Using the provided [inputThreadId] the thread is returned.
@@ -35,7 +37,7 @@ class ThreadsCollection : KordExKoinComponent {
 	 * @since 3.2.0
 	 */
 	suspend inline fun getThread(inputThreadId: Snowflake): ThreadData? =
-		collection.findOne(ThreadData::threadId eq inputThreadId)
+		collection.findOne(eq(ThreadData::threadId.name, inputThreadId))
 
 	/**
 	 * Gets all threads into a list and return them to the user.
@@ -56,7 +58,7 @@ class ThreadsCollection : KordExKoinComponent {
 	 * @since 3.2.0
 	 */
 	suspend inline fun getOwnerThreads(inputOwnerId: Snowflake): List<ThreadData> =
-		collection.find(ThreadData::ownerId eq inputOwnerId).toList()
+		collection.find(eq(ThreadData::ownerId.name, inputOwnerId)).toList()
 
 	/**
 	 * Add or update the ownership of the given [inputThreadId] to the given [newOwnerId].
@@ -78,7 +80,7 @@ class ThreadsCollection : KordExKoinComponent {
 		parentChannelId: Snowflake?,
 		preventArchiving: Boolean = false
 	) {
-		collection.deleteOne(ThreadData::threadId eq inputThreadId)
+		collection.deleteOne(eq(ThreadData::threadId.name, inputThreadId))
 		collection.insertOne(ThreadData(inputGuildId, inputThreadId, newOwnerId, parentChannelId, preventArchiving))
 	}
 
@@ -91,7 +93,7 @@ class ThreadsCollection : KordExKoinComponent {
 	 * @since 3.2.2
 	 */
 	suspend inline fun removeThread(inputThreadId: Snowflake) =
-		collection.deleteOne(ThreadData::threadId eq inputThreadId)
+		collection.deleteOne(eq(ThreadData::threadId.name, inputThreadId))
 
 	/**
 	 * This function deletes the ownership data stored in database for the given [inputGuildId].
@@ -102,5 +104,5 @@ class ThreadsCollection : KordExKoinComponent {
 	 * @since 4.1.0
 	 */
 	suspend inline fun removeGuildThreads(inputGuildId: Snowflake) =
-		collection.deleteMany(ThreadData::guildId eq inputGuildId)
+		collection.deleteMany(eq(ThreadData::guildId.name, inputGuildId))
 }

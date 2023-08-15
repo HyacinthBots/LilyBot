@@ -1,11 +1,13 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
+import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
+import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
-import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with the [AutoThreading Database][AutoThreadingData]. This
@@ -22,7 +24,7 @@ class AutoThreadingCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<AutoThreadingData>()
+	internal val collection = db.mainDatabase.getCollection<AutoThreadingData>("autoThreadingData")
 
 	/**
 	 * Gets all auto threads for a given [inputGuildId].
@@ -33,7 +35,7 @@ class AutoThreadingCollection : KordExKoinComponent {
 	 * @since 4.6.0
 	 */
 	suspend inline fun getAllAutoThreads(inputGuildId: Snowflake): List<AutoThreadingData> =
-		collection.find(AutoThreadingData::guildId eq inputGuildId).toList()
+		collection.find(eq(AutoThreadingData::guildId.name, inputGuildId)).toList()
 
 	/**
 	 * Gets a single auto thread based off the channel ID.
@@ -44,7 +46,7 @@ class AutoThreadingCollection : KordExKoinComponent {
 	 * @since 4.6.0
 	 */
 	suspend inline fun getSingleAutoThread(inputChannelId: Snowflake): AutoThreadingData? =
-		collection.findOne(AutoThreadingData::channelId eq inputChannelId)
+		collection.findOne(eq(AutoThreadingData::channelId.name, inputChannelId))
 
 	/**
 	 * Sets a new auto thread.
@@ -54,7 +56,7 @@ class AutoThreadingCollection : KordExKoinComponent {
 	 * @since 4.6.0
 	 */
 	suspend inline fun setAutoThread(inputAutoThreadData: AutoThreadingData) {
-		collection.deleteOne(AutoThreadingData::channelId eq inputAutoThreadData.channelId)
+		collection.deleteOne(eq(AutoThreadingData::channelId.name, inputAutoThreadData.channelId))
 		collection.insertOne(inputAutoThreadData)
 	}
 
@@ -66,7 +68,7 @@ class AutoThreadingCollection : KordExKoinComponent {
 	 * @since 4.6.0
 	 */
 	suspend inline fun deleteAutoThread(inputChannelId: Snowflake) =
-		collection.deleteOne(AutoThreadingData::channelId eq inputChannelId)
+		collection.deleteOne(eq(AutoThreadingData::channelId.name, inputChannelId))
 
 	/**
 	 * Deletes auto threads for a given guild.
@@ -76,5 +78,5 @@ class AutoThreadingCollection : KordExKoinComponent {
 	 * @since 4.6.0
 	 */
 	suspend inline fun deleteGuildAutoThreads(inputGuildId: Snowflake) =
-		collection.deleteMany(AutoThreadingData::guildId eq inputGuildId)
+		collection.deleteMany(eq(AutoThreadingData::guildId.name, inputGuildId))
 }

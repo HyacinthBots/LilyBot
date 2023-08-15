@@ -64,7 +64,8 @@ dependencies {
 	implementation(libs.github.api)
 
 	// KMongo
-	implementation(libs.kmongo)
+	//implementation(libs.kmongo)
+	implementation(libs.mongo.driver)
 
 	// Cozy's welcome module
 	implementation(libs.cozy.welcome)

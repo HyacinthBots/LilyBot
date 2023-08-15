@@ -1,10 +1,12 @@
 package org.hyacinthbots.lilybot.database
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import com.mongodb.client.model.Filters
 import dev.kord.core.Kord
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.request.KtorRequestException
+import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
@@ -24,7 +26,6 @@ import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.entities.GuildLeaveTimeData
 import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.koin.core.component.inject
-import org.litote.kmongo.eq
 
 /**
  * This object contains the Database clean up functions, for removing old data from the database that Lily no longer
@@ -38,10 +39,10 @@ object Cleanups : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val guildLeaveTimeCollection = db.mainDatabase.getCollection<GuildLeaveTimeData>()
+	internal val guildLeaveTimeCollection = db.mainDatabase.getCollection<GuildLeaveTimeData>("guildLeaveTimeData")
 
 	@PublishedApi
-	internal val threadDataCollection = db.mainDatabase.getCollection<ThreadData>()
+	internal val threadDataCollection = db.mainDatabase.getCollection<ThreadData>("threadData")
 
 	@PublishedApi
 	internal val cleanupsLogger = KotlinLogging.logger("Database Cleanups")
@@ -75,7 +76,8 @@ object Cleanups : KordExKoinComponent {
 				UtilityConfigCollection().clearConfig(it.guildId)
 				WarnCollection().clearWarns(it.guildId)
 				WelcomeChannelCollection().removeWelcomeChannelsForGuild(it.guildId, kord)
-				guildLeaveTimeCollection.deleteOne(GuildLeaveTimeData::guildId eq it.guildId)
+				val leaveFilters = Filters.eq(GuildLeaveTimeData::guildId.name, it.guildId)
+				guildLeaveTimeCollection.deleteOne(leaveFilters)
 				deletedGuildData += 1 // Increment the counter for logging
 			}
 		}

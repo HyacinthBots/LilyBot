@@ -1,7 +1,7 @@
 package org.hyacinthbots.lilybot.database.migrations.main
 
-import org.litote.kmongo.coroutine.CoroutineDatabase
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 
-suspend fun mainV7(db: CoroutineDatabase) {
+suspend fun mainV7(db: MongoDatabase) {
 	db.createCollection("newsChannelPublishingData")
 }

@@ -1,11 +1,13 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import com.mongodb.client.model.Filters.eq
+import com.mongodb.client.model.Updates
 import dev.kord.common.entity.Snowflake
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.RoleSubscriptionData
+import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
-import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with the [Role Subscription database][RoleSubscriptionData]. This
@@ -22,7 +24,7 @@ class RoleSubscriptionCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<RoleSubscriptionData>()
+	internal val collection = db.mainDatabase.getCollection<RoleSubscriptionData>("roleSubscriptionData")
 
 	/**
 	 * Gets the roles that are subscribable for a given guild.
@@ -34,7 +36,7 @@ class RoleSubscriptionCollection : KordExKoinComponent {
 	 * @since 4.9.0
 	 */
 	suspend inline fun getSubscribableRoles(inputGuildId: Snowflake): RoleSubscriptionData? =
-		collection.findOne(RoleSubscriptionData::guildId eq inputGuildId)
+		collection.findOne(eq(RoleSubscriptionData::guildId.name, inputGuildId))
 
 	/**
 	 * Creates a subscribable role record in the database. This should only be used if a record does not already exist.
@@ -58,12 +60,12 @@ class RoleSubscriptionCollection : KordExKoinComponent {
 	 * @since 4.9.0
 	 */
 	suspend inline fun addSubscribableRole(inputGuildId: Snowflake, inputRoleId: Snowflake): Boolean? {
-		val col = collection.findOne(RoleSubscriptionData::guildId eq inputGuildId) ?: return null
+		val col = collection.findOne(eq(RoleSubscriptionData::guildId.name, inputGuildId)) ?: return null
 		val newRoleList = col.subscribableRoles
 		if (newRoleList.contains(inputRoleId)) return false else newRoleList.add(inputRoleId)
 		collection.updateOne(
-			RoleSubscriptionData::guildId eq inputGuildId,
-			RoleSubscriptionData(inputGuildId, newRoleList)
+			eq(RoleSubscriptionData::guildId.name, inputGuildId),
+			Updates.set(RoleSubscriptionData::guildId.name, newRoleList)
 		)
 		return true
 	}
@@ -79,7 +81,7 @@ class RoleSubscriptionCollection : KordExKoinComponent {
 	 * @since 4.9.0
 	 */
 	suspend inline fun removeSubscribableRole(inputGuildId: Snowflake, inputRoleId: Snowflake): Boolean? {
-		val col = collection.findOne(RoleSubscriptionData::guildId eq inputGuildId) ?: return null
+		val col = collection.findOne(eq(RoleSubscriptionData::guildId.name, inputGuildId)) ?: return null
 		val newRoleList = col.subscribableRoles
 		if (!newRoleList.contains(inputRoleId)) {
 			return false
@@ -88,8 +90,8 @@ class RoleSubscriptionCollection : KordExKoinComponent {
 			if (!removal) return false
 		}
 		collection.updateOne(
-			RoleSubscriptionData::guildId eq inputGuildId,
-			RoleSubscriptionData(inputGuildId, newRoleList)
+			eq(RoleSubscriptionData::guildId.name, inputGuildId),
+			Updates.set(RoleSubscriptionData::guildId.name, newRoleList)
 		)
 		return true
 	}
@@ -103,5 +105,5 @@ class RoleSubscriptionCollection : KordExKoinComponent {
 	 * @since 4.9.0
 	 */
 	suspend inline fun removeAllSubscribableRoles(inputGuildId: Snowflake) =
-		collection.deleteOne(RoleSubscriptionData::guildId eq inputGuildId)
+		collection.deleteOne(eq(RoleSubscriptionData::guildId.name, inputGuildId))
 }
