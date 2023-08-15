@@ -79,8 +79,8 @@ class ModerationCommands : Extension() {
 	override val name = "moderation"
 
 	private val warnSuffix = "Please consider your actions carefully.\n\n" +
-			"For more information about the warn system, please see [this document]" +
-			"($HYACINTH_GITHUB/LilyBot/blob/main/docs/commands.md#name-warn)"
+		"For more information about the warn system, please see [this document]" +
+		"($HYACINTH_GITHUB/LilyBot/blob/main/docs/commands.md#name-warn)"
 
 	@OptIn(DoNotChain::class)
 	override suspend fun setup() {
@@ -110,8 +110,8 @@ class ModerationCommands : Extension() {
 				if (targetMessage.author.isNullOrBot()) {
 					val proxiedMessage = PluralKit().getMessageOrNull(targetMessage.id)
 					proxiedMessage ?: run {
-					    respond { content = "Unable to find user" }
-					return@action
+						respond { content = "Unable to find user" }
+						return@action
 					}
 					senderId = proxiedMessage.sender
 				} else {
@@ -119,8 +119,8 @@ class ModerationCommands : Extension() {
 				}
 				val sender = guild!!.getMemberOrNull(senderId)
 					?: run {
-					    respond { content = "Unable to find user" }
-					return@action
+						respond { content = "Unable to find user" }
+						return@action
 					}
 
 				isBotOrModerator(event.kord, sender.asUserOrNull(), guild, "moderate") ?: return@action
@@ -168,8 +168,8 @@ class ModerationCommands : Extension() {
 										val dm = sender.dm {
 											embed {
 												title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
-												description =
-													"Quick banned $reasonSuffix"
+												description = modConfig?.banDmMessage ?: "Quick banned $reasonSuffix"
+
 												color = DISCORD_GREEN
 											}
 										}
@@ -187,14 +187,14 @@ class ModerationCommands : Extension() {
 													embed {
 														title = "Banned."
 														description = "${sender.mention} user was banned " +
-																"for sending this message."
+															"for sending this message."
 													}
 												}
 											} catch (e: KtorRequestException) {
 												channel.createEmbed {
 													title = "Banned."
 													description = "${sender.mention} user was banned " +
-															"for sending a deleted message."
+														"for sending a deleted message."
 												}
 											}
 										}
@@ -225,7 +225,7 @@ class ModerationCommands : Extension() {
 												title = "You have been soft-banned from ${guild?.asGuildOrNull()?.name}"
 												description =
 													"Quick soft-banned $reasonSuffix. This is a soft-ban, you are " +
-															"free to rejoin at any time"
+														"free to rejoin at any time"
 											}
 										}
 
@@ -244,14 +244,14 @@ class ModerationCommands : Extension() {
 													embed {
 														title = "Soft-banned."
 														description = "${sender.mention} user was soft-banned " +
-																"for sending this message."
+															"for sending this message."
 													}
 												}
 											} catch (e: KtorRequestException) {
 												channel.createEmbed {
 													title = "Soft-Banned."
 													description = "${sender.mention} user was soft-banned " +
-															"for sending a deleted message."
+														"for sending a deleted message."
 												}
 											}
 										}
@@ -294,14 +294,14 @@ class ModerationCommands : Extension() {
 													embed {
 														title = "Kicked."
 														description = "${sender.mention} user was kicked " +
-																"for sending this message."
+															"for sending this message."
 													}
 												}
 											} catch (e: KtorRequestException) {
 												channel.createEmbed {
 													title = "Kicked."
 													description = "${sender.mention} user was kicked " +
-															"for sending a deleted message."
+														"for sending a deleted message."
 												}
 											}
 										}
@@ -356,14 +356,14 @@ class ModerationCommands : Extension() {
 													embed {
 														title = "Timed-out."
 														description = "${sender.mention} user was timed-out for " +
-																"${timeoutTime.interval()} for sending this message."
+															"${timeoutTime.interval()} for sending this message."
 													}
 												}
 											} catch (e: KtorRequestException) {
 												channel.createEmbed {
 													title = "Timed-out."
 													description = "${sender.mention} user was timed-out for " +
-															"${timeoutTime.interval()} for sending a deleted message."
+														"${timeoutTime.interval()} for sending a deleted message."
 												}
 											}
 										}
@@ -456,14 +456,14 @@ class ModerationCommands : Extension() {
 													embed {
 														title = "Warned."
 														description = "${sender.mention} user was warned " +
-																"for sending this message."
+															"for sending this message."
 													}
 												}
 											} catch (e: KtorRequestException) {
 												channel.createEmbed {
 													title = "Warned."
 													description = "${sender.mention} user was warned " +
-															"for sending a deleted message."
+														"for sending a deleted message."
 												}
 											}
 										}
@@ -496,9 +496,11 @@ class ModerationCommands : Extension() {
 					return@action
 				}
 
+				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
+
 				val action = ban(arguments.userArgument) {
 					reason = arguments.reason
-					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
+					logPublicly = modConfig?.publicLogging
 					sendActionLog = true
 					sendDm = arguments.dm
 					removeTimeout = true
@@ -531,7 +533,13 @@ class ModerationCommands : Extension() {
 
 					dmEmbed {
 						title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
-						description = "**Reason:**\n${arguments.reason}"
+						description = "**Reason:**\n${arguments.reason} ${
+							if (modConfig?.banDmMessage != null) {
+								"\n${modConfig.banDmMessage}"
+							} else {
+								""
+							}
+						}"
 					}
 				}
 
@@ -602,7 +610,7 @@ class ModerationCommands : Extension() {
 					dmEmbed {
 						title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
 						description = "**Reason:**\n${arguments.reason}\n\n" +
-								"You are free to rejoin without the need to be unbanned"
+							"You are free to rejoin without the need to be unbanned"
 					}
 				}
 
@@ -1302,8 +1310,8 @@ private fun EmbedBuilder.warnTimeoutLog(timeoutNumber: Int, moderator: User, tar
 
 		else ->
 			description = "${targetUser.mention} has been timed-out for 3 days due to $timeoutNumber warn " +
-					"strikes\nIt might be time to consider other " +
-					"action."
+				"strikes\nIt might be time to consider other " +
+				"action."
 	}
 
 	if (timeoutNumber != 1) {

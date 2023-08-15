@@ -23,6 +23,7 @@ import org.hyacinthbots.lilybot.database.migrations.config.configV2
 import org.hyacinthbots.lilybot.database.migrations.config.configV3
 import org.hyacinthbots.lilybot.database.migrations.config.configV4
 import org.hyacinthbots.lilybot.database.migrations.config.configV5
+import org.hyacinthbots.lilybot.database.migrations.config.configV6
 import org.hyacinthbots.lilybot.database.migrations.main.mainV1
 import org.hyacinthbots.lilybot.database.migrations.main.mainV2
 import org.hyacinthbots.lilybot.database.migrations.main.mainV3
@@ -119,6 +120,7 @@ object Migrator : KordExKoinComponent {
 					3 -> ::configV3
 					4 -> ::configV4
 					5 -> ::configV5
+					6 -> ::configV6
 					else -> break
 				}(db.configDatabase)
 

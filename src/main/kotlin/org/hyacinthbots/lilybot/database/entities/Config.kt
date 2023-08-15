@@ -43,6 +43,7 @@ data class LoggingConfigData(
  * @property quickTimeoutLength The length of timeout to apply when using the moderate menu
  * @property autoPunishOnWarn Whether to automatically apply punishments for reaching certain warn strike counts
  * @property publicLogging Whether to log moderation actions publicly in the channel the command was run in
+ * @property banDmMessage The message to send in a DM to a user when they are banned.
  * @since 4.0.0
  */
 @Serializable
@@ -54,6 +55,7 @@ data class ModerationConfigData(
 	val quickTimeoutLength: DateTimePeriod?,
 	val autoPunishOnWarn: Boolean?,
 	val publicLogging: Boolean?,
+	val banDmMessage: String?,
 )
 
 /**

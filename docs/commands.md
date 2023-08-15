@@ -46,6 +46,7 @@ Required Member Permissions: Manage Server
 	* `quick-timeout-length` - The length of timeouts to use for quick timeouts - Coalescing Optional Duration
 	* `warn-auto-punishments` - Whether to automatically punish users for reach a certain threshold on warns - Optional Boolean
 	* `log-publicly` - Whether to log moderation publicly or not. - Optional Boolean
+	* `ban-dm-message` - A custom message to send to users when they are banned. - Optional String
 
 ---
 #### Command name: `config logging`
@@ -645,7 +646,7 @@ Description: Check whether a given domain is a known phishing domain.
 **Description**: Set a custom API URL, "reset" to reset
 
 * **Arguments**:
-	* `api-url` - Set an alternative API url, or "reset" to use the default - Optional String
+	* `api-url` - Set an alternative API URL, or "reset" to use the default - Optional String
 
 ---
 #### Command name: `pluralkit bot`

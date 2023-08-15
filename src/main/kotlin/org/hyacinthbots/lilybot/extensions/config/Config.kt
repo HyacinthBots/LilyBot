@@ -10,6 +10,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOpti
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.components.forms.ModalForm
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -75,6 +76,7 @@ class Config : Extension() {
 							ModerationConfigData(
 								guild!!.id,
 								false,
+								null,
 								null,
 								null,
 								null,
@@ -150,6 +152,10 @@ class Config : Extension() {
 								null -> "Disabled"
 							}
 						}
+						field {
+							name = "Ban DM Message"
+							value = arguments.banDmMessage ?: "No custom Ban DM message set"
+						}
 						footer {
 							text = "Configured by ${user.asUserOrNull()?.username}"
 						}
@@ -169,7 +175,8 @@ class Config : Extension() {
 							arguments.moderatorRole?.id,
 							arguments.quickTimeoutLength,
 							arguments.warnAutoPunishments,
-							arguments.logPublicly
+							arguments.logPublicly,
+							arguments.banDmMessage
 						)
 					)
 
@@ -637,6 +644,10 @@ class Config : Extension() {
 											null -> "Disabled"
 										}
 									}
+									field {
+										name = "Ban DM Message"
+										value = config.banDmMessage ?: "None"
+									}
 									timestamp = Clock.System.now()
 								}
 							}
@@ -749,6 +760,11 @@ class Config : Extension() {
 		val logPublicly by optionalBoolean {
 			name = "log-publicly"
 			description = "Whether to log moderation publicly or not."
+		}
+
+		val banDmMessage by optionalString {
+			name = "ban-dm-message"
+			description = "A custom message to send to users when they are banned."
 		}
 	}
 
