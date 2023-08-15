@@ -72,7 +72,7 @@ class ThreadControl : Extension() {
 
 					threadChannel.edit {
 						name = arguments.newThreadName
-						reason = "Renamed by ${member.tag}"
+						reason = "Renamed by ${member.username}"
 					}
 
 					respond {
@@ -113,7 +113,7 @@ class ThreadControl : Extension() {
 
 									field {
 										name = "User"
-										value = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+										value = user.asUserOrNull()?.username ?: "Unable to get user tag"
 									}
 									field {
 										name = "Thread"
@@ -133,7 +133,7 @@ class ThreadControl : Extension() {
 						this.archived = true
 						this.locked = arguments.lock && member.hasPermission(Permission.ModerateMembers)
 
-						reason = "Archived by ${user.asUserOrNull()?.tag}"
+						reason = "Archived by ${user.asUserOrNull()?.username}"
 					}
 
 					respond {
@@ -193,11 +193,11 @@ class ThreadControl : Extension() {
 							title = "Thread ownership transferred"
 							field {
 								name = "Previous owner"
-								value = "${oldOwner?.mention ?: "Unable to find previous owner"} ${oldOwner?.tag ?: ""}"
+								value = "${oldOwner?.mention ?: "Unable to find previous owner"} ${oldOwner?.username ?: ""}"
 							}
 							field {
 								name = "New owner"
-								value = "${arguments.newOwner.mention} ${arguments.newOwner.tag}"
+								value = "${arguments.newOwner.mention} ${arguments.newOwner.username}"
 							}
 							if (member != oldOwner) {
 								footer {
@@ -230,7 +230,7 @@ class ThreadControl : Extension() {
 					if (threadChannel.isArchived) {
 						threadChannel.edit {
 							archived = false
-							reason = "`/thread prevent-archiving` run by ${member.tag}"
+							reason = "`/thread prevent-archiving` run by ${member.username}"
 						}
 					}
 
@@ -269,7 +269,7 @@ class ThreadControl : Extension() {
 
 												field {
 													name = "User"
-													value = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+													value = user.asUserOrNull()?.username ?: "Unable to get user tag"
 												}
 												field {
 													name = "Thread"
@@ -304,7 +304,7 @@ class ThreadControl : Extension() {
 
 									field {
 										name = "User"
-										value = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+										value = user.asUserOrNull()?.username ?: "Unable to get user tag"
 									}
 									field {
 										name = "Thread"

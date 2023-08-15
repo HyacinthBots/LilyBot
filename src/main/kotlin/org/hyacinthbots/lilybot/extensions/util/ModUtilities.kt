@@ -22,9 +22,10 @@ import com.kotlindiscord.kord.extensions.components.forms.ModalForm
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
+import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
+import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -38,8 +39,6 @@ import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
-import dev.kord.core.event.guild.GuildCreateEvent
-import dev.kord.core.event.guild.GuildDeleteEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import dev.kord.rest.request.KtorRequestException
@@ -67,7 +66,7 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.trimmedContents
 import org.hyacinthbots.lilybot.utils.updateDefaultPresence
-import java.util.concurrent.CancellationException
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * This class contains a few utility commands that can be used by moderators. They all require a guild to be run.
@@ -77,7 +76,12 @@ import java.util.concurrent.CancellationException
 class ModUtilities : Extension() {
 	override val name = "mod-utilities"
 
+	private val presenceScheduler = Scheduler()
+	private lateinit var presenceTask: Task
+
 	override suspend fun setup() {
+		presenceTask = presenceScheduler.schedule(15.minutes, repeat = true, callback = ::updateDefaultPresence)
+
 		/**
 		 * Say Command
 		 * @author NoComment1105, tempest15
@@ -141,7 +145,7 @@ class ModUtilities : Extension() {
 							inline = true
 						}
 						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							text = user.asUserOrNull()?.username ?: "Unable to get user username"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -237,7 +241,7 @@ class ModUtilities : Extension() {
 								value = "```${arguments.newContent.trimmedContents(500)}```"
 							}
 							footer {
-								text = "Edited by ${user.asUserOrNull()?.tag}"
+								text = "Edited by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							color = DISCORD_WHITE
@@ -308,7 +312,7 @@ class ModUtilities : Extension() {
 								}
 							}
 							footer {
-								text = "Edited by ${user.asUserOrNull()?.tag}"
+								text = "Edited by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
@@ -367,7 +371,7 @@ class ModUtilities : Extension() {
 						title = "Presence changed"
 						description = "Lily's presence has been set to `${arguments.presenceArgument}`"
 						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							text = user.asUserOrNull()?.username ?: "Unable to get user username"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						color = DISCORD_BLACK
@@ -405,7 +409,7 @@ class ModUtilities : Extension() {
 							value = "Watching over $guilds servers."
 						}
 						footer {
-							text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+							text = user.asUserOrNull()?.username ?: "Unable to get user username"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						color = DISCORD_BLACK
@@ -436,7 +440,7 @@ class ModUtilities : Extension() {
 				response = respond {
 					content =
 						"Are you sure you want to reset the database? This will remove all data associated with " +
-								"this guild from Lily's database. This includes configs, user-set reminders, tags and more." +
+								"this guild from Lily's database. This includes configs, user-set reminders, usernames and more." +
 								"This action is **irreversible** and the data **cannot** be recovered."
 
 					components {
@@ -493,46 +497,6 @@ class ModUtilities : Extension() {
 							}
 						}
 					}
-				}
-			}
-		}
-
-		/**
-		 * Update the presence to reflect the new number of guilds, if the presence is set to "default"
-		 *
-		 * @author NoComment1105
-		 * @since 3.4.5
-		 */
-		event<GuildCreateEvent> {
-			action {
-				try {
-					updateDefaultPresence()
-				} catch (_: UninitializedPropertyAccessException) {
-					return@action
-				} catch (_: CancellationException) {
-					return@action
-				} catch (_: KtorRequestException) {
-					return@action
-				}
-			}
-		}
-
-		/**
-		 * Update the presence to reflect the new number of guilds, if the presence is set to "default"
-		 *
-		 * @author NoComment1105
-		 * @since 3.4.5
-		 */
-		event<GuildDeleteEvent> {
-			action {
-				try {
-					updateDefaultPresence()
-				} catch (_: UninitializedPropertyAccessException) {
-					return@action
-				} catch (_: CancellationException) {
-					return@action
-				} catch (_: KtorRequestException) {
-					return@action
 				}
 			}
 		}
