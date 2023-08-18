@@ -11,8 +11,8 @@ import com.kotlindiscord.kord.extensions.storage.Data
 import com.kotlindiscord.kord.extensions.storage.DataAdapter
 import com.kotlindiscord.kord.extensions.storage.StorageUnit
 import com.mongodb.client.model.Filters
-import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.Filters.eq
+import com.mongodb.client.model.ReplaceOptions
 import com.mongodb.kotlin.client.coroutine.MongoCollection
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.InternalSerializationApi
@@ -41,29 +41,26 @@ class MongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
 		}
 
 	private fun getCollection(namespace: String): MongoCollection<AdaptedData> {
-		var collection = collectionCache[namespace]
+		val collectionName = "data-$namespace"
 
-		if (collection == null) {
-			collection = database.configDatabase.getCollection(namespace)
-
-			collectionCache[namespace] = collection
+		return collectionCache.getOrPut(collectionName) {
+			database.configDatabase.getCollection<AdaptedData>(collectionName)
 		}
-
-		return collection
 	}
 
-	private fun constructQuery(unit: StorageUnit<*>): Bson {
-		var query = eq(AdaptedData::identifier.name, unit.identifier)
+	private fun constructQuery(unit: StorageUnit<*>): Bson =
+		Filters.and(
+			listOf(
+				eq(AdaptedData::identifier.name, unit.identifier),
 
-		query = and(query, eq(AdaptedData::type.name, unit.storageType))
+				eq(AdaptedData::type.name, unit.storageType),
 
-		query = and(query, eq(AdaptedData::channel.name, unit.channel))
-		query = and(query, eq(AdaptedData::guild.name, unit.guild))
-		query = and(query, eq(AdaptedData::message.name, unit.message))
-		query = and(query, eq(AdaptedData::user.name, unit.user))
-
-		return query
-	}
+				eq(AdaptedData::channel.name, unit.channel),
+				eq(AdaptedData::guild.name, unit.guild),
+				eq(AdaptedData::message.name, unit.message),
+				eq(AdaptedData::user.name, unit.user)
+			)
+		)
 
 	override suspend fun <R : Data> delete(unit: StorageUnit<R>): Boolean {
 		removeFromCache(unit)
@@ -90,7 +87,7 @@ class MongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
 
 	override suspend fun <R : Data> reload(unit: StorageUnit<R>): R? {
 		val dataId = unit.getIdentifier()
-		val result = getCollection(unit.namespace).find(constructQuery(unit)).firstOrNull()?.data
+		val result = getCollection(unit.namespace).find(constructQuery(unit)).limit(1).firstOrNull()?.data
 
 		if (result != null) {
 			dataCache[dataId] = Json.decodeFromString(unit.dataType.serializer(), result)
@@ -104,8 +101,10 @@ class MongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
 		val data = get(unit) ?: return null
 
 		getCollection(unit.namespace).replaceOne(
-			Filters.empty(),
+			eq(unit.getIdentifier()),
 			AdaptedData(
+				_id = unit.getIdentifier(),
+
 				identifier = unit.identifier,
 
 				type = unit.storageType,
@@ -116,7 +115,8 @@ class MongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
 				user = unit.user,
 
 				data = Json.encodeToString(unit.dataType.serializer(), data)
-			)
+			),
+			ReplaceOptions().upsert(true)
 		)
 
 		return data
@@ -129,8 +129,10 @@ class MongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
 		unitCache[unit] = dataId
 
 		getCollection(unit.namespace).replaceOne(
-			Filters.empty(),
+			eq(unit.getIdentifier()),
 			AdaptedData(
+				_id = unit.getIdentifier(),
+
 				identifier = unit.identifier,
 
 				type = unit.storageType,
@@ -141,7 +143,8 @@ class MongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
 				user = unit.user,
 
 				data = Json.encodeToString(unit.dataType.serializer(), data)
-			)
+			),
+			ReplaceOptions().upsert(true)
 		)
 
 		return data

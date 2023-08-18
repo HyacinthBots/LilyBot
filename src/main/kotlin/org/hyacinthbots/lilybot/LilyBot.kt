@@ -59,7 +59,7 @@ val docFile = Path("./docs/commands.md")
 
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
-		database(true)
+		database(false)
 		dataAdapter(::MongoDBDataAdapter)
 
 		members {
