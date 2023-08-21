@@ -3,6 +3,7 @@
 package org.hyacinthbots.lilybot
 
 import com.kotlindiscord.kord.extensions.ExtensibleBot
+import com.kotlindiscord.kord.extensions.adapters.mongodb.mongoDB
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
@@ -15,7 +16,7 @@ import org.hyacinthbots.docgenerator.docsGenerator
 import org.hyacinthbots.docgenerator.enums.CommandTypes
 import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
-import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
+import org.hyacinthbots.lilybot.database.storage.LilyMongoDBDataAdapter
 import org.hyacinthbots.lilybot.extensions.config.Config
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.GuildLogging
@@ -59,8 +60,9 @@ val docFile = Path("./docs/commands.md")
 
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
-		database(false)
-		dataAdapter(::MongoDBDataAdapter)
+		database(true)
+		dataAdapter(::LilyMongoDBDataAdapter)
+		mongoDB()
 
 		members {
 			lockMemberRequests = true // Collect members one at a time to avoid hitting rate limits

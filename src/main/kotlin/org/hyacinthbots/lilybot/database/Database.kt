@@ -1,20 +1,19 @@
 package org.hyacinthbots.lilybot.database
 
+import com.kotlindiscord.kord.extensions.adapters.mongodb.kordExCodecRegistry
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import org.bson.UuidRepresentation
 import org.bson.codecs.configuration.CodecRegistries
 import org.hyacinthbots.lilybot.database.codec.DateTimePeriodCodec
-import org.hyacinthbots.lilybot.database.codec.InstantCodec
-import org.hyacinthbots.lilybot.database.codec.SnowflakeCodec
-import org.hyacinthbots.lilybot.database.codec.StorageTypeCodec
 import org.hyacinthbots.lilybot.database.migrations.Migrator
 import org.hyacinthbots.lilybot.utils.MONGO_URI
 
 class Database {
 	private val codecRegistries = CodecRegistries.fromRegistries(
-		CodecRegistries.fromCodecs(InstantCodec(), SnowflakeCodec(), StorageTypeCodec(), DateTimePeriodCodec()),
+		CodecRegistries.fromCodecs(DateTimePeriodCodec()),
+		kordExCodecRegistry,
 		MongoClientSettings.getDefaultCodecRegistry()
 	)
 
@@ -33,6 +32,8 @@ class Database {
 
 	/** The database for storing per guild configuration data. */
 	val configDatabase get() = client.getDatabase("LilyBotConfig")
+
+	val tempKordExDatabase get() = client.getDatabase("kordex-data")
 
 	/**
 	 * Runs the migrations for both databases.

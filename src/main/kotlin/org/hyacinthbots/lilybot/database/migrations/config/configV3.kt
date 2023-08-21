@@ -5,7 +5,8 @@ import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 
-suspend fun configV3(db: MongoDatabase) {
+@Suppress("UnusedPrivateMember", "UNUSED_PARAMETER")
+suspend fun configV3(db: MongoDatabase, tempKeDb: MongoDatabase) {
 	with(db.getCollection<LoggingConfigData>("loggingConfigData")) {
 		updateMany(
 			Filters.exists(LoggingConfigData::enablePublicMemberLogs.name, false),

@@ -24,7 +24,8 @@ import org.hyacinthbots.lilybot.database.entities.AdaptedData
 import org.koin.core.component.inject
 
 @OptIn(InternalSerializationApi::class)
-class MongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
+@Deprecated("Replaced with KordEx data adapter", level = DeprecationLevel.WARNING)
+class LilyMongoDBDataAdapter : DataAdapter<String>(), KordExKoinComponent {
 	private val database: Database by inject()
 	private val collectionCache: MutableMap<String, MongoCollection<AdaptedData>> = mutableMapOf()
 
