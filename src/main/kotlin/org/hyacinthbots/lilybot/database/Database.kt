@@ -6,13 +6,11 @@ import com.mongodb.MongoClientSettings
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import org.bson.UuidRepresentation
 import org.bson.codecs.configuration.CodecRegistries
-import org.hyacinthbots.lilybot.database.codec.DateTimePeriodCodec
 import org.hyacinthbots.lilybot.database.migrations.Migrator
 import org.hyacinthbots.lilybot.utils.MONGO_URI
 
 class Database {
 	private val codecRegistries = CodecRegistries.fromRegistries(
-		CodecRegistries.fromCodecs(DateTimePeriodCodec()),
 		kordExCodecRegistry,
 		MongoClientSettings.getDefaultCodecRegistry()
 	)

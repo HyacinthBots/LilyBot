@@ -16,7 +16,6 @@ import org.hyacinthbots.docgenerator.docsGenerator
 import org.hyacinthbots.docgenerator.enums.CommandTypes
 import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
-import org.hyacinthbots.lilybot.database.storage.LilyMongoDBDataAdapter
 import org.hyacinthbots.lilybot.extensions.config.Config
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.GuildLogging
@@ -61,7 +60,6 @@ val docFile = Path("./docs/commands.md")
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		database(true)
-		dataAdapter(::LilyMongoDBDataAdapter)
 		mongoDB()
 
 		members {
