@@ -31,7 +31,7 @@ class MainMetaCollection : KordExKoinComponent {
 	 * @since 4.0.0
 	 */
 	suspend fun get(): MainMetaData? =
-		collection.findOne()
+		collection.findOne(eq(MainMetaData::id.name, "mainMeta"))
 
 	/**
 	 * Sets the metadata when the table is first created.
@@ -78,7 +78,7 @@ class ConfigMetaCollection : KordExKoinComponent {
 	 * @since 4.0.0
 	 */
 	suspend fun get(): ConfigMetaData? =
-		collection.findOne()
+		collection.findOne(eq(ConfigMetaData::id.name, "configMeta"))
 
 	/**
 	 * Sets the metadata when the table is first created.

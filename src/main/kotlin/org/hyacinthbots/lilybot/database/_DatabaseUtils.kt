@@ -11,8 +11,7 @@ private fun <T : Any> MongoCollection<T>.find(vararg filters: Bson?): FindFlow<T
 
 suspend fun <T : Any> MongoCollection<T>.findOne(filter: Bson): T? = find(filter).firstOrNull()
 
-suspend fun <T : Any> MongoCollection<T>.findOne(vararg filters: Bson?): T? =
-	find(*filters).firstOrNull()
+suspend fun <T : Any> MongoCollection<T>.findOne(vararg filters: Bson?): T? = find(*filters).firstOrNull()
 
 suspend fun <T : Any> MongoCollection<T>.deleteOne() = deleteOne(Filters.empty())
 

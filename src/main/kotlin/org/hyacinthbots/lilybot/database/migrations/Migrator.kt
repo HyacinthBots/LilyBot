@@ -124,7 +124,7 @@ object Migrator : KordExKoinComponent {
 					6 -> ::configV6
 					7 -> ::configV7
 					else -> break
-				}(db.configDatabase, db.tempKordExDatabase)
+				}(db.configDatabase)
 
 				logger.info { "Migrated config database to version $nextVersion" }
 			} catch (t: Throwable) {
