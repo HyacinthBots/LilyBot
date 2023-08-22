@@ -1,0 +1,17 @@
+version: 2
+enable-beta-ecosystems: true
+
+updates:
+  - package-ecosystem: "gradle"
+    target-branch: "develop"
+    directory: "/"
+
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    target-branch: "develop"
+    directory: "/"
+
+    schedule:
+      interval: "weekly"
