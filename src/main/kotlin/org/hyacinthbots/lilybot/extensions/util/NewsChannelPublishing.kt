@@ -111,7 +111,7 @@ class NewsChannelPublishing : Extension() {
 							value = arguments.channel.mention
 						}
 						footer {
-							text = "Set by ${user.asUserOrNull()?.tag}"
+							text = "Set by ${user.asUserOrNull()?.username}"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -156,7 +156,7 @@ class NewsChannelPublishing : Extension() {
 							value = arguments.channel.mention
 						}
 						footer {
-							text = "Removed by ${user.asUserOrNull()?.tag}"
+							text = "Removed by ${user.asUserOrNull()?.username}"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()

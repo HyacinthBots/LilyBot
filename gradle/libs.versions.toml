@@ -1,20 +1,20 @@
 [versions]
 # Plugins
-kotlin = "1.8.21"
+kotlin = "1.9.0"
 shadow = "8.1.1"
-detekt = "1.22.0"
+detekt = "1.23.1"
 git-hooks = "0.0.2"
 grgit = "5.2.0"
 blossom = "1.3.1"
 
 # Libraries
-kord-extensions = "1.5.7-20230506.104616-11"
-logging = "3.0.5"
-logback = "1.4.7"
-github-api = "1.314"
+kord-extensions = "1.5.9-20230809.104126-1"
+logging = "5.1.0"
+logback = "1.4.9"
+github-api = "1.315"
 kmongo = "4.9.0"
 cozy-welcome = "1.0.1-SNAPSHOT"
-dma = "0.2.0-SNAPSHOT"
+dma = "v0.2.1"
 docgenerator = "0.1.2-SNAPSHOT"
 
 [libraries]
@@ -24,7 +24,7 @@ kord-extensions-pluralkit = { module = "com.kotlindiscord.kord.extensions:extra-
 kord-extensions-unsafe = { module = "com.kotlindiscord.kord.extensions:unsafe", version.ref = "kord-extensions"}
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
-logging = { module = "io.github.microutils:kotlin-logging", version.ref = "logging" }
+logging = { module = "io.github.oshai:kotlin-logging", version.ref = "logging" }
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
 kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
 detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}

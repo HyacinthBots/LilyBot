@@ -143,7 +143,7 @@ class Tags : Extension() {
 							title = tagFromDatabase.tagTitle
 							description = tagFromDatabase.tagValue
 							footer {
-								text = "Tag requested by ${user.asUserOrNull()?.tag}"
+								text = "Tag requested by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							color = DISCORD_BLURPLE
@@ -162,7 +162,7 @@ class Tags : Extension() {
 							title = "Message Tag used"
 							field {
 								name = "User"
-								value = "${user.asUserOrNull()?.mention} (${user.asUserOrNull()?.tag})"
+								value = "${user.asUserOrNull()?.mention} (${user.asUserOrNull()?.username})"
 							}
 							field {
 								name = "Tag name"
@@ -360,7 +360,7 @@ class Tags : Extension() {
 					title = "Tag deleted!"
 					description = "The tag ${arguments.tagName} was deleted"
 					footer {
-						text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+						text = user.asUserOrNull()?.username ?: "Unable to get user tag"
 						icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 					}
 					color = DISCORD_RED
@@ -460,7 +460,7 @@ class Tags : Extension() {
 						title = "Value"
 						description = originalValue
 						footer {
-							text = "Edited by ${user.asUserOrNull()?.tag}"
+							text = "Edited by ${user.asUserOrNull()?.username}"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -476,7 +476,7 @@ class Tags : Extension() {
 						title = "New value"
 						description = arguments.newValue
 						footer {
-							text = "Edited by ${user.asUserOrNull()?.tag}"
+							text = "Edited by ${user.asUserOrNull()?.username}"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -554,7 +554,7 @@ class Tags : Extension() {
 		}
 		footer {
 			icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-			text = "Requested by ${user.asUserOrNull()?.tag}"
+			text = "Requested by ${user.asUserOrNull()?.username}"
 		}
 		timestamp = Clock.System.now()
 		color = DISCORD_GREEN

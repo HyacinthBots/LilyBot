@@ -10,7 +10,6 @@ import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
-import org.hyacinthbots.lilybot.database.collections.LogUploadingBlacklistCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
@@ -66,7 +65,6 @@ object Cleanups : KordExKoinComponent {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
 				GithubCollection().removeDefaultRepo(it.guildId)
 				LoggingConfigCollection().clearConfig(it.guildId)
-				LogUploadingBlacklistCollection().clearBlacklist(it.guildId)
 				ModerationConfigCollection().clearConfig(it.guildId)
 				NewsChannelPublishingCollection().clearAutoPublishingForGuild(it.guildId)
 				ReminderCollection().removeGuildReminders(it.guildId)

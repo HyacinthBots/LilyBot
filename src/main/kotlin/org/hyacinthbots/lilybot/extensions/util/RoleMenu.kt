@@ -148,7 +148,7 @@ class RoleMenu : Extension() {
 								inline = true
 							}
 							footer {
-								text = "Created by ${user.asUserOrNull()?.tag}"
+								text = "Created by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
@@ -224,7 +224,7 @@ class RoleMenu : Extension() {
 							description = "The ${arguments.role.mention} role was added to a role menu in " +
 									"${channel.mention}."
 							footer {
-								text = "Added by ${user.asUserOrNull()?.tag}"
+								text = "Added by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
@@ -290,7 +290,7 @@ class RoleMenu : Extension() {
 							description = "The ${arguments.role.mention} role was removed from a role menu in " +
 									"${channel.mention}."
 							footer {
-								text = "Removed by ${user.asUserOrNull()?.tag}"
+								text = "Removed by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
@@ -401,7 +401,7 @@ class RoleMenu : Extension() {
 							title = "Pronoun Role Menu Created"
 							description = "A pronoun role menu was created in ${channel.mention}."
 							footer {
-								text = "Created by ${user.asUserOrNull()?.tag}"
+								text = "Created by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
@@ -677,7 +677,7 @@ class RoleMenu : Extension() {
 						title = "Subscribable Role added"
 						description = "${arguments.role.mention} was added as a subscribable role"
 						footer {
-							text = "Added by ${user.asUserOrNull()?.tag}"
+							text = "Added by ${user.asUserOrNull()?.username}"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
@@ -733,7 +733,7 @@ class RoleMenu : Extension() {
 						title = "Subscribable Role Removed"
 						description = "${arguments.role.mention} was removed as a subscribable role"
 						footer {
-							text = "Removed by ${user.asUserOrNull()?.tag}"
+							text = "Removed by ${user.asUserOrNull()?.username}"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}

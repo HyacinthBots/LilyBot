@@ -148,19 +148,6 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 				}
 			}
 
-			ConfigOptions.LOG_UPLOADS_ENABLED -> {
-				val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
-				if (utilityConfig == null) {
-					fail("Unable to access utility config for this guild! Please inform a member of staff.")
-					break
-				} else if (utilityConfig.disableLogUploading) {
-					fail("Log uploads are disabled for this guild!")
-					break
-				} else {
-					pass()
-				}
-			}
-
 			ConfigOptions.UTILITY_LOG -> {
 				val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
 				if (utilityConfig == null) {
@@ -221,11 +208,6 @@ suspend inline fun configIsUsable(guildId: Snowflake, option: ConfigOptions): Bo
 		ConfigOptions.MEMBER_LOG -> {
 			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
 			return loggingConfig.memberLog != null
-		}
-
-		ConfigOptions.LOG_UPLOADS_ENABLED -> {
-			val utilityConfig = UtilityConfigCollection().getConfig(guildId) ?: return false
-			return utilityConfig.disableLogUploading
 		}
 
 		ConfigOptions.UTILITY_LOG -> {

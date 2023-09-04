@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
 	application
 
@@ -108,7 +107,7 @@ tasks {
 
 detekt {
 	buildUponDefaultConfig = true
-	config = files("$rootDir/detekt.yml")
+	config.setFrom("$rootDir/detekt.yml")
 
 	autoCorrect = true
 }

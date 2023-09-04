@@ -10,7 +10,7 @@ import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
 import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.hyacinthbots.docgenerator.docsGenerator
 import org.hyacinthbots.docgenerator.enums.CommandTypes
 import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
@@ -20,7 +20,6 @@ import org.hyacinthbots.lilybot.extensions.config.Config
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.GuildLogging
 import org.hyacinthbots.lilybot.extensions.events.AutoThreading
-import org.hyacinthbots.lilybot.extensions.events.LogUploading
 import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
 import org.hyacinthbots.lilybot.extensions.events.MessageEdit
@@ -83,7 +82,6 @@ suspend fun main() {
 			add(::GuildLogging)
 			add(::InfoCommands)
 			add(::LockingCommands)
-			add(::LogUploading)
 			add(::MemberLogging)
 			add(::MessageDelete)
 			add(::MessageEdit)
@@ -104,17 +102,17 @@ suspend fun main() {
 			The welcome channel extension allows users to designate a YAML file to create a channel with
 			a variety of pre-built blocks.
 			 */
-			welcomeChannel(WelcomeChannelCollection()) {
-				staffCommandCheck {
-					hasPermission(Permission.BanMembers)
-				}
+ 			welcomeChannel(WelcomeChannelCollection()) {
+ 				staffCommandCheck {
+ 					hasPermission(Permission.BanMembers)
+ 				}
 
-				getLogChannel { _, guild ->
-					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
-				}
+ 				getLogChannel { _, guild ->
+ 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+ 				}
 
-				refreshDuration = 5.minutes
-			}
+ 				refreshDuration = 5.minutes
+ 			}
 
 			/*
 			The anti-phishing extension automatically deletes and logs scam links. It also allows users to check links
@@ -148,10 +146,10 @@ suspend fun main() {
 		// Connect to GitHub to allow the GitHub commands to function
 		try {
 			github = GitHubBuilder().build()
-			gitHubLogger.info("Connected to GitHub!")
+			gitHubLogger.info { "Connected to GitHub!" }
 		} catch (exception: IOException) {
 			exception.printStackTrace()
-			gitHubLogger.error("Failed to connect to GitHub!")
+			gitHubLogger.error { "Failed to connect to GitHub!" }
 		}
 	}
 

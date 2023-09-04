@@ -43,6 +43,7 @@ data class LoggingConfigData(
  * @property quickTimeoutLength The length of timeout to apply when using the moderate menu
  * @property autoPunishOnWarn Whether to automatically apply punishments for reaching certain warn strike counts
  * @property publicLogging Whether to log moderation actions publicly in the channel the command was run in
+ * @property banDmMessage The message to send in a DM to a user when they are banned.
  * @since 4.0.0
  */
 @Serializable
@@ -54,6 +55,7 @@ data class ModerationConfigData(
 	val quickTimeoutLength: DateTimePeriod?,
 	val autoPunishOnWarn: Boolean?,
 	val publicLogging: Boolean?,
+	val banDmMessage: String?,
 )
 
 /**
@@ -61,13 +63,11 @@ data class ModerationConfigData(
  * uploading.
  *
  * @property guildId The ID of the guild the config is for
- * @property disableLogUploading If log uploading is enabled or not
  * @property utilityLogChannel The channel to log various utility actions too
- * @since 4.0.0
+ * @since 4.9.0
  */
 @Serializable
 data class UtilityConfigData(
 	val guildId: Snowflake,
-	val disableLogUploading: Boolean,
 	val utilityLogChannel: Snowflake?
 )

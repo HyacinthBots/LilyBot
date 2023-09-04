@@ -86,7 +86,7 @@ class GalleryChannel : Extension() {
 						title = "New Gallery channel"
 						description = "${channel.mention} was added as a Gallery channel"
 						footer {
-							text = "Requested by ${user.asUserOrNull()?.tag}"
+							text = "Requested by ${user.asUserOrNull()?.username}"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						color = DISCORD_GREEN
@@ -131,7 +131,7 @@ class GalleryChannel : Extension() {
 							title = "Removed Gallery channel"
 							description = "${channel.mention} was removed as a Gallery channel"
 							footer {
-								text = "Requested by ${user.asUserOrNull()?.tag}"
+								text = "Requested by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							color = DISCORD_RED

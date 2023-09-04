@@ -188,7 +188,7 @@ class Reminders : Extension() {
 
 			/*
 			Reminder List
-		 	*/
+			 */
 			ephemeralSubCommand {
 				name = "list"
 				description = "List your reminders for this guild"
@@ -213,7 +213,7 @@ class Reminders : Extension() {
 
 			/*
 			Reminder Remove
-		 	*/
+			 */
 			ephemeralSubCommand(::ReminderRemoveArgs) {
 				name = "remove"
 				description = "Remove a reminder you have set from this guild"
@@ -252,7 +252,7 @@ class Reminders : Extension() {
 
 			/*
 			Reminder Remove all
-		 	*/
+			 */
 			ephemeralSubCommand(::ReminderRemoveAllArgs) {
 				name = "remove-all"
 				description = "Remove all a specific type of reminder from this guild"
@@ -320,7 +320,7 @@ class Reminders : Extension() {
 
 			/*
 			Reminder Mod List
-		 	*/
+			 */
 			ephemeralSubCommand(::ReminderModListArgs) {
 				name = "mod-list"
 				description = "List all reminders for a user, if you're a moderator"
@@ -349,7 +349,7 @@ class Reminders : Extension() {
 
 			/*
 			Reminder Mod Remove
-		 	*/
+			 */
 			ephemeralSubCommand(::ReminderModRemoveArgs) {
 				name = "mod-remove"
 				description = "Remove a reminder for a user, if you're a moderator"
@@ -396,7 +396,7 @@ class Reminders : Extension() {
 
 			/*
 			Reminder Mod Remove All
-		 	*/
+			 */
 			ephemeralSubCommand(::ReminderModRemoveAllArgs) {
 				name = "mod-remove-all"
 				description = "Remove all a specific type of reminder for a user, if you're a moderator"

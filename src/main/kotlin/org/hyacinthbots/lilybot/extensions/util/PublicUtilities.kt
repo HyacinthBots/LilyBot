@@ -138,7 +138,7 @@ class PublicUtilities : Extension() {
 									field {
 										name = "User:"
 										value =
-											"${requester?.mention}\n${requester?.asUserOrNull()?.tag}\n${requester?.id}"
+											"${requester?.mention}\n${requester?.asUserOrNull()?.username}\n${requester?.id}"
 										inline = false
 									}
 
@@ -203,7 +203,7 @@ class PublicUtilities : Extension() {
 													field {
 														name = "User:"
 														value =
-															"${requester?.mention}\n${requester?.asUserOrNull()?.tag}\n" +
+															"${requester?.mention}\n${requester?.asUserOrNull()?.username}\n" +
 																	"${requester?.id}"
 														inline = false
 													}
@@ -222,7 +222,7 @@ class PublicUtilities : Extension() {
 													}
 
 													footer {
-														text = "Nickname accepted by ${user.asUserOrNull()?.tag}"
+														text = "Nickname accepted by ${user.asUserOrNull()?.username}"
 														icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 													}
 
@@ -254,7 +254,7 @@ class PublicUtilities : Extension() {
 													field {
 														name = "User:"
 														value = "${requester?.mention}\n" +
-																"${requester?.asUserOrNull()?.tag}\n${requester?.id}"
+																"${requester?.asUserOrNull()?.username}\n${requester?.id}"
 														inline = false
 													}
 
@@ -271,7 +271,7 @@ class PublicUtilities : Extension() {
 													}
 
 													footer {
-														text = "Nickname denied by ${user.asUserOrNull()?.tag}"
+														text = "Nickname denied by ${user.asUserOrNull()?.username}"
 														icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 													}
 
@@ -323,7 +323,7 @@ class PublicUtilities : Extension() {
 
 							field {
 								name = "User:"
-								value = "${user.mention}\n${user.asUserOrNull()?.tag}\n${user.id}"
+								value = "${user.mention}\n${user.asUserOrNull()?.username}\n${user.id}"
 								inline = false
 							}
 

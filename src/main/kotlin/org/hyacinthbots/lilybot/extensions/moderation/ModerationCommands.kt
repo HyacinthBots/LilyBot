@@ -115,13 +115,19 @@ class ModerationCommands : Extension() {
 				val senderId: Snowflake
 				if (targetMessage.author.isNullOrBot()) {
 					val proxiedMessage = PluralKit().getMessageOrNull(targetMessage.id)
-					proxiedMessage ?: run { respond { content = "Unable to find user" }; return@action }
+					proxiedMessage ?: run {
+						respond { content = "Unable to find user" }
+						return@action
+					}
 					senderId = proxiedMessage.sender
 				} else {
 					senderId = targetMessage.author!!.id
 				}
 				val sender = guild!!.getMemberOrNull(senderId)
-					?: run { respond { content = "Unable to find user" }; return@action }
+					?: run {
+						respond { content = "Unable to find user" }
+						return@action
+					}
 
 				isBotOrModerator(event.kord, sender.asUserOrNull(), guild, "moderate") ?: return@action
 
@@ -168,8 +174,8 @@ class ModerationCommands : Extension() {
 										val dm = sender.dm {
 											embed {
 												title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
-												description =
-													"Quick banned $reasonSuffix"
+												description = modConfig?.banDmMessage ?: "Quick banned $reasonSuffix"
+
 												color = DISCORD_GREEN
 											}
 										}
@@ -496,9 +502,11 @@ class ModerationCommands : Extension() {
 					return@action
 				}
 
+				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
+
 				val action = ban(arguments.userArgument) {
 					reason = arguments.reason
-					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
+					logPublicly = modConfig?.publicLogging
 					sendActionLog = true
 					sendDm = arguments.dm
 					removeTimeout = true
@@ -531,7 +539,13 @@ class ModerationCommands : Extension() {
 
 					dmEmbed {
 						title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
-						description = "**Reason:**\n${arguments.reason}"
+						description = "**Reason:**\n${arguments.reason} ${
+							if (modConfig?.banDmMessage != null) {
+								"\n${modConfig.banDmMessage}"
+							} else {
+								""
+							}
+						}"
 					}
 				}
 
@@ -639,13 +653,13 @@ class ModerationCommands : Extension() {
 							title = "Unbanned a user"
 							description = "${arguments.userArgument.mention} has been unbanned!\n${
 								arguments.userArgument.id
-							} (${arguments.userArgument.tag})"
+							} (${arguments.userArgument.username})"
 							field {
 								name = "Reason:"
 								value = arguments.reason
 							}
 							footer {
-								text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+								text = user.asUserOrNull()?.username ?: "Unable to get user username"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
@@ -893,11 +907,11 @@ class ModerationCommands : Extension() {
 							dmNotificationStatusEmbedField(dmResult)
 							field {
 								name = "User:"
-								value = "${arguments.userArgument.tag} \n${arguments.userArgument.id}"
+								value = "${arguments.userArgument.username} \n${arguments.userArgument.id}"
 								inline = false
 							}
 							footer {
-								text = "Requested by ${user.asUserOrNull()?.tag}"
+								text = "Requested by ${user.asUserOrNull()?.username}"
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
@@ -1332,14 +1346,14 @@ private fun EmbedBuilder.warnTimeoutLog(warningNumber: Int, moderator: User, tar
 		title = "Timeout"
 		field {
 			name = "User"
-			value = "${targetUser.id} (${targetUser.tag})"
+			value = "${targetUser.id} (${targetUser.username})"
 		}
 		field {
 			name = "Reason"
 			value = reason
 		}
 		footer {
-			text = moderator.tag
+			text = moderator.username
 			icon = moderator.avatar?.cdnUrl?.toUrl()
 		}
 		color = DISCORD_BLACK

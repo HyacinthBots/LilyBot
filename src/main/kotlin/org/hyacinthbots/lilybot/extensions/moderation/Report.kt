@@ -198,7 +198,7 @@ class Report : Extension() {
 									value = reason
 								}
 								footer {
-									text = "Reported by: ${user.asUserOrNull()?.tag}"
+									text = "Reported by: ${user.asUserOrNull()?.username}"
 									icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 								}
 								timestamp = Clock.System.now()
