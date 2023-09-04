@@ -328,7 +328,6 @@ Required Member Permissions: Manage Messages
 * **Arguments**:
 	* `after` - The ID of the message to clear after - Snowflake
 	* `before` - The ID of the message to clear before - Snowflake
-	* `message-count` - The number of messages to clear - Optional Int/Long
 	* `author` - The author of the messages to clear - Optional User
 
 ---

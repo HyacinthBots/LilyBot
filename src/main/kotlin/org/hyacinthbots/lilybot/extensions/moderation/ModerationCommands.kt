@@ -808,9 +808,9 @@ class ModerationCommands : Extension() {
 
 				action {
 					clearMessages(
-						arguments.count,
-						Snowflake(arguments.before.value + 1u),
-						Snowflake(arguments.after.value - 1u),
+						null,
+						Snowflake(arguments.before.value - 1u),
+						Snowflake(arguments.after.value + 1u),
 						arguments.author
 					)
 				}
@@ -1517,12 +1517,6 @@ object ClearCommandArgs {
 		val before by snowflake {
 			name = "before"
 			description = "The ID of the message to clear before"
-		}
-
-		/** The number of messages the user wants to remove. */
-		val count by optionalInt {
-			name = "message-count"
-			description = "The number of messages to clear"
 		}
 
 		/** The author of the messages that need clearing. */
