@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
+import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.ReminderData
 import org.koin.core.component.inject
@@ -30,7 +31,7 @@ class ReminderCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<ReminderData>("reminderData")
+	internal val collection = db.mainDatabase.getCollection<ReminderData>(name)
 
 	/**
 	 * Gets all the reminders currently in the database.
@@ -120,4 +121,6 @@ class ReminderCollection : KordExKoinComponent {
 			)
 		)
 	}
+
+	companion object : Collection("reminderData")
 }

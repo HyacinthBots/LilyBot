@@ -13,6 +13,7 @@ import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import kotlinx.coroutines.flow.toList
+import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.WelcomeChannelData
 import org.hyacinthbots.lilybot.database.findOne
@@ -33,7 +34,7 @@ class WelcomeChannelCollection : KordExKoinComponent, CozyWelcomeChannelData {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<WelcomeChannelData>("welcomeChannelData")
+	internal val collection = db.mainDatabase.getCollection<WelcomeChannelData>(name)
 
 	override suspend fun getChannelURLs(): Map<Snowflake, String> =
 		collection.find()
@@ -62,4 +63,6 @@ class WelcomeChannelCollection : KordExKoinComponent, CozyWelcomeChannelData {
 			collection.deleteOne(eq(WelcomeChannelData::channelId.name, it.id))
 		}
 	}
+
+	companion object : Collection("welcomeChannelData")
 }

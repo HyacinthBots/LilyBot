@@ -3,10 +3,11 @@ package org.hyacinthbots.lilybot.database.migrations.main
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
+import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.entities.ThreadData
 
 suspend fun mainV2(db: MongoDatabase) {
-	with(db.getCollection<ThreadData>("threadData")) {
+	with(db.getCollection<ThreadData>(ThreadsCollection.name)) {
 		updateMany(Filters.exists(ThreadData::guildId.name, false), Updates.set(ThreadData::guildId.name, null))
 	}
 }

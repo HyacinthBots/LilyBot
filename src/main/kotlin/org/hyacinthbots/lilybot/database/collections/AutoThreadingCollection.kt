@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import kotlinx.coroutines.flow.toList
+import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
 import org.hyacinthbots.lilybot.database.findOne
@@ -24,7 +25,7 @@ class AutoThreadingCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<AutoThreadingData>("autoThreadingData")
+	internal val collection = db.mainDatabase.getCollection<AutoThreadingData>(name)
 
 	/**
 	 * Gets all auto threads for a given [inputGuildId].
@@ -79,4 +80,6 @@ class AutoThreadingCollection : KordExKoinComponent {
 	 */
 	suspend inline fun deleteGuildAutoThreads(inputGuildId: Snowflake) =
 		collection.deleteMany(eq(AutoThreadingData::guildId.name, inputGuildId))
+
+	companion object : Collection("autoThreadingData")
 }

@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.Instant
+import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.GuildLeaveTimeData
 import org.koin.core.component.inject
@@ -20,7 +21,7 @@ class GuildLeaveTimeCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<GuildLeaveTimeData>("guildLeaveTimeData")
+	internal val collection = db.mainDatabase.getCollection<GuildLeaveTimeData>(name)
 
 	/**
 	 * Adds the time Lily bot left a guild with a config.
@@ -44,4 +45,6 @@ class GuildLeaveTimeCollection : KordExKoinComponent {
 	 */
 	suspend inline fun removeLeaveTime(inputGuildId: Snowflake) =
 		collection.deleteOne(eq(GuildLeaveTimeData::guildId.name, inputGuildId))
+
+	companion object : Collection("guildLeaveTimeData")
 }

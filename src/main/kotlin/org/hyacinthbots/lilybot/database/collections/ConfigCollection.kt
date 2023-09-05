@@ -3,6 +3,7 @@ package org.hyacinthbots.lilybot.database.collections
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
+import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
@@ -23,7 +24,7 @@ class LoggingConfigCollection : KordExKoinComponent {
 	private val configDb: Database by inject()
 
 	@PublishedApi
-	internal val collection = configDb.configDatabase.getCollection<LoggingConfigData>("loggingConfigData")
+	internal val collection = configDb.configDatabase.getCollection<LoggingConfigData>(name)
 
 	/**
 	 * Gets the logging config for the given guild using the [guildId][inputGuildId].
@@ -57,6 +58,8 @@ class LoggingConfigCollection : KordExKoinComponent {
 	 */
 	suspend inline fun clearConfig(inputGuildId: Snowflake) =
 		collection.deleteOne(eq(LoggingConfigData::guildId.name, inputGuildId))
+
+	companion object : Collection("loggingConfigData")
 }
 
 /**
@@ -72,7 +75,7 @@ class ModerationConfigCollection : KordExKoinComponent {
 	private val configDb: Database by inject()
 
 	@PublishedApi
-	internal val collection = configDb.configDatabase.getCollection<ModerationConfigData>("moderationConfigData")
+	internal val collection = configDb.configDatabase.getCollection<ModerationConfigData>(name)
 
 	/**
 	 * Gets the Moderation config for the given guild using the [guildId][inputGuildId].
@@ -106,6 +109,8 @@ class ModerationConfigCollection : KordExKoinComponent {
 	 */
 	suspend inline fun clearConfig(inputGuildId: Snowflake) =
 		collection.deleteOne(eq(ModerationConfigData::guildId.name, inputGuildId))
+
+	companion object : Collection("moderationConfigData")
 }
 
 /**
@@ -121,7 +126,7 @@ class UtilityConfigCollection : KordExKoinComponent {
 	private val configDb: Database by inject()
 
 	@PublishedApi
-	internal val collection = configDb.configDatabase.getCollection<UtilityConfigData>("utilityConfigData")
+	internal val collection = configDb.configDatabase.getCollection<UtilityConfigData>(name)
 
 	/**
 	 * Gets the Utility config for the given guild using the [guildId][inputGuildId].
@@ -155,4 +160,6 @@ class UtilityConfigCollection : KordExKoinComponent {
 	 */
 	suspend inline fun clearConfig(inputGuildId: Snowflake) =
 		collection.deleteOne(eq(UtilityConfigData::guildId.name, inputGuildId))
+
+	companion object : Collection("utilityConfigData")
 }

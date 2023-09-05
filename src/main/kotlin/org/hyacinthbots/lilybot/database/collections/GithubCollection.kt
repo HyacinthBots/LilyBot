@@ -3,6 +3,7 @@ package org.hyacinthbots.lilybot.database.collections
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
+import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.GithubData
 import org.hyacinthbots.lilybot.database.findOne
@@ -21,7 +22,7 @@ class GithubCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<GithubData>("githubData")
+	internal val collection = db.mainDatabase.getCollection<GithubData>(name)
 
 	/**
 	 * Gets the default repo for GitHub commands.
@@ -56,4 +57,6 @@ class GithubCollection : KordExKoinComponent {
 	 */
 	suspend inline fun removeDefaultRepo(inputGuildId: Snowflake) =
 		collection.deleteOne(eq(GithubData::guildId.name, inputGuildId))
+
+	companion object : Collection("githubData")
 }

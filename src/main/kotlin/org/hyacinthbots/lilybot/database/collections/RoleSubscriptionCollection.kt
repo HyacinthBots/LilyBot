@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Updates
 import dev.kord.common.entity.Snowflake
+import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.RoleSubscriptionData
 import org.hyacinthbots.lilybot.database.findOne
@@ -24,7 +25,7 @@ class RoleSubscriptionCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<RoleSubscriptionData>("roleSubscriptionData")
+	internal val collection = db.mainDatabase.getCollection<RoleSubscriptionData>(name)
 
 	/**
 	 * Gets the roles that are subscribable for a given guild.
@@ -106,4 +107,6 @@ class RoleSubscriptionCollection : KordExKoinComponent {
 	 */
 	suspend inline fun removeAllSubscribableRoles(inputGuildId: Snowflake) =
 		collection.deleteOne(eq(RoleSubscriptionData::guildId.name, inputGuildId))
+
+	companion object : Collection("roleSubscriptionData")
 }
