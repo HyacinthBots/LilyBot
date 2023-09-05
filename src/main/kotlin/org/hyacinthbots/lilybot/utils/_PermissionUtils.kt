@@ -135,9 +135,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		permissionsSet.add(
 			permissions.values.toString()
 				.split(",")[count]
-				.split(".")[4]
-				.split("$")[1]
-				.split("@")[0]
+				.split(".")[1]
 				.replace("[", "`")
 				.replace("]", "`")
 		)
