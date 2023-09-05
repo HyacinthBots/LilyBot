@@ -5,7 +5,6 @@ import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import kotlinx.coroutines.flow.toList
-import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.GalleryChannelData
 import org.koin.core.component.inject
@@ -24,7 +23,7 @@ class GalleryChannelCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<GalleryChannelData>(name)
+	internal val collection = db.mainDatabase.getCollection<GalleryChannelData>("galleryChannelData")
 
 	/**
 	 * Collects every gallery channel in the database into a [List].
@@ -73,6 +72,4 @@ class GalleryChannelCollection : KordExKoinComponent {
 	 */
 	suspend inline fun removeAll(inputGuildId: Snowflake) =
 		collection.deleteMany(eq(GalleryChannelData::guildId.name, inputGuildId))
-
-	companion object : Collection("galleryChannelData")
 }

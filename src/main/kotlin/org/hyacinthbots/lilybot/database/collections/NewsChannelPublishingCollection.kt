@@ -5,7 +5,6 @@ import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import kotlinx.coroutines.flow.toList
-import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.NewsChannelPublishingData
 import org.hyacinthbots.lilybot.database.findOne
@@ -26,7 +25,7 @@ class NewsChannelPublishingCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<NewsChannelPublishingData>(name)
+	internal val collection = db.mainDatabase.getCollection<NewsChannelPublishingData>("newsChannelPublishingData")
 
 	/**
 	 * Adds a channel for auto-publishing.
@@ -99,6 +98,4 @@ class NewsChannelPublishingCollection : KordExKoinComponent {
 	suspend inline fun clearAutoPublishingForGuild(inputGuildId: Snowflake) {
 		collection.deleteMany(eq(NewsChannelPublishingData::guildId.name, inputGuildId))
 	}
-
-	companion object : Collection("newsChannelPublishingData")
 }

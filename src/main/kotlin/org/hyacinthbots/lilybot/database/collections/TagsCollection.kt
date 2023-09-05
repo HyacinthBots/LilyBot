@@ -5,7 +5,6 @@ import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import kotlinx.coroutines.flow.toList
-import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.TagsData
 import org.hyacinthbots.lilybot.database.findOne
@@ -26,7 +25,7 @@ class TagsCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<TagsData>(name)
+	internal val collection = db.mainDatabase.getCollection<TagsData>("tagsData")
 
 	/**
 	 * Gets the given tag using it's [name] and returns its [TagsData]. If the tag does not exist.
@@ -91,6 +90,4 @@ class TagsCollection : KordExKoinComponent {
 	 */
 	suspend inline fun clearTags(inputGuildId: Snowflake) =
 		collection.deleteMany(eq(TagsData::guildId.name, inputGuildId))
-
-	companion object : Collection("tagsData")
 }

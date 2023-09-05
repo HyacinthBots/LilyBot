@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import com.mongodb.client.model.Filters.eq
-import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.ConfigMetaData
 import org.hyacinthbots.lilybot.database.entities.MainMetaData
@@ -22,7 +21,7 @@ class MainMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<MainMetaData>(name)
+	internal val collection = db.mainDatabase.getCollection<MainMetaData>("mainMetaData")
 
 	/**
 	 * Gets the main metadata from the database.
@@ -54,8 +53,6 @@ class MainMetaCollection : KordExKoinComponent {
 			eq(MainMetaData::id.name, "mainMeta"),
 			meta
 		)
-
-	companion object : Collection("mainMetaData")
 }
 
 /**
@@ -71,7 +68,7 @@ class ConfigMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.configDatabase.getCollection<ConfigMetaData>(name)
+	internal val collection = db.configDatabase.getCollection<ConfigMetaData>("configMetaData")
 
 	/**
 	 * Gets the config metadata from the database.
@@ -103,6 +100,4 @@ class ConfigMetaCollection : KordExKoinComponent {
 			eq(ConfigMetaData::id.name, "configMeta"),
 			meta
 		)
-
-	companion object : Collection("configMetaData")
 }

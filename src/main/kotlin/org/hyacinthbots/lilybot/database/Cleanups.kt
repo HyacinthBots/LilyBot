@@ -12,7 +12,6 @@ import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
-import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
@@ -40,11 +39,10 @@ object Cleanups : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val guildLeaveTimeCollection =
-		db.mainDatabase.getCollection<GuildLeaveTimeData>(GuildLeaveTimeCollection.name)
+	internal val guildLeaveTimeCollection = db.mainDatabase.getCollection<GuildLeaveTimeData>("guildLeaveTimeData")
 
 	@PublishedApi
-	internal val threadDataCollection = db.mainDatabase.getCollection<ThreadData>(ThreadsCollection.name)
+	internal val threadDataCollection = db.mainDatabase.getCollection<ThreadData>("threadData")
 
 	@PublishedApi
 	internal val cleanupsLogger = KotlinLogging.logger("Database Cleanups")

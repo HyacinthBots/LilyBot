@@ -1,7 +1,6 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.deleteOne
 import org.hyacinthbots.lilybot.database.entities.StatusData
@@ -20,7 +19,7 @@ class StatusCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<StatusData>(name)
+	internal val collection = db.mainDatabase.getCollection<StatusData>("statusData")
 
 	/**
 	 * Gets Lily's status from the database.
@@ -43,6 +42,4 @@ class StatusCollection : KordExKoinComponent {
 		collection.deleteOne()
 		collection.insertOne(StatusData(newStatus))
 	}
-
-	companion object : Collection("statusData")
 }

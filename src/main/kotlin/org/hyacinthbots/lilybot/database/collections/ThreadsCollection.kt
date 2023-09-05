@@ -4,7 +4,6 @@ import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import kotlinx.coroutines.flow.toList
-import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.hyacinthbots.lilybot.database.findOne
@@ -26,7 +25,7 @@ class ThreadsCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<ThreadData>(name)
+	internal val collection = db.mainDatabase.getCollection<ThreadData>("threadsData")
 
 	/**
 	 * Using the provided [inputThreadId] the thread is returned.
@@ -106,6 +105,4 @@ class ThreadsCollection : KordExKoinComponent {
 	 */
 	suspend inline fun removeGuildThreads(inputGuildId: Snowflake) =
 		collection.deleteMany(eq(ThreadData::guildId.name, inputGuildId))
-
-	companion object : Collection("threadsData")
 }

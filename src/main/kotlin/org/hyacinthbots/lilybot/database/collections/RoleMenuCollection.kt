@@ -3,7 +3,6 @@ package org.hyacinthbots.lilybot.database.collections
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
-import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.RoleMenuData
 import org.hyacinthbots.lilybot.database.findOne
@@ -23,7 +22,7 @@ class RoleMenuCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<RoleMenuData>(name)
+	internal val collection = db.mainDatabase.getCollection<RoleMenuData>("roleMenuData")
 
 	/**
 	 * Using the provided [inputMessageId] the associated [RoleMenuData] will be returned from the database.
@@ -84,6 +83,4 @@ class RoleMenuCollection : KordExKoinComponent {
 	 */
 	suspend inline fun removeAllRoleMenus(inputGuildId: Snowflake) =
 		collection.deleteMany(eq(RoleMenuData::guildId.name, inputGuildId))
-
-	companion object : Collection("roleMenuData")
 }

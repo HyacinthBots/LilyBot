@@ -1,7 +1,6 @@
 package org.hyacinthbots.lilybot.database.migrations.main
 
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
-import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.entities.StatusData
 
 // This was commented out due to the remindme data class being removed
@@ -64,7 +63,7 @@ suspend fun mainV1(db: MongoDatabase) {
 // 		reminders.bulkWrite(requests = nonRepeating, BulkWriteOptions().ordered(true))
 // 	}
 
-	db.getCollection<StatusData>(StatusCollection.name).drop()
-	db.createCollection(StatusCollection.name)
-	db.getCollection<StatusData>(StatusCollection.name).insertOne(StatusData(null))
+	db.getCollection<StatusData>("statusData").drop()
+	db.createCollection("statusData")
+	db.getCollection<StatusData>("statusData").insertOne(StatusData(null))
 }

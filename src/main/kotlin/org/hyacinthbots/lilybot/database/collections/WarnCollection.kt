@@ -4,7 +4,6 @@ import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
-import org.hyacinthbots.lilybot.database.Collection
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.WarnData
 import org.hyacinthbots.lilybot.database.findOne
@@ -23,7 +22,7 @@ class WarnCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<WarnData>(name)
+	internal val collection = db.mainDatabase.getCollection<WarnData>("warnData")
 
 	/**
 	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database.
@@ -72,6 +71,4 @@ class WarnCollection : KordExKoinComponent {
 	 */
 	suspend inline fun clearWarns(inputGuildId: Snowflake) =
 		collection.deleteMany(eq(WarnData::guildId.name, inputGuildId))
-
-	companion object : Collection("warnData")
 }
