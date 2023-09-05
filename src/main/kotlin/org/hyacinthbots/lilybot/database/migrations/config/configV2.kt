@@ -6,7 +6,7 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 
 suspend fun configV2(db: MongoDatabase) {
-	with(db.getCollection<ModerationConfigData>("moderationConfigData")) {
+	with(db.getCollection<ModerationConfigData>(ModerationConfigData.name)) {
 		updateMany(
 			Filters.exists(ModerationConfigData::quickTimeoutLength.name, false),
 			Updates.set(ModerationConfigData::quickTimeoutLength.name, null)

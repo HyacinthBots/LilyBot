@@ -39,10 +39,10 @@ object Cleanups : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val guildLeaveTimeCollection = db.mainDatabase.getCollection<GuildLeaveTimeData>("guildLeaveTimeData")
+	internal val guildLeaveTimeCollection = db.mainDatabase.getCollection<GuildLeaveTimeData>(GuildLeaveTimeData.name)
 
 	@PublishedApi
-	internal val threadDataCollection = db.mainDatabase.getCollection<ThreadData>("threadData")
+	internal val threadDataCollection = db.mainDatabase.getCollection<ThreadData>(ThreadData.name)
 
 	@PublishedApi
 	internal val cleanupsLogger = KotlinLogging.logger("Database Cleanups")

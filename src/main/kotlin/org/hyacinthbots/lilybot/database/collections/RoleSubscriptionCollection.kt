@@ -24,7 +24,7 @@ class RoleSubscriptionCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<RoleSubscriptionData>("roleSubscriptionData")
+	internal val collection = db.mainDatabase.getCollection<RoleSubscriptionData>(RoleSubscriptionData.name)
 
 	/**
 	 * Gets the roles that are subscribable for a given guild.

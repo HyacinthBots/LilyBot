@@ -24,7 +24,7 @@ class AutoThreadingCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<AutoThreadingData>("autoThreadingData")
+	internal val collection = db.mainDatabase.getCollection<AutoThreadingData>(AutoThreadingData.name)
 
 	/**
 	 * Gets all auto threads for a given [inputGuildId].

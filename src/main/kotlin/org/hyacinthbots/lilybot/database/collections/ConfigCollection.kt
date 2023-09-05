@@ -23,7 +23,7 @@ class LoggingConfigCollection : KordExKoinComponent {
 	private val configDb: Database by inject()
 
 	@PublishedApi
-	internal val collection = configDb.configDatabase.getCollection<LoggingConfigData>("loggingConfigData")
+	internal val collection = configDb.configDatabase.getCollection<LoggingConfigData>(LoggingConfigData.name)
 
 	/**
 	 * Gets the logging config for the given guild using the [guildId][inputGuildId].
@@ -72,7 +72,7 @@ class ModerationConfigCollection : KordExKoinComponent {
 	private val configDb: Database by inject()
 
 	@PublishedApi
-	internal val collection = configDb.configDatabase.getCollection<ModerationConfigData>("moderationConfigData")
+	internal val collection = configDb.configDatabase.getCollection<ModerationConfigData>(ModerationConfigData.name)
 
 	/**
 	 * Gets the Moderation config for the given guild using the [guildId][inputGuildId].
@@ -121,7 +121,7 @@ class UtilityConfigCollection : KordExKoinComponent {
 	private val configDb: Database by inject()
 
 	@PublishedApi
-	internal val collection = configDb.configDatabase.getCollection<UtilityConfigData>("utilityConfigData")
+	internal val collection = configDb.configDatabase.getCollection<UtilityConfigData>(UtilityConfigData.name)
 
 	/**
 	 * Gets the Utility config for the given guild using the [guildId][inputGuildId].

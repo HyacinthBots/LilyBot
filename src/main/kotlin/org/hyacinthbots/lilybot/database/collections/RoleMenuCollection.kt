@@ -22,7 +22,7 @@ class RoleMenuCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<RoleMenuData>("roleMenuData")
+	internal val collection = db.mainDatabase.getCollection<RoleMenuData>(RoleMenuData.name)
 
 	/**
 	 * Using the provided [inputMessageId] the associated [RoleMenuData] will be returned from the database.

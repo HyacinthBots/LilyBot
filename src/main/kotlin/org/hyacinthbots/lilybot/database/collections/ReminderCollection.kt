@@ -30,7 +30,7 @@ class ReminderCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<ReminderData>("reminderData")
+	internal val collection = db.mainDatabase.getCollection<ReminderData>(ReminderData.name)
 
 	/**
 	 * Gets all the reminders currently in the database.

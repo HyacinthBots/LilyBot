@@ -63,7 +63,7 @@ suspend fun mainV1(db: MongoDatabase) {
 // 		reminders.bulkWrite(requests = nonRepeating, BulkWriteOptions().ordered(true))
 // 	}
 
-	db.getCollection<StatusData>("statusData").drop()
-	db.createCollection("statusData")
-	db.getCollection<StatusData>("statusData").insertOne(StatusData(null))
+	db.getCollection<StatusData>(StatusData.name).drop()
+	db.createCollection(StatusData.name)
+	db.getCollection<StatusData>(StatusData.name).insertOne(StatusData(null))
 }

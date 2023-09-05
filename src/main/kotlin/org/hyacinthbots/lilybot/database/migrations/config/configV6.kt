@@ -6,7 +6,7 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 
 suspend fun configV6(db: MongoDatabase) {
-	with(db.getCollection<ModerationConfigData>("moderationConfigData")) {
+	with(db.getCollection<ModerationConfigData>(ModerationConfigData.name)) {
 		updateMany(
 			Filters.exists(ModerationConfigData::banDmMessage.name, false),
 			Updates.set(ModerationConfigData::banDmMessage.name, null)

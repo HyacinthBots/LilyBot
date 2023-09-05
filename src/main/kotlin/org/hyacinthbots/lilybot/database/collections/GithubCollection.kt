@@ -21,7 +21,7 @@ class GithubCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<GithubData>("githubData")
+	internal val collection = db.mainDatabase.getCollection<GithubData>(GithubData.name)
 
 	/**
 	 * Gets the default repo for GitHub commands.

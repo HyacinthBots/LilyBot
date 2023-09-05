@@ -8,7 +8,7 @@ import org.hyacinthbots.lilybot.database.entities.ThreadData
 suspend fun mainV5(db: MongoDatabase) {
 	// db.createCollection("autoThreadingData")
 
-	with(db.getCollection<ThreadData>("threadData")) {
+	with(db.getCollection<ThreadData>(ThreadData.name)) {
 		updateMany(
 			Filters.exists(ThreadData::parentChannelId.name, false),
 			Updates.set(ThreadData::parentChannelId.name, null)

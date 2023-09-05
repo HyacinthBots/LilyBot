@@ -21,7 +21,7 @@ class MainMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<MainMetaData>("mainMetaData")
+	internal val collection = db.mainDatabase.getCollection<MainMetaData>(MainMetaData.name)
 
 	/**
 	 * Gets the main metadata from the database.
@@ -68,7 +68,7 @@ class ConfigMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.configDatabase.getCollection<ConfigMetaData>("configMetaData")
+	internal val collection = db.configDatabase.getCollection<ConfigMetaData>(ConfigMetaData.name)
 
 	/**
 	 * Gets the config metadata from the database.

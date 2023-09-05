@@ -23,7 +23,7 @@ class GalleryChannelCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<GalleryChannelData>("galleryChannelData")
+	internal val collection = db.mainDatabase.getCollection<GalleryChannelData>(GalleryChannelData.name)
 
 	/**
 	 * Collects every gallery channel in the database into a [List].

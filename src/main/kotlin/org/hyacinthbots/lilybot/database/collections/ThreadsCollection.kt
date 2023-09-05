@@ -25,7 +25,7 @@ class ThreadsCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<ThreadData>("threadsData")
+	internal val collection = db.mainDatabase.getCollection<ThreadData>(ThreadData.name)
 
 	/**
 	 * Using the provided [inputThreadId] the thread is returned.

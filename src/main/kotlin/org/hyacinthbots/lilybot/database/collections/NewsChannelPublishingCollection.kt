@@ -25,7 +25,7 @@ class NewsChannelPublishingCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<NewsChannelPublishingData>("newsChannelPublishingData")
+	internal val collection = db.mainDatabase.getCollection<NewsChannelPublishingData>(NewsChannelPublishingData.name)
 
 	/**
 	 * Adds a channel for auto-publishing.

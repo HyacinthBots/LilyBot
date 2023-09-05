@@ -25,7 +25,7 @@ class TagsCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<TagsData>("tagsData")
+	internal val collection = db.mainDatabase.getCollection<TagsData>(TagsData.name)
 
 	/**
 	 * Gets the given tag using it's [name] and returns its [TagsData]. If the tag does not exist.

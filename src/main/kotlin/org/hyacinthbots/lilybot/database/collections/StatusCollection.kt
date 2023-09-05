@@ -19,7 +19,7 @@ class StatusCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<StatusData>("statusData")
+	internal val collection = db.mainDatabase.getCollection<StatusData>(StatusData.name)
 
 	/**
 	 * Gets Lily's status from the database.

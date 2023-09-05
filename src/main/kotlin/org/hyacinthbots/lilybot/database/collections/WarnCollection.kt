@@ -22,7 +22,7 @@ class WarnCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<WarnData>("warnData")
+	internal val collection = db.mainDatabase.getCollection<WarnData>(WarnData.name)
 
 	/**
 	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database.

@@ -19,7 +19,7 @@ class UptimeCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<UptimeData>("uptimeData")
+	internal val collection = db.mainDatabase.getCollection<UptimeData>(UptimeData.name)
 
 	/**
 	 * Gets the uptime data from the database.

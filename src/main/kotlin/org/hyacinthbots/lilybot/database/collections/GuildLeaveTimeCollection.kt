@@ -20,7 +20,7 @@ class GuildLeaveTimeCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<GuildLeaveTimeData>("guildLeaveTimeData")
+	internal val collection = db.mainDatabase.getCollection<GuildLeaveTimeData>(GuildLeaveTimeData.name)
 
 	/**
 	 * Adds the time Lily bot left a guild with a config.

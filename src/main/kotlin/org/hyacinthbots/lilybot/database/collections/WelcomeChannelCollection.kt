@@ -33,7 +33,7 @@ class WelcomeChannelCollection : KordExKoinComponent, CozyWelcomeChannelData {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<WelcomeChannelData>("welcomeChannelData")
+	internal val collection = db.mainDatabase.getCollection<WelcomeChannelData>(WelcomeChannelData.name)
 
 	override suspend fun getChannelURLs(): Map<Snowflake, String> =
 		collection.find()
