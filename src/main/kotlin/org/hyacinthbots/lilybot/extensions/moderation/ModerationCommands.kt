@@ -1434,7 +1434,7 @@ private suspend fun EphemeralSlashCommandContext<*, *>.clearMessages(
 		title = "${count ?: messages.size} messages have been cleared."
 		description = "Action occurred in ${textChannel.mention}"
 		footer {
-			text = user.asUserOrNull()?.tag ?: "Unable to get user tag"
+			text = user.asUserOrNull()?.username ?: "Unable to get username"
 			icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 		}
 		color = DISCORD_BLACK
