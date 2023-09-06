@@ -1,7 +1,7 @@
 package org.hyacinthbots.lilybot.database
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Filters.eq
 import dev.kord.core.Kord
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.thread.ThreadChannel
@@ -76,8 +76,7 @@ object Cleanups : KordExKoinComponent {
 				UtilityConfigCollection().clearConfig(it.guildId)
 				WarnCollection().clearWarns(it.guildId)
 				WelcomeChannelCollection().removeWelcomeChannelsForGuild(it.guildId, kord)
-				val leaveFilters = Filters.eq(GuildLeaveTimeData::guildId.name, it.guildId)
-				guildLeaveTimeCollection.deleteOne(leaveFilters)
+				guildLeaveTimeCollection.deleteOne(eq(GuildLeaveTimeData::guildId.name, it.guildId))
 				deletedGuildData += 1 // Increment the counter for logging
 			}
 		}
