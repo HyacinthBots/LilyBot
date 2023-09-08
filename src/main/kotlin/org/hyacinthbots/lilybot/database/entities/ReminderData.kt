@@ -4,6 +4,7 @@ import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * THe data for reminders in a guild.
@@ -35,4 +36,6 @@ data class ReminderData(
 	val repeating: Boolean,
 	val repeatingInterval: DateTimePeriod?,
 	val id: Long
-)
+) {
+	companion object : Collection("reminderData")
+}

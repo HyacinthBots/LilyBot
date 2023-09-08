@@ -1,12 +1,15 @@
 package org.hyacinthbots.lilybot.database.migrations.main
 
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
-import org.litote.kmongo.coroutine.CoroutineDatabase
-import org.litote.kmongo.exists
-import org.litote.kmongo.setValue
 
-suspend fun mainV6(db: CoroutineDatabase) {
-	with(db.getCollection<AutoThreadingData>()) {
-		updateMany(AutoThreadingData::addModsAndRole exists false, setValue(AutoThreadingData::addModsAndRole, false))
+suspend fun mainV6(db: MongoDatabase) {
+	with(db.getCollection<AutoThreadingData>(AutoThreadingData.name)) {
+		updateMany(
+			Filters.exists(AutoThreadingData::addModsAndRole.name, false),
+			Updates.set(AutoThreadingData::addModsAndRole.name, false)
+		)
 	}
 }

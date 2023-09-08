@@ -1,7 +1,8 @@
 package org.hyacinthbots.lilybot.database.migrations.main
 
-import org.litote.kmongo.coroutine.CoroutineDatabase
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 
-suspend fun mainV9(db: CoroutineDatabase) {
-	db.dropCollection("logUploadingBlacklistData")
+@Suppress("UnusedPrivateMember", "UNUSED_PARAMETER", "RedundantSuspendModifier")
+suspend fun mainV9(db: MongoDatabase) {
+	// db.getCollection<>("logUploadingBlacklistData")
 }

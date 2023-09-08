@@ -3,6 +3,7 @@ package org.hyacinthbots.lilybot.database.entities
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.serialization.Serializable
+import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for moderation configuration. The logging config stores where logs are sent to, and whether to enable or
@@ -30,7 +31,9 @@ data class LoggingConfigData(
 	val enablePublicMemberLogs: Boolean,
 	val publicMemberLog: Snowflake?,
 	val publicMemberLogData: PublicMemberLogData?
-)
+) {
+	companion object : Collection("loggingConfigData")
+}
 
 /**
  * The data for moderation configuration. The moderation config is what stores the data for moderation actions. The
@@ -56,7 +59,9 @@ data class ModerationConfigData(
 	val autoPunishOnWarn: Boolean?,
 	val publicLogging: Boolean?,
 	val banDmMessage: String?,
-)
+) {
+	companion object : Collection("moderationConfigData")
+}
 
 /**
  * The data for miscellaneous configuration. The miscellaneous config stores the data for enabling or disabling log
@@ -70,4 +75,6 @@ data class ModerationConfigData(
 data class UtilityConfigData(
 	val guildId: Snowflake,
 	val utilityLogChannel: Snowflake?
-)
+) {
+	companion object : Collection("utilityConfigData")
+}

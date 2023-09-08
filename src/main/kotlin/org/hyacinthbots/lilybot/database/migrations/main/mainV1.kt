@@ -1,10 +1,10 @@
 package org.hyacinthbots.lilybot.database.migrations.main
 
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import org.hyacinthbots.lilybot.database.entities.StatusData
-import org.litote.kmongo.coroutine.CoroutineDatabase
 
 // This was commented out due to the remindme data class being removed
-suspend fun mainV1(db: CoroutineDatabase) {
+suspend fun mainV1(db: MongoDatabase) {
 // 	val reminders = db.getCollection<RemindMeData>("remindMeData")
 //
 // 	val repeating = mutableListOf<ReplaceOneModel<RemindMeData>>()
@@ -63,7 +63,7 @@ suspend fun mainV1(db: CoroutineDatabase) {
 // 		reminders.bulkWrite(requests = nonRepeating, BulkWriteOptions().ordered(true))
 // 	}
 
-	db.dropCollection("statusData")
-	db.createCollection("statusData")
-	db.getCollection<StatusData>("statusData").insertOne(StatusData(null))
+	db.getCollection<StatusData>(StatusData.name).drop()
+	db.createCollection(StatusData.name)
+	db.getCollection<StatusData>(StatusData.name).insertOne(StatusData(null))
 }
