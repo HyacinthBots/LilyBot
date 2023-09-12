@@ -1,18 +1,19 @@
 [versions]
 # Plugins
-kotlin = "1.8.21"
+kotlin = "1.9.10"
 shadow = "8.1.1"
-detekt = "1.23.0"
+detekt = "1.23.1"
 git-hooks = "0.0.2"
 grgit = "5.2.0"
-blossom = "1.3.1"
+blossom = "2.0.1"
 
 # Libraries
-kord-extensions = "1.5.8-20230618.092018-1"
-logging = "3.0.5"
-logback = "1.4.7"
-github-api = "1.314"
-kmongo = "4.9.0"
+#kord-extensions = "1.5.9-20230820.204324-8"
+kord-extensions = "1.5.9-SNAPSHOT"
+logging = "5.1.0"
+logback = "1.4.11"
+github-api = "1.316"
+mongo-driver = "4.10.2"
 cozy-welcome = "1.0.1-SNAPSHOT"
 dma = "v0.2.1"
 docgenerator = "0.1.2-SNAPSHOT"
@@ -22,11 +23,12 @@ kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extens
 kord-extensions-phishing = { module = "com.kotlindiscord.kord.extensions:extra-phishing", version.ref = "kord-extensions" }
 kord-extensions-pluralkit = { module = "com.kotlindiscord.kord.extensions:extra-pluralkit", version.ref = "kord-extensions"}
 kord-extensions-unsafe = { module = "com.kotlindiscord.kord.extensions:unsafe", version.ref = "kord-extensions"}
+kord-extensions-mongodb = { module = "com.kotlindiscord.kord.extensions:adapter-mongodb", version.ref = "kord-extensions" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
-logging = { module = "io.github.microutils:kotlin-logging", version.ref = "logging" }
+logging = { module = "io.github.oshai:kotlin-logging", version.ref = "logging" }
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
-kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
+mongo-driver = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongo-driver" }
 detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
 cozy-welcome = {module = "org.quiltmc.community:module-welcome", version.ref = "cozy-welcome"}
 dma = { module = "org.hyacinthbots:discord-moderation-actions", version.ref = "dma"}

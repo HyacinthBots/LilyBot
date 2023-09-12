@@ -3,6 +3,7 @@
 package org.hyacinthbots.lilybot
 
 import com.kotlindiscord.kord.extensions.ExtensibleBot
+import com.kotlindiscord.kord.extensions.adapters.mongodb.mongoDB
 import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
@@ -10,12 +11,11 @@ import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
 import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.hyacinthbots.docgenerator.docsGenerator
 import org.hyacinthbots.docgenerator.enums.CommandTypes
 import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
-import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
 import org.hyacinthbots.lilybot.extensions.config.Config
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.config.GuildLogging
@@ -60,7 +60,7 @@ val docFile = Path("./docs/commands.md")
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		database(true)
-		dataAdapter(::MongoDBDataAdapter)
+		mongoDB()
 
 		members {
 			lockMemberRequests = true // Collect members one at a time to avoid hitting rate limits
@@ -146,10 +146,10 @@ suspend fun main() {
 		// Connect to GitHub to allow the GitHub commands to function
 		try {
 			github = GitHubBuilder().build()
-			gitHubLogger.info("Connected to GitHub!")
+			gitHubLogger.info { "Connected to GitHub!" }
 		} catch (exception: IOException) {
 			exception.printStackTrace()
-			gitHubLogger.error("Failed to connect to GitHub!")
+			gitHubLogger.error { "Failed to connect to GitHub!" }
 		}
 	}
 

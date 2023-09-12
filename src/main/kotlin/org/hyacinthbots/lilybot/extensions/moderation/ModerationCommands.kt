@@ -9,12 +9,16 @@ import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.checks.hasPermissions
 import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOptionalDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalAttachment
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalInt
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalUser
+import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
@@ -47,8 +51,10 @@ import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.toSet
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
@@ -79,8 +85,8 @@ class ModerationCommands : Extension() {
 	override val name = "moderation"
 
 	private val warnSuffix = "Please consider your actions carefully.\n\n" +
-			"For more information about the warn system, please see [this document]" +
-			"($HYACINTH_GITHUB/LilyBot/blob/main/docs/commands.md#name-warn)"
+		"For more information about the warn system, please see [this document]" +
+		"($HYACINTH_GITHUB/LilyBot/blob/main/docs/commands.md#name-warn)"
 
 	@OptIn(DoNotChain::class)
 	override suspend fun setup() {
@@ -109,13 +115,19 @@ class ModerationCommands : Extension() {
 				val senderId: Snowflake
 				if (targetMessage.author.isNullOrBot()) {
 					val proxiedMessage = PluralKit().getMessageOrNull(targetMessage.id)
-					proxiedMessage ?: run { respond { content = "Unable to find user" }; return@action }
+					proxiedMessage ?: run {
+						respond { content = "Unable to find user" }
+						return@action
+					}
 					senderId = proxiedMessage.sender
 				} else {
 					senderId = targetMessage.author!!.id
 				}
 				val sender = guild!!.getMemberOrNull(senderId)
-					?: run { respond { content = "Unable to find user" }; return@action }
+					?: run {
+						respond { content = "Unable to find user" }
+						return@action
+					}
 
 				isBotOrModerator(event.kord, sender.asUserOrNull(), guild, "moderate") ?: return@action
 
@@ -162,8 +174,8 @@ class ModerationCommands : Extension() {
 										val dm = sender.dm {
 											embed {
 												title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
-												description =
-													"Quick banned $reasonSuffix"
+												description = modConfig?.banDmMessage ?: "Quick banned $reasonSuffix"
+
 												color = DISCORD_GREEN
 											}
 										}
@@ -181,14 +193,14 @@ class ModerationCommands : Extension() {
 													embed {
 														title = "Banned."
 														description = "${sender.mention} user was banned " +
-																"for sending this message."
+															"for sending this message."
 													}
 												}
 											} catch (e: KtorRequestException) {
 												channel.createEmbed {
 													title = "Banned."
 													description = "${sender.mention} user was banned " +
-															"for sending a deleted message."
+														"for sending a deleted message."
 												}
 											}
 										}
@@ -219,7 +231,7 @@ class ModerationCommands : Extension() {
 												title = "You have been soft-banned from ${guild?.asGuildOrNull()?.name}"
 												description =
 													"Quick soft-banned $reasonSuffix. This is a soft-ban, you are " +
-															"free to rejoin at any time"
+														"free to rejoin at any time"
 											}
 										}
 
@@ -238,14 +250,14 @@ class ModerationCommands : Extension() {
 													embed {
 														title = "Soft-banned."
 														description = "${sender.mention} user was soft-banned " +
-																"for sending this message."
+															"for sending this message."
 													}
 												}
 											} catch (e: KtorRequestException) {
 												channel.createEmbed {
 													title = "Soft-Banned."
 													description = "${sender.mention} user was soft-banned " +
-															"for sending a deleted message."
+														"for sending a deleted message."
 												}
 											}
 										}
@@ -288,14 +300,14 @@ class ModerationCommands : Extension() {
 													embed {
 														title = "Kicked."
 														description = "${sender.mention} user was kicked " +
-																"for sending this message."
+															"for sending this message."
 													}
 												}
 											} catch (e: KtorRequestException) {
 												channel.createEmbed {
 													title = "Kicked."
 													description = "${sender.mention} user was kicked " +
-															"for sending a deleted message."
+														"for sending a deleted message."
 												}
 											}
 										}
@@ -350,14 +362,14 @@ class ModerationCommands : Extension() {
 													embed {
 														title = "Timed-out."
 														description = "${sender.mention} user was timed-out for " +
-																"${timeoutTime.interval()} for sending this message."
+															"${timeoutTime.interval()} for sending this message."
 													}
 												}
 											} catch (e: KtorRequestException) {
 												channel.createEmbed {
 													title = "Timed-out."
 													description = "${sender.mention} user was timed-out for " +
-															"${timeoutTime.interval()} for sending a deleted message."
+														"${timeoutTime.interval()} for sending a deleted message."
 												}
 											}
 										}
@@ -450,14 +462,14 @@ class ModerationCommands : Extension() {
 													embed {
 														title = "Warned."
 														description = "${sender.mention} user was warned " +
-																"for sending this message."
+															"for sending this message."
 													}
 												}
 											} catch (e: KtorRequestException) {
 												channel.createEmbed {
 													title = "Warned."
 													description = "${sender.mention} user was warned " +
-															"for sending a deleted message."
+														"for sending a deleted message."
 												}
 											}
 										}
@@ -490,9 +502,11 @@ class ModerationCommands : Extension() {
 					return@action
 				}
 
+				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
+
 				val action = ban(arguments.userArgument) {
 					reason = arguments.reason
-					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
+					logPublicly = modConfig?.publicLogging
 					sendActionLog = true
 					sendDm = arguments.dm
 					removeTimeout = true
@@ -525,7 +539,13 @@ class ModerationCommands : Extension() {
 
 					dmEmbed {
 						title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
-						description = "**Reason:**\n${arguments.reason}"
+						description = "**Reason:**\n${arguments.reason} ${
+							if (modConfig?.banDmMessage != null) {
+								"\n${modConfig.banDmMessage}"
+							} else {
+								""
+							}
+						}"
 					}
 				}
 
@@ -596,7 +616,7 @@ class ModerationCommands : Extension() {
 					dmEmbed {
 						title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
 						description = "**Reason:**\n${arguments.reason}\n\n" +
-								"You are free to rejoin without the need to be unbanned"
+							"You are free to rejoin without the need to be unbanned"
 					}
 				}
 
@@ -719,57 +739,80 @@ class ModerationCommands : Extension() {
 			}
 		}
 
-		ephemeralSlashCommand(::ClearArgs) {
+		ephemeralSlashCommand {
 			name = "clear"
-			description = "Clears messages from a channel."
+			description = "Parent command for clear commands"
 
-			requirePermission(Permission.ManageMessages)
+			ephemeralSubCommand(ClearCommandArgs::Count) {
+				name = "count"
+				description = "Clear a specific count of messages"
 
-			check {
-				modCommandChecks(Permission.ManageMessages)
-				requireBotPermissions(Permission.ManageMessages)
-				botHasChannelPerms(Permissions(Permission.ManageMessages))
+				requirePermission(Permission.ManageMessages)
+
+				check {
+					modCommandChecks(Permission.ManageMessages)
+					requireBotPermissions(Permission.ManageMessages)
+					botHasChannelPerms(Permissions(Permission.ManageMessages))
+				}
+
+				action {
+					clearMessages(arguments.count, null, null, arguments.author)
+				}
 			}
 
-			action {
-				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val messageAmount = arguments.messages
-				val textChannel = channel.asChannelOfOrNull<GuildMessageChannel>()
+			ephemeralSubCommand(ClearCommandArgs::Before) {
+				name = "before"
+				description = "Clear messages before a given message ID"
 
-				if (textChannel == null) {
-					respond {
-						content = "Could not get the channel to clear messages from."
-					}
-					return@action
+				requirePermission(Permission.ManageMessages)
+
+				check {
+					modCommandChecks(Permission.ManageMessages)
+					requireBotPermissions(Permission.ManageMessages)
+					botHasChannelPerms(Permissions(Permission.ManageMessages))
 				}
 
-				// Get the specified amount of messages into an array list of Snowflakes and delete them
-				val messages = channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(
-					Snowflake.max, min(messageAmount, 100)
-				).map { it.id }.toList()
+				action {
+					clearMessages(arguments.count, Snowflake(arguments.before.value + 1u), null, arguments.author)
+				}
+			}
 
-				textChannel.bulkDelete(messages)
+			ephemeralSubCommand(ClearCommandArgs::After) {
+				name = "after"
+				description = "Clear messages before a given message ID"
 
-				respond {
-					content = "Messages cleared."
+				requirePermission(Permission.ManageMessages)
+
+				check {
+					modCommandChecks(Permission.ManageMessages)
+					requireBotPermissions(Permission.ManageMessages)
+					botHasChannelPerms(Permissions(Permission.ManageMessages))
 				}
 
-				if (config.publicLogging != null && config.publicLogging == true) {
-					channel.createEmbed {
-						title = "$messageAmount messages have been cleared."
-						color = DISCORD_BLACK
-					}
+				action {
+					clearMessages(arguments.count, null, Snowflake(arguments.after.value - 1u), arguments.author)
+				}
+			}
+
+			ephemeralSubCommand(ClearCommandArgs::Between) {
+				name = "between"
+				description = "Clear messages between 2 message IDs"
+
+				requirePermission(Permission.ManageMessages)
+
+				check {
+					modCommandChecks(Permission.ManageMessages)
+					requireBotPermissions(Permission.ManageMessages)
+					botHasChannelPerms(Permissions(Permission.ManageMessages))
 				}
 
-				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
-				actionLog.createEmbed {
-					title = "$messageAmount messages have been cleared."
-					description = "Action occurred in ${textChannel.mention}"
-					footer {
-						text = user.asUserOrNull()?.username ?: "Unable to get user username"
-						icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-					}
-					color = DISCORD_BLACK
+				action {
+					clearMessages(
+						null,
+						Snowflake(arguments.before.value - 1u),
+						Snowflake(arguments.after.value + 1u),
+						arguments.author
+					)
 				}
 			}
 		}
@@ -1171,14 +1214,6 @@ class ModerationCommands : Extension() {
 		}
 	}
 
-	inner class ClearArgs : Arguments() {
-		/** The number of messages the user wants to remove. */
-		val messages by int {
-			name = "messages"
-			description = "Number of messages to delete"
-		}
-	}
-
 	inner class TimeoutArgs : Arguments() {
 		/** The requested user to timeout. */
 		val userArgument by user {
@@ -1285,22 +1320,29 @@ private suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: 
 	hasPermission(actionPermission)
 }
 
-private fun EmbedBuilder.warnTimeoutLog(timeoutNumber: Int, moderator: User, targetUser: User, reason: String) {
-	when (timeoutNumber) {
+/**
+ * Creates a log for timeouts produced by a number of warnings.
+ *
+ * @param warningNumber The number of warning strikes the user has
+ * @param moderator The moderator that actioned the warning
+ * @param targetUser The User that was warned
+ * @param reason The reason for the warning
+ * @author NoComment1105
+ * @since 4.4.0
+ */
+private fun EmbedBuilder.warnTimeoutLog(warningNumber: Int, moderator: User, targetUser: User, reason: String) {
+	when (warningNumber) {
 		1 -> {}
-		2 ->
-			description = "${targetUser.mention} has been timed-out for 3 hours due to 2 warn strikes"
+		2 -> description = "${targetUser.mention} has been timed-out for 3 hours due to 2 warn strikes"
 
-		3 ->
-			description = "${targetUser.mention} has been timed-out for 12 hours due to 3 warn strikes"
+		3 -> description = "${targetUser.mention} has been timed-out for 12 hours due to 3 warn strikes"
 
 		else ->
-			description = "${targetUser.mention} has been timed-out for 3 days due to $timeoutNumber warn " +
-					"strikes\nIt might be time to consider other " +
-					"action."
+			description = "${targetUser.mention} has been timed-out for 3 days due to $warningNumber warn " +
+				"strikes\nIt might be time to consider other action."
 	}
 
-	if (timeoutNumber != 1) {
+	if (warningNumber != 1) {
 		title = "Timeout"
 		field {
 			name = "User"
@@ -1316,5 +1358,171 @@ private fun EmbedBuilder.warnTimeoutLog(timeoutNumber: Int, moderator: User, tar
 		}
 		color = DISCORD_BLACK
 		timestamp = Clock.System.now()
+	}
+}
+
+/**
+ * A function to use clear messages based on the count, before and after, as well as a user.
+ *
+ * @param count The number of messages to clear, or null
+ * @param before The ID of the message to clear messages before
+ * @param after The ID of the message to clear messages after
+ * @param author The author of the messages that should be cleared
+ * @author NoComment1105
+ * @since 4.8.6
+ */
+private suspend fun EphemeralSlashCommandContext<*, *>.clearMessages(
+	count: Int?,
+	before: Snowflake?,
+	after: Snowflake?,
+	author: User?
+) {
+	val config = ModerationConfigCollection().getConfig(guild!!.id)!!
+	val textChannel = channel.asChannelOfOrNull<GuildMessageChannel>()
+
+	if (textChannel == null) {
+		respond {
+			content = "Could not get the channel to clear messages from."
+		}
+		return
+	}
+
+	if ((before != null && after != null) && (before < after)) {
+		respond {
+			content = "Before cannot be more recent than after!"
+		}
+		return
+	}
+
+	// Get the specified amount of messages into an array list of Snowflakes and delete them
+	// Send help
+	val messageFlow = if (before == null && after == null) {
+		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(Snowflake.max, count?.let { min(it, 100) })
+	} else if (after != null && before == null) {
+		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesAfter(after, count?.let { min(it, 100) })
+	} else if (after == null && before != null) {
+		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(before, count?.let { min(it, 100) })
+	} else if (after != null && before != null) {
+		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(before, count?.let { min(it, 100) })
+			.filter { it.id > after }
+	} else {
+		flowOf()
+	}
+
+	val messages = if (author == null) {
+		messageFlow.map { it.id }.toSet()
+	} else {
+		messageFlow.filter { it.author == author }.map { it.id }.toSet()
+	}
+
+	textChannel.bulkDelete(messages)
+
+	respond {
+		content = "Messages cleared."
+	}
+
+	if (config.publicLogging != null && config.publicLogging == true) {
+		channel.createEmbed {
+			title = "$count messages have been cleared."
+			color = DISCORD_BLACK
+		}
+	}
+
+	val actionLog =
+		getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return
+	actionLog.createEmbed {
+		title = "${count ?: messages.size} messages have been cleared."
+		description = "Action occurred in ${textChannel.mention}"
+		footer {
+			text = user.asUserOrNull()?.username ?: "Unable to get username"
+			icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+		}
+		color = DISCORD_BLACK
+	}
+}
+
+/**
+ * An object containing the arguments for clear commands.
+ *
+ * @since 4.8.6
+ */
+@Suppress("MemberNameEqualsClassName") // Cope
+object ClearCommandArgs {
+	/** Clear a specific count of messages. */
+	class Count : Arguments() {
+		/** The number of messages the user wants to remove. */
+		val count by int {
+			name = "messages"
+			description = "Number of messages to delete"
+		}
+
+		/** The author of the messages that need clearing. */
+		val author by optionalUser {
+			name = "author"
+			description = "The author of the messages to clear"
+		}
+	}
+
+	/** Clear messages after a specific one. */
+	class After : Arguments() {
+		/** The ID of the message to start clearing from. */
+		val after by snowflake {
+			name = "after"
+			description = "The ID of the message to clear after"
+		}
+
+		/** The number of messages the user wants to remove. */
+		val count by optionalInt {
+			name = "message-count"
+			description = "The number of messages to clear"
+		}
+
+		/** The author of the messages that need clearing. */
+		val author by optionalUser {
+			name = "author"
+			description = "The author of the messages to clear"
+		}
+	}
+
+	/** Clear messages before a specific one. */
+	class Before : Arguments() {
+		/** The ID of the message to start clearing before. */
+		val before by snowflake {
+			name = "before"
+			description = "The ID of the message to clear before"
+		}
+
+		/** The number of messages the user wants to remove. */
+		val count by optionalInt {
+			name = "message-count"
+			description = "The number of messages to clear"
+		}
+
+		/** The author of the messages that need clearing. */
+		val author by optionalUser {
+			name = "author"
+			description = "The author of the messages to clear"
+		}
+	}
+
+	/** Clear messages between 2 specific ones. */
+	class Between : Arguments() {
+		/** The ID of the message to start clearing from. */
+		val after by snowflake {
+			name = "after"
+			description = "The ID of the message to clear after"
+		}
+
+		/** The ID of the message to start clearing before. */
+		val before by snowflake {
+			name = "before"
+			description = "The ID of the message to clear before"
+		}
+
+		/** The author of the messages that need clearing. */
+		val author by optionalUser {
+			name = "author"
+			description = "The author of the messages to clear"
+		}
 	}
 }

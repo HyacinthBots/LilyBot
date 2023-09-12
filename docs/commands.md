@@ -46,6 +46,7 @@ Required Member Permissions: Manage Server
 	* `quick-timeout-length` - The length of timeouts to use for quick timeouts - Coalescing Optional Duration
 	* `warn-auto-punishments` - Whether to automatically punish users for reach a certain threshold on warns - Optional Boolean
 	* `log-publicly` - Whether to log moderation publicly or not. - Optional Boolean
+	* `ban-dm-message` - A custom message to send to users when they are banned. - Optional String
 
 ---
 #### Command name: `config logging`
@@ -291,12 +292,43 @@ Description: Kicks a user.
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
-### Command name: `clear`
-Description: Clears messages from a channel.
-**Required Member Permissions**: Manage Messages
+#### Command name: `clear count`
+**Description**: Clear a specific count of messages
+Required Member Permissions: Manage Messages
 
-* Arguments:
+* **Arguments**:
 	* `messages` - Number of messages to delete - Int
+	* `author` - The author of the messages to clear - Optional User
+
+---
+#### Command name: `clear before`
+**Description**: Clear messages before a given message ID
+Required Member Permissions: Manage Messages
+
+* **Arguments**:
+	* `before` - The ID of the message to clear before - Snowflake
+	* `message-count` - The number of messages to clear - Optional Int/Long
+	* `author` - The author of the messages to clear - Optional User
+
+---
+#### Command name: `clear after`
+**Description**: Clear messages before a given message ID
+Required Member Permissions: Manage Messages
+
+* **Arguments**:
+	* `after` - The ID of the message to clear after - Snowflake
+	* `message-count` - The number of messages to clear - Optional Int/Long
+	* `author` - The author of the messages to clear - Optional User
+
+---
+#### Command name: `clear between`
+**Description**: Clear messages between 2 message IDs
+Required Member Permissions: Manage Messages
+
+* **Arguments**:
+	* `after` - The ID of the message to clear after - Snowflake
+	* `before` - The ID of the message to clear before - Snowflake
+	* `author` - The author of the messages to clear - Optional User
 
 ---
 ### Command name: `timeout`
@@ -645,7 +677,7 @@ Description: Check whether a given domain is a known phishing domain.
 **Description**: Set a custom API URL, "reset" to reset
 
 * **Arguments**:
-	* `api-url` - Set an alternative API url, or "reset" to use the default - Optional String
+	* `api-url` - Set an alternative API URL, or "reset" to use the default - Optional String
 
 ---
 #### Command name: `pluralkit bot`

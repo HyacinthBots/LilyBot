@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
 	application
 
@@ -16,7 +15,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "4.8.5"
+version = "4.9.0"
 
 repositories {
 	mavenCentral()
@@ -54,6 +53,7 @@ dependencies {
 	implementation(libs.kord.extensions.phishing)
 	implementation(libs.kord.extensions.pluralkit)
 	implementation(libs.kord.extensions.unsafe)
+	implementation(libs.kord.extensions.mongodb)
 
 	implementation(libs.kotlin.stdlib)
 
@@ -65,7 +65,7 @@ dependencies {
 	implementation(libs.github.api)
 
 	// KMongo
-	implementation(libs.kmongo)
+	implementation(libs.mongo.driver)
 
 	// Cozy's welcome module
 	implementation(libs.cozy.welcome)
@@ -108,12 +108,18 @@ tasks {
 
 detekt {
 	buildUponDefaultConfig = true
-	config = files("$rootDir/detekt.yml")
+	config.setFrom("$rootDir/detekt.yml")
 
 	autoCorrect = true
 }
 
-blossom {
-	replaceToken("@build_id@", grgit.head().abbreviatedId)
-	replaceToken("@version@", project.version.toString())
+sourceSets {
+	main {
+		blossom {
+			kotlinSources {
+				property("build_id", grgit.head().abbreviatedId)
+				property("version", project.version.toString())
+			}
+		}
+	}
 }
