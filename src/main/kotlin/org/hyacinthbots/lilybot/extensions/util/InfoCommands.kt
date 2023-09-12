@@ -13,9 +13,8 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
-import org.hyacinthbots.lilybot.utils.BUILD_ID
+import org.hyacinthbots.lilybot.internal.BuildInfo
 import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
-import org.hyacinthbots.lilybot.utils.LILY_VERSION
 
 /**
  * This class contains the info commands that allow users to get a better idea of how to use the bot.
@@ -127,8 +126,9 @@ class InfoCommands : Extension() {
 						}
 						field {
 							name = "Version"
+							// To avoid IntelliJ shouting about build errors, use https://plugins.jetbrains.com/plugin/9407-pebble
 							value =
-								"$LILY_VERSION ($BUILD_ID)"
+								"${BuildInfo.LILY_VERSION} (${BuildInfo.BUILD_ID})"
 							inline = true
 						}
 						field {

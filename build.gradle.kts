@@ -113,7 +113,13 @@ detekt {
 	autoCorrect = true
 }
 
-blossom {
-	replaceToken("@build_id@", grgit.head().abbreviatedId)
-	replaceToken("@version@", project.version.toString())
+sourceSets {
+	main {
+		blossom {
+			kotlinSources {
+				property("build_id", grgit.head().abbreviatedId)
+				property("version", project.version.toString())
+			}
+		}
+	}
 }
