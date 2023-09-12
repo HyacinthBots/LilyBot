@@ -16,7 +16,7 @@ github-api = "1.316"
 mongo-driver = "4.10.2"
 cozy-welcome = "1.0.1-SNAPSHOT"
 dma = "v0.2.1"
-docgenerator = "0.1.2-SNAPSHOT"
+docgenerator = "0.1.2-legacy-klogging"
 
 [libraries]
 kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
