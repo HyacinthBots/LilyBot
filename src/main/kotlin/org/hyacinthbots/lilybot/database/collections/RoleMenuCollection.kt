@@ -1,12 +1,11 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.RoleMenuData
-import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
+import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with the [Role Menu Database][RoleMenuData]. This class contains
@@ -22,7 +21,7 @@ class RoleMenuCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<RoleMenuData>(RoleMenuData.name)
+	internal val collection = db.mainDatabase.getCollection<RoleMenuData>()
 
 	/**
 	 * Using the provided [inputMessageId] the associated [RoleMenuData] will be returned from the database.
@@ -33,7 +32,7 @@ class RoleMenuCollection : KordExKoinComponent {
 	 * @since 3.4.0
 	 */
 	suspend inline fun getRoleData(inputMessageId: Snowflake): RoleMenuData? =
-		collection.findOne(eq(RoleMenuData::messageId.name, inputMessageId))
+		collection.findOne(RoleMenuData::messageId eq inputMessageId)
 
 	/**
 	 * Add the given [inputRoles] to the database entry for the role menu for the provided [inputMessageId],
@@ -53,7 +52,7 @@ class RoleMenuCollection : KordExKoinComponent {
 		inputRoles: MutableList<Snowflake>
 	) {
 		val newRoleMenu = RoleMenuData(inputMessageId, inputChannelId, inputGuildId, inputRoles)
-		collection.deleteOne(eq(RoleMenuData::messageId.name, inputMessageId))
+		collection.deleteOne(RoleMenuData::messageId eq inputMessageId)
 		collection.insertOne(newRoleMenu)
 	}
 
@@ -66,11 +65,11 @@ class RoleMenuCollection : KordExKoinComponent {
 	 * @since 3.4.0
 	 */
 	suspend inline fun removeRoleFromMenu(inputMessageId: Snowflake, inputRoleId: Snowflake) {
-		val roleMenu = collection.findOne(eq(RoleMenuData::messageId.name, inputMessageId)) ?: return
+		val roleMenu = collection.findOne(RoleMenuData::messageId eq inputMessageId) ?: return
 
 		roleMenu.roles.remove(inputRoleId)
 
-		collection.deleteOne(eq(RoleMenuData::messageId.name, inputMessageId))
+		collection.deleteOne(RoleMenuData::messageId eq inputMessageId)
 		collection.insertOne(roleMenu)
 	}
 
@@ -82,5 +81,5 @@ class RoleMenuCollection : KordExKoinComponent {
 	 * @since 4.0.0
 	 */
 	suspend inline fun removeAllRoleMenus(inputGuildId: Snowflake) =
-		collection.deleteMany(eq(RoleMenuData::guildId.name, inputGuildId))
+		collection.deleteMany(RoleMenuData::guildId eq inputGuildId)
 }

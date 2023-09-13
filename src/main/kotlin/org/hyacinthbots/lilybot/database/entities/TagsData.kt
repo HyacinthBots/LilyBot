@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data of guild tags, which are stored in the database.
@@ -21,6 +20,4 @@ data class TagsData(
 	val tagTitle: String,
 	val tagValue: String,
 	val tagAppearance: String
-) {
-	companion object : Collection("tagsData")
-}
+)

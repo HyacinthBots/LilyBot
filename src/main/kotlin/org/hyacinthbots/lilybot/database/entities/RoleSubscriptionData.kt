@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for role subscriptions.
@@ -15,6 +14,4 @@ import org.hyacinthbots.lilybot.database.Collection
 data class RoleSubscriptionData(
 	val guildId: Snowflake,
 	val subscribableRoles: MutableList<Snowflake>
-) {
-	companion object : Collection("roleSubscriptionData")
-}
+)

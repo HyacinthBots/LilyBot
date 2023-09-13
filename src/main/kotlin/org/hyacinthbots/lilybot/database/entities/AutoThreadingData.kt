@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for auto-threaded channels.
@@ -30,6 +29,4 @@ data class AutoThreadingData(
 	val mention: Boolean,
 	val creationMessage: String?,
 	val addModsAndRole: Boolean
-) {
-	companion object : Collection("autoThreadingData")
-}
+)

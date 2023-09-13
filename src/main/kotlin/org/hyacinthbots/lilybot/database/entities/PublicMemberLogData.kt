@@ -1,7 +1,6 @@
 package org.hyacinthbots.lilybot.database.entities
 
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for public member logging.
@@ -15,6 +14,4 @@ data class PublicMemberLogData(
 	val pingNewUsers: Boolean,
 	val joinMessage: String?,
 	val leaveMessage: String?
-) {
-	companion object : Collection("publicMemberLogData")
-}
+)

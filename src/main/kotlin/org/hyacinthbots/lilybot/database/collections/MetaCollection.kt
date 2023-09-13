@@ -1,12 +1,11 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import com.mongodb.client.model.Filters.eq
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.ConfigMetaData
 import org.hyacinthbots.lilybot.database.entities.MainMetaData
-import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
+import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with the [main meta database][MainMetaData]. This class
@@ -21,7 +20,7 @@ class MainMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<MainMetaData>(MainMetaData.name)
+	internal val collection = db.mainDatabase.getCollection<MainMetaData>()
 
 	/**
 	 * Gets the main metadata from the database.
@@ -31,7 +30,7 @@ class MainMetaCollection : KordExKoinComponent {
 	 * @since 4.0.0
 	 */
 	suspend fun get(): MainMetaData? =
-		collection.findOne(eq(MainMetaData::id.name, "mainMeta"))
+		collection.findOne()
 
 	/**
 	 * Sets the metadata when the table is first created.
@@ -50,7 +49,7 @@ class MainMetaCollection : KordExKoinComponent {
 	 */
 	suspend fun update(meta: MainMetaData) =
 		collection.findOneAndReplace(
-			eq(MainMetaData::id.name, "mainMeta"),
+			MainMetaData::id eq "mainMeta",
 			meta
 		)
 }
@@ -68,7 +67,7 @@ class ConfigMetaCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.configDatabase.getCollection<ConfigMetaData>(ConfigMetaData.name)
+	internal val collection = db.configDatabase.getCollection<ConfigMetaData>()
 
 	/**
 	 * Gets the config metadata from the database.
@@ -78,7 +77,7 @@ class ConfigMetaCollection : KordExKoinComponent {
 	 * @since 4.0.0
 	 */
 	suspend fun get(): ConfigMetaData? =
-		collection.findOne(eq(ConfigMetaData::id.name, "configMeta"))
+		collection.findOne()
 
 	/**
 	 * Sets the metadata when the table is first created.
@@ -97,7 +96,7 @@ class ConfigMetaCollection : KordExKoinComponent {
 	 */
 	suspend fun update(meta: ConfigMetaData) =
 		collection.findOneAndReplace(
-			eq(ConfigMetaData::id.name, "configMeta"),
+			ConfigMetaData::id eq "configMeta",
 			meta
 		)
 }
