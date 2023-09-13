@@ -10,9 +10,8 @@ import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Suppress("DataClassShouldBeImmutable", "PropertyName", "ConstructorParameterNaming")
+@Suppress("DataClassShouldBeImmutable")
 data class AdaptedData(
-	val _id: String,
 	val identifier: String,
 
 	val type: StorageType? = null,

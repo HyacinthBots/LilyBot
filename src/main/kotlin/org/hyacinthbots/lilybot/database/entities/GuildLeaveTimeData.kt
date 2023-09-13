@@ -3,7 +3,6 @@ package org.hyacinthbots.lilybot.database.entities
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for when Lily leaves a guild.
@@ -16,6 +15,4 @@ import org.hyacinthbots.lilybot.database.Collection
 data class GuildLeaveTimeData(
 	val guildId: Snowflake,
 	val guildLeaveTime: Instant
-) {
-	companion object : Collection("guildLeaveTimeData")
-}
+)

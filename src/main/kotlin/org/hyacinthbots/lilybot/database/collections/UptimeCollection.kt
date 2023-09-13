@@ -4,7 +4,6 @@ import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import kotlinx.datetime.Instant
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.UptimeData
-import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
 
 /**
@@ -19,7 +18,7 @@ class UptimeCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<UptimeData>(UptimeData.name)
+	internal val collection = db.mainDatabase.getCollection<UptimeData>()
 
 	/**
 	 * Gets the uptime data from the database.

@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for Welcome channels.
@@ -15,6 +14,4 @@ import org.hyacinthbots.lilybot.database.Collection
 data class WelcomeChannelData(
 	val channelId: Snowflake,
 	val url: String
-) {
-	companion object : Collection("welcomeChannelData")
-}
+)

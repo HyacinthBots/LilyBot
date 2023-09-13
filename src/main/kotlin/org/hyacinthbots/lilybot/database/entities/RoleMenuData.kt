@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for role menus.
@@ -19,6 +18,4 @@ data class RoleMenuData(
 	val channelId: Snowflake,
 	val guildId: Snowflake,
 	val roles: MutableList<Snowflake>
-) {
-	companion object : Collection("roleMenuData")
-}
+)
