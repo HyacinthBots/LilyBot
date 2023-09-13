@@ -1,10 +1,10 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.datetime.Instant
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.UptimeData
+import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
 
 /**
@@ -29,7 +29,7 @@ class UptimeCollection : KordExKoinComponent {
 	 * @since 4.2.0
 	 */
 	suspend fun get(): UptimeData? =
-		collection.find().firstOrNull()
+		collection.findOne()
 
 	/**
 	 * Sets the on time.
