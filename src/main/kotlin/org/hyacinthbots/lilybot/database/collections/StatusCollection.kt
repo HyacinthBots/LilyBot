@@ -1,10 +1,10 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import kotlinx.coroutines.flow.firstOrNull
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.deleteOne
 import org.hyacinthbots.lilybot.database.entities.StatusData
-import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
 
 /**
@@ -29,7 +29,7 @@ class StatusCollection : KordExKoinComponent {
 	 * @since 3.0.0
 	 */
 	suspend inline fun getStatus(): String? =
-		collection.findOne()?.status
+		collection.find().firstOrNull()?.status
 
 	/**
 	 * Add the given [newStatus] to the database.
