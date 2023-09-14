@@ -2,9 +2,9 @@
 
 package org.hyacinthbots.lilybot.database.migrations.config
 
-import org.litote.kmongo.coroutine.CoroutineDatabase
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 
-suspend fun configV5(db: CoroutineDatabase) {
+suspend fun configV5(db: MongoDatabase) {
 // 	val collection = db.getCollection<UtilityConfigDataOld>("utilityConfigData")
 // 	val oldConfigs = collection.find().toList()
 // 	val newConfigs = mutableListOf<UtilityConfigData>()

@@ -2,7 +2,9 @@ package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import org.hyacinthbots.lilybot.database.Database
+import org.hyacinthbots.lilybot.database.deleteOne
 import org.hyacinthbots.lilybot.database.entities.StatusData
+import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
 
 /**
@@ -17,7 +19,7 @@ class StatusCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<StatusData>()
+	internal val collection = db.mainDatabase.getCollection<StatusData>(StatusData.name)
 
 	/**
 	 * Gets Lily's status from the database.

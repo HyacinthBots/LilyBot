@@ -1,7 +1,8 @@
 package org.hyacinthbots.lilybot.database.migrations.main
 
-import org.litote.kmongo.coroutine.CoroutineDatabase
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
+import org.hyacinthbots.lilybot.database.entities.RoleSubscriptionData
 
-suspend fun mainV8(db: CoroutineDatabase) {
-	db.createCollection("roleSubscriptionData")
+suspend fun mainV8(db: MongoDatabase) {
+	db.createCollection(RoleSubscriptionData.name)
 }

@@ -1,20 +1,20 @@
 package org.hyacinthbots.lilybot.database.migrations.config
 
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
-import org.litote.kmongo.coroutine.CoroutineDatabase
-import org.litote.kmongo.exists
-import org.litote.kmongo.setValue
 
-suspend fun configV1(configDb: CoroutineDatabase) {
-	with(configDb.getCollection<LoggingConfigData>("loggingConfigData")) {
+suspend fun configV1(configDb: MongoDatabase) {
+	with(configDb.getCollection<LoggingConfigData>(LoggingConfigData.name)) {
 		updateMany(
-			LoggingConfigData::enableMessageEditLogs exists false,
-			setValue(LoggingConfigData::enableMessageEditLogs, false)
+			Filters.exists(LoggingConfigData::enableMessageEditLogs.name, false),
+			Updates.set(LoggingConfigData::enableMessageEditLogs.name, false)
 		)
 	}
 
-	configDb.getCollection<LoggingConfigData>("loggingConfigData").updateMany(
-		"{}",
-		"{\$rename: {enableMessageLogs: \"enableMessageDeleteLogs\"}}"
+	configDb.getCollection<LoggingConfigData>(LoggingConfigData.name).updateMany(
+		Filters.empty(),
+		Updates.rename("enableMessageLogs", "enableMessageDeleteLogs")
 	)
 }
