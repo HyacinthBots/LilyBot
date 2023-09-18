@@ -31,8 +31,6 @@ class Database {
 	/** The database for storing per guild configuration data. */
 	val configDatabase get() = client.getDatabase("LilyBotConfig")
 
-	val tempKordExDatabase get() = client.getDatabase("kordex-data")
-
 	/**
 	 * Runs the migrations for both databases.
 	 *
