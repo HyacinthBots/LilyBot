@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for image channels in a guild.
@@ -15,6 +14,4 @@ import org.hyacinthbots.lilybot.database.Collection
 data class GalleryChannelData(
 	val guildId: Snowflake,
 	val channelId: Snowflake
-) {
-	companion object : Collection("galleryChannelData")
-}
+)

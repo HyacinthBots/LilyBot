@@ -1,16 +1,14 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import com.mongodb.client.model.Filters.and
-import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
-import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.ReminderData
 import org.koin.core.component.inject
+import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with []the reminder database][ReminderData]. This
@@ -30,7 +28,7 @@ class ReminderCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<ReminderData>(ReminderData.name)
+	internal val collection = db.mainDatabase.getCollection<ReminderData>()
 
 	/**
 	 * Gets all the reminders currently in the database.
@@ -50,7 +48,7 @@ class ReminderCollection : KordExKoinComponent {
 	 * @since 4.2.0
 	 */
 	suspend fun getRemindersForUser(userId: Snowflake): List<ReminderData> =
-		collection.find(eq(ReminderData::userId.name, userId)).toList()
+		collection.find(ReminderData::userId eq userId).toList()
 
 	/**
 	 * Gets all the reminders in the database for a specific user, in a specific guild.
@@ -82,7 +80,7 @@ class ReminderCollection : KordExKoinComponent {
 	 * @since 4.2.0
 	 */
 	suspend fun removeReminder(userId: Snowflake, number: Long) =
-		collection.deleteOne(and(eq(ReminderData::userId.name, userId), eq(ReminderData::id.name, number)))
+		collection.deleteOne(ReminderData::userId eq userId, ReminderData::id eq number)
 
 	/**
 	 * Removes all the reminders for a given guild.
@@ -91,7 +89,7 @@ class ReminderCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 4.2.0
 	 */
-	suspend fun removeGuildReminders(guildId: Snowflake) = collection.deleteMany(eq(ReminderData::guildId.name, guildId))
+	suspend fun removeGuildReminders(guildId: Snowflake) = collection.deleteMany(ReminderData::guildId eq guildId)
 
 	/**
 	 * Updates a repeating reminder to be extended by the given [repeatingInterval].

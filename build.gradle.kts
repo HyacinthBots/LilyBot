@@ -53,7 +53,6 @@ dependencies {
 	implementation(libs.kord.extensions.phishing)
 	implementation(libs.kord.extensions.pluralkit)
 	implementation(libs.kord.extensions.unsafe)
-	implementation(libs.kord.extensions.mongodb)
 
 	implementation(libs.kotlin.stdlib)
 
@@ -65,7 +64,7 @@ dependencies {
 	implementation(libs.github.api)
 
 	// KMongo
-	implementation(libs.mongo.driver)
+	implementation(libs.kmongo)
 
 	// Cozy's welcome module
 	implementation(libs.cozy.welcome)

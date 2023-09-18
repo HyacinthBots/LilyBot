@@ -34,7 +34,7 @@ Lily makes use of the following tools and frameworks.
 * [Kord](https://github.com/kordlib/kord), the Kotlin API for Discord.
 * [KordEx](https://github.com/Kord-Extensions/kord-extensions), an integrated commands and extensions framework for Kord.
 * KordEx's [Phishing](https://github.com/Kord-Extensions/kord-extensions/tree/develop/extra-modules/extra-phishing), [PluralKit](https://github.com/Kord-Extensions/kord-extensions/tree/develop/extra-modules/extra-pluralkit) and [Unsafe](https://github.com/Kord-Extensions/kord-extensions/tree/develop/modules/unsafe) modules.
-* [MongoDB](https://www.mongodb.com/)'s [Kotlin Driver](https://www.mongodb.com/docs/drivers/kotlin/)
+* [MongoDB](https://www.mongodb.com/) and [KMongo](https://litote.org/kmongo/)
   to manage the database.
 * [Logback](https://github.com/qos-ch/logback), a library that makes logging prettier
 * [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging), a lightweight logging that wraps SLF4J with kotlin extensions

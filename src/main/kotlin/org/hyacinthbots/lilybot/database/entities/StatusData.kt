@@ -1,7 +1,6 @@
 package org.hyacinthbots.lilybot.database.entities
 
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for the bot status.
@@ -12,6 +11,4 @@ import org.hyacinthbots.lilybot.database.Collection
 @Serializable
 data class StatusData(
 	val status: String?
-) {
-	companion object : Collection("statusData")
-}
+)
