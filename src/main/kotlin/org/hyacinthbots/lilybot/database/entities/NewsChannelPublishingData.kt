@@ -2,6 +2,7 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
+import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for the news channel publishing database.
@@ -15,4 +16,6 @@ import kotlinx.serialization.Serializable
 data class NewsChannelPublishingData(
 	val guildId: Snowflake,
 	val channelId: Snowflake
-)
+) {
+	companion object : Collection("newsChannelPublishingData")
+}

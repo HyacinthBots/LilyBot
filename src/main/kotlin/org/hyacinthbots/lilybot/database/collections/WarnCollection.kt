@@ -1,11 +1,13 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import com.mongodb.client.model.Filters.and
+import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.WarnData
+import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
-import org.litote.kmongo.eq
 
 /**
  * This class stores all the functions for interacting with the [Warn Database][WarnData]. The class contains the
@@ -20,7 +22,7 @@ class WarnCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<WarnData>()
+	internal val collection = db.mainDatabase.getCollection<WarnData>(WarnData.name)
 
 	/**
 	 * Gets the number of points the provided [inputUserId] has in the provided [inputGuildId] from the database.
@@ -33,8 +35,10 @@ class WarnCollection : KordExKoinComponent {
 	 */
 	suspend inline fun getWarn(inputUserId: Snowflake, inputGuildId: Snowflake): WarnData? =
 		collection.findOne(
-			WarnData::userId eq inputUserId,
-			WarnData::guildId eq inputGuildId
+			and(
+				eq(WarnData::userId.name, inputUserId),
+				eq(WarnData::guildId.name, inputGuildId)
+			)
 		)
 
 	/**
@@ -48,7 +52,7 @@ class WarnCollection : KordExKoinComponent {
 	 */
 	suspend inline fun setWarn(inputUserId: Snowflake, inputGuildId: Snowflake, remove: Boolean) {
 		val currentStrikes = getWarn(inputUserId, inputGuildId)?.strikes ?: 0
-		collection.deleteOne(WarnData::userId eq inputUserId, WarnData::guildId eq inputGuildId)
+		collection.deleteOne(and(eq(WarnData::userId.name, inputUserId), eq(WarnData::guildId.name, inputGuildId)))
 		collection.insertOne(
 			WarnData(
 				inputUserId,
@@ -66,5 +70,5 @@ class WarnCollection : KordExKoinComponent {
 	 * @since 3.0.0
 	 */
 	suspend inline fun clearWarns(inputGuildId: Snowflake) =
-		collection.deleteMany(WarnData::guildId eq inputGuildId)
+		collection.deleteMany(eq(WarnData::guildId.name, inputGuildId))
 }

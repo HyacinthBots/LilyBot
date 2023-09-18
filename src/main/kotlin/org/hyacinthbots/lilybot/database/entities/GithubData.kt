@@ -2,6 +2,7 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
+import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for GitHub commands.
@@ -15,4 +16,6 @@ import kotlinx.serialization.Serializable
 data class GithubData(
 	val guildId: Snowflake,
 	val defaultRepo: String
-)
+) {
+	companion object : Collection("githubData")
+}

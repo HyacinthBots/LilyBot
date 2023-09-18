@@ -1,9 +1,9 @@
 package org.hyacinthbots.lilybot.database.migrations.config
 
-import org.litote.kmongo.coroutine.CoroutineDatabase
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 
 @Suppress("UnusedPrivateMember", "UNUSED_PARAMETER", "RedundantSuspendModifier")
-suspend fun configV4(db: CoroutineDatabase) {
+suspend fun configV4(db: MongoDatabase) {
 	// Support config has been removed.
 // 	if (db.getCollection<SupportConfigData>().find().toList().isEmpty()) {
 // 		db.dropCollection("supportConfigData")
