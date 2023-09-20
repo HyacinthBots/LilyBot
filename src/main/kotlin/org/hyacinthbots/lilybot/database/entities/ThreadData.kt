@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for threads.
@@ -22,6 +21,4 @@ data class ThreadData(
 	val ownerId: Snowflake,
 	val parentChannelId: Snowflake?,
 	var preventArchiving: Boolean = false
-) {
-	companion object : Collection("threadData")
-}
+)

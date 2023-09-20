@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data for warnings in guilds.
@@ -17,6 +16,4 @@ data class WarnData(
 	val userId: Snowflake,
 	val guildId: Snowflake,
 	val strikes: Int
-) {
-	companion object : Collection("warnData")
-}
+)

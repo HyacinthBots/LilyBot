@@ -1,14 +1,11 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import com.mongodb.client.model.Filters.and
-import com.mongodb.client.model.Filters.eq
 import dev.kord.common.entity.Snowflake
-import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.TagsData
-import org.hyacinthbots.lilybot.database.findOne
 import org.koin.core.component.inject
+import org.litote.kmongo.eq
 
 /**
  * This class contains the functions for interacting with the [Tags Database][TagsData]. This class has functions for
@@ -25,7 +22,7 @@ class TagsCollection : KordExKoinComponent {
 	private val db: Database by inject()
 
 	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<TagsData>(TagsData.name)
+	internal val collection = db.mainDatabase.getCollection<TagsData>()
 
 	/**
 	 * Gets the given tag using it's [name] and returns its [TagsData]. If the tag does not exist.
@@ -38,7 +35,7 @@ class TagsCollection : KordExKoinComponent {
 	 * @since 3.1.0
 	 */
 	suspend inline fun getTag(inputGuildId: Snowflake, name: String): TagsData? =
-		collection.findOne(and(eq(TagsData::guildId.name, inputGuildId), eq(TagsData::name.name, name)))
+		collection.findOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 
 	/**
 	 * Gets all tags in the given [inputGuildId].
@@ -49,7 +46,7 @@ class TagsCollection : KordExKoinComponent {
 	 * @since 3.1.0
 	 */
 	suspend inline fun getAllTags(inputGuildId: Snowflake): List<TagsData> =
-		collection.find(eq(TagsData::guildId.name, inputGuildId)).toList()
+		collection.find(TagsData::guildId eq inputGuildId).toList()
 
 	/**
 	 * Adds a tag to the database, using the provided parameters.
@@ -62,12 +59,12 @@ class TagsCollection : KordExKoinComponent {
 	 * @since 3.1.0
 	 */
 	suspend inline fun setTag(
-		inputGuildId: Snowflake,
-		name: String,
-		tagTitle: String,
-		tagValue: String,
-		tagAppearance: String
-	) =
+        inputGuildId: Snowflake,
+        name: String,
+        tagTitle: String,
+        tagValue: String,
+        tagAppearance: String
+    ) =
 		collection.insertOne(TagsData(inputGuildId, name, tagTitle, tagValue, tagAppearance))
 
 	/**
@@ -79,7 +76,7 @@ class TagsCollection : KordExKoinComponent {
 	 * @since 3.1.0
 	 */
 	suspend inline fun removeTag(inputGuildId: Snowflake, name: String) =
-		collection.deleteOne(and(eq(TagsData::guildId.name, inputGuildId), eq(TagsData::name.name, name)))
+		collection.deleteOne(TagsData::guildId eq inputGuildId, TagsData::name eq name)
 
 	/**
 	 * Clears all tags for the provided [inputGuildId].
@@ -89,5 +86,5 @@ class TagsCollection : KordExKoinComponent {
 	 * @since 3.1.0
 	 */
 	suspend inline fun clearTags(inputGuildId: Snowflake) =
-		collection.deleteMany(eq(TagsData::guildId.name, inputGuildId))
+		collection.deleteMany(TagsData::guildId eq inputGuildId)
 }

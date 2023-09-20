@@ -2,7 +2,6 @@ package org.hyacinthbots.lilybot.database.entities
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.database.Collection
 
 /**
  * The data to help calculate bot uptime.
@@ -13,6 +12,4 @@ import org.hyacinthbots.lilybot.database.Collection
 @Serializable
 data class UptimeData(
 	val onTime: Instant
-) {
-	companion object : Collection("uptimeData")
-}
+)
