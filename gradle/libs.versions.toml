@@ -5,7 +5,7 @@ shadow = "8.1.1"
 detekt = "1.23.1"
 git-hooks = "0.0.2"
 grgit = "5.2.0"
-blossom = "2.0.1"
+blossom = "2.1.0"
 
 # Libraries
 kord-extensions = "1.5.9-20230809.104126-1"
