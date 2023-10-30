@@ -14,9 +14,9 @@ object SnowflakeCodec : Codec<Snowflake> {
 	}
 
 	override fun decode(reader: BsonReader, decoderContext: DecoderContext): Snowflake = try {
-		Snowflake(reader.readInt64())
-	} catch (_: BsonInvalidOperationException) {
 		Snowflake(reader.readString())
+	} catch (_: BsonInvalidOperationException) {
+		Snowflake(reader.readInt64())
 	}
 
 	override fun getEncoderClass(): Class<Snowflake> = Snowflake::class.java
