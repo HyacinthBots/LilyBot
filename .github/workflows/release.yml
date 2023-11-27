@@ -30,7 +30,7 @@ jobs:
           gradle-home-cache-cleanup: true
 
       - name: Upload artifacts GitHub
-        uses: AButler/upload-release-assets@v2.0
+        uses: AButler/upload-release-assets@v3.0
 
         with:
           files: 'build/libs/*-all.jar'
