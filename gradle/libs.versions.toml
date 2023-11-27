@@ -1,6 +1,6 @@
 [versions]
 # Plugins
-kotlin = "1.9.20"
+kotlin = "1.9.21"
 shadow = "8.1.1"
 detekt = "1.23.3"
 git-hooks = "0.0.2"
