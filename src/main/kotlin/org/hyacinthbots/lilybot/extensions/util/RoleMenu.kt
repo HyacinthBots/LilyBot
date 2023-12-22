@@ -19,7 +19,6 @@ import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import com.kotlindiscord.kord.extensions.utils.getTopRole
 import dev.kord.common.entity.ButtonStyle
@@ -35,7 +34,7 @@ import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.Role
 import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
-import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.embed
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
@@ -486,6 +485,7 @@ class RoleMenu : Extension() {
 				event.interaction.respondEphemeral {
 					content = "Use the menu below to select roles."
 					components {
+						// TODO Update to ephemeralRoleSelectMenu
 						ephemeralSelectMenu {
 							placeholder = "Select roles..."
 							maximumChoices = roles.size
@@ -582,6 +582,7 @@ class RoleMenu : Extension() {
 					respond {
 						content = "Use the menu below to subscribe to roles."
 						components {
+							// TODO Update to ephemeralRoleSelectMenu
 							ephemeralSelectMenu {
 								placeholder = "Select roles to subscribe to..."
 								minimumChoices = 0

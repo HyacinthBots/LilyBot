@@ -19,7 +19,6 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubComm
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
-import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createMessage
@@ -27,7 +26,7 @@ import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.EmbedBuilder
-import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection

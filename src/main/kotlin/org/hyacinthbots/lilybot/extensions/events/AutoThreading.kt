@@ -21,7 +21,6 @@ import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubComm
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
 import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
-import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.delete
 import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.ArchiveDuration
@@ -44,7 +43,7 @@ import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.supplier.EntitySupplyStrategy
-import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.embed
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
