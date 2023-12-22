@@ -3,7 +3,6 @@ package org.hyacinthbots.lilybot.utils
 import com.kotlindiscord.kord.extensions.checks.channelFor
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
-import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import com.kotlindiscord.kord.extensions.utils.getTopRole
 import dev.kord.common.entity.Permission

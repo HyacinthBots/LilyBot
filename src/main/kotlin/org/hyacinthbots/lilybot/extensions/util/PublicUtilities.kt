@@ -13,7 +13,6 @@ import com.kotlindiscord.kord.extensions.components.ephemeralButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
-import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.getTopRole
 import com.kotlindiscord.kord.extensions.utils.hasPermission
@@ -25,8 +24,7 @@ import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
-import dev.kord.rest.builder.message.create.embed
-import dev.kord.rest.builder.message.modify.embed
+import dev.kord.rest.builder.message.embed
 import dev.kord.rest.request.KtorRequestException
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -118,8 +116,8 @@ class PublicUtilities : Extension() {
 						requesterAsMember.edit { nickname = arguments.newNick }
 						respond {
 							content = "You have permission to change your own nickname, so I've just made the change."
-							return@action
 						}
+						return@action
 					}
 
 					// Declare the embed outside the action to allow us to reference it inside the action

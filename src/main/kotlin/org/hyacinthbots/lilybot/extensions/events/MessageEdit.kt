@@ -14,7 +14,7 @@ import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
-import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo

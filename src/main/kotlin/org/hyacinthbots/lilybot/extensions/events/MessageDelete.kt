@@ -14,7 +14,7 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageBulkDeleteEvent
 import dev.kord.rest.builder.message.create.UserMessageCreateBuilder
-import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.embed
 import io.ktor.client.request.forms.ChannelProvider
 import io.ktor.util.cio.toByteReadChannel
 import kotlinx.datetime.Clock

@@ -11,7 +11,6 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChanne
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
-import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.asChannelOfOrNull
@@ -342,8 +341,8 @@ class LockingCommands : Extension() {
 		if (targetChannel == null) {
 			respond {
 				content = "I can't fetch the targeted channel properly."
-				return null
 			}
+			return null
 		}
 
 		return targetChannel

@@ -12,10 +12,8 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
-import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.types.respondEphemeral
 import dev.kord.common.entity.Permission
-import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.embed
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.github
@@ -75,7 +73,7 @@ class Github : Extension() {
 							category = "extensions.util.Github.issue.InputCheck"
 							message = "Input missing /"
 						}
-						respondEphemeral {
+						respond {
 							embed {
 								title = "Make sure your repository input is formatted like this:"
 								description = "Format: `User/Repo` or `Org/Repo` \nFor example: `HyacinthBots/LilyBot`"
@@ -96,7 +94,7 @@ class Github : Extension() {
 							try {
 								github.getRepository(repository)?.getIssue(arguments.issue)
 							} catch (e: GHFileNotFoundException) {
-								respondEphemeral {
+								respond {
 									embed {
 										title = "Unable to find issue number! Make sure this issue exists"
 									}
@@ -115,7 +113,7 @@ class Github : Extension() {
 						try {
 							iterator!!.hasNext()
 						} catch (e: GHException) {
-							respondEphemeral {
+							respond {
 								embed {
 									title = "Unable to access repository, make sure this repository exists!"
 								}
@@ -131,7 +129,7 @@ class Github : Extension() {
 								message = "Unable to find issue"
 							}
 
-							respondEphemeral {
+							respond {
 								embed {
 									title = "Invalid issue number. Make sure this issue exists!"
 								}
@@ -177,7 +175,7 @@ class Github : Extension() {
 									title = "Error!"
 									description = "Error occurred initializing Pull Request. How did this happen?"
 									color = DISCORD_RED
-									return@action
+									return@respond
 								}
 							} else {
 								title = issue.title
@@ -303,7 +301,7 @@ class Github : Extension() {
 							category = "extensions.util.Github.repository.InputCheck"
 							message = "Input missing /"
 						}
-						respondEphemeral {
+						respond {
 							embed {
 								title = "Make sure your input is formatted like this:"
 								description = "Format: `User/Repo` or `Org/Repo`\nFor example: `HyacinthBots/LilyBot`"
@@ -332,7 +330,7 @@ class Github : Extension() {
 							category = "extensions.util.Github.repository.getRepository"
 							message = "Repository not found"
 						}
-						respondEphemeral {
+						respond {
 							embed {
 								title = "Invalid repository name. Make sure this repository exists"
 							}
@@ -413,7 +411,7 @@ class Github : Extension() {
 							category = "extensions.util.Github.user.getUser"
 							message = "Unable to find user"
 						}
-						respondEphemeral {
+						respond {
 							embed {
 								title = "Invalid Username. Make sure this user exists!"
 							}
@@ -425,11 +423,11 @@ class Github : Extension() {
 						val isOrg: Boolean = ghUser?.type.equals("Organization")
 
 						if (!isOrg) {
-							sentry.breadcrumb(BreadcrumbType.Info) {
-								category = "extensions.util.Github.user.isOrg"
-								message = "User is not Organisation"
-								data["isNotOrg"] = ghUser?.login
-							}
+// 							sentry.breadcrumb(BreadcrumbType.Info) {
+// 								category = "extensions.util.Github.user.isOrg"
+// 								message = "User is not Organisation"
+// 								data["isNotOrg"] = ghUser?.login
+// 							}
 							respond {
 								embed {
 									title = "GitHub profile for " + ghUser?.login
@@ -481,11 +479,11 @@ class Github : Extension() {
 								}
 							}
 						} else {
-							sentry.breadcrumb(BreadcrumbType.Info) {
-								category = "extensions.util.Github.user.isOrg"
-								message = "User is Organisation"
-								data["isOrg"] = ghUser?.login
-							}
+// 							sentry.breadcrumb(BreadcrumbType.Info) {
+// 								category = "extensions.util.Github.user.isOrg"
+// 								message = "User is Organisation"
+// 								data["isOrg"] = ghUser?.login
+// 							}
 							val org: GHOrganization? = github.getOrganization(ghUser?.login)
 
 							respond {
