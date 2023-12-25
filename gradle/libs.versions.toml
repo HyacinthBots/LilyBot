@@ -9,7 +9,7 @@ blossom = "2.1.0"
 
 # Libraries
 kord-extensions = "1.7.1-20231217.132026-9"
-logging = "5.1.1"
+logging = "6.0.1"
 logback = "1.4.14"
 github-api = "1.317"
 kmongo = "4.11.0"
