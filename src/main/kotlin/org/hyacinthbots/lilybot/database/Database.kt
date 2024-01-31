@@ -3,21 +3,17 @@ package org.hyacinthbots.lilybot.database
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import org.bson.UuidRepresentation
-import org.bson.codecs.configuration.CodecRegistries
 import org.hyacinthbots.lilybot.database.migrations.Migrator
 import org.hyacinthbots.lilybot.utils.MONGO_URI
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 
 class Database {
-	private val codecRegistry = CodecRegistries.fromCodecs(SnowflakeCodec)
-
 	// Connect to the database using the provided connection URL
 	private val settings = MongoClientSettings
 		.builder()
 		.uuidRepresentation(UuidRepresentation.STANDARD)
 		.applyConnectionString(ConnectionString(MONGO_URI))
-		.codecRegistry(CodecRegistries.fromRegistries(codecRegistry, MongoClientSettings.getDefaultCodecRegistry()))
 		.build()
 
 	private val client = KMongo.createClient(settings).coroutine
