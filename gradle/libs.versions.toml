@@ -8,27 +8,27 @@ grgit = "5.2.1"
 blossom = "2.1.0"
 
 # Libraries
-kord-extensions = "1.7.1-20231217.132026-9"
-logging = "5.1.1"
+kord-extensions = "1.7.1-20240117.210840-21"
+kord-welcome = "1.7.1-20240117.210840-10"
+logging = "6.0.3"
 logback = "1.4.14"
-github-api = "1.317"
+github-api = "1.318"
 kmongo = "4.11.0"
-cozy-welcome = "1.0.1-SNAPSHOT"
 dma = "v0.2.1"
-docgenerator = "0.1.2-SNAPSHOT"
+docgenerator = "main-SNAPSHOT"
 
 [libraries]
 kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
 kord-extensions-phishing = { module = "com.kotlindiscord.kord.extensions:extra-phishing", version.ref = "kord-extensions" }
 kord-extensions-pluralkit = { module = "com.kotlindiscord.kord.extensions:extra-pluralkit", version.ref = "kord-extensions"}
 kord-extensions-unsafe = { module = "com.kotlindiscord.kord.extensions:unsafe", version.ref = "kord-extensions"}
+kord-extensions-welcome = { module = "com.kotlindiscord.kord.extensions:extra-welcome", version.ref = "kord-welcome"}
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logging = { module = "io.github.oshai:kotlin-logging", version.ref = "logging" }
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
 kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
 detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
-cozy-welcome = {module = "org.quiltmc.community:module-welcome", version.ref = "cozy-welcome"}
 dma = { module = "org.hyacinthbots:discord-moderation-actions", version.ref = "dma"}
 docgenerator = { module = "org.hyacinthbots:doc-generator", version.ref = "docgenerator" }
 

@@ -36,8 +36,18 @@ repositories {
 	}
 
 	maven {
+		name = "QuiltMC (Releases)"
+		url = uri("https://maven.quiltmc.org/repository/release/")
+	}
+
+	maven {
 		name = "QuiltMC (Snapshots)"
 		url = uri("https://maven.quiltmc.org/repository/snapshot/")
+	}
+
+	maven {
+		name = "Shedaniel"
+		url = uri("https://maven.shedaniel.me")
 	}
 
 	maven {
@@ -53,6 +63,7 @@ dependencies {
 	implementation(libs.kord.extensions.phishing)
 	implementation(libs.kord.extensions.pluralkit)
 	implementation(libs.kord.extensions.unsafe)
+	implementation(libs.kord.extensions.welcome)
 
 	implementation(libs.kotlin.stdlib)
 
@@ -65,9 +76,6 @@ dependencies {
 
 	// KMongo
 	implementation(libs.kmongo)
-
-	// Cozy's welcome module
-	implementation(libs.cozy.welcome)
 
 	implementation(libs.dma)
 	implementation(libs.docgenerator)

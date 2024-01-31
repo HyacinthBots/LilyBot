@@ -14,7 +14,7 @@ import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.WelcomeChannelData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
-import org.quiltmc.community.cozy.modules.welcome.data.WelcomeChannelData as CozyWelcomeChannelData
+import com.kotlindiscord.kord.extensions.modules.extra.welcome.data.WelcomeChannelData as KordExWelcomeChannelData
 
 /**
  * This class contains the functions for interacting with the [Welcome channel database][WelcomeChannelData]. This class
@@ -26,7 +26,7 @@ import org.quiltmc.community.cozy.modules.welcome.data.WelcomeChannelData as Coz
  * @see setUrlForChannel
  * @see removeChannel
  */
-class WelcomeChannelCollection : KordExKoinComponent, CozyWelcomeChannelData {
+class WelcomeChannelCollection : KordExKoinComponent, KordExWelcomeChannelData {
 	private val db: Database by inject()
 
 	@PublishedApi
