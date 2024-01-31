@@ -7,6 +7,7 @@ import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
 import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
+import com.kotlindiscord.kord.extensions.modules.extra.welcome.welcomeChannel
 import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
@@ -47,7 +48,6 @@ import org.hyacinthbots.lilybot.utils.database
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
-import org.quiltmc.community.cozy.modules.welcome.welcomeChannel
 import java.io.IOException
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes

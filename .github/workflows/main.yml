@@ -23,7 +23,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Artifacts
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: build --stacktrace
           gradle-home-cache-cleanup: true
