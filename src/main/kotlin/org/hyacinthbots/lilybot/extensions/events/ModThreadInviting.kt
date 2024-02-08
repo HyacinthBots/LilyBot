@@ -3,7 +3,6 @@ package org.hyacinthbots.lilybot.extensions.events
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.supplier.EntitySupplyStrategy
@@ -21,7 +20,7 @@ class ModThreadInviting : Extension() {
 				anyGuild()
 				failIf {
 					event.channel.ownerId == kord.selfId ||
-							event.channel.member != null
+						event.channel.member != null
 				}
 			}
 
@@ -38,7 +37,7 @@ class ModThreadInviting : Extension() {
 
 				val config = ModerationConfigCollection().getConfig(channel.guildId) ?: return@action
 
-				if (!config.enabled || config.role == null) return@action
+				if (!config.enabled || config.role == null || config.autoInviteModeratorRole != true) return@action
 
 				val moderatorRole = channel.guild.getRoleOrNull(config.role) ?: return@action
 

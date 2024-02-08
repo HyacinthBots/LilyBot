@@ -56,6 +56,7 @@ data class ModerationConfigData(
 	val autoPunishOnWarn: Boolean?,
 	val publicLogging: Boolean?,
 	val banDmMessage: String?,
+	val autoInviteModeratorRole: Boolean?
 )
 
 /**

@@ -80,6 +80,7 @@ class Config : Extension() {
 								null,
 								null,
 								null,
+								null,
 								null
 							)
 						)
@@ -134,7 +135,7 @@ class Config : Extension() {
 						field {
 							name = "Log publicly"
 							value = when (arguments.logPublicly) {
-								true -> "True"
+								true -> "Enabled"
 								false -> "Disabled"
 								null -> "Disabled"
 							}
@@ -154,6 +155,14 @@ class Config : Extension() {
 						field {
 							name = "Ban DM Message"
 							value = arguments.banDmMessage ?: "No custom Ban DM message set"
+						}
+						field {
+							name = "Auto-invite Moderator Role"
+							value = when (arguments.autoInviteModeratorRole) {
+								true -> "Enabled"
+								false -> "Disabled"
+								null -> "Disabled"
+							}
 						}
 						footer {
 							text = "Configured by ${user.asUserOrNull()?.username}"
@@ -175,7 +184,8 @@ class Config : Extension() {
 							arguments.quickTimeoutLength,
 							arguments.warnAutoPunishments,
 							arguments.logPublicly,
-							arguments.banDmMessage
+							arguments.banDmMessage,
+							arguments.autoInviteModeratorRole
 						)
 					)
 
@@ -632,20 +642,39 @@ class Config : Extension() {
 									}
 									field {
 										name = "Action log"
-										value =
-											config.channel?.let { guild!!.getChannelOrNull(it)?.mention } ?: "Disabled"
+										value = config.channel?.let { guild!!.getChannelOrNull(it)?.mention } ?: "Disabled"
 									}
 									field {
 										name = "Log publicly"
 										value = when (config.publicLogging) {
-											true -> "True"
+											true -> "Enabled"
+											false -> "Disabled"
+											null -> "Disabled"
+										}
+									}
+									field {
+										name = "Quick timeout length"
+										value = config.quickTimeoutLength.interval() ?: "No quick timeout length set"
+									}
+									field {
+										name = "Warning Auto-punishments"
+										value = when (config.autoPunishOnWarn) {
+											true -> "Enabled"
 											false -> "Disabled"
 											null -> "Disabled"
 										}
 									}
 									field {
 										name = "Ban DM Message"
-										value = config.banDmMessage ?: "None"
+										value = config.banDmMessage ?: "No custom Ban DM message set"
+									}
+									field {
+										name = "Auto-invite Moderator Role"
+										value = when (config.autoInviteModeratorRole) {
+											true -> "Enabled"
+											false -> "Disabled"
+											null -> "Disabled"
+										}
 									}
 									timestamp = Clock.System.now()
 								}
@@ -764,6 +793,11 @@ class Config : Extension() {
 		val banDmMessage by optionalString {
 			name = "ban-dm-message"
 			description = "A custom message to send to users when they are banned."
+		}
+
+		val autoInviteModeratorRole by optionalBoolean {
+			name = "auto-invite-moderator-role"
+			description = "Silently ping moderators to invite them to new threads."
 		}
 	}
 
