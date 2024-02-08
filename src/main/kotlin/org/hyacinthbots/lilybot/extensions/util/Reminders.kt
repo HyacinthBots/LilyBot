@@ -384,7 +384,7 @@ class Reminders : Extension() {
 						}
 					}
 
-					ReminderCollection().removeReminder(user.id, arguments.reminder)
+					ReminderCollection().removeReminder(arguments.user.id, arguments.reminder)
 					markReminderCompleteOrCancelled(
 						reminder.guildId, reminder.channelId, reminder.messageId,
 						wasCancelled = true,
