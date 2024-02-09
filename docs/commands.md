@@ -47,6 +47,7 @@ Required Member Permissions: Manage Server
 	* `warn-auto-punishments` - Whether to automatically punish users for reach a certain threshold on warns - Optional Boolean
 	* `log-publicly` - Whether to log moderation publicly or not. - Optional Boolean
 	* `ban-dm-message` - A custom message to send to users when they are banned. - Optional String
+	* `auto-invite-moderator-role` - Silently ping moderators to invite them to new threads. - Optional Boolean
 
 ---
 #### Command name: `config logging`
