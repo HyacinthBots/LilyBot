@@ -42,7 +42,8 @@ class MessageEdit : Extension() {
 				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					val message = event.message.asMessageOrNull()
-					message?.author?.isBot == true || event.old?.content == message?.content
+					message?.author?.isBot == true || event.old?.content == message?.content ||
+						event.old?.content.isNullOrEmpty()
 				}
 			}
 			action {
@@ -60,7 +61,8 @@ class MessageEdit : Extension() {
 				anyGuild()
 				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
-					event.old?.content == event.message.asMessageOrNull()?.content
+					event.old?.content == event.message.asMessageOrNull()?.content ||
+						event.old?.content.isNullOrEmpty()
 				}
 			}
 			action {
