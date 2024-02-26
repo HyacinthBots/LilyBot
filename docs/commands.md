@@ -35,6 +35,24 @@ Required Member Permissions: Manage Channels
 	* `channel` - The channel to view the auto-threading settings for. - Channel
 
 ---
+#### Command name: `auto-threading add-roles`
+**Description**: Add extra to threads in auto-threaded channels
+**Additional Information**:This command will add roles to be pinged alongside the default ping role for this auto-threaded channel
+Required Member Permissions: Manage Channels
+
+* **Arguments**:
+	* `role` - A role to invite to threads in this channel - Optional Role
+
+---
+#### Command name: `auto-threading remove-roles`
+**Description**: Remove extra from threads in auto-threaded channels
+**Additional Information**:This command will remove roles that have been added to be pinged alongside the default ping role for this auto-threaded channel
+Required Member Permissions: Manage Channels
+
+* **Arguments**:
+	* `role` - A role to invite to threads in this channel - Optional Role
+
+---
 #### Command name: `config moderation`
 **Description**: Configure Lily's moderation system
 Required Member Permissions: Manage Server
