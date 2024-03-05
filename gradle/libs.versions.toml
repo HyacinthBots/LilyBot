@@ -8,7 +8,7 @@ grgit = "5.2.2"
 blossom = "2.1.0"
 
 # Libraries
-kord-extensions = "1.7.2-20240221.102953-1"
+kord-extensions = "1.8.0-20240228.171743-12"
 logging = "6.0.3"
 logback = "1.5.0"
 github-api = "1.318"
