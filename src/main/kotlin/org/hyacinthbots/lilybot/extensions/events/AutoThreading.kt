@@ -46,6 +46,7 @@ import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.embed
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
+import org.hyacinthbots.docgenerator.subCommandAdditionalDocumentation
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
@@ -136,7 +137,8 @@ class AutoThreading : Extension() {
 							contentAwareNaming = arguments.contentAwareNaming,
 							mention = arguments.mention,
 							creationMessage = message,
-							addModsAndRole = arguments.addModsAndRole
+							addModsAndRole = arguments.addModsAndRole,
+							extraRoleIds = mutableListOf()
 						)
 					)
 
@@ -312,6 +314,16 @@ class AutoThreading : Extension() {
 									"None"
 								}
 							}
+							if (autoThread.extraRoleIds.isNotEmpty()) {
+								var mentions = ""
+								autoThread.extraRoleIds.forEach {
+									mentions += "${guild!!.getRoleOrNull(it)?.mention} "
+								}
+								field {
+									name = "Extra Ping Roles"
+									value = mentions
+								}
+							}
 							field {
 								name = "Prevent duplicates"
 								value = autoThread.preventDuplicates.toString()
@@ -337,6 +349,103 @@ class AutoThreading : Extension() {
 								value = autoThread.addModsAndRole.toString()
 							}
 						}
+					}
+				}
+			}
+
+			ephemeralSubCommand(::ExtraRolesArgs) {
+				name = "add-roles"
+				description = "Add extra to threads in auto-threaded channels"
+
+				subCommandAdditionalDocumentation {
+					extraInformation = "This command will add roles to be pinged alongside the default ping role " +
+						"for this auto-threaded channel"
+				}
+
+				requirePermission(Permission.ManageChannels)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageChannels)
+					requireBotPermissions(Permission.SendMessages)
+					botHasChannelPerms(Permissions(Permission.SendMessages))
+				}
+
+				action {
+					val autoThread = AutoThreadingCollection().getSingleAutoThread(event.interaction.channelId)
+					if (autoThread == null) {
+						respond {
+							content = "**Error:** This is not an auto-threaded channel!"
+						}
+						return@action
+					}
+
+					if (!canPingRole(arguments.role, guild!!.id, this@ephemeralSubCommand.kord)) {
+						respond {
+							content = "Lily cannot mention this role. Please fix the role's permissions and try again."
+						}
+						return@action
+					}
+
+					if (autoThread.extraRoleIds.contains(arguments.role!!.id)) {
+						respond {
+							content = "This role has already been added."
+						}
+						return@action
+					}
+
+					val updatedRoles = autoThread.extraRoleIds
+					updatedRoles.add(arguments.role!!.id)
+
+					AutoThreadingCollection().updateExtraRoles(event.interaction.channelId, updatedRoles)
+
+					respond {
+						content = "Role (${arguments.role!!.mention}) added"
+					}
+				}
+			}
+
+			ephemeralSubCommand(::ExtraRolesArgs) {
+				name = "remove-roles"
+				description = "Remove extra from threads in auto-threaded channels"
+
+				subCommandAdditionalDocumentation {
+					extraInformation = "This command will remove roles that have been added to be pinged alongside " +
+						"the default ping role for this auto-threaded channel"
+				}
+
+				requirePermission(Permission.ManageChannels)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ManageChannels)
+					requireBotPermissions(Permission.SendMessages)
+					botHasChannelPerms(Permissions(Permission.SendMessages))
+				}
+
+				action {
+					val autoThread = AutoThreadingCollection().getSingleAutoThread(event.interaction.channelId)
+					if (autoThread == null) {
+						respond {
+							content = "**Error:** This is not an auto-threaded channel!"
+						}
+						return@action
+					}
+
+					if (!autoThread.extraRoleIds.contains(arguments.role!!.id)) {
+						respond {
+							content = "This role has not been added."
+						}
+						return@action
+					}
+
+					val updatedRoles = autoThread.extraRoleIds
+					updatedRoles.remove(arguments.role!!.id)
+
+					AutoThreadingCollection().updateExtraRoles(event.interaction.channelId, updatedRoles)
+
+					respond {
+						content = "Role (${arguments.role!!.mention}) removed"
 					}
 				}
 			}
@@ -456,6 +565,13 @@ class AutoThreading : Extension() {
 			name = "message"
 			description = "Whether to send a custom message on thread creation or not. Default false."
 			defaultValue = false
+		}
+	}
+
+	inner class ExtraRolesArgs : Arguments() {
+		val role by optionalRole {
+			name = "role"
+			description = "A role to invite to threads in this channel"
 		}
 	}
 
@@ -580,14 +696,18 @@ class AutoThreading : Extension() {
 			if (moderatorRoleId != null) {
 				moderatorRole = inputThread.guild.getRole(moderatorRoleId)
 			}
+			var mentions = ""
+			inputOptions.extraRoleIds.forEach {
+				mentions += inputThread.guild.getRole(it).mention
+			}
 
 			if (moderatorRole != null && moderatorRole.mentionable && inputOptions.addModsAndRole) {
 				threadMessage.edit {
-					content = role.mention + moderatorRole.mention
+					content = role.mention + mentions + moderatorRole.mention
 				}
 			} else {
 				threadMessage.edit {
-					content = role.mention
+					content = role.mention + mentions
 				}
 			}
 		}

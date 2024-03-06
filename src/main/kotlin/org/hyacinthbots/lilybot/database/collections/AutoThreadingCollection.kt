@@ -6,6 +6,7 @@ import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
+import org.litote.kmongo.setValue
 
 /**
  * This class contains the functions for interacting with the [AutoThreading Database][AutoThreadingData]. This
@@ -56,6 +57,21 @@ class AutoThreadingCollection : KordExKoinComponent {
 	suspend inline fun setAutoThread(inputAutoThreadData: AutoThreadingData) {
 		collection.deleteOne(AutoThreadingData::channelId eq inputAutoThreadData.channelId)
 		collection.insertOne(inputAutoThreadData)
+	}
+
+	/**
+	 * Updates the extra roles on an auto-threaded channel.
+	 *
+	 * @param inputChannelId The channel to update extra roles for
+	 * @param newRoleIds The new list of role IDs to set
+	 * @author NoComment1105
+	 * @since 5.0.0
+	 */
+	suspend inline fun updateExtraRoles(inputChannelId: Snowflake, newRoleIds: List<Snowflake?>) {
+		collection.updateOne(
+			AutoThreadingData::channelId eq inputChannelId,
+			setValue(AutoThreadingData::extraRoleIds, newRoleIds)
+			)
 	}
 
 	/**
