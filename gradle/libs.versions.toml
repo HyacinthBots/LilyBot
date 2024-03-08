@@ -13,8 +13,8 @@ logging = "6.0.3"
 logback = "1.5.0"
 github-api = "1.318"
 kmongo = "4.11.0"
-dma = "v0.2.1"
-docgenerator = "0.1.4"
+dma = "v0.2.2"
+docgenerator = "0.1.5-SNAPSHOT"
 
 [libraries]
 kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
