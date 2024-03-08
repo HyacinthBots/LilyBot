@@ -13,7 +13,7 @@ logging = "6.0.3"
 logback = "1.5.0"
 github-api = "1.318"
 kmongo = "4.11.0"
-dma = "v0.2.2"
+dma = "0.2.3-SNAPSHOT"
 docgenerator = "0.1.5-SNAPSHOT"
 
 [libraries]

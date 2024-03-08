@@ -538,11 +538,13 @@ class ModerationCommands : Extension() {
 
 					dmEmbed {
 						title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
-						description = "**Reason:**\n${arguments.reason} ${
-							if (modConfig?.banDmMessage != null) {
-								"\n${modConfig.banDmMessage}"
+						description = "**Reason:**\n${
+							if (modConfig?.banDmMessage != null && arguments.reason == "No reason provided") {
+								modConfig.banDmMessage
+							} else if (modConfig?.banDmMessage != null && arguments.reason != "No reason provided") {
+								"${arguments.reason}\n${modConfig.banDmMessage}"
 							} else {
-								""
+								arguments.reason
 							}
 						}"
 					}
