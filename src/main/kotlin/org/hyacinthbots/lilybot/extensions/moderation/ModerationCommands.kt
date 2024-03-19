@@ -4,21 +4,14 @@ import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.annotations.DoNotChain
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.checks.hasPermissions
-import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
-import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOptionalDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalAttachment
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalInt
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalUser
-import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralStringSelectMenu
@@ -30,13 +23,14 @@ import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.isNullOrBot
+import com.kotlindiscord.kord.extensions.utils.kordExUserAgent
 import com.kotlindiscord.kord.extensions.utils.timeout
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
+import com.kotlindiscord.kord.extensions.utils.toDuration
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.ban
-import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
@@ -44,40 +38,24 @@ import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
-import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.embed
 import dev.kord.rest.request.KtorRequestException
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toSet
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import org.hyacinthbots.discordmoderationactions.builder.ban
-import org.hyacinthbots.discordmoderationactions.builder.kick
-import org.hyacinthbots.discordmoderationactions.builder.removeTimeout
-import org.hyacinthbots.discordmoderationactions.builder.softban
-import org.hyacinthbots.discordmoderationactions.builder.timeout
-import org.hyacinthbots.discordmoderationactions.builder.unban
-import org.hyacinthbots.discordmoderationactions.enums.ActionResults
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
-import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
-import org.hyacinthbots.lilybot.utils.getDmResult
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.interval
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
-import org.hyacinthbots.lilybot.utils.requiredConfigs
-import kotlin.math.min
+import org.hyacinthbots.lilybot.utils.modCommandChecks
 import kotlin.time.Duration
 
 class ModerationCommands : Extension() {
@@ -113,7 +91,10 @@ class ModerationCommands : Extension() {
 				}
 				val senderId: Snowflake
 				if (targetMessage.author.isNullOrBot()) {
-					val proxiedMessage = PluralKit().getMessageOrNull(targetMessage.id)
+					val proxiedMessage =
+						PluralKit(userAgent = this@ephemeralMessageCommand.kord.kordExUserAgent()).getMessageOrNull(
+							targetMessage.id
+						)
 					proxiedMessage ?: run {
 						respond { content = "Unable to find user" }
 						return@action
@@ -179,8 +160,6 @@ class ModerationCommands : Extension() {
 											}
 										}
 
-										val dmResult = getDmResult(true, dm)
-
 										sender.ban {
 											reason =
 												"Quick banned $reasonSuffix"
@@ -214,7 +193,7 @@ class ModerationCommands : Extension() {
 												sender,
 												user
 											)
-											dmNotificationStatusEmbedField(dmResult)
+											dmNotificationStatusEmbedField(dm, true)
 											timestamp = Clock.System.now()
 										}
 
@@ -233,8 +212,6 @@ class ModerationCommands : Extension() {
 														"free to rejoin at any time"
 											}
 										}
-
-										val dmResult = getDmResult(true, dm)
 
 										sender.ban {
 											reason =
@@ -271,7 +248,7 @@ class ModerationCommands : Extension() {
 												sender,
 												user
 											)
-											dmNotificationStatusEmbedField(dmResult)
+											dmNotificationStatusEmbedField(dm, true)
 											timestamp = Clock.System.now()
 										}
 
@@ -288,8 +265,6 @@ class ModerationCommands : Extension() {
 												description = "Quick kicked $reasonSuffix."
 											}
 										}
-
-										val dmResult = getDmResult(true, dm)
 
 										guild!!.kick(senderId, "Quick kicked ")
 
@@ -321,7 +296,7 @@ class ModerationCommands : Extension() {
 												sender,
 												user
 											)
-											dmNotificationStatusEmbedField(dmResult)
+											dmNotificationStatusEmbedField(dm, true)
 											timestamp = Clock.System.now()
 										}
 
@@ -350,8 +325,6 @@ class ModerationCommands : Extension() {
 													"Quick timed out for ${timeoutTime.interval()} $reasonSuffix."
 											}
 										}
-
-										val dmResult = getDmResult(true, dm)
 
 										sender.timeout(timeoutTime, reason = "Quick timed-out $reasonSuffix")
 
@@ -383,7 +356,7 @@ class ModerationCommands : Extension() {
 												sender,
 												user
 											)
-											dmNotificationStatusEmbedField(dmResult)
+											dmNotificationStatusEmbedField(dm, true)
 											field {
 												name = "Length"
 												value = modConfig?.quickTimeoutLength.interval()
@@ -421,8 +394,6 @@ class ModerationCommands : Extension() {
 											}
 										}
 
-										val dmResult = getDmResult(true, dm)
-
 										loggingChannel.createMessage {
 											embed {
 												title = "Warning"
@@ -431,7 +402,7 @@ class ModerationCommands : Extension() {
 													sender,
 													user
 												)
-												dmNotificationStatusEmbedField(dmResult)
+												dmNotificationStatusEmbedField(dm, true)
 												timestamp = Clock.System.now()
 												field {
 													name = "Total strikes"
@@ -502,61 +473,54 @@ class ModerationCommands : Extension() {
 				}
 
 				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
-
-				val action = ban(arguments.userArgument) {
-					reason = arguments.reason
-					logPublicly = modConfig?.publicLogging
-					sendActionLog = true
-					sendDm = arguments.dm
-					removeTimeout = true
-					deleteMessageDuration = DateTimePeriod(days = arguments.messages)
-					this.loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
-					actionEmbed {
+				var dmStatus: Message? = null
+				if (arguments.dm) {
+					dmStatus = arguments.userArgument.dm {
 						embed {
-							title = "Banned a user"
-							description = "${arguments.userArgument.mention} has been banned!"
-							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-							image = arguments.image?.url
-
-							dmNotificationStatusEmbedField(dmResult)
-							timestamp = Clock.System.now()
-							field {
-								name = "Days of messages deleted:"
-								value = arguments.messages.toString()
-								inline = false
-							}
+							title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
+							description = "**Reason:**\n${
+								if (modConfig?.banDmMessage != null && arguments.reason == "No reason provided") {
+									modConfig.banDmMessage
+								} else if (modConfig?.banDmMessage != null && arguments.reason != "No reason provided") {
+									"${arguments.reason}\n${modConfig.banDmMessage}"
+								} else {
+									arguments.reason
+								}
+							}"
 						}
 					}
-
-					publicActionEmbed {
-						embed {
-							title = "Banned a user"
-							description = "${arguments.userArgument.mention} has been banned!"
-							color = DISCORD_BLACK
+				}
+				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
+					embed {
+						title = "Banned a User"
+						description = "${arguments.userArgument.mention} has been banned!"
+						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+						image = arguments.image?.url
+						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+						timestamp = Clock.System.now()
+						field {
+							name = "Days of messages deleted:"
+							value = arguments.messages.toString()
+							inline = false
 						}
-					}
-
-					dmEmbed {
-						title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
-						description = "**Reason:**\n${
-							if (modConfig?.banDmMessage != null && arguments.reason == "No reason provided") {
-								modConfig.banDmMessage
-							} else if (modConfig?.banDmMessage != null && arguments.reason != "No reason provided") {
-								"${arguments.reason}\n${modConfig.banDmMessage}"
-							} else {
-								arguments.reason
-							}
-						}"
 					}
 				}
 
-				if (action.result == ActionResults.NULL_GUILD) {
-					respond { content = action.result.message }
-					return@action
+				if (modConfig?.publicLogging == true) {
+					event.interaction.channel.createEmbed {
+						title = "Banned a user"
+						description = "${arguments.userArgument.mention} has been banned!"
+						color = DISCORD_BLACK
+					}
+				}
+
+				guild?.ban(arguments.userArgument.id) {
+					reason = arguments.reason
+					deleteMessageDuration = DateTimePeriod(days = arguments.messages).toDuration(TimeZone.UTC)
 				}
 
 				respond {
-					content = "Banned a user"
+					content = "Banned ${arguments.userArgument.mention}"
 				}
 			}
 		}
@@ -583,51 +547,50 @@ class ModerationCommands : Extension() {
 					return@action
 				}
 
-				val action = softban(arguments.userArgument) {
-					reason = arguments.reason
-					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
-					sendActionLog = true
-					sendDm = arguments.dm
-					removeTimeout = true
-					if (arguments.messages != null) deleteMessageDuration = DateTimePeriod(days = arguments.messages!!)
-					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
-					actionEmbed {
+				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
+				var dmStatus: Message? = null
+				if (arguments.dm) {
+					dmStatus = arguments.userArgument.dm {
 						embed {
-							title = "Soft-Banned a user"
-							description = "${arguments.userArgument.mention} has been soft-banned!"
-							image = arguments.image?.url
-							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-							dmNotificationStatusEmbedField(dmResult)
-							timestamp = Clock.System.now()
-							field {
-								name = "Days of messages deleted"
-								value = "${arguments.messages ?: deleteMessageDuration.days}"
-								inline = false
-							}
+							title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
+							description = "**Reason:**\n${arguments.reason}\n\n" +
+								"You are free to rejoin without the need to be unbanned"
 						}
 					}
-
-					publicActionEmbed {
-						embed {
-							title = "Soft-Banned a user"
-							description = "${arguments.userArgument.mention} has been soft-banned!"
+				}
+				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
+					embed {
+						title = "Soft-Banned a User"
+						description = "${arguments.userArgument.mention} has been soft-banned!"
+						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+						image = arguments.image?.url
+						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+						timestamp = Clock.System.now()
+						field {
+							name = "Days of messages deleted:"
+							value = "${arguments.messages ?: "3"}"
+							inline = false
 						}
-					}
-
-					dmEmbed {
-						title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
-						description = "**Reason:**\n${arguments.reason}\n\n" +
-							"You are free to rejoin without the need to be unbanned"
 					}
 				}
 
-				if (action.result == ActionResults.NULL_GUILD) {
-					respond { content = action.result.message }
-					return@action
+				if (modConfig?.publicLogging == true) {
+					event.interaction.channel.createEmbed {
+						title = "Soft-Banned a user"
+						description = "${arguments.userArgument.mention} has been soft-banned!"
+						color = DISCORD_BLACK
+					}
 				}
+
+				guild?.ban(arguments.userArgument.id) {
+					reason = arguments.reason + " **SOFT-BAN**"
+					deleteMessageDuration = DateTimePeriod(days = arguments.messages ?: 3).toDuration(TimeZone.UTC)
+				}
+
+				guild?.unban(arguments.userArgument.id, "Soft-ban unban")
 
 				respond {
-					content = "Soft-banned user"
+					content = "Soft-banned ${arguments.userArgument.mention}"
 				}
 			}
 		}
@@ -644,39 +607,24 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				val action = unban(arguments.userArgument) {
-					reason = arguments.reason
-					sendActionLog = true
-					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
-
-					actionEmbed {
-						embed {
-							title = "Unbanned a user"
-							description = "${arguments.userArgument.mention} has been unbanned!\n${
-								arguments.userArgument.id
-							} (${arguments.userArgument.username})"
-							field {
-								name = "Reason:"
-								value = arguments.reason
-							}
-							footer {
-								text = user.asUserOrNull()?.username ?: "Unable to get user username"
-								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-							}
-							timestamp = Clock.System.now()
-							color = DISCORD_GREEN
+				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
+					embed {
+						title = "Unbanned a user"
+						description = "${arguments.userArgument.mention} has been unbanned!\n${
+							arguments.userArgument.id
+						} (${arguments.userArgument.username})"
+						field {
+							name = "Reason:"
+							value = arguments.reason
 						}
+						footer {
+							text = user.asUserOrNull()?.username ?: "Unable to get user username"
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_GREEN
 					}
 				}
-
-				if (action.result == ActionResults.NULL_GUILD) {
-					respond { content = action.result.message }
-					return@action
-				} else if (action.result == ActionResults.ACTION_FAIL && action.extraInfo != null) {
-					respond { content = action.extraInfo }
-					return@action
-				}
-
 				respond {
 					content = "Unbanned user."
 				}
@@ -697,123 +645,39 @@ class ModerationCommands : Extension() {
 			action {
 				isBotOrModerator(event.kord, arguments.userArgument, guild, "kick") ?: return@action
 
-				val action = kick(arguments.userArgument) {
-					reason = arguments.reason
-					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
-					sendActionLog = true
-					sendDm = arguments.dm
-					removeTimeout = true
-					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
-
-					actionEmbed {
+				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
+				var dmStatus: Message? = null
+				if (arguments.dm) {
+					dmStatus = arguments.userArgument.dm {
 						embed {
-							title = "Kicked a user"
-							description = "${arguments.userArgument.mention} has been kicked!"
-							image = arguments.image?.url
-							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-							dmNotificationStatusEmbedField(dmResult)
-							timestamp = Clock.System.now()
+							title = "You have been kicked from ${guild?.fetchGuild()?.name}"
+							description = "**Reason:**\n${arguments.reason}"
 						}
 					}
-
-					publicActionEmbed {
-						embed {
-							title = "Kicked a user"
-							description = "${arguments.userArgument.mention} has been kicked!"
-						}
-					}
-
-					dmEmbed {
-						title = "You have been kicked from ${guild?.fetchGuild()?.name}"
-						description = "**Reason:**\n${arguments.reason}"
+				}
+				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
+					embed {
+						title = "Kicked a user"
+						description = "${arguments.userArgument.mention} has been kicked!"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+						timestamp = Clock.System.now()
 					}
 				}
 
-				if (action.result == ActionResults.NULL_GUILD) {
-					respond { content = action.result.message }
-					return@action
+				if (modConfig?.publicLogging == true) {
+					event.interaction.channel.createEmbed {
+						title = "Kicked a user"
+						description = "${arguments.userArgument.mention} has been kicked!"
+						color = DISCORD_BLACK
+					}
 				}
+
+				guild?.kick(arguments.userArgument.id, arguments.reason)
 
 				respond {
-					content = "Kicked user."
-				}
-			}
-		}
-
-		ephemeralSlashCommand {
-			name = "clear"
-			description = "Parent command for clear commands"
-
-			ephemeralSubCommand(ClearCommandArgs::Count) {
-				name = "count"
-				description = "Clear a specific count of messages"
-
-				requirePermission(Permission.ManageMessages)
-
-				check {
-					modCommandChecks(Permission.ManageMessages)
-					requireBotPermissions(Permission.ManageMessages)
-					botHasChannelPerms(Permissions(Permission.ManageMessages))
-				}
-
-				action {
-					clearMessages(arguments.count, null, null, arguments.author)
-				}
-			}
-
-			ephemeralSubCommand(ClearCommandArgs::Before) {
-				name = "before"
-				description = "Clear messages before a given message ID"
-
-				requirePermission(Permission.ManageMessages)
-
-				check {
-					modCommandChecks(Permission.ManageMessages)
-					requireBotPermissions(Permission.ManageMessages)
-					botHasChannelPerms(Permissions(Permission.ManageMessages))
-				}
-
-				action {
-					clearMessages(arguments.count, Snowflake(arguments.before.value + 1u), null, arguments.author)
-				}
-			}
-
-			ephemeralSubCommand(ClearCommandArgs::After) {
-				name = "after"
-				description = "Clear messages before a given message ID"
-
-				requirePermission(Permission.ManageMessages)
-
-				check {
-					modCommandChecks(Permission.ManageMessages)
-					requireBotPermissions(Permission.ManageMessages)
-					botHasChannelPerms(Permissions(Permission.ManageMessages))
-				}
-
-				action {
-					clearMessages(arguments.count, null, Snowflake(arguments.after.value - 1u), arguments.author)
-				}
-			}
-
-			ephemeralSubCommand(ClearCommandArgs::Between) {
-				name = "between"
-				description = "Clear messages between 2 message IDs"
-
-				requirePermission(Permission.ManageMessages)
-
-				check {
-					modCommandChecks(Permission.ManageMessages)
-					requireBotPermissions(Permission.ManageMessages)
-					botHasChannelPerms(Permissions(Permission.ManageMessages))
-				}
-
-				action {
-					clearMessages(
-						null,
-						Snowflake(arguments.before.value - 1u),
-						Snowflake(arguments.after.value + 1u),
-						arguments.author
-					)
+					content = "Kicked ${arguments.userArgument}"
 				}
 			}
 		}
@@ -836,53 +700,47 @@ class ModerationCommands : Extension() {
 
 				isBotOrModerator(event.kord, arguments.userArgument, guild, "timeout") ?: return@action
 
-				val action = timeout(arguments.userArgument) {
-					reason = arguments.reason
-					logPublicly = ModerationConfigCollection().getConfig(guild!!.id)?.publicLogging
-					timeoutDuration = duration
-					sendDm = arguments.dm
-					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
-					actionEmbed {
+				var dmStatus: Message? = null
+				if (arguments.dm) {
+					dmStatus = arguments.userArgument.dm {
 						embed {
-							title = "Timeout"
-							image = arguments.image?.url
-							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-							dmNotificationStatusEmbedField(dmResult)
-							timestamp = Clock.System.now()
-							field {
-								name = "Duration:"
-								value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
-								inline = false
-							}
+							title = "You have been timed out in ${guild?.fetchGuild()?.name}"
+							description = "**Duration:**\n${
+								duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
+							}\n**Reason:**\n${arguments.reason}"
 						}
-					}
-					publicActionEmbed {
-						embed {
-							title = "Timeout"
-							description = "${arguments.userArgument.mention} was timed out by a moderator"
-							color = DISCORD_BLACK
-							field {
-								name = "Duration:"
-								value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
-								inline = false
-							}
-						}
-					}
-					dmEmbed {
-						title = "You have been timed out in ${guild?.fetchGuild()?.name}"
-						description = "**Duration:**\n${
-							duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
-						}\n**Reason:**\n${arguments.reason}"
 					}
 				}
 
-				if (action.result == ActionResults.NULL_GUILD) {
-					respond { content = action.result.message }
-					return@action
+				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
+					embed {
+						title = "Timeout"
+						image = arguments.image?.url
+						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+						timestamp = Clock.System.now()
+						field {
+							name = "Duration:"
+							value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
+							inline = false
+						}
+					}
+				}
+				if (modConfig?.publicLogging == true) {
+					event.interaction.channel.createEmbed {
+						title = "Timeout"
+						description = "${arguments.userArgument.mention} was timed out by a moderator"
+						color = DISCORD_BLACK
+						field {
+							name = "Duration:"
+							value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
+							inline = false
+						}
+					}
 				}
 
 				respond {
-					content = "Timed-out user."
+					content = "Timed-out ${arguments.userArgument.mention}."
 				}
 			}
 		}
@@ -899,35 +757,31 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				val action = removeTimeout(arguments.userArgument) {
-					sendDm = arguments.dm
-					loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)
-					actionEmbed {
+				var dmStatus: Message? = null
+				if (arguments.dm) {
+					dmStatus = arguments.userArgument.dm {
 						embed {
-							title = "Timeout Removed"
-							dmNotificationStatusEmbedField(dmResult)
-							field {
-								name = "User:"
-								value = "${arguments.userArgument.username} \n${arguments.userArgument.id}"
-								inline = false
-							}
-							footer {
-								text = "Requested by ${user.asUserOrNull()?.username}"
-								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-							}
-							timestamp = Clock.System.now()
-							color = DISCORD_BLACK
+							title = "Timeout removed in ${guild!!.asGuildOrNull()?.name}"
+							description = "Your timeout has been manually removed in this guild."
 						}
 					}
-					dmEmbed {
-						title = "Timeout removed in ${guild!!.asGuildOrNull()?.name}"
-						description = "Your timeout has been manually removed in this guild."
-					}
 				}
-
-				if (action.result == ActionResults.NULL_GUILD) {
-					respond { content = action.result.message }
-					return@action
+				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
+					embed {
+						title = "Timeout Removed"
+						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+						field {
+							name = "User:"
+							value = "${arguments.userArgument.username} \n${arguments.userArgument.id}"
+							inline = false
+						}
+						footer {
+							text = "Requested by ${user.asUserOrNull()?.username}"
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_BLACK
+					}
 				}
 
 				respond {
@@ -949,7 +803,8 @@ class ModerationCommands : Extension() {
 
 			action {
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
+				val actionLog =
+					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				val guildName = guild?.asGuildOrNull()?.name
 
 				isBotOrModerator(event.kord, arguments.userArgument, guild, "warn") ?: return@action
@@ -961,7 +816,7 @@ class ModerationCommands : Extension() {
 					content = "Warned user."
 				}
 
-				var dm: Message? = null
+				var dmStatus: Message? = null
 
 				if (arguments.dm) {
 					val warnText = if (config.autoPunishOnWarn == false) {
@@ -975,7 +830,7 @@ class ModerationCommands : Extension() {
 						}
 					}
 
-					dm = arguments.userArgument.dm {
+					dmStatus = arguments.userArgument.dm {
 						embed {
 							title = "Warning $strikes in $guildName"
 							description = "**Reason:** ${arguments.reason}\n\n$warnText"
@@ -994,14 +849,12 @@ class ModerationCommands : Extension() {
 					}
 				}
 
-				val dmResult = getDmResult(arguments.dm, dm)
-
 				actionLog.createMessage {
 					embed {
 						title = "Warning"
 						image = arguments.image?.url
 						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmResult)
+						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
 						timestamp = Clock.System.now()
 						field {
 							name = "Total strikes"
@@ -1066,9 +919,9 @@ class ModerationCommands : Extension() {
 					content = "Removed strike from user"
 				}
 
-				var dm: Message? = null
+				var dmStatus: Message? = null
 				if (arguments.dm) {
-					dm = targetUser.dm {
+					dmStatus = targetUser.dm {
 						embed {
 							title = "Warn strike removal in ${guild?.fetchGuild()?.name}"
 							description = "You have had a warn strike removed. You now have $userStrikes strikes."
@@ -1077,15 +930,14 @@ class ModerationCommands : Extension() {
 					}
 				}
 
-				val dmResult = getDmResult(arguments.dm, dm)
-
-				val actionLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
+				val actionLog =
+					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
 					title = "Warning Removal"
 					color = DISCORD_GREEN
 					timestamp = Clock.System.now()
 					baseModerationEmbed(null, targetUser, user)
-					dmNotificationStatusEmbedField(dmResult)
+					dmNotificationStatusEmbedField(dmStatus, arguments.dm)
 					field {
 						name = "Total Strikes:"
 						value = userStrikes.toString()
@@ -1309,19 +1161,6 @@ class ModerationCommands : Extension() {
 }
 
 /**
- * Performs the common checks for a command.
- *
- * @param actionPermission The permission to check the user has.
- * @author NoComment1105
- * @since 4.4.0
- */
-private suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: Permission) {
-	anyGuild()
-	requiredConfigs(ConfigOptions.MODERATION_ENABLED)
-	hasPermission(actionPermission)
-}
-
-/**
  * Creates a log for timeouts produced by a number of warnings.
  *
  * @param warningNumber The number of warning strikes the user has
@@ -1359,171 +1198,5 @@ private fun EmbedBuilder.warnTimeoutLog(warningNumber: Int, moderator: User, tar
 		}
 		color = DISCORD_BLACK
 		timestamp = Clock.System.now()
-	}
-}
-
-/**
- * A function to use clear messages based on the count, before and after, as well as a user.
- *
- * @param count The number of messages to clear, or null
- * @param before The ID of the message to clear messages before
- * @param after The ID of the message to clear messages after
- * @param author The author of the messages that should be cleared
- * @author NoComment1105
- * @since 4.8.6
- */
-private suspend fun EphemeralSlashCommandContext<*, *>.clearMessages(
-	count: Int?,
-	before: Snowflake?,
-	after: Snowflake?,
-	author: User?
-) {
-	val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-	val textChannel = channel.asChannelOfOrNull<GuildMessageChannel>()
-
-	if (textChannel == null) {
-		respond {
-			content = "Could not get the channel to clear messages from."
-		}
-		return
-	}
-
-	if ((before != null && after != null) && (before < after)) {
-		respond {
-			content = "Before cannot be more recent than after!"
-		}
-		return
-	}
-
-	// Get the specified amount of messages into an array list of Snowflakes and delete them
-	// Send help
-	val messageFlow = if (before == null && after == null) {
-		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(Snowflake.max, count?.let { min(it, 100) })
-	} else if (after != null && before == null) {
-		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesAfter(after, count?.let { min(it, 100) })
-	} else if (after == null && before != null) {
-		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(before, count?.let { min(it, 100) })
-	} else if (after != null && before != null) {
-		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(before, count?.let { min(it, 100) })
-			.filter { it.id > after }
-	} else {
-		flowOf()
-	}
-
-	val messages = if (author == null) {
-		messageFlow.map { it.id }.toSet()
-	} else {
-		messageFlow.filter { it.author == author }.map { it.id }.toSet()
-	}
-
-	textChannel.bulkDelete(messages)
-
-	respond {
-		content = "Messages cleared."
-	}
-
-	if (config.publicLogging != null && config.publicLogging == true) {
-		channel.createEmbed {
-			title = "$count messages have been cleared."
-			color = DISCORD_BLACK
-		}
-	}
-
-	val actionLog =
-		getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return
-	actionLog.createEmbed {
-		title = "${count ?: messages.size} messages have been cleared."
-		description = "Action occurred in ${textChannel.mention}"
-		footer {
-			text = user.asUserOrNull()?.username ?: "Unable to get username"
-			icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-		}
-		color = DISCORD_BLACK
-	}
-}
-
-/**
- * An object containing the arguments for clear commands.
- *
- * @since 4.8.6
- */
-@Suppress("MemberNameEqualsClassName") // Cope
-object ClearCommandArgs {
-	/** Clear a specific count of messages. */
-	class Count : Arguments() {
-		/** The number of messages the user wants to remove. */
-		val count by int {
-			name = "messages"
-			description = "Number of messages to delete"
-		}
-
-		/** The author of the messages that need clearing. */
-		val author by optionalUser {
-			name = "author"
-			description = "The author of the messages to clear"
-		}
-	}
-
-	/** Clear messages after a specific one. */
-	class After : Arguments() {
-		/** The ID of the message to start clearing from. */
-		val after by snowflake {
-			name = "after"
-			description = "The ID of the message to clear after"
-		}
-
-		/** The number of messages the user wants to remove. */
-		val count by optionalInt {
-			name = "message-count"
-			description = "The number of messages to clear"
-		}
-
-		/** The author of the messages that need clearing. */
-		val author by optionalUser {
-			name = "author"
-			description = "The author of the messages to clear"
-		}
-	}
-
-	/** Clear messages before a specific one. */
-	class Before : Arguments() {
-		/** The ID of the message to start clearing before. */
-		val before by snowflake {
-			name = "before"
-			description = "The ID of the message to clear before"
-		}
-
-		/** The number of messages the user wants to remove. */
-		val count by optionalInt {
-			name = "message-count"
-			description = "The number of messages to clear"
-		}
-
-		/** The author of the messages that need clearing. */
-		val author by optionalUser {
-			name = "author"
-			description = "The author of the messages to clear"
-		}
-	}
-
-	/** Clear messages between 2 specific ones. */
-	class Between : Arguments() {
-		/** The ID of the message to start clearing from. */
-		val after by snowflake {
-			name = "after"
-			description = "The ID of the message to clear after"
-		}
-
-		/** The ID of the message to start clearing before. */
-		val before by snowflake {
-			name = "before"
-			description = "The ID of the message to clear before"
-		}
-
-		/** The author of the messages that need clearing. */
-		val author by optionalUser {
-			name = "author"
-			description = "The author of the messages to clear"
-		}
 	}
 }

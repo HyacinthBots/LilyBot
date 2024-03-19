@@ -25,6 +25,7 @@ import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
 import org.hyacinthbots.lilybot.extensions.events.MessageEdit
 import org.hyacinthbots.lilybot.extensions.events.ModThreadInviting
+import org.hyacinthbots.lilybot.extensions.moderation.ClearCommands
 import org.hyacinthbots.lilybot.extensions.moderation.LockingCommands
 import org.hyacinthbots.lilybot.extensions.moderation.ModerationCommands
 import org.hyacinthbots.lilybot.extensions.moderation.Report
@@ -51,6 +52,7 @@ import org.kohsuke.github.GitHubBuilder
 import java.io.IOException
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 lateinit var github: GitHub
 private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
@@ -75,6 +77,7 @@ suspend fun main() {
 		// Add the extensions to the bot
 		extensions {
 			add(::AutoThreading)
+			add(::ClearCommands)
 			add(::Config)
 			add(::GalleryChannel)
 			add(::Github)
@@ -120,13 +123,15 @@ suspend fun main() {
 			control of their account
 			 */
 			extPhishing {
-				appName = "Lily Bot"
 				detectionAction = DetectionAction.Kick
 				logChannelName = "anti-phishing-logs"
 				requiredCommandPermission = null
 			}
 
-			extPluralKit()
+			extPluralKit {
+				defaultLimit(4, 1.seconds)
+				domainLimit("api.pluralkit.me", 2, 1.seconds)
+			}
 
 			sentry {
 				enableIfDSN(SENTRY_DSN) // Use the nullable sentry function to allow the bot to be used without a DSN
