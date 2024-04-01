@@ -44,7 +44,6 @@ import org.hyacinthbots.lilybot.extensions.util.Tags
 import org.hyacinthbots.lilybot.extensions.util.ThreadControl
 import org.hyacinthbots.lilybot.utils.BOT_TOKEN
 import org.hyacinthbots.lilybot.utils.ENVIRONMENT
-import org.hyacinthbots.lilybot.utils.SENTRY_DSN
 import org.hyacinthbots.lilybot.utils.database
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.kohsuke.github.GitHub
@@ -133,9 +132,9 @@ suspend fun main() {
 				domainLimit("api.pluralkit.me", 2, 1.seconds)
 			}
 
-			sentry {
-				enableIfDSN(SENTRY_DSN) // Use the nullable sentry function to allow the bot to be used without a DSN
-			}
+// 			sentry {
+// 				enableIfDSN(SENTRY_DSN) // Use the nullable sentry function to allow the bot to be used without a DSN
+// 			}
 		}
 
 		docsGenerator {
