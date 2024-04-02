@@ -8,13 +8,12 @@ grgit = "5.2.2"
 blossom = "2.1.0"
 
 # Libraries
-kord-extensions = "1.7.2-20240221.102953-1"
+kord-extensions = "1.8.0-20240319.115836-21"
 logging = "6.0.3"
 logback = "1.5.0"
 github-api = "1.318"
 kmongo = "4.11.0"
-dma = "v0.2.1"
-docgenerator = "0.1.4"
+docgenerator = "0.1.5-SNAPSHOT"
 
 [libraries]
 kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
@@ -28,7 +27,6 @@ logging = { module = "io.github.oshai:kotlin-logging", version.ref = "logging" }
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
 kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
 detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
-dma = { module = "org.hyacinthbots:discord-moderation-actions", version.ref = "dma"}
 docgenerator = { module = "org.hyacinthbots:doc-generator", version.ref = "docgenerator" }
 
 [plugins]

@@ -6,7 +6,6 @@ import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.rest.builder.message.EmbedBuilder
-import org.hyacinthbots.discordmoderationactions.enums.DmResult
 
 /**
  * This is the base moderation embed for all moderation actions. This should be posted to the action log of a guild.
@@ -40,13 +39,20 @@ suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser:
  * user a DM.
  *
  * @param dm The direct message that is sent to the user.
+ * @param override Whether the DM was forcefully disabled by the command runner.
  * @author NoComment1105
  * @since 3.0.0
  */
-fun EmbedBuilder.dmNotificationStatusEmbedField(dm: DmResult?) {
+fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?, override: Boolean) {
 	field {
 		name = "User Notification:"
-		value = dm?.message ?: "Fireworks have frazzled the lily"
+		value = if (dm != null) {
+			"User notified with direct message"
+		} else if (!override) {
+			"DM Notification Disabled"
+		} else {
+			"Failed to notify user with direct message"
+		}
 		inline = false
 	}
 }

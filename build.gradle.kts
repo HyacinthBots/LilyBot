@@ -57,7 +57,6 @@ dependencies {
 	// KMongo
 	implementation(libs.kmongo)
 
-	implementation(libs.dma)
 	implementation(libs.docgenerator)
 }
 

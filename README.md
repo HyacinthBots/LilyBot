@@ -33,7 +33,7 @@ If you're looking to set up a development environment for Lily, try our [develop
 Lily makes use of the following tools and frameworks.
 * [Kord](https://github.com/kordlib/kord), the Kotlin API for Discord.
 * [KordEx](https://github.com/Kord-Extensions/kord-extensions), an integrated commands and extensions framework for Kord.
-* KordEx's [Phishing](https://github.com/Kord-Extensions/kord-extensions/tree/develop/extra-modules/extra-phishing), [PluralKit](https://github.com/Kord-Extensions/kord-extensions/tree/develop/extra-modules/extra-pluralkit) and [Unsafe](https://github.com/Kord-Extensions/kord-extensions/tree/develop/modules/unsafe) modules.
+* KordEx's [Phishing](https://github.com/Kord-Extensions/kord-extensions/tree/root/extra-modules/extra-phishing), [PluralKit](https://github.com/Kord-Extensions/kord-extensions/tree/root/extra-modules/extra-pluralkit), [Unsafe](https://github.com/Kord-Extensions/kord-extensions/tree/develop/modules/unsafe) and [Welcome Channel](https://github.com/Kord-Extensions/kord-extensions/tree/root/extra-modules/extra-welcome) modules.
 * [MongoDB](https://www.mongodb.com/) and [KMongo](https://litote.org/kmongo/)
   to manage the database.
 * [Logback](https://github.com/qos-ch/logback), a library that makes logging prettier
@@ -41,8 +41,6 @@ Lily makes use of the following tools and frameworks.
 * [Github-API](https://github.com/hub4j/github-api), the API utilized by the GitHub commands
 * [Shadow Gradle Plugin](https://github.com/johnrengelman/shadow), a tool which allows us to make a big fatjar containing all dependencies
 * [detekt](https://detekt.dev/index.html), a static code analysis tool for the Kotlin programming language. This helps us keep our code clean and nicely formatted.
-* [Cozy's Welcome channel module](https://github.com/QuiltMC/cozy-discord/tree/root/module-welcome) made by our friends at [QuiltMC](https://quiltmc.org/)
-* [Discord Moderator Actions](https://github.com/NoComment1105/discord-moderation-actions), a library for making moderation commands easier, through the use of DSL.
 * [Doc-generator](https://github.com/HyacinthBots/doc-generator), our in-house documentation generator for KordEx bots
 
 #### Contributing
