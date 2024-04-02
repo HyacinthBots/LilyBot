@@ -14,7 +14,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralButton
-import com.kotlindiscord.kord.extensions.components.ephemeralSelectMenu
+import com.kotlindiscord.kord.extensions.components.ephemeralStringSelectMenu
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -486,7 +486,7 @@ class RoleMenu : Extension() {
 					content = "Use the menu below to select roles."
 					components {
 						// TODO Update to ephemeralRoleSelectMenu
-						ephemeralSelectMenu {
+						ephemeralStringSelectMenu {
 							placeholder = "Select roles..."
 							maximumChoices = roles.size
 							minimumChoices = 0
@@ -583,7 +583,7 @@ class RoleMenu : Extension() {
 						content = "Use the menu below to subscribe to roles."
 						components {
 							// TODO Update to ephemeralRoleSelectMenu
-							ephemeralSelectMenu {
+							ephemeralStringSelectMenu {
 								placeholder = "Select roles to subscribe to..."
 								minimumChoices = 0
 								maximumChoices = subscribableRoles.size
