@@ -17,7 +17,6 @@ import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import mu.KotlinLogging
-import org.hyacinthbots.discordmoderationactions.enums.DmResult
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
@@ -76,22 +75,6 @@ suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.ca
  */
 suspend inline fun <T : GuildBehavior> T.getMemberCount() =
 	kord.getGuildOrNull(this.id)!!.withStrategy(EntitySupplyStrategy.rest).members.count()
-
-/**
- * Gets the result of attempting to send a DM to a user.
- *
- * @param shouldDm Whether to attempt to DM or not
- * @param dm The actual [Message] sent to a user
- * @return a [DmResult] ordinal based on the success
- * @author NoComment1105
- * @since 4.4.0
- */
-fun getDmResult(shouldDm: Boolean, dm: Message?): DmResult =
-	when {
-		shouldDm && dm != null -> DmResult.DM_SUCCESS
-		shouldDm && dm == null -> DmResult.DM_FAIL
-		else -> DmResult.DM_NOT_SENT
-	}
 
 /**
  * Checks a string to see if it fits the in a discord embed field.

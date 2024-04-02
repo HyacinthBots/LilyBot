@@ -1,7 +1,10 @@
 package org.hyacinthbots.lilybot.utils
 
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.channelFor
+import com.kotlindiscord.kord.extensions.checks.hasPermission
 import com.kotlindiscord.kord.extensions.checks.types.CheckContext
+import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
 import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
 import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import com.kotlindiscord.kord.extensions.utils.getTopRole
@@ -243,4 +246,17 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 	}
 
 	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
+}
+
+/**
+ * Performs the common checks for a moderation command.
+ *
+ * @param actionPermission The permission to check the user has.
+ * @author NoComment1105
+ * @since 4.4.0
+ */
+suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: Permission) {
+	anyGuild()
+	requiredConfigs(ConfigOptions.MODERATION_ENABLED)
+	hasPermission(actionPermission)
 }
