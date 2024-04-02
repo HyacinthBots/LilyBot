@@ -6,6 +6,8 @@ import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.annotations.DoNotChain
 import com.kotlindiscord.kord.extensions.checks.hasPermissions
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
+import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOptionalDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
@@ -19,11 +21,16 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PluralKit
+import com.kotlindiscord.kord.extensions.pagination.EphemeralResponsePaginator
+import com.kotlindiscord.kord.extensions.pagination.pages.Page
+import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import com.kotlindiscord.kord.extensions.utils.dm
 import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import com.kotlindiscord.kord.extensions.utils.kordExUserAgent
+import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
+import com.kotlindiscord.kord.extensions.utils.scheduling.Task
 import com.kotlindiscord.kord.extensions.utils.timeout
 import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import com.kotlindiscord.kord.extensions.utils.toDuration
@@ -34,10 +41,13 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.embed
@@ -47,7 +57,9 @@ import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
+import org.hyacinthbots.lilybot.database.collections.TemporaryBanCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
+import org.hyacinthbots.lilybot.database.entities.TemporaryBanData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
@@ -57,6 +69,7 @@ import org.hyacinthbots.lilybot.utils.interval
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 import org.hyacinthbots.lilybot.utils.modCommandChecks
 import kotlin.time.Duration
+import kotlin.time.toDuration
 
 class ModerationCommands : Extension() {
 	override val name = "moderation"
@@ -65,8 +78,15 @@ class ModerationCommands : Extension() {
 		"For more information about the warn system, please see [this document]" +
 		"($HYACINTH_GITHUB/LilyBot/blob/main/docs/commands.md#name-warn)"
 
+	/** The scheduler that will track the time for un-banning in temp bans. */
+	private val tempBanScheduler = Scheduler()
+
+	/** The task that will run the [tempBanScheduler]. */
+	private lateinit var tempBanTask: Task
+
 	@OptIn(DoNotChain::class)
 	override suspend fun setup() {
+		tempBanTask = tempBanScheduler.schedule(120, repeat = true, callback = ::removeTempBans)
 		ephemeralMessageCommand {
 			name = "Moderate"
 			locking = true
@@ -595,6 +615,188 @@ class ModerationCommands : Extension() {
 			}
 		}
 
+		ephemeralSlashCommand {
+			name = "temp-ban"
+			description = "The parent command for temporary ban commands"
+
+			ephemeralSubCommand(::TempBanArgs) {
+				name = "add"
+				description = "Temporarily bans a user"
+
+				requirePermission(Permission.BanMembers)
+				check {
+					modCommandChecks(Permission.BanMembers)
+					requireBotPermissions(Permission.BanMembers)
+				}
+
+				action {
+					val now = Clock.System.now()
+					val duration = now.plus(arguments.duration, TimeZone.UTC)
+					val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
+					var dmStatus: Message? = null
+					if (arguments.dm) {
+						dmStatus = arguments.userArgument.dm {
+							embed {
+								title = "You have been temporarily banned from ${guild?.fetchGuild()?.name}"
+								description = "**Reason:**\n${arguments.reason}\n\n" +
+									"You are banned until $duration"
+							}
+						}
+					}
+					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
+						embed {
+							title = "Temporarily banned a user"
+							description =
+								"${arguments.userArgument.mention} has been temporarily banned!"
+							image = arguments.image?.url
+							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
+							dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+							field {
+								name = "Duration:"
+								value =
+									duration.toDiscord(TimestampType.Default) + " (${arguments.duration.interval()})"
+							}
+							timestamp = now
+						}
+					}
+
+					if (modConfig?.publicLogging == true) {
+						event.interaction.channel.createEmbed {
+							title = "Temp Banned a user"
+							description = "${arguments.userArgument.mention} has been Temp Banned!"
+							color = DISCORD_BLACK
+						}
+					}
+
+					TemporaryBanCollection().setTempBan(
+						TemporaryBanData(
+							guild!!.id,
+							arguments.userArgument.id,
+							user.id,
+							now,
+							duration
+						)
+					)
+
+					guild?.ban(arguments.userArgument.id) {
+						reason = arguments.reason
+						deleteMessageDuration = DateTimePeriod(days = arguments.messages).toDuration(TimeZone.UTC)
+					}
+
+					respond {
+						content = "Temporarily banned ${arguments.userArgument.mention}"
+					}
+				}
+			}
+
+			ephemeralSubCommand(::UnbanArgs) {
+				name = "remove"
+				description = "Removes a temporary ban"
+
+				requirePermission(Permission.BanMembers)
+
+				check {
+					modCommandChecks(Permission.BanMembers)
+					requireBotPermissions(Permission.BanMembers)
+				}
+
+				action {
+					val tempBan = TemporaryBanCollection().getUserTempBan(guild!!.id, arguments.userArgument.id)
+					if (tempBan == null || guild?.getBanOrNull(arguments.userArgument.id) == null) {
+						respond {
+							content = "This user is not temporarily banned"
+						}
+						return@action
+					}
+
+					guild?.unban(arguments.userArgument.id)
+					TemporaryBanCollection().removeTempBan(guild!!.id, arguments.userArgument.id)
+
+					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
+						embed {
+							title = "Temporary Ban Removed"
+							description = "${arguments.userArgument.mention} has had their temporary ban removed!\n${
+								arguments.userArgument.id
+							} (${arguments.userArgument.username})"
+							field {
+								name = "Reason:"
+								value = arguments.reason
+							}
+							field {
+								name = "Original Action taker:"
+								value = this@ephemeralSubCommand.kord.getUser(tempBan.moderatorUserId)?.username
+									?: "Unable to get username"
+							}
+							footer {
+								text = user.asUserOrNull()?.username ?: "Unable to get user username"
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+							}
+							timestamp = Clock.System.now()
+							color = DISCORD_GREEN
+						}
+					}
+					respond {
+						content = "Temporary Ban removed."
+					}
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "view-all"
+				description = "View all temporary bans for this guild"
+
+				requirePermission(Permission.BanMembers)
+
+				check {
+					modCommandChecks(Permission.BanMembers)
+					requireBotPermissions(Permission.BanMembers)
+				}
+
+				action {
+					val pagesObj = Pages()
+					val tempBans = TemporaryBanCollection().getTempBansForGuild(guild!!.id)
+					if (tempBans.isEmpty()) {
+						pagesObj.addPage(
+							Page {
+								description = "There are no temporary bans in this guild."
+							}
+						)
+					} else {
+						tempBans.chunked(4).forEach { tempBan ->
+							var content = ""
+							tempBan.forEach {
+								content = """
+									User: ${this@ephemeralSubCommand.kord.getUser(it.bannedUserId)?.username}
+									Moderator: ${guild?.getMemberOrNull(it.moderatorUserId)?.username}
+									Start Time: ${it.startTime.toDiscord(TimestampType.ShortDateTime)} (${
+									it.startTime.toDiscord(TimestampType.RelativeTime)})
+									End Time: ${it.endTime.toDiscord(TimestampType.ShortDateTime)} (${
+									it.endTime.toDiscord(TimestampType.RelativeTime)})
+									---
+								""".trimIndent()
+							}
+
+							pagesObj.addPage(
+								Page {
+									title = "Temporary bans for ${guild?.asGuildOrNull()?.name ?: "this guild"}"
+									description = content
+								}
+							)
+						}
+					}
+
+					val paginator = EphemeralResponsePaginator(
+						pages = pagesObj,
+						owner = event.interaction.user,
+						timeoutSeconds = 300,
+						interaction = interactionResponse
+					)
+
+					paginator.send()
+				}
+			}
+		}
+
 		ephemeralSlashCommand(::UnbanArgs) {
 			name = "unban"
 			description = "Unbans a user."
@@ -956,6 +1158,49 @@ class ModerationCommands : Extension() {
 		}
 	}
 
+	private suspend fun removeTempBans() {
+		val tempBans = TemporaryBanCollection().getAllTempBans()
+		val dueTempBans =
+			tempBans.filter { it.endTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0 }
+
+		for (it in dueTempBans) {
+			var guild: Guild?
+			try {
+				guild = kord.getGuildOrNull(it.guildId)
+			} catch (_: KtorRequestException) {
+				TemporaryBanCollection().removeTempBan(it.guildId, it.bannedUserId)
+				continue
+			}
+
+			if (guild == null) {
+				TemporaryBanCollection().removeTempBan(it.guildId, it.bannedUserId)
+				continue
+			}
+
+			guild.unban(it.bannedUserId, "Temporary Ban expired")
+			val modChannelId = ModerationConfigCollection().getConfig(guild.id)?.channel
+			if (modChannelId != null) {
+				val modChannel = guild.getChannelOfOrNull<GuildMessageChannel>(modChannelId)
+				modChannel?.createMessage {
+					embed {
+						title = "Temporary ban Completed"
+						description = "${kord.getUser(it.bannedUserId)?.username} has served their temporary ban"
+						field {
+							name = "Initial Ban date:"
+							value = it.startTime.toDiscord(TimestampType.ShortDateTime)
+						}
+						color = DISCORD_GREEN
+						footer {
+							text = "Initial action taker: ${kord.getUser(it.moderatorUserId)?.username}"
+							icon = kord.getUser(it.moderatorUserId)?.avatar?.cdnUrl?.toUrl()
+						}
+					}
+				}
+			}
+			TemporaryBanCollection().removeTempBan(it.guildId, it.bannedUserId)
+		}
+	}
+
 	inner class BanArgs : Arguments() {
 		/** The user to ban. */
 		val userArgument by user {
@@ -1018,6 +1263,46 @@ class ModerationCommands : Extension() {
 		}
 
 		/** An image that the user wishes to provide for context to the soft-ban. */
+		val image by optionalAttachment {
+			name = "image"
+			description = "An image you'd like to provide as extra context for the action"
+		}
+	}
+
+	inner class TempBanArgs : Arguments() {
+		/** The user to ban. */
+		val userArgument by user {
+			name = "user"
+			description = "Person to ban"
+		}
+
+		/** The number of days worth of messages to delete. */
+		val messages by int {
+			name = "delete-message-days"
+			description = "The number of days worth of messages to delete"
+		}
+
+		/** The duration of the temporary ban. */
+		val duration by coalescingDuration {
+			name = "duration"
+			description = "The duration of the temporary ban."
+		}
+
+		/** The reason for the ban. */
+		val reason by defaultingString {
+			name = "reason"
+			description = "The reason for the ban"
+			defaultValue = "No reason provided"
+		}
+
+		/** Whether to DM the user or not. */
+		val dm by defaultingBoolean {
+			name = "dm"
+			description = "Whether to send a direct message to the user about the ban"
+			defaultValue = true
+		}
+
+		/** An image that the user wishes to provide for context to the ban. */
 		val image by optionalAttachment {
 			name = "image"
 			description = "An image you'd like to provide as extra context for the action"
