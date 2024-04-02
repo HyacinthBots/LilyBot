@@ -956,71 +956,19 @@ class ModerationCommands : Extension() {
 		}
 	}
 
-	inner class BanArgs : Arguments() {
-		/** The user to ban. */
-		val userArgument by user {
-			name = "user"
-			description = "Person to ban"
-		}
-
+	inner class BanArgs : ModerationArguments() {
 		/** The number of days worth of messages to delete. */
 		val messages by int {
 			name = "delete-message-days"
 			description = "The number of days worth of messages to delete"
 		}
-
-		/** The reason for the ban. */
-		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the ban"
-			defaultValue = "No reason provided"
-		}
-
-		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the ban"
-			defaultValue = true
-		}
-
-		/** An image that the user wishes to provide for context to the ban. */
-		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
-		}
 	}
 
-	inner class SoftBanArgs : Arguments() {
-		/** The user to soft-ban. */
-		val userArgument by user {
-			name = "user"
-			description = "Person to Soft ban"
-		}
-
+	inner class SoftBanArgs : ModerationArguments() {
 		/** The number of days worth of messages to delete, defaults to 3 days. */
 		val messages by optionalInt {
 			name = "delete-message-days"
 			description = "The number of days worth of messages to delete"
-		}
-
-		/** The reason for the soft-ban. */
-		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the ban"
-			defaultValue = "No reason provided"
-		}
-
-		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the soft-ban"
-			defaultValue = true
-		}
-
-		/** An image that the user wishes to provide for context to the soft-ban. */
-		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
 		}
 	}
 
@@ -1039,65 +987,13 @@ class ModerationCommands : Extension() {
 		}
 	}
 
-	inner class KickArgs : Arguments() {
-		/** The user to kick. */
-		val userArgument by user {
-			name = "user"
-			description = "Person to kick"
-		}
+	inner class KickArgs : ModerationArguments()
 
-		/** The reason for the kick. */
-		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the Kick"
-			defaultValue = "No reason provided"
-		}
-
-		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the kick"
-			defaultValue = true
-		}
-
-		/** An image that the user wishes to provide for context to the kick. */
-		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
-		}
-	}
-
-	inner class TimeoutArgs : Arguments() {
-		/** The requested user to timeout. */
-		val userArgument by user {
-			name = "user"
-			description = "Person to timeout"
-		}
-
+	inner class TimeoutArgs : ModerationArguments() {
 		/** The time the timeout should last for. */
 		val duration by coalescingOptionalDuration {
 			name = "duration"
 			description = "Duration of timeout"
-		}
-
-		/** The reason for the timeout. */
-		val reason by defaultingString {
-			name = "reason"
-			description = "Reason for timeout"
-			defaultValue = "No reason provided"
-		}
-
-		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the timeout"
-			defaultValue = true
-		}
-
-		/** An image that the user wishes to provide for context to the kick. */
-		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
 		}
 	}
 
@@ -1116,33 +1012,7 @@ class ModerationCommands : Extension() {
 		}
 	}
 
-	inner class WarnArgs : Arguments() {
-		/** The requested user to warn. */
-		val userArgument by user {
-			name = "user"
-			description = "Person to warn"
-		}
-
-		/** The reason for the warning. */
-		val reason by defaultingString {
-			name = "reason"
-			description = "Reason for warning"
-			defaultValue = "No reason provided"
-		}
-
-		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the warning"
-			defaultValue = true
-		}
-
-		/** An image that the user wishes to provide for context to the kick. */
-		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
-		}
-	}
+	inner class WarnArgs : ModerationArguments()
 
 	inner class RemoveWarnArgs : Arguments() {
 		/** The requested user to remove the warning from. */
@@ -1157,6 +1027,34 @@ class ModerationCommands : Extension() {
 			description = "Whether to send a direct message to the user about the warning"
 			defaultValue = true
 		}
+	}
+}
+
+open class ModerationArguments : Arguments() {
+	/** The target user to apply the action too. */
+	val userArgument by user {
+		name = "user"
+		description = "The user to apply this action too"
+	}
+
+	/** The reason for the action. */
+	val reason by defaultingString {
+		name = "reason"
+		description = "Reason for action"
+		defaultValue = "No reason provided"
+	}
+
+	/** Whether to DM the user or not. */
+	val dm by defaultingBoolean {
+		name = "dm"
+		description = "Whether to send a direct message to the user about the action"
+		defaultValue = true
+	}
+
+	/** An image that the user wishes to provide for context to the action. */
+	val image by optionalAttachment {
+		name = "image"
+		description = "An image you'd like to provide as extra context for the action"
 	}
 }
 
