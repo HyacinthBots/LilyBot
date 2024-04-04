@@ -13,7 +13,6 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBool
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalAttachment
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralStringSelectMenu
@@ -506,21 +505,31 @@ class ModerationCommands : Extension() {
 								} else {
 									arguments.reason
 								}
+							}\n${if (arguments.softBan) {
+								"You were soft-banned. You are free to rejoin without the need to be unbanned"
+							} else {
+							    ""
+							}
 							}"
 						}
 					}
 				}
 				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
 					embed {
-						title = "Banned a User"
-						description = "${arguments.userArgument.mention} has been banned!"
+						if (arguments.softBan) {
+							title = "Soft-Banned a User"
+							description = "${arguments.userArgument.mention} has been soft-banned!"
+						} else {
+							title = "Banned a User"
+							description = "${arguments.userArgument.mention} has been banned!"
+						}
 						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
 						image = arguments.image?.url
 						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
 						timestamp = Clock.System.now()
 						field {
 							name = "Days of messages deleted:"
-							value = arguments.messages.toString()
+							value = if (arguments.softBan && arguments.messages == 0) "3" else arguments.messages.toString()
 							inline = false
 						}
 					}
@@ -528,89 +537,30 @@ class ModerationCommands : Extension() {
 
 				if (modConfig?.publicLogging == true) {
 					event.interaction.channel.createEmbed {
-						title = "Banned a user"
-						description = "${arguments.userArgument.mention} has been banned!"
+						if (arguments.softBan) {
+							title = "Soft-Banned a user"
+							description = "${arguments.userArgument.mention} has been soft-banned!"
+						} else {
+							title = "Banned a user"
+							description = "${arguments.userArgument.mention} has been banned!"
+						}
 						color = DISCORD_BLACK
 					}
 				}
 
 				guild?.ban(arguments.userArgument.id) {
-					reason = arguments.reason
-					deleteMessageDuration = DateTimePeriod(days = arguments.messages).toDuration(TimeZone.UTC)
+					reason = arguments.reason + if (arguments.softBan) " **SOFT-BAN**" else ""
+					deleteMessageDuration = if (arguments.softBan && arguments.messages == 0) {
+						DateTimePeriod(days = 3).toDuration(TimeZone.UTC)
+					} else {
+						DateTimePeriod(days = arguments.messages).toDuration(TimeZone.UTC)
+					}
 				}
+
+				if (arguments.softBan) guild?.unban(arguments.userArgument.id, "User was soft-banned")
 
 				respond {
-					content = "Banned ${arguments.userArgument.mention}"
-				}
-			}
-		}
-
-		ephemeralSlashCommand(::SoftBanArgs) {
-			name = "soft-ban"
-			description = "Soft-bans a user."
-
-			requirePermission(Permission.BanMembers)
-
-			check {
-				modCommandChecks(Permission.BanMembers)
-				requireBotPermissions(Permission.BanMembers)
-			}
-
-			action {
-				isBotOrModerator(event.kord, arguments.userArgument, guild, "soft-ban") ?: return@action
-
-				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
-				if (arguments.messages != null && (arguments.messages!! > 7 || arguments.messages!! < 0)) {
-					respond {
-						content = "Invalid `delete-message-days` parameter! This number must be between 0 and 7 days!"
-					}
-					return@action
-				}
-
-				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
-				var dmStatus: Message? = null
-				if (arguments.dm) {
-					dmStatus = arguments.userArgument.dm {
-						embed {
-							title = "You have been soft-banned from ${guild?.fetchGuild()?.name}"
-							description = "**Reason:**\n${arguments.reason}\n\n" +
-								"You are free to rejoin without the need to be unbanned"
-						}
-					}
-				}
-				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-					embed {
-						title = "Soft-Banned a User"
-						description = "${arguments.userArgument.mention} has been soft-banned!"
-						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						image = arguments.image?.url
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
-						timestamp = Clock.System.now()
-						field {
-							name = "Days of messages deleted:"
-							value = "${arguments.messages ?: "3"}"
-							inline = false
-						}
-					}
-				}
-
-				if (modConfig?.publicLogging == true) {
-					event.interaction.channel.createEmbed {
-						title = "Soft-Banned a user"
-						description = "${arguments.userArgument.mention} has been soft-banned!"
-						color = DISCORD_BLACK
-					}
-				}
-
-				guild?.ban(arguments.userArgument.id) {
-					reason = arguments.reason + " **SOFT-BAN**"
-					deleteMessageDuration = DateTimePeriod(days = arguments.messages ?: 3).toDuration(TimeZone.UTC)
-				}
-
-				guild?.unban(arguments.userArgument.id, "Soft-ban unban")
-
-				respond {
-					content = "Soft-banned ${arguments.userArgument.mention}"
+					content = if (arguments.softBan) { "Soft-banned " } else { "Banned " } + arguments.userArgument.mention
 				}
 			}
 		}
@@ -630,6 +580,7 @@ class ModerationCommands : Extension() {
 				}
 
 				action {
+					isBotOrModerator(event.kord, arguments.userArgument, guild, "temp-ban add")
 					val now = Clock.System.now()
 					val duration = now.plus(arguments.duration, TimeZone.UTC)
 					val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
@@ -669,13 +620,7 @@ class ModerationCommands : Extension() {
 					}
 
 					TemporaryBanCollection().setTempBan(
-						TemporaryBanData(
-							guild!!.id,
-							arguments.userArgument.id,
-							user.id,
-							now,
-							duration
-						)
+						TemporaryBanData(guild!!.id, arguments.userArgument.id, user.id, now, duration)
 					)
 
 					guild?.ban(arguments.userArgument.id) {
@@ -685,58 +630,6 @@ class ModerationCommands : Extension() {
 
 					respond {
 						content = "Temporarily banned ${arguments.userArgument.mention}"
-					}
-				}
-			}
-
-			ephemeralSubCommand(::UnbanArgs) {
-				name = "remove"
-				description = "Removes a temporary ban"
-
-				requirePermission(Permission.BanMembers)
-
-				check {
-					modCommandChecks(Permission.BanMembers)
-					requireBotPermissions(Permission.BanMembers)
-				}
-
-				action {
-					val tempBan = TemporaryBanCollection().getUserTempBan(guild!!.id, arguments.userArgument.id)
-					if (tempBan == null || guild?.getBanOrNull(arguments.userArgument.id) == null) {
-						respond {
-							content = "This user is not temporarily banned"
-						}
-						return@action
-					}
-
-					guild?.unban(arguments.userArgument.id)
-					TemporaryBanCollection().removeTempBan(guild!!.id, arguments.userArgument.id)
-
-					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-						embed {
-							title = "Temporary Ban Removed"
-							description = "${arguments.userArgument.mention} has had their temporary ban removed!\n${
-								arguments.userArgument.id
-							} (${arguments.userArgument.username})"
-							field {
-								name = "Reason:"
-								value = arguments.reason
-							}
-							field {
-								name = "Original Action taker:"
-								value = this@ephemeralSubCommand.kord.getUser(tempBan.moderatorUserId)?.username
-									?: "Unable to get username"
-							}
-							footer {
-								text = user.asUserOrNull()?.username ?: "Unable to get user username"
-								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-							}
-							timestamp = Clock.System.now()
-							color = DISCORD_GREEN
-						}
-					}
-					respond {
-						content = "Temporary Ban removed."
 					}
 				}
 			}
@@ -769,9 +662,11 @@ class ModerationCommands : Extension() {
 									User: ${this@ephemeralSubCommand.kord.getUser(it.bannedUserId)?.username}
 									Moderator: ${guild?.getMemberOrNull(it.moderatorUserId)?.username}
 									Start Time: ${it.startTime.toDiscord(TimestampType.ShortDateTime)} (${
-									it.startTime.toDiscord(TimestampType.RelativeTime)})
+									it.startTime.toDiscord(TimestampType.RelativeTime)
+								})
 									End Time: ${it.endTime.toDiscord(TimestampType.ShortDateTime)} (${
-									it.endTime.toDiscord(TimestampType.RelativeTime)})
+									it.endTime.toDiscord(TimestampType.RelativeTime)
+								})
 									---
 								""".trimIndent()
 							}
@@ -809,22 +704,53 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
-				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-					embed {
-						title = "Unbanned a user"
-						description = "${arguments.userArgument.mention} has been unbanned!\n${
-							arguments.userArgument.id
-						} (${arguments.userArgument.username})"
-						field {
-							name = "Reason:"
-							value = arguments.reason
+				val tempBan = TemporaryBanCollection().getUserTempBan(this.getGuild()!!.id, arguments.userArgument.id)
+				if (tempBan == null) {
+					guild?.unban(arguments.userArgument.id)
+					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
+						embed {
+							title = "Unbanned a user"
+							description = "${arguments.userArgument.mention} has been unbanned!\n${
+								arguments.userArgument.id
+							} (${arguments.userArgument.username})"
+							field {
+								name = "Reason:"
+								value = arguments.reason
+							}
+							footer {
+								text = user.asUserOrNull()?.username ?: "Unable to get user username"
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+							}
+							timestamp = Clock.System.now()
+							color = DISCORD_GREEN
 						}
-						footer {
-							text = user.asUserOrNull()?.username ?: "Unable to get user username"
-							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+					}
+				} else {
+					guild?.unban(arguments.userArgument.id)
+					TemporaryBanCollection().removeTempBan(guild!!.id, arguments.userArgument.id)
+					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
+						embed {
+							title = "Temporary Ban Removed"
+							description = "${arguments.userArgument.mention} has had their temporary ban removed!\n${
+								arguments.userArgument.id
+							} (${arguments.userArgument.username})"
+							field {
+								name = "Reason:"
+								value = arguments.reason
+							}
+							field {
+								name = "Original Action taker:"
+								value = guild?.getMemberOrNull(tempBan.moderatorUserId)?.username
+									?: this@ephemeralSlashCommand.kord.getUser(tempBan.moderatorUserId)?.username
+										?: "Unable to get username"
+							}
+							footer {
+								text = user.asUserOrNull()?.username ?: "Unable to get user username"
+								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+							}
+							timestamp = Clock.System.now()
+							color = DISCORD_GREEN
 						}
-						timestamp = Clock.System.now()
-						color = DISCORD_GREEN
 					}
 				}
 				respond {
@@ -1221,6 +1147,13 @@ class ModerationCommands : Extension() {
 			defaultValue = "No reason provided"
 		}
 
+		/** Weather to softban this user or not. */
+		val softBan by defaultingBoolean {
+			name = "soft-ban"
+			description = "Weather to soft-ban this user (unban them one messages are deleted)"
+			defaultValue = false
+		}
+
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
 			name = "dm"
@@ -1229,40 +1162,6 @@ class ModerationCommands : Extension() {
 		}
 
 		/** An image that the user wishes to provide for context to the ban. */
-		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
-		}
-	}
-
-	inner class SoftBanArgs : Arguments() {
-		/** The user to soft-ban. */
-		val userArgument by user {
-			name = "user"
-			description = "Person to Soft ban"
-		}
-
-		/** The number of days worth of messages to delete, defaults to 3 days. */
-		val messages by optionalInt {
-			name = "delete-message-days"
-			description = "The number of days worth of messages to delete"
-		}
-
-		/** The reason for the soft-ban. */
-		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the ban"
-			defaultValue = "No reason provided"
-		}
-
-		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the soft-ban"
-			defaultValue = true
-		}
-
-		/** An image that the user wishes to provide for context to the soft-ban. */
 		val image by optionalAttachment {
 			name = "image"
 			description = "An image you'd like to provide as extra context for the action"
