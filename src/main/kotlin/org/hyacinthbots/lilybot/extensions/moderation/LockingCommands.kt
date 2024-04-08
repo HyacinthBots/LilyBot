@@ -22,6 +22,8 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.ThreadParentChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.LockedChannelCollection
+import org.hyacinthbots.lilybot.database.entities.LockedChannelData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
@@ -49,15 +51,9 @@ class LockingCommands : Extension() {
 
 				check {
 					anyGuild()
-					requiredConfigs(
-						ConfigOptions.MODERATION_ENABLED
-					)
+					requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(
-						Permission.ManageChannels,
-						Permission.ManageRoles,
-						Permission.SendMessages
-					)
+					requireBotPermissions(Permission.ManageChannels, Permission.ManageRoles)
 					botHasChannelPerms(Permissions(Permission.ManageChannels))
 				}
 
@@ -66,11 +62,27 @@ class LockingCommands : Extension() {
 					val channelParent = getChannelParent(channelArg)
 					val targetChannel = getTargetChannel(channelParent, channelArg)
 
-					val channelPerms = targetChannel!!.getPermissionOverwritesForRole(guild!!.id)
-					if (channelPerms != null && channelPerms.denied.contains(Permission.SendMessages)) {
-						respond { content = "This channel is already locked!" }
+					val currentChannelPerms = targetChannel?.getPermissionOverwritesForRole(guild!!.id)
+					if (currentChannelPerms == null) {
+						respond {
+							content = "There was an error getting the permissions for this channel. Please try again."
+						}
 						return@action
 					}
+
+					if (LockedChannelCollection().getLockedChannel(guild!!.id, targetChannel.id) != null) {
+						respond { content = "This channel is already locked" }
+						return@action
+					}
+
+					LockedChannelCollection().addLockedChannel(
+						LockedChannelData(
+							guildId = guild!!.id,
+							channelId = targetChannel.id,
+							allowed = currentChannelPerms.data.allowed,
+							denied = currentChannelPerms.data.denied
+						)
+					)
 
 					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
 					if (everyoneRole == null) {
@@ -119,15 +131,9 @@ class LockingCommands : Extension() {
 
 				check {
 					anyGuild()
-					requiredConfigs(
-						ConfigOptions.MODERATION_ENABLED
-					)
+					requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(
-						Permission.ManageChannels,
-						Permission.ManageRoles,
-						Permission.SendMessages
-					)
+					requireBotPermissions(Permission.ManageChannels, Permission.ManageRoles, Permission.SendMessages)
 				}
 
 				action {
@@ -187,11 +193,7 @@ class LockingCommands : Extension() {
 					anyGuild()
 					requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(
-						Permission.ManageChannels,
-						Permission.ManageRoles,
-						Permission.SendMessages
-					)
+					requireBotPermissions(Permission.ManageChannels, Permission.ManageRoles)
 					botHasChannelPerms(Permissions(Permission.ManageChannels))
 				}
 
@@ -209,29 +211,30 @@ class LockingCommands : Extension() {
 						return@action
 					}
 
-					val channelPerms = targetChannel!!.getPermissionOverwritesForRole(guild!!.id)
+					val channelPerms = targetChannel?.getPermissionOverwritesForRole(guild!!.id)
 					if (channelPerms == null) {
 						respond { content = "This channel is not locked!" }
 						return@action
 					}
-					if (!channelPerms.denied.contains(Permission.SendMessages)) {
+					val lockedChannel = LockedChannelCollection().getLockedChannel(guild!!.id, targetChannel.id)
+					if (lockedChannel == null) {
 						respond { content = "This channel is not locked!" }
 						return@action
 					}
 
 					targetChannel.editRolePermission(guild!!.id) {
-						denied -= Permission.SendMessages
-						denied -= Permission.SendMessagesInThreads
-						denied -= Permission.AddReactions
-						denied -= Permission.UseApplicationCommands
+						denied = lockedChannel.denied
+						allowed = lockedChannel.allowed
 					}
 
 					targetChannel.createEmbed {
 						title = "Channel Unlocked"
 						description = "This channel has been unlocked by a moderator.\n" +
-								"Please be aware of the rules when continuing discussion."
+							"Please be aware of the rules when continuing discussion."
 						color = DISCORD_GREEN
 					}
+
+					LockedChannelCollection().removeLockedChannel(guild!!.id, targetChannel.id)
 
 					respond { content = "${targetChannel.mention} has been unlocked." }
 
@@ -258,15 +261,9 @@ class LockingCommands : Extension() {
 
 				check {
 					anyGuild()
-					requiredConfigs(
-						ConfigOptions.MODERATION_ENABLED
-					)
+					requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 					hasPermission(Permission.ModerateMembers)
-					requireBotPermissions(
-						Permission.ManageChannels,
-						Permission.ManageRoles,
-						Permission.SendMessages
-					)
+					requireBotPermissions(Permission.ManageChannels, Permission.ManageRoles, Permission.SendMessages)
 				}
 
 				action {
@@ -334,9 +331,9 @@ class LockingCommands : Extension() {
 	 * @since 4.8.0
 	 */
 	private suspend inline fun EphemeralInteractionContext.getTargetChannel(
-        channelParent: TextChannel?,
-        channelArg: Channel?
-    ): TextChannel? {
+		channelParent: TextChannel?,
+		channelArg: Channel?
+	): TextChannel? {
 		val targetChannel = channelParent ?: channelArg?.asChannelOfOrNull()
 		if (targetChannel == null) {
 			respond {
