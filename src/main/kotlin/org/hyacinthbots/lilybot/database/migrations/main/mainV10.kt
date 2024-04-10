@@ -9,4 +9,5 @@ suspend fun mainV10(db: CoroutineDatabase) {
 	with(db.getCollection<AutoThreadingData>()) {
 		updateMany(AutoThreadingData::extraRoleIds exists false, setValue(AutoThreadingData::extraRoleIds, emptyList()))
 	}
+	db.createCollection("temporaryBanData")
 }

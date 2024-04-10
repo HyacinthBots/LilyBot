@@ -11,7 +11,7 @@ import org.koin.core.component.inject
 import org.litote.kmongo.eq
 
 /**
- * This class contains the functions for interacting with []the reminder database][ReminderData]. This
+ * This class contains the functions for interacting with [the reminder database][ReminderData]. This
  * class contains functions for setting reminders, getting reminders based of various parameters, removing reminders and
  * repeating them.
  *
