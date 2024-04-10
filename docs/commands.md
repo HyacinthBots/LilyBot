@@ -345,7 +345,7 @@ None
 	* `user` - Person to ban - User
 	* `delete-message-days` - The number of days worth of messages to delete - Int
 	* `reason` - The reason for the ban - Defaulting String
-	* `soft-ban` - Weather to soft-ban this user (unban them one messages are deleted) - Defaulting Boolean
+	* `soft-ban` - Weather to soft-ban this user (unban them once messages are deleted) - Defaulting Boolean
 	* `dm` - Whether to send a direct message to the user about the ban - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 

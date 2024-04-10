@@ -1150,7 +1150,7 @@ class ModerationCommands : Extension() {
 		/** Weather to softban this user or not. */
 		val softBan by defaultingBoolean {
 			name = "soft-ban"
-			description = "Weather to soft-ban this user (unban them one messages are deleted)"
+			description = "Weather to soft-ban this user (unban them once messages are deleted)"
 			defaultValue = false
 		}
 
