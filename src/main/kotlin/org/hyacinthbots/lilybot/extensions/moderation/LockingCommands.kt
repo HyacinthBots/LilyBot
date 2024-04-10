@@ -11,6 +11,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChanne
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
+import dev.kord.common.DiscordBitSet
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.asChannelOfOrNull
@@ -79,8 +80,8 @@ class LockingCommands : Extension() {
 						LockedChannelData(
 							guildId = guild!!.id,
 							channelId = targetChannel.id,
-							allowed = currentChannelPerms.data.allowed,
-							denied = currentChannelPerms.data.denied
+							allowed = currentChannelPerms.data.allowed.code.value,
+							denied = currentChannelPerms.data.denied.code.value
 						)
 					)
 
@@ -223,8 +224,8 @@ class LockingCommands : Extension() {
 					}
 
 					targetChannel.editRolePermission(guild!!.id) {
-						denied = lockedChannel.denied
-						allowed = lockedChannel.allowed
+						denied = Permissions.Builder(DiscordBitSet(lockedChannel.denied)).build()
+						allowed = Permissions.Builder(DiscordBitSet(lockedChannel.allowed)).build()
 					}
 
 					targetChannel.createEmbed {
