@@ -10,6 +10,7 @@ import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
 import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
+import org.hyacinthbots.lilybot.database.collections.LockedChannelCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
@@ -56,14 +57,16 @@ object Cleanups : KordExKoinComponent {
 		cleanupsLogger.info("Starting guild cleanup...")
 		val leaveTimeData = guildLeaveTimeCollection.find().toList()
 		var deletedGuildData = 0
+		val now = Clock.System.now()
 
 		leaveTimeData.forEach {
 			// Calculate the time since Lily left the guild.
-			val leaveDuration = Clock.System.now() - it.guildLeaveTime
+			val leaveDuration = now - it.guildLeaveTime
 
 			if (leaveDuration.inWholeDays > 30) {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
 				GithubCollection().removeDefaultRepo(it.guildId)
+				LockedChannelCollection().removeAllLockedChannels(it.guildId)
 				LoggingConfigCollection().clearConfig(it.guildId)
 				ModerationConfigCollection().clearConfig(it.guildId)
 				NewsChannelPublishingCollection().clearAutoPublishingForGuild(it.guildId)
