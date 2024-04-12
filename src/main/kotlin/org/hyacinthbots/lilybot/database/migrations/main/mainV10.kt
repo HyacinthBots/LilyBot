@@ -10,4 +10,5 @@ suspend fun mainV10(db: CoroutineDatabase) {
 		updateMany(AutoThreadingData::extraRoleIds exists false, setValue(AutoThreadingData::extraRoleIds, emptyList()))
 	}
 	db.createCollection("lockedChannelData")
+	db.createCollection("temporaryBanData")
 }

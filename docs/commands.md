@@ -345,22 +345,32 @@ None
 	* `user` - Person to ban - User
 	* `delete-message-days` - The number of days worth of messages to delete - Int
 	* `reason` - The reason for the ban - Defaulting String
+	* `soft-ban` - Weather to soft-ban this user (unban them once messages are deleted) - Defaulting Boolean
 	* `dm` - Whether to send a direct message to the user about the ban - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
-### Command name: `soft-ban`
-**Description**: Soft-bans a user.
+### Command name: `temp-ban add`
+**Description**: Temporarily bans a user
 
 **Required Member Permissions**: Ban Members
 
-* Arguments:
-	* `user` - Person to Soft ban - User
-	* `delete-message-days` - The number of days worth of messages to delete - Optional Int/Long
+* **Arguments**:
+	* `user` - Person to ban - User
+	* `delete-message-days` - The number of days worth of messages to delete - Int
+	* `duration` - The duration of the temporary ban. - Coalescing Duration
 	* `reason` - The reason for the ban - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the soft-ban - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the ban - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
+---
+### Command name: `temp-ban view-all`
+**Description**: View all temporary bans for this guild
+
+**Required Member Permissions**: Ban Members
+
+* **Arguments**:
+None
 ---
 ### Command name: `unban`
 **Description**: Unbans a user.
