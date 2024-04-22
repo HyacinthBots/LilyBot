@@ -37,6 +37,49 @@ None
 * **Arguments**:
 	* `channel` - The channel to view the auto-threading settings for. - Channel
 
+Hopefull---
+### Command name: `clear count`
+**Description**: Clear a specific count of messages
+
+**Required Member Permissions**: Manage Messages
+
+* **Arguments**:
+	* `messages` - Number of messages to delete - Int
+	* `author` - The author of the messages to clear - Optional User
+
+---
+### Command name: `clear before`
+**Description**: Clear messages before a given message ID
+
+**Required Member Permissions**: Manage Messages
+
+* **Arguments**:
+	* `before` - The ID of the message to clear before - Snowflake
+	* `message-count` - The number of messages to clear - Optional Int/Long
+	* `author` - The author of the messages to clear - Optional User
+
+---
+### Command name: `clear after`
+**Description**: Clear messages before a given message ID
+
+**Required Member Permissions**: Manage Messages
+
+* **Arguments**:
+	* `after` - The ID of the message to clear after - Snowflake
+	* `message-count` - The number of messages to clear - Optional Int/Long
+	* `author` - The author of the messages to clear - Optional User
+
+---
+### Command name: `clear between`
+**Description**: Clear messages between 2 message IDs
+
+**Required Member Permissions**: Manage Messages
+
+* **Arguments**:
+	* `after` - The ID of the message to clear after - Snowflake
+	* `before` - The ID of the message to clear before - Snowflake
+	* `author` - The author of the messages to clear - Optional User
+
 ---
 ### Command name: `config moderation`
 **Description**: Configure Lily's moderation system
@@ -316,49 +359,6 @@ None
 	* `reason` - The reason for the Kick - Defaulting String
 	* `dm` - Whether to send a direct message to the user about the kick - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
-
----
-### Command name: `clear count`
-**Description**: Clear a specific count of messages
-
-**Required Member Permissions**: Manage Messages
-
-* **Arguments**:
-	* `messages` - Number of messages to delete - Int
-	* `author` - The author of the messages to clear - Optional User
-
----
-### Command name: `clear before`
-**Description**: Clear messages before a given message ID
-
-**Required Member Permissions**: Manage Messages
-
-* **Arguments**:
-	* `before` - The ID of the message to clear before - Snowflake
-	* `message-count` - The number of messages to clear - Optional Int/Long
-	* `author` - The author of the messages to clear - Optional User
-
----
-### Command name: `clear after`
-**Description**: Clear messages before a given message ID
-
-**Required Member Permissions**: Manage Messages
-
-* **Arguments**:
-	* `after` - The ID of the message to clear after - Snowflake
-	* `message-count` - The number of messages to clear - Optional Int/Long
-	* `author` - The author of the messages to clear - Optional User
-
----
-### Command name: `clear between`
-**Description**: Clear messages between 2 message IDs
-
-**Required Member Permissions**: Manage Messages
-
-* **Arguments**:
-	* `after` - The ID of the message to clear after - Snowflake
-	* `before` - The ID of the message to clear before - Snowflake
-	* `author` - The author of the messages to clear - Optional User
 
 ---
 ### Command name: `timeout`
@@ -716,8 +716,8 @@ None
 	* `clear` - Whether to clear the channel before repopulating it - Defaulting Boolean
 
 ---
-### Command name: `phishing-check`
-**Description**: Check whether a given domain is a known phishing domain.
+### Command name: `url-safety-check`
+**Description**: Check whether a given domain is a known unsafe domain.
 
 * Arguments:
 	* `domain` - Domain to check - String
@@ -766,7 +766,7 @@ None
 ### Message Command: `Report`
 
 ---
-### Message Command: `Phishing Check`
+### Message Command: `URL Safety Check`
 
 ---
 ## User Commands

@@ -136,12 +136,11 @@ class MessageDelete : Extension() {
 	private suspend fun onMessageDelete(message: Message?, proxiedMessage: PKMessage?) {
 		message ?: return
 		val guild = message.getGuildOrNull() ?: return
+		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, guild) ?: return
 
 		if (message.content.startsWith("pk;e", 0, true)) {
 			return
 		}
-
-		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, guild) ?: return
 
 		messageLog.createEmbed {
 			author {

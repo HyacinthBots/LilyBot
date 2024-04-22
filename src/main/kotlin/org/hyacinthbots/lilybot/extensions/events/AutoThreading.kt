@@ -44,7 +44,6 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.embed
-import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
@@ -362,7 +361,7 @@ class AutoThreading : Extension() {
 			}
 
 			action {
-				onMessageSend(event, event.getMessageOrNull(), event.pkMessage)
+				onMessageSend(event, event.channel.id, event.getMessageOrNull(), event.pkMessage)
 			}
 		}
 
@@ -386,7 +385,7 @@ class AutoThreading : Extension() {
 			}
 
 			action {
-				onMessageSend(event, event.getMessageOrNull())
+				onMessageSend(event, event.channel.id, event.getMessageOrNull())
 			}
 		}
 
@@ -400,8 +399,6 @@ class AutoThreading : Extension() {
 			}
 
 			action {
-				// fixme this event fires twice for some unknown reason so this is a workaround
-				delay(1000)
 				if (event.channel.getLastMessage()?.withStrategy(EntitySupplyStrategy.rest) != null) return@action
 
 				val thread = event.channel.asChannelOfOrNull<TextChannelThread>() ?: return@action
@@ -480,6 +477,7 @@ class AutoThreading : Extension() {
 	 * A single function for both Proxied and Non-Proxied message to be turned into threads.
 	 *
 	 * @param event The event for the message creation
+	 * @param channelId The channel ID, used to enable quick cancelling of the task if invalid.
 	 * @param message The original message that wasn't proxied
 	 * @param proxiedMessage The proxied message, if the message was proxied
 	 * @since 4.6.0
@@ -487,30 +485,23 @@ class AutoThreading : Extension() {
 	 */
 	private suspend fun <T : PKMessageCreateEvent> onMessageSend(
 		event: T,
+		channelId: Snowflake,
 		message: Message?,
 		proxiedMessage: PKMessage? = null
 	) {
+		val options = AutoThreadingCollection().getSingleAutoThread(channelId) ?: return
+
 		val memberFromPk = if (proxiedMessage != null) event.getGuild().getMemberOrNull(proxiedMessage.sender) else null
 
-		val channel: TextChannel = if (proxiedMessage == null) {
-			message?.channel?.asChannelOfOrNull() ?: return
-		} else {
+		val channel: TextChannel = if (proxiedMessage != null) {
 			// Check the real message member too, despite the pk message not being null, we may still be able to use the original
 			message?.channel?.asChannelOfOrNull()
-				?: try {
-					event.getGuild().getChannelOfOrNull(proxiedMessage.channel)
-				} catch (_: IllegalArgumentException) {
-					null
-				} ?: return
-		}
-
-		val authorId: Snowflake = if (proxiedMessage == null) {
-			message?.author?.id ?: return
+				?: event.getGuild().getChannelOfOrNull(proxiedMessage.channel) ?: return
 		} else {
-			message?.author?.id ?: proxiedMessage.sender
+			message?.channel?.asChannelOfOrNull() ?: return
 		}
 
-		val options = AutoThreadingCollection().getSingleAutoThread(channel.id) ?: return
+		val authorId: Snowflake = message?.author?.id ?: proxiedMessage?.sender ?: return
 
 		var threadName: String? = event.message.content.trim().split("\n").firstOrNull()?.take(75)
 

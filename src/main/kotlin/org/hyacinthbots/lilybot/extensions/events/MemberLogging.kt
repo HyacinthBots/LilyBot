@@ -19,7 +19,6 @@ import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.getMemberCount
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 
 /**
@@ -60,9 +59,6 @@ class MemberLogging : Extension() {
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_GREEN
-					footer {
-						text = "Member count: ${event.guild.getMemberCount()}"
-					}
 				}
 
 				if (config != null && config.enablePublicMemberLogs) {
@@ -86,10 +82,6 @@ class MemberLogging : Extension() {
 							}
 							timestamp = Clock.System.now()
 							color = DISCORD_GREEN
-							footer {
-								text =
-									"Member count: ${event.guild.getMemberCount()}"
-							}
 						}
 					}
 				}
@@ -123,9 +115,6 @@ class MemberLogging : Extension() {
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_RED
-					footer {
-						text = "Member count: ${event.guild.getMemberCount()}"
-					}
 				}
 
 				if (config != null && config.enablePublicMemberLogs) {
@@ -147,9 +136,6 @@ class MemberLogging : Extension() {
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_RED
-						footer {
-							text = "Member count: ${event.guild.getMemberCount()}"
-						}
 					}
 				}
 			}

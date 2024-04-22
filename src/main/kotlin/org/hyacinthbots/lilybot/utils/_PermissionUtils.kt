@@ -201,8 +201,16 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 	guild: GuildBehavior?,
 	commandName: String
 ): String? {
-	val moderatorRoleId = ModerationConfigCollection().getConfig(guild!!.id)?.role
-	ModerationConfigCollection().getConfig(guild.id) ?: run {
+	if (guild == null) {
+		respond {
+			content = "**Error:** Unable to access this guild. Please try again"
+		}
+		return null
+	}
+
+	val moderationConfig = ModerationConfigCollection().getConfig(guild.id)
+
+	moderationConfig ?: run {
 		respond {
 			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
 		}
@@ -228,7 +236,7 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 		}
 		return null
 		// If the moderator ping role is in roles, return
-	} else if (moderatorRoleId in roles) {
+	} else if (moderationConfig.role in roles) {
 		respond {
 			content = "You cannot $commandName moderators!"
 		}
