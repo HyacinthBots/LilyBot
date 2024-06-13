@@ -1,5 +1,6 @@
 package org.hyacinthbots.lilybot.extensions.util
 
+import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.checks.hasPermission
@@ -12,6 +13,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingDura
 import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOptionalDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.long
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -29,6 +31,7 @@ import com.kotlindiscord.kord.extensions.utils.toDuration
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOfOrNull
@@ -42,9 +45,13 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
+import org.hyacinthbots.lilybot.database.collections.ReminderRestrictionCollection
 import org.hyacinthbots.lilybot.database.entities.ReminderData
+import org.hyacinthbots.lilybot.database.entities.ReminderRestrictionData
+import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.fitsEmbedField
+import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.interval
 
 class Reminders : Extension() {
@@ -102,7 +109,7 @@ class Reminders : Extension() {
 					) {
 						respond {
 							content = "The Repeating interval cannot be less than one hour!\n\n" +
-									"This is to prevent spam and/or abuse of reminders."
+								"This is to prevent spam and/or abuse of reminders."
 						}
 						return@action
 					}
@@ -229,7 +236,7 @@ class Reminders : Extension() {
 					if (reminder == null) {
 						respond {
 							content = "Reminder not found. Please use `/reminder list` to find out the correct " +
-									"reminder number"
+								"reminder number"
 						}
 						return@action
 					}
@@ -369,7 +376,7 @@ class Reminders : Extension() {
 					if (reminder == null) {
 						respond {
 							content = "Reminder not found. Please use `/reminder mod-list` to find out the correct " +
-									"reminder number"
+								"reminder number"
 						}
 						return@action
 					}
@@ -482,6 +489,74 @@ class Reminders : Extension() {
 					}
 				}
 			}
+			ephemeralSubCommand(::ReminderRestrictionArgs) {
+				name = "restrict"
+				description = "Whether to restrict reminders to a specific channel/channels"
+
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
+
+				action {
+					val restrictionData = ReminderRestrictionCollection().getRestrictionData(guild!!.id)
+
+					if (restrictionData == null && !arguments.restrict) {
+						respond { content = "**Error**: This server does not have reminder restrictions in place" }
+						return@action
+					}
+					if (restrictionData != null && !restrictionData.restrict && !arguments.restrict) {
+						respond { content = "**Error**: Restrictions are already disabled in this server" }
+						return@action
+					}
+					if (arguments.restrict && arguments.freeChannel == null) {
+						respond {
+							content = "**Error**: You need to select a free channel before you can restrict reminders"
+						}
+					}
+
+					if (arguments.restrict) {
+						ReminderRestrictionCollection().addRestriction(
+							ReminderRestrictionData(guild!!.id, true, mutableListOf(arguments.freeChannel!!.id))
+						)
+					} else {
+						ReminderRestrictionCollection().removeRestriction(guild!!.id)
+					}
+
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
+						title = "Reminder restrictions updated"
+						field {
+							name = "Restriction enabled:"
+							value = arguments.restrict.toString()
+						}
+						field {
+							name = "Whitelisted Channels:"
+							value = arguments.freeChannel!!.mention
+						}
+						footer {
+							text = "Removed by ${user.asUserOrNull()?.username}"
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_YELLOW
+					}
+
+					respond { content = "Reminder restriction set to ${arguments.restrict}" }
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "add-whitelisted-channel"
+				description = "Add a channel to the reminder restriction whitelist"
+			}
+
+			ephemeralSubCommand {
+				name = "remove-whitelisted-channel"
+				description = "Remove a channel from the reminder restriction whitelist"
+			}
 		}
 	}
 
@@ -524,7 +599,7 @@ class Reminders : Extension() {
 					if (!it.dm) {
 						content =
 							"I was unable to find/access the channel from $guild that this" +
-									"reminder was set in."
+								"reminder was set in."
 					}
 					reminderEmbed(it)
 				}
@@ -601,13 +676,13 @@ class Reminders : Extension() {
 		val message = channel.getMessageOrNull(messageId) ?: return
 		message.edit {
 			content = "${message.content} **Reminder " +
-					"${
-						if (wasCancelled) {
-							"cancelled${if (byModerator) " by moderator" else ""}."
-						} else {
-							"completed."
-						}
-					}**"
+				"${
+					if (wasCancelled) {
+						"cancelled${if (byModerator) " by moderator" else ""}."
+					} else {
+						"completed."
+					}
+				}**"
 		}
 	}
 
@@ -670,15 +745,15 @@ class Reminders : Extension() {
 	private fun ReminderData?.getContent(): String? {
 		this ?: return null
 		return "Reminder ID: ${this.id}\nTime set: ${this.setTime.toDiscord(TimestampType.ShortDateTime)},\n" +
-				"Time until reminder: ${this.remindTime.toDiscord(TimestampType.RelativeTime)} (${
-					this.remindTime.toDiscord(TimestampType.ShortDateTime)
-				}),\nCustom Message: ${
-					if (this.customMessage != null && this.customMessage.length >= 150) {
-						this.customMessage.substring(0..150)
-					} else {
-						this.customMessage ?: "none"
-					}
-				}\n---\n"
+			"Time until reminder: ${this.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+				this.remindTime.toDiscord(TimestampType.ShortDateTime)
+			}),\nCustom Message: ${
+				if (this.customMessage != null && this.customMessage.length >= 150) {
+					this.customMessage.substring(0..150)
+				} else {
+					this.customMessage ?: "none"
+				}
+			}\n---\n"
 	}
 
 	inner class ReminderSetArgs : Arguments() {
@@ -772,6 +847,18 @@ class Reminders : Extension() {
 				"non-repeating" to "non-repeating",
 				"all" to "all"
 			)
+		}
+	}
+
+	inner class ReminderRestrictionArgs : Arguments() {
+		val restrict by boolean {
+			name = "restrict"
+			description = "Whether to restrict reminders to a single channel/channels"
+		}
+
+		val freeChannel by optionalChannel {
+			name = "free-channel"
+			description = "The channel where reminders can freely be used"
 		}
 	}
 }

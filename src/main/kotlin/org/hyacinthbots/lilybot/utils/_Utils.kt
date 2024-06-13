@@ -18,15 +18,18 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.Database
+import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
+import org.hyacinthbots.lilybot.database.collections.LockedChannelCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
+import org.hyacinthbots.lilybot.database.collections.ReminderRestrictionCollection
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.RoleSubscriptionCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
@@ -231,15 +234,18 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 			}
 
 			loadModule {
+				single { AutoThreadingCollection() } bind AutoThreadingCollection::class
 				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
 				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
 				single { GithubCollection() } bind GithubCollection::class
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
+				single { LockedChannelCollection() } bind LockedChannelCollection::class
 				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
 				single { ModerationConfigCollection() } bind ModerationConfigCollection::class
 				single { NewsChannelPublishingCollection() } bind NewsChannelPublishingCollection::class
 				single { ReminderCollection() } bind ReminderCollection::class
+				single { ReminderRestrictionCollection() } bind ReminderRestrictionCollection::class
 				single { RoleMenuCollection() } bind RoleMenuCollection::class
 				single { RoleSubscriptionCollection() } bind RoleSubscriptionCollection::class
 				single { StatusCollection() } bind StatusCollection::class
