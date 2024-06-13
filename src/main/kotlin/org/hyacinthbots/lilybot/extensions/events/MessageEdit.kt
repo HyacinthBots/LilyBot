@@ -10,6 +10,7 @@ import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageUpdateEvent
 import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageUpdateEvent
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
+import com.kotlindiscord.kord.extensions.utils.isNullOrBot
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
@@ -40,11 +41,9 @@ class MessageEdit : Extension() {
 			check {
 				anyGuild()
 				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
-				failIf {
-					val message = event.message.asMessageOrNull()
-					message?.author?.isBot == true || event.old?.content == message?.content ||
-						event.old?.content.isNullOrEmpty()
-				}
+				failIf(event.message.asMessageOrNull()?.author.isNullOrBot())
+				failIf(event.old?.content == event.message.asMessageOrNull()?.content)
+				failIf(event.old.trimmedContents() == null)
 			}
 			action {
 				onMessageEdit(event.getMessageOrNull(), event.old, null)
@@ -60,10 +59,8 @@ class MessageEdit : Extension() {
 			check {
 				anyGuild()
 				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
-				failIf {
-					event.old?.content == event.message.asMessageOrNull()?.content ||
-						event.old?.content.isNullOrEmpty()
-				}
+				failIf(event.old?.content == event.message.asMessageOrNull()?.content)
+				failIf(event.old.trimmedContents() == null)
 			}
 			action {
 				onMessageEdit(event.getMessageOrNull(), event.old, event.pkMessage)
