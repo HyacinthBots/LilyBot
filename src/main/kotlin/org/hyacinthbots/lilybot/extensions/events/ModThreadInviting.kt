@@ -7,7 +7,6 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.supplier.EntitySupplyStrategy
-import kotlinx.coroutines.delay
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.utils.canPingRole
@@ -26,8 +25,6 @@ class ModThreadInviting : Extension() {
 			}
 
 			action {
-				// fixme this event fires twice for some unknown reason so this is a workaround
-				delay(1000)
 				if (event.channel.getLastMessage()?.withStrategy(EntitySupplyStrategy.rest) != null) return@action
 
 				val channel = event.channel

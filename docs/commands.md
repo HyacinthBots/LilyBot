@@ -37,6 +37,49 @@ None
 * **Arguments**:
 	* `channel` - The channel to view the auto-threading settings for. - Channel
 
+Hopefull---
+### Command name: `clear count`
+**Description**: Clear a specific count of messages
+
+**Required Member Permissions**: Manage Messages
+
+* **Arguments**:
+	* `messages` - Number of messages to delete - Int
+	* `author` - The author of the messages to clear - Optional User
+
+---
+### Command name: `clear before`
+**Description**: Clear messages before a given message ID
+
+**Required Member Permissions**: Manage Messages
+
+* **Arguments**:
+	* `before` - The ID of the message to clear before - Snowflake
+	* `message-count` - The number of messages to clear - Optional Int/Long
+	* `author` - The author of the messages to clear - Optional User
+
+---
+### Command name: `clear after`
+**Description**: Clear messages before a given message ID
+
+**Required Member Permissions**: Manage Messages
+
+* **Arguments**:
+	* `after` - The ID of the message to clear after - Snowflake
+	* `message-count` - The number of messages to clear - Optional Int/Long
+	* `author` - The author of the messages to clear - Optional User
+
+---
+### Command name: `clear between`
+**Description**: Clear messages between 2 message IDs
+
+**Required Member Permissions**: Manage Messages
+
+* **Arguments**:
+	* `after` - The ID of the message to clear after - Snowflake
+	* `before` - The ID of the message to clear before - Snowflake
+	* `author` - The author of the messages to clear - Optional User
+
 ---
 ### Command name: `auto-threading add-roles`
 **Description**: Add extra to threads in auto-threaded channels

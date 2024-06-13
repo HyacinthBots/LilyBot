@@ -805,7 +805,7 @@ class ModerationCommands : Extension() {
 				guild?.kick(arguments.userArgument.id, arguments.reason)
 
 				respond {
-					content = "Kicked ${arguments.userArgument}"
+					content = "Kicked ${arguments.userArgument.mention}"
 				}
 			}
 		}
