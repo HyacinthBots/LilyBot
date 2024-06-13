@@ -16,6 +16,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.editMemberPermission
 import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.channel.Channel
@@ -105,6 +106,11 @@ class LockingCommands : Extension() {
 						denied += Permission.SendMessagesInThreads
 						denied += Permission.AddReactions
 						denied += Permission.UseApplicationCommands
+					}
+
+					// Explicitly allow Lily send messages, so she can unlock the server again
+					targetChannel.editMemberPermission(this@ephemeralSlashCommand.kord.selfId) {
+						allowed += Permission.SendMessages
 					}
 
 					respond { content = "${targetChannel.mention} has been locked." }
@@ -226,6 +232,11 @@ class LockingCommands : Extension() {
 					targetChannel.editRolePermission(guild!!.id) {
 						denied = Permissions.Builder(DiscordBitSet(lockedChannel.denied)).build()
 						allowed = Permissions.Builder(DiscordBitSet(lockedChannel.allowed)).build()
+					}
+
+					// Remove the explicit allow to avoid any issues with the servers permission system
+					targetChannel.editMemberPermission(this@ephemeralSlashCommand.kord.selfId) {
+						allowed -= Permission.SendMessages
 					}
 
 					targetChannel.createEmbed {
