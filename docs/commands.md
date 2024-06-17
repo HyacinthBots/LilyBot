@@ -552,6 +552,38 @@ None
 	* `reminder-type` - The type of reminder to remove - String Choice
 
 ---
+### Command name: `reminder restrict`
+**Description**: Whether to restrict reminders to a specific channel/channels
+
+**Required Member Permissions**: Moderate Members
+
+* **Arguments**:
+	* `restrict` - Whether to restrict reminders to a single channel/channels - Boolean
+	* `free-channel` - The channel where reminders can freely be used - Optional Channel
+
+---
+### Command name: `reminder add-whitelisted-channel`
+**Description**: Add this channel to the reminder restriction whitelist
+
+**Required Member Permissions**: Moderate Members
+
+* **Arguments**:
+None
+---
+### Command name: `reminder remove-whitelisted-channel`
+**Description**: Remove a channel from the reminder restriction whitelist
+
+**Required Member Permissions**: Moderate Members
+
+* **Arguments**:
+None
+---
+### Command name: `reminder view-whitelist`
+**Description**: View the reminder restriction whitelist
+
+* **Arguments**:
+None
+---
 ### Command name: `manual-report`
 **Description**: Report a message, using a link instead of the message command
 

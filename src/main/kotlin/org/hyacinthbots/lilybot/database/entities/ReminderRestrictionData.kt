@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
 data class ReminderRestrictionData(
 	val guildId: Snowflake,
 	val restrict: Boolean,
-	val whitelistedChannels: MutableList<Snowflake>?
+	val whitelistedChannels: MutableList<Snowflake>
 )

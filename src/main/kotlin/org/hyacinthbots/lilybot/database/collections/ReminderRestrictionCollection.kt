@@ -31,7 +31,7 @@ class ReminderRestrictionCollection : KordExKoinComponent {
 		val restrictionData = getRestrictionData(inputGuildId)
 		if (restrictionData != null) {
 			val channels = restrictionData.whitelistedChannels
-			channels?.add(inputChannelId)
+			channels.add(inputChannelId)
 			collection.updateOne(
 				ReminderRestrictionData::guildId eq inputGuildId,
 				ReminderRestrictionData(restrictionData.guildId, restrictionData.restrict, channels)

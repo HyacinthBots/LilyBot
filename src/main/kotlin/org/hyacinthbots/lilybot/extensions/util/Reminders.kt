@@ -81,14 +81,21 @@ class Reminders : Extension() {
 					anyGuild()
 					requireBotPermissions(Permission.ViewChannel, Permission.SendMessages, Permission.EmbedLinks)
 					botHasChannelPerms(
-						Permissions(
-							Permission.ViewChannel, Permission.SendMessages,
-							Permission.EmbedLinks
-						)
+						Permissions(Permission.ViewChannel, Permission.SendMessages, Permission.EmbedLinks)
 					)
 				}
 
 				action {
+					val restrictionData = ReminderRestrictionCollection().getRestrictionData(guild!!.id)
+					if (restrictionData != null && channel.id !in restrictionData.whitelistedChannels) {
+						respond {
+							content =
+								"This guild has restricted reminders. Please refer to `/reminder view-whitelist`" +
+									" for a list of channels you can use the reminder set command in"
+						}
+						return@action
+					}
+
 					val setTime = Clock.System.now()
 					val remindTime = Clock.System.now().plus(arguments.time.toDuration(TimeZone.UTC))
 
@@ -512,10 +519,15 @@ class Reminders : Extension() {
 						respond { content = "**Error**: Restrictions are already disabled in this server" }
 						return@action
 					}
+					if (restrictionData != null && arguments.restrict) {
+						respond { content = "**Error**: Restrictions are already enabled in this server." }
+						return@action
+					}
 					if (arguments.restrict && arguments.freeChannel == null) {
 						respond {
 							content = "**Error**: You need to select a free channel before you can restrict reminders"
 						}
+						return@action
 					}
 
 					if (arguments.restrict) {
@@ -534,7 +546,8 @@ class Reminders : Extension() {
 						}
 						field {
 							name = "Whitelisted Channels:"
-							value = arguments.freeChannel!!.mention
+							value = arguments.freeChannel?.mention
+								?: if (!arguments.restrict) "N/A" else "Unable to get free channel"
 						}
 						footer {
 							text = "Removed by ${user.asUserOrNull()?.username}"
@@ -550,12 +563,133 @@ class Reminders : Extension() {
 
 			ephemeralSubCommand {
 				name = "add-whitelisted-channel"
-				description = "Add a channel to the reminder restriction whitelist"
+				description = "Add this channel to the reminder restriction whitelist"
+
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
+
+				action {
+					val restrictionData = ReminderRestrictionCollection().getRestrictionData(guild!!.id)
+
+					if (restrictionData == null) {
+						respond {
+							content = "**Error**: This server does not have reminder restrictions in place"
+						}
+						return@action
+					}
+
+					ReminderRestrictionCollection().addWhitelistedChannel(guild!!.id, channel.id)
+
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
+						title = "Added to Reminder Whitelist"
+						field {
+							name = "Channel added"
+							value = channel.id.toString()
+						}
+						footer {
+							text = "Added by ${user.asUserOrNull()?.username}"
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_YELLOW
+					}
+
+					respond {
+						content = "Added ${channel.mention} to reminder whitelist"
+					}
+				}
 			}
 
 			ephemeralSubCommand {
 				name = "remove-whitelisted-channel"
 				description = "Remove a channel from the reminder restriction whitelist"
+
+				requirePermission(Permission.ModerateMembers)
+
+				check {
+					anyGuild()
+					hasPermission(Permission.ModerateMembers)
+					requirePermission(Permission.ModerateMembers)
+				}
+
+				action {
+					val restrictionData = ReminderRestrictionCollection().getRestrictionData(guild!!.id)
+
+					if (restrictionData == null) {
+						respond {
+							content = "**Error**: This server does not have reminder restrictions in place"
+						}
+						return@action
+					}
+
+					if (restrictionData.whitelistedChannels.size == 1) {
+						respond {
+							content = "**Error**: You cannot have an empty free channel list. Please add another " +
+								"channel before removing this one."
+						}
+						return@action
+					}
+
+					ReminderRestrictionCollection().removeWhitelistedChannel(guild!!.id, channel.id)
+
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
+						title = "Removed to Reminder Whitelist"
+						field {
+							name = "Channel removed"
+							value = channel.id.toString()
+						}
+						footer {
+							text = "Removed by ${user.asUserOrNull()?.username}"
+							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+						}
+						timestamp = Clock.System.now()
+						color = DISCORD_YELLOW
+					}
+
+					respond {
+						content = "Removed ${channel.mention} from reminder whitelist"
+					}
+				}
+			}
+
+			ephemeralSubCommand {
+				name = "view-whitelist"
+				description = "View the reminder restriction whitelist"
+
+				check {
+					anyGuild()
+				}
+
+				action {
+					val restrictionData = ReminderRestrictionCollection().getRestrictionData(guild!!.id)
+					if (restrictionData == null) {
+						respond {
+							content = "**Error:** There is no restriction set up for this guild."
+						}
+						return@action
+					}
+					val list = mutableListOf<String?>()
+
+					restrictionData.whitelistedChannels.forEach { channel ->
+						list.add(guild!!.getChannelOfOrNull<GuildMessageChannel>(channel)?.mention)
+					}
+
+					respond {
+						embed {
+							title = "Reminder whitelist"
+							field {
+								name = "Whitelisted Channels"
+								value = list.toString()
+							}
+							timestamp = Clock.System.now()
+						}
+					}
+				}
 			}
 		}
 	}
@@ -851,11 +985,13 @@ class Reminders : Extension() {
 	}
 
 	inner class ReminderRestrictionArgs : Arguments() {
+		/** Whether to restrict reminders or not. */
 		val restrict by boolean {
 			name = "restrict"
 			description = "Whether to restrict reminders to a single channel/channels"
 		}
 
+		/** The free channel to use reminders in. */
 		val freeChannel by optionalChannel {
 			name = "free-channel"
 			description = "The channel where reminders can freely be used"
