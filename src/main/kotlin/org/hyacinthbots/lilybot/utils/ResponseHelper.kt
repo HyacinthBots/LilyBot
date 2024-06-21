@@ -17,7 +17,7 @@ import dev.kord.rest.builder.message.EmbedBuilder
  * @author NoComment1105
  * @since 3.0.0
  */
-suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User?, commandUser: UserBehavior) {
+suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User?, commandUser: UserBehavior?) {
 	field {
 		name = "User:"
 		value = "${targetUser?.username ?: "Unable to get user"}\n${targetUser?.id ?: ""}"
@@ -29,8 +29,8 @@ suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser:
 		inline = false
 	}
 	footer {
-		text = "Requested by ${commandUser.asUserOrNull()?.username}"
-		icon = commandUser.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+		text = "Requested by ${commandUser?.asUserOrNull()?.username}"
+		icon = commandUser?.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 	}
 }
 

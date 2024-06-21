@@ -25,6 +25,7 @@ import org.hyacinthbots.lilybot.extensions.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.events.MessageDelete
 import org.hyacinthbots.lilybot.extensions.events.MessageEdit
 import org.hyacinthbots.lilybot.extensions.events.ModThreadInviting
+import org.hyacinthbots.lilybot.extensions.events.ModerationEvents
 import org.hyacinthbots.lilybot.extensions.moderation.ClearCommands
 import org.hyacinthbots.lilybot.extensions.moderation.LockingCommands
 import org.hyacinthbots.lilybot.extensions.moderation.ModerationCommands
@@ -87,6 +88,7 @@ suspend fun main() {
 			add(::MemberLogging)
 			add(::MessageDelete)
 			add(::MessageEdit)
+			add(::ModerationEvents)
 			add(::ModThreadInviting)
 			add(::ModUtilities)
 			add(::ModerationCommands)

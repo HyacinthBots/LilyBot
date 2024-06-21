@@ -68,7 +68,6 @@ import org.hyacinthbots.lilybot.utils.interval
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 import org.hyacinthbots.lilybot.utils.modCommandChecks
 import kotlin.time.Duration
-import kotlin.time.toDuration
 
 class ModerationCommands : Extension() {
 	override val name = "moderation"
@@ -557,7 +556,7 @@ class ModerationCommands : Extension() {
 					}
 				}
 
-				if (arguments.softBan) guild?.unban(arguments.userArgument.id, "User was soft-banned")
+				if (arguments.softBan) guild?.unban(arguments.userArgument.id, "User was soft-banned. **SOFT-BAN**")
 
 				respond {
 					content = if (arguments.softBan) { "Soft-banned " } else { "Banned " } + arguments.userArgument.mention
@@ -624,7 +623,7 @@ class ModerationCommands : Extension() {
 					)
 
 					guild?.ban(arguments.userArgument.id) {
-						reason = arguments.reason
+						reason = arguments.reason + " **TEMPORARY-BAN**"
 						deleteMessageDuration = DateTimePeriod(days = arguments.messages).toDuration(TimeZone.UTC)
 					}
 
@@ -706,7 +705,7 @@ class ModerationCommands : Extension() {
 			action {
 				val tempBan = TemporaryBanCollection().getUserTempBan(this.getGuild()!!.id, arguments.userArgument.id)
 				if (tempBan == null) {
-					guild?.unban(arguments.userArgument.id)
+					guild?.unban(arguments.userArgument.id, "Unbanned user")
 					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
 						embed {
 							title = "Unbanned a user"
@@ -726,7 +725,7 @@ class ModerationCommands : Extension() {
 						}
 					}
 				} else {
-					guild?.unban(arguments.userArgument.id)
+					guild?.unban(arguments.userArgument.id, "Removed temp ban. **TEMPORARY-BAN**")
 					TemporaryBanCollection().removeTempBan(guild!!.id, arguments.userArgument.id)
 					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
 						embed {
