@@ -1,142 +1,203 @@
 package org.hyacinthbots.lilybot.extensions.events
 
-import com.kotlindiscord.kord.extensions.DISCORD_BLACK
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
+import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
-import dev.kord.common.entity.AuditLogEvent
-import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.event.guild.GuildAuditLogEntryCreateEvent
+import dev.kord.core.event.channel.CategoryCreateEvent
+import dev.kord.core.event.channel.CategoryDeleteEvent
+import dev.kord.core.event.channel.CategoryUpdateEvent
+import dev.kord.core.event.channel.ForumChannelCreateEvent
+import dev.kord.core.event.channel.ForumChannelDeleteEvent
+import dev.kord.core.event.channel.ForumChannelUpdateEvent
+import dev.kord.core.event.channel.NewsChannelCreateEvent
+import dev.kord.core.event.channel.NewsChannelDeleteEvent
+import dev.kord.core.event.channel.NewsChannelUpdateEvent
+import dev.kord.core.event.channel.StageChannelCreateEvent
+import dev.kord.core.event.channel.StageChannelDeleteEvent
+import dev.kord.core.event.channel.StageChannelUpdateEvent
+import dev.kord.core.event.channel.TextChannelCreateEvent
+import dev.kord.core.event.channel.TextChannelDeleteEvent
+import dev.kord.core.event.channel.TextChannelUpdateEvent
+import dev.kord.core.event.channel.VoiceChannelCreateEvent
+import dev.kord.core.event.channel.VoiceChannelDeleteEvent
+import dev.kord.core.event.channel.VoiceChannelUpdateEvent
+import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
+import dev.kord.core.event.channel.thread.ThreadChannelDeleteEvent
+import dev.kord.core.event.channel.thread.ThreadUpdateEvent
+import dev.kord.core.event.guild.GuildScheduledEventCreateEvent
+import dev.kord.core.event.guild.GuildScheduledEventDeleteEvent
+import dev.kord.core.event.guild.GuildScheduledEventUpdateEvent
+import dev.kord.core.event.guild.InviteCreateEvent
+import dev.kord.core.event.guild.InviteDeleteEvent
+import dev.kord.core.event.guild.MemberUpdateEvent
+import dev.kord.core.event.role.RoleCreateEvent
+import dev.kord.core.event.role.RoleDeleteEvent
+import dev.kord.core.event.role.RoleUpdateEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.utils.baseModerationEmbed
+import org.hyacinthbots.lilybot.utils.formatPermissionSet
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 class ModerationEvents : Extension() {
 	override val name: String = "moderation-events"
 
 	override suspend fun setup() {
-		event<GuildAuditLogEntryCreateEvent> {
+		event<CategoryCreateEvent> {
 			check { anyGuild() }
 			action {
-				val moderationLog = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guildFor(event)!!) ?: return@action
+				var allowed = ""
+				var denied = ""
+				event.channel.permissionOverwrites.forEach {
+					allowed += "${guildFor(event)!!.getRoleOrNull(it.target)?.mention}: ${formatPermissionSet(it.allowed)}\n"
+					denied += "${guildFor(event)!!.getRoleOrNull(it.target)?.mention}: ${formatPermissionSet(it.denied)}\n"
+				}
 
-				@Suppress("UnusedPrivateProperty")
-				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guildFor(event)!!) ?: return@action
-				val entry = event.auditLogEntry
-				val target = entry.targetId?.let { kord.getUser(it) }
-				val actioner = entry.userId?.let { UserBehavior(it, kord) }
-				val time = Clock.System.now()
-				when (event.auditLogEntry.actionType) {
-					AuditLogEvent.ApplicationCommandPermissionUpdate -> { /* No */ }
-					AuditLogEvent.AutoModerationBlockMessage -> { /* No */ }
-					AuditLogEvent.AutoModerationFlagToChannel -> { /* No */ }
-					AuditLogEvent.AutoModerationRuleCreate -> { /* No */ }
-					AuditLogEvent.AutoModerationRuleDelete -> { /* No */ }
-					AuditLogEvent.AutoModerationRuleUpdate -> { /* No */ }
-					AuditLogEvent.AutoModerationUserCommunicationDisabled -> { /* No */ }
-					AuditLogEvent.BotAdd -> { /* Mayhaps? */ }
-					AuditLogEvent.ChannelCreate -> { /* Yes */ }
-					AuditLogEvent.ChannelDelete -> { /* Yes */ }
-					AuditLogEvent.ChannelOverwriteCreate -> { /* No */ }
-					AuditLogEvent.ChannelOverwriteDelete -> { /* No */ }
-					AuditLogEvent.ChannelOverwriteUpdate -> { /* No */ }
-					AuditLogEvent.ChannelUpdate -> { /* Mayhaps? */ }
-					AuditLogEvent.CreatorMonetizationRequestCreated -> { /* No */ }
-					AuditLogEvent.CreatorMonetizationTermsAccepted -> { /* No */ }
-					AuditLogEvent.EmojiCreate -> { /* No */ }
-					AuditLogEvent.EmojiDelete -> { /* No */ }
-					AuditLogEvent.EmojiUpdate -> { /* No */ }
-					AuditLogEvent.GuildScheduledEventCreate -> { /* Mayhaps? */ }
-					AuditLogEvent.GuildScheduledEventDelete -> { /* Mayhaps? */ }
-					AuditLogEvent.GuildScheduledEventUpdate -> { /* Mayhaps? */ }
-					AuditLogEvent.GuildUpdate -> { /* What does this entail? */ }
-					AuditLogEvent.IntegrationCreate -> { /* No */ }
-					AuditLogEvent.IntegrationDelete -> { /* No */ }
-					AuditLogEvent.IntegrationUpdate -> { /* No */ }
-					AuditLogEvent.InviteCreate -> { /* Mayhaps? */ }
-					AuditLogEvent.InviteDelete -> { /* Mayhaps? */ }
-					AuditLogEvent.InviteUpdate -> { /* Mayhaps? */ }
-					AuditLogEvent.MemberBanAdd -> {
-						if (entry.reason?.contains("temporary-ban", true) == true) {
-							// We loose too much information by running temporary bans here, the command will post it instead for us
-							return@action
-						}
-
-						moderationLog.createEmbed {
-							title = if (entry.reason?.contains("soft-ban", true) == true) {
-								"Soft Banned user"
-							} else {
-								"Banned User"
-							}
-							baseModerationEmbed(entry.reason ?: "No reason provided", target, actioner)
-							timestamp = time
-							color = DISCORD_BLACK
-							footer {
-								text = actioner?.asUserOrNull()?.username ?: "Unable to get user username"
-								icon = actioner?.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-							}
-						}
+				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guildFor(event)!!)
+				utilityLog?.createEmbed {
+					title = "Category Created"
+					description = "${event.channel.mention} (${event.channel.name}) was created."
+					field {
+						name = "Allowed Permissions"
+						value = allowed
+						inline = true
 					}
-					AuditLogEvent.MemberBanRemove -> {
-						if (entry.reason?.contains("soft-ban", true) == true || entry.reason?.contains("temporary-ban", true) == true) {
-							// Soft-banning implies an unban so do not do any logging
-							// Temporary banning loses too much information here as well, the scheduler can do it for us
-							return@action
-						}
-
-						moderationLog.createEmbed {
-							title = "Unbanned user"
-							description = "${target?.mention} has been unbanned!\n${
-								target?.id
-							} (${target?.username})"
-							if (entry.reason != null) {
-								field {
-									name = "Reason:"
-									value = entry.reason!!
-								}
-							}
-							timestamp = time
-							color = DISCORD_GREEN
-							footer {
-								text = actioner?.asUserOrNull()?.username ?: "Unable to get user username"
-								icon = actioner?.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-							}
-						}
+					field {
+						name = "Denied Permissions"
+						value = denied
+						inline = true
 					}
-					AuditLogEvent.MemberDisconnect -> { /* No */ }
-					AuditLogEvent.MemberKick -> { /* Yes */ }
-					AuditLogEvent.MemberMove -> { /* No */ }
-					AuditLogEvent.MemberPrune -> { /* Mayhaps? */ }
-					AuditLogEvent.MemberRoleUpdate -> { /* Mayhaps? */ }
-					AuditLogEvent.MemberUpdate -> { /* No */ }
-					AuditLogEvent.MessageBulkDelete -> { /* Compare with current */ }
-					AuditLogEvent.MessageDelete -> { /* Compare with current */ }
-					AuditLogEvent.MessagePin -> { /* Mayhaps? */ }
-					AuditLogEvent.MessageUnpin -> { /* Mayhaps? */ }
-					AuditLogEvent.RoleCreate -> { /* Yes */ }
-					AuditLogEvent.RoleDelete -> { /* Yes */ }
-					AuditLogEvent.RoleUpdate -> { /* Mayhaps? */ }
-					AuditLogEvent.StageInstanceCreate -> { /* What does this entail */ }
-					AuditLogEvent.StageInstanceDelete -> { /* What does this entail */ }
-					AuditLogEvent.StageInstanceUpdate -> { /* What does this entail */ }
-					AuditLogEvent.StickerCreate -> { /* No */ }
-					AuditLogEvent.StickerDelete -> { /* No */ }
-					AuditLogEvent.StickerUpdate -> { /* No */ }
-					AuditLogEvent.ThreadCreate -> { /* Mayhaps? */ }
-					AuditLogEvent.ThreadDelete -> { /* Mayhaps? */ }
-					AuditLogEvent.ThreadUpdate -> { /* Mayhaps? */ }
-					AuditLogEvent.WebhookCreate -> { /* No */ }
-					AuditLogEvent.WebhookDelete -> { /* No */ }
-					AuditLogEvent.WebhookUpdate -> { /* No */ }
-					is AuditLogEvent.Unknown -> {
-						// Silently stop? Log that *something* occurred?
-					}
+					timestamp = Clock.System.now()
+					color = DISCORD_GREEN
 				}
 			}
+		}
+		event<CategoryDeleteEvent> {
+			check { anyGuild() }
+			action {
+				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guildFor(event)!!)
+				utilityLog?.createEmbed {
+					title = "Category Deleted"
+					description = "${event.channel.name} was deleted."
+					timestamp = Clock.System.now()
+					color = DISCORD_RED
+				}
+			}
+		}
+		event<CategoryUpdateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<ForumChannelCreateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<ForumChannelDeleteEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<ForumChannelUpdateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<GuildScheduledEventCreateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<GuildScheduledEventDeleteEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<GuildScheduledEventUpdateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<InviteCreateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<InviteDeleteEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<MemberUpdateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<NewsChannelCreateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<NewsChannelDeleteEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<NewsChannelUpdateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<RoleCreateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<RoleDeleteEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<RoleUpdateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<StageChannelCreateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<StageChannelDeleteEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<StageChannelUpdateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<TextChannelCreateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<TextChannelDeleteEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<TextChannelUpdateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<ThreadChannelCreateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<ThreadChannelDeleteEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<ThreadUpdateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<VoiceChannelCreateEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<VoiceChannelDeleteEvent> {
+			check { anyGuild() }
+			action { }
+		}
+		event<VoiceChannelUpdateEvent> {
+			check { anyGuild() }
+			action { }
 		}
 	}
 }

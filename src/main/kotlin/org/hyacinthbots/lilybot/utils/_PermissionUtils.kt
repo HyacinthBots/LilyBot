@@ -131,18 +131,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 
 	val eventChannel = channelFor(event)?.asChannelOrNull() ?: return
 
-	val permissionsSet: MutableSet<String> = mutableSetOf()
-	var count = 0
-	permissions.values.forEach { _ ->
-		permissionsSet.add(
-			permissions.values.toString()
-				.split(",")[count]
-				.split(".")[1]
-				.replace("[", "`")
-				.replace("]", "`")
-		)
-		count++
-	}
+	val permissionsSet: String = formatPermissionSet(permissions)
 
 	/* Use `TextChannel` when the channel is a Text channel */
 	if (eventChannel is TextChannel) {
@@ -267,4 +256,19 @@ suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: Permissi
 	anyGuild()
 	requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 	hasPermission(actionPermission)
+}
+
+fun formatPermissionSet(permissions: Permissions): String {
+	val permissionsSet: MutableSet<String> = mutableSetOf()
+	var count = 0
+	permissions.values.forEach { _ ->
+		permissionsSet.add(
+			permissions.values.toString()
+				.split(",")[count]
+				.split(".")[1]
+				.replace("]", "")
+		)
+		count++
+	}
+	return permissionsSet.toString().replace("[", "").replace("]", "").ifEmpty { "None" }
 }
