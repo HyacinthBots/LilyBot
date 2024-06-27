@@ -1,9 +1,13 @@
 package org.hyacinthbots.lilybot.extensions.moderation
 
-enum class ModerationActions {
+enum class ModerationAction {
 	BAN,
 	SOFT_BAN,
+	TEMP_BAN,
+	UNBAN,
 	KICK,
+	TIMEOUT,
+	REMOVE_TIMEOUT,
 	WARN,
-	TIMEOUT
+	REMOVE_WARN
 }

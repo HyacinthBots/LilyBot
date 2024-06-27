@@ -28,9 +28,11 @@ suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser:
 		value = reason ?: "No reason provided"
 		inline = false
 	}
-	footer {
-		text = "Requested by ${commandUser?.asUserOrNull()?.username}"
-		icon = commandUser?.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+	if (commandUser != null) {
+		footer {
+			text = "Requested by ${commandUser.asUserOrNull()?.username}"
+			icon = commandUser.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+		}
 	}
 }
 
@@ -49,6 +51,20 @@ fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?, override: Boolean)
 		value = if (dm != null) {
 			"User notified with direct message"
 		} else if (!override) {
+			"DM Notification Disabled"
+		} else {
+			"Failed to notify user with direct message"
+		}
+		inline = false
+	}
+}
+
+fun EmbedBuilder.dmNotificationStatusEmbedField(success: Boolean?, override: Boolean?) {
+	field {
+		name = "User Notification:"
+		value = if (success != null && success) {
+			"User notified with direct message"
+		} else if (override != null && !override) {
 			"DM Notification Disabled"
 		} else {
 			"Failed to notify user with direct message"
