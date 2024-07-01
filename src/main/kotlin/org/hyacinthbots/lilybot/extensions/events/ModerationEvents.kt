@@ -3,31 +3,17 @@ package org.hyacinthbots.lilybot.extensions.events
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
 import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.guildFor
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
+import com.kotlindiscord.kord.extensions.utils.translate
+import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.event.channel.CategoryCreateEvent
-import dev.kord.core.event.channel.CategoryDeleteEvent
-import dev.kord.core.event.channel.CategoryUpdateEvent
-import dev.kord.core.event.channel.ForumChannelCreateEvent
-import dev.kord.core.event.channel.ForumChannelDeleteEvent
-import dev.kord.core.event.channel.ForumChannelUpdateEvent
-import dev.kord.core.event.channel.NewsChannelCreateEvent
-import dev.kord.core.event.channel.NewsChannelDeleteEvent
-import dev.kord.core.event.channel.NewsChannelUpdateEvent
-import dev.kord.core.event.channel.StageChannelCreateEvent
-import dev.kord.core.event.channel.StageChannelDeleteEvent
-import dev.kord.core.event.channel.StageChannelUpdateEvent
-import dev.kord.core.event.channel.TextChannelCreateEvent
-import dev.kord.core.event.channel.TextChannelDeleteEvent
-import dev.kord.core.event.channel.TextChannelUpdateEvent
-import dev.kord.core.event.channel.VoiceChannelCreateEvent
-import dev.kord.core.event.channel.VoiceChannelDeleteEvent
-import dev.kord.core.event.channel.VoiceChannelUpdateEvent
+import dev.kord.core.event.channel.ChannelCreateEvent
+import dev.kord.core.event.channel.ChannelDeleteEvent
+import dev.kord.core.event.channel.ChannelUpdateEvent
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.channel.thread.ThreadChannelDeleteEvent
 import dev.kord.core.event.channel.thread.ThreadUpdateEvent
@@ -42,8 +28,8 @@ import dev.kord.core.event.guild.MemberUpdateEvent
 import dev.kord.core.event.role.RoleCreateEvent
 import dev.kord.core.event.role.RoleDeleteEvent
 import dev.kord.core.event.role.RoleUpdateEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.Clock
-import mu.KotlinLogging
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.moderation.ModerationAction
@@ -52,11 +38,12 @@ import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.formatPermissionSet
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.interval
+import java.util.Locale
 
 class ModerationEvents : Extension() {
 	override val name: String = "moderation-events"
 
-	private val logger = KotlinLogging.logger {}
+	private val logger = KotlinLogging.logger { "Moderation Events" }
 
 	override suspend fun setup() {
 		event<BanAddEvent> {
@@ -81,7 +68,7 @@ class ModerationEvents : Extension() {
 
 				if (existingAction != null && existingAction.targetUserId != event.user.id) {
 					// If this happens I will eat my hat
-					logger.warn("It's hat eating time from the ban command")
+					logger.warn { "It's hat eating time from the ban command" }
 					return@action
 				}
 
@@ -95,13 +82,21 @@ class ModerationEvents : Extension() {
 						}
 
 						description = "${event.user.mention} has been ${
-							when (existingAction.actionType) {
-								ModerationAction.BAN -> ""
-								ModerationAction.SOFT_BAN -> "soft-"
-								ModerationAction.TEMP_BAN -> "temporarily"
-								else -> null // Again should theoretically never occur, but compiler
+							if (existingAction.data.reason?.contains("quick ban", true) == false) {
+								when (existingAction.actionType) {
+									ModerationAction.BAN -> "banned"
+									ModerationAction.SOFT_BAN -> "soft-banned"
+									ModerationAction.TEMP_BAN -> "temporarily banned"
+									else -> null // Again should theoretically never occur, but compiler
+								}
+							} else {
+								when (existingAction.actionType) {
+									ModerationAction.BAN -> existingAction.data.reason
+									ModerationAction.SOFT_BAN -> existingAction.data.reason
+									else -> null
+								}
 							}
-						}banned"
+						}"
 						baseModerationEmbed(
 							existingAction.data.reason,
 							event.user,
@@ -110,24 +105,26 @@ class ModerationEvents : Extension() {
 						image = existingAction.data.imageUrl
 						dmNotificationStatusEmbedField(existingAction.data.dmOutcome, existingAction.data.dmOverride)
 						timestamp = Clock.System.now()
-						field {
-							name = "Days of messages deleted"
-							value =
-								if (existingAction.actionType == ModerationAction.SOFT_BAN &&
-									existingAction.data.deletedMessages == 0
-								) {
-									"3"
-								} else {
-									existingAction.data.deletedMessages.toString()
-								}
-							inline = false
+						if (existingAction.data.deletedMessages != null) {
+							field {
+								name = "Days of messages deleted"
+								value =
+									if (existingAction.actionType == ModerationAction.SOFT_BAN &&
+										existingAction.data.deletedMessages == 0
+									) {
+										"3"
+									} else {
+										existingAction.data.deletedMessages.toString()
+									}
+								inline = false
+							}
 						}
 						if (existingAction.data.timeData != null) {
 							field {
 								name = "Duration:"
 								value =
-									existingAction.data.timeData!!.durationInst?.toDiscord(TimestampType.Default) + " (${
-										existingAction.data.timeData!!.durationDtp?.interval()
+									existingAction.data.timeData.durationInst?.toDiscord(TimestampType.Default) + " (${
+										existingAction.data.timeData.durationDtp?.interval()
 									})"
 							}
 						}
@@ -164,7 +161,7 @@ class ModerationEvents : Extension() {
 					ModerationActionCollection().getAction(ModerationAction.UNBAN, event.guildId, event.user.id)
 				if (existingAction != null && existingAction.targetUserId != event.user.id) {
 					// If this happens I will eat my hat
-					logger.warn("It's hat eating time from the unban command")
+					logger.warn { "It's hat eating time from the unban command" }
 					return@action
 				}
 
@@ -208,20 +205,23 @@ class ModerationEvents : Extension() {
 				}
 			}
 		}
-		event<CategoryCreateEvent> {
-			check { anyGuild() }
+		event<ChannelCreateEvent> {
 			action {
+				val guild = event.channel.data.guildId.value?.let { GuildBehavior(it, event.kord) }
 				var allowed = ""
 				var denied = ""
-				event.channel.permissionOverwrites.forEach {
-					allowed += "${guildFor(event)!!.getRoleOrNull(it.target)?.mention}: ${formatPermissionSet(it.allowed)}\n"
-					denied += "${guildFor(event)!!.getRoleOrNull(it.target)?.mention}: ${formatPermissionSet(it.denied)}\n"
+				event.channel.data.permissionOverwrites.value?.forEach {
+					allowed += "${guild!!.getRoleOrNull(it.id)?.mention}: ${formatPermissionSet(it.allow)}\n"
+					denied += "${guild.getRoleOrNull(it.id)?.mention}: ${formatPermissionSet(it.deny)}\n"
 				}
 
-				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guildFor(event)!!)
+				if (allowed.isBlank()) allowed = "None overrides set"
+				if (denied.isBlank()) denied = "None overrides set"
+
+				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)
 				utilityLog?.createEmbed {
-					title = "Category Created"
-					description = "${event.channel.mention} (${event.channel.name}) was created."
+					title = "${event.channel.type.translate(Locale.UK)} Created"
+					description = "${event.channel.mention} (${event.channel.data.name.value}) was created."
 					field {
 						name = "Allowed Permissions"
 						value = allowed
@@ -237,32 +237,20 @@ class ModerationEvents : Extension() {
 				}
 			}
 		}
-		event<CategoryDeleteEvent> {
-			check { anyGuild() }
+		event<ChannelDeleteEvent> {
 			action {
-				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guildFor(event)!!)
+				val guild = event.channel.data.guildId.value?.let { GuildBehavior(it, event.kord) }
+				val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)
 				utilityLog?.createEmbed {
-					title = "Category Deleted"
-					description = "${event.channel.name} was deleted."
+					title = "${event.channel.type.translate(Locale.UK)} Deleted"
+					description = "${event.channel.data.name.value} was deleted."
 					timestamp = Clock.System.now()
 					color = DISCORD_RED
 				}
 			}
 		}
-		event<CategoryUpdateEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<ForumChannelCreateEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<ForumChannelDeleteEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<ForumChannelUpdateEvent> {
-			check { anyGuild() }
+
+		event<ChannelUpdateEvent> {
 			action { }
 		}
 		event<GuildScheduledEventCreateEvent> {
@@ -289,18 +277,6 @@ class ModerationEvents : Extension() {
 			check { anyGuild() }
 			action { }
 		}
-		event<NewsChannelCreateEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<NewsChannelDeleteEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<NewsChannelUpdateEvent> {
-			check { anyGuild() }
-			action { }
-		}
 		event<RoleCreateEvent> {
 			check { anyGuild() }
 			action { }
@@ -313,30 +289,6 @@ class ModerationEvents : Extension() {
 			check { anyGuild() }
 			action { }
 		}
-		event<StageChannelCreateEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<StageChannelDeleteEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<StageChannelUpdateEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<TextChannelCreateEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<TextChannelDeleteEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<TextChannelUpdateEvent> {
-			check { anyGuild() }
-			action { }
-		}
 		event<ThreadChannelCreateEvent> {
 			check { anyGuild() }
 			action { }
@@ -346,18 +298,6 @@ class ModerationEvents : Extension() {
 			action { }
 		}
 		event<ThreadUpdateEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<VoiceChannelCreateEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<VoiceChannelDeleteEvent> {
-			check { anyGuild() }
-			action { }
-		}
-		event<VoiceChannelUpdateEvent> {
 			check { anyGuild() }
 			action { }
 		}

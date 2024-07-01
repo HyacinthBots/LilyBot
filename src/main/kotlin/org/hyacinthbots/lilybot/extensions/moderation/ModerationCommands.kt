@@ -178,6 +178,18 @@ class ModerationCommands : Extension() {
 												color = DISCORD_GREEN
 											}
 										}
+										ModerationActionCollection().addAction(
+											ModerationAction.BAN, guild!!.id, senderId,
+											    ActionData(
+												user.id,
+												null,
+												null,
+												"Quick banned $reasonSuffix",
+												dm != null,
+												true,
+												null
+											)
+										)
 
 										sender.ban {
 											reason =
@@ -202,20 +214,6 @@ class ModerationCommands : Extension() {
 											}
 										}
 
-										loggingChannel.createEmbed {
-											title = "Banned a user"
-											description = "${
-												sender.mention
-											} has been banned!"
-											baseModerationEmbed(
-												"Quick banned via moderate menu $reasonSuffix",
-												sender,
-												user
-											)
-											dmNotificationStatusEmbedField(dm, true)
-											timestamp = Clock.System.now()
-										}
-
 										menuMessage?.edit {
 											content = "Banned a user."
 											components { removeAll() }
@@ -232,10 +230,27 @@ class ModerationCommands : Extension() {
 											}
 										}
 
+										ModerationActionCollection().addAction(
+											ModerationAction.SOFT_BAN, guild!!.id, senderId,
+											    ActionData(
+												user.id,
+												null,
+												null,
+												"Quick banned $reasonSuffix",
+												dm != null,
+												true,
+												null
+											)
+										)
+
 										sender.ban {
 											reason =
 												"Quick soft-banned $reasonSuffix"
 										}
+
+										ModerationActionCollection().shouldIgnoreAction(
+											ModerationAction.SOFT_BAN, guild!!.id, senderId
+										)
 
 										guild!!.unban(senderId, "Quick soft-ban unban")
 
@@ -255,20 +270,6 @@ class ModerationCommands : Extension() {
 														"for sending a deleted message."
 												}
 											}
-										}
-
-										loggingChannel.createEmbed {
-											title = "Soft-Banned a user"
-											description = "${
-												sender.mention
-											} has been soft-banned!"
-											baseModerationEmbed(
-												"Quick soft-banned via moderate menu $reasonSuffix",
-												sender,
-												user
-											)
-											dmNotificationStatusEmbedField(dm, true)
-											timestamp = Clock.System.now()
 										}
 
 										menuMessage?.edit {
@@ -305,19 +306,18 @@ class ModerationCommands : Extension() {
 											}
 										}
 
-										loggingChannel.createEmbed {
-											title = "Kicked a user"
-											description = "${
-												sender.mention
-											} has been kicked!"
-											baseModerationEmbed(
+										ModerationActionCollection().addAction(
+											ModerationAction.KICK, guild!!.id, senderId,
+											    ActionData(
+												user.id,
+												null,
+												null,
 												"Quick kicked via moderate menu $reasonSuffix",
-												sender,
-												user
+												dm != null,
+												true,
+												null
 											)
-											dmNotificationStatusEmbedField(dm, true)
-											timestamp = Clock.System.now()
-										}
+										)
 
 										menuMessage?.edit {
 											content = "Kicked a user."
@@ -519,7 +519,7 @@ class ModerationCommands : Extension() {
 				ModerationActionCollection().addAction(
 					if (arguments.softBan) ModerationAction.SOFT_BAN else ModerationAction.BAN,
 					guild!!.id, arguments.userArgument.id,
-					    ActionData(
+					ActionData(
 						user.id,
 						arguments.messages,
 						null,
@@ -597,7 +597,7 @@ class ModerationCommands : Extension() {
 
 					ModerationActionCollection().addAction(
 						ModerationAction.TEMP_BAN, guild!!.id, arguments.userArgument.id,
-						    ActionData(
+						ActionData(
 							user.id,
 							arguments.messages,
 							TimeData(arguments.duration, duration),
@@ -705,7 +705,7 @@ class ModerationCommands : Extension() {
 				if (tempBan == null) {
 					ModerationActionCollection().addAction(
 						ModerationAction.UNBAN, guild!!.id, arguments.userArgument.id,
-						    ActionData(
+						ActionData(
 							user.id, null, null, arguments.reason, null, null, null
 						)
 					)
@@ -713,7 +713,7 @@ class ModerationCommands : Extension() {
 				} else {
 					ModerationActionCollection().addAction(
 						ModerationAction.UNBAN, guild!!.id, arguments.userArgument.id,
-						    ActionData(
+						ActionData(
 							user.id, null, null, arguments.reason + "**TEMPORARY-BAN", null, null, null
 						)
 					)
@@ -750,16 +750,12 @@ class ModerationCommands : Extension() {
 						}
 					}
 				}
-				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-					embed {
-						title = "Kicked a user"
-						description = "${arguments.userArgument.mention} has been kicked!"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
-						timestamp = Clock.System.now()
-					}
-				}
+				ModerationActionCollection().addAction(
+					ModerationAction.KICK, guild!!.id, arguments.userArgument.id,
+					    ActionData(
+						user.id, null, null, arguments.reason, dmStatus != null, arguments.dm, arguments.image?.url
+					)
+				)
 
 				if (modConfig?.publicLogging == true) {
 					event.interaction.channel.createEmbed {
@@ -1072,7 +1068,7 @@ class ModerationCommands : Extension() {
 
 			ModerationActionCollection().addAction(
 				ModerationAction.UNBAN, guild.id, it.bannedUserId,
-				    ActionData(
+				ActionData(
 					it.moderatorUserId,
 					null,
 					TimeData(null, null, it.startTime, it.endTime),
