@@ -12,7 +12,7 @@
 package org.hyacinthbots.lilybot.database.migrations
 
 import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection

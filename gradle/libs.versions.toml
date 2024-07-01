@@ -1,6 +1,6 @@
 [versions]
 # Plugins
-kotlin = "1.9.23"
+kotlin = "2.0.20-Beta1"
 shadow = "8.1.1"
 detekt = "1.23.6"
 git-hooks = "0.0.2"
@@ -8,12 +8,12 @@ grgit = "5.2.2"
 blossom = "2.1.0"
 
 # Libraries
-kord-extensions = "1.8.0-20240319.115836-21"
-logging = "6.0.9"
+kord-extensions = "1.9.0-20240701.141421-2"
+logging = "7.0.0"
 logback = "1.5.6"
-github-api = "1.321"
-kmongo = "4.11.0"
-docgenerator = "0.1.5-SNAPSHOT"
+github-api = "1.322"
+kmongo = "5.1.0"
+docgenerator = "0.2.0-SNAPSHOT"
 
 [libraries]
 kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }

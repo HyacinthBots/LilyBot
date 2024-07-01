@@ -3,9 +3,9 @@ package org.hyacinthbots.lilybot.extensions.util
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
 import com.kotlindiscord.kord.extensions.utils.scheduling.Task
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
-import mu.KotlinLogging
 import org.hyacinthbots.lilybot.utils.ENV
 import kotlin.time.Duration.Companion.seconds
 
