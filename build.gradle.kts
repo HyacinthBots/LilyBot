@@ -73,7 +73,7 @@ gitHooks {
 tasks {
 	withType<KotlinCompile> {
 		compilerOptions {
-			jvmTarget.set(JvmTarget.fromTarget("17"))
+			jvmTarget.set(JvmTarget.fromTarget("21"))
 			languageVersion.set(KotlinVersion.fromVersion(libs.plugins.kotlin.get().version.requiredVersion.substringBeforeLast(".")))
 			incremental = true
 			freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
