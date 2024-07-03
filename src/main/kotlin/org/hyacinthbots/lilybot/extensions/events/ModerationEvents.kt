@@ -12,6 +12,7 @@ import dev.kord.common.entity.optional.value
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.entity.channel.Category
 import dev.kord.core.entity.channel.Channel
 import dev.kord.core.event.channel.ChannelCreateEvent
 import dev.kord.core.event.channel.ChannelDeleteEvent
@@ -249,7 +250,7 @@ class ModerationEvents : Extension() {
 			}
 		}
 
-		// TODO I'm crying please help, there are so many fields that need to be checked
+		// TODO Test
 		event<ChannelUpdateEvent> {
 			action {
 				val guild = event.channel.data.guildId.value?.let { GuildBehavior(it, event.kord) }
@@ -262,6 +263,13 @@ class ModerationEvents : Extension() {
 
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)?.createEmbed {
 					title = "${writeChannelType(event.channel.type)} Updated"
+					if (event.channel.type != event.old?.type) {
+						field {
+							name = "Type change"
+							value =
+								"Old: ${writeChannelType(event.old?.type)}\nNew: ${writeChannelType(event.channel.type)}"
+						}
+					}
 					if (event.channel.data.name != event.old?.data?.name) {
 						field {
 							name = "Name Change"
@@ -274,6 +282,14 @@ class ModerationEvents : Extension() {
 							value = "Old: ${event.old?.data?.topic?.value}\nNew: ${event.channel.data.topic.value}"
 						}
 					}
+					if (event.channel.data.parentId != event.old?.data?.parentId) {
+						field {
+							name = "Parent Category Changed"
+							value =
+								"Old: ${kord.getChannelOf<Category>(event.old?.data?.parentId.value!!)?.mention}\n" +
+									"New: ${kord.getChannelOf<Category>(event.channel.data.parentId.value!!)?.mention}"
+						}
+					}
 					if (event.channel.data.nsfw != event.old?.data?.nsfw) {
 						field {
 							name = "NSFW Setting"
@@ -284,6 +300,96 @@ class ModerationEvents : Extension() {
 						field {
 							name = "Position changed"
 							value = "Old: ${event.old?.data?.position.value}\nNew: ${event.channel.data.position.value}"
+						}
+					}
+					if (event.channel.data.rateLimitPerUser != event.old?.data?.rateLimitPerUser) {
+						field {
+							name = "Slowmode time changed"
+							value = "Old: ${event.old?.data?.rateLimitPerUser?.value ?: "0"}\n" +
+								"New: ${event.channel.data.rateLimitPerUser.value ?: "0"}"
+						}
+					}
+					if (event.channel.data.bitrate != event.old?.data?.bitrate) {
+						field {
+							name = "Bitrate changed"
+							value = "Old: ${event.old?.data?.bitrate.value}\nNew: ${event.channel.data.bitrate.value}"
+						}
+					}
+					if (event.channel.data.userLimit != event.old?.data?.userLimit) {
+						field {
+							name = "User limit changed"
+							value = "Old: ${event.old?.data?.userLimit.value ?: "0"}\n" +
+								"New: ${event.channel.data.userLimit.value ?: "0"}"
+						}
+					}
+					if (event.channel.data.rtcRegion != event.old?.data?.rtcRegion) {
+						field {
+							name = "Region changed"
+							value = "Old: ${event.old?.data?.rtcRegion?.value ?: "Automatic"}\n" +
+								"New: ${event.channel.data.rtcRegion.value ?: "Automatic"}"
+						}
+					}
+					if (event.channel.data.videoQualityMode != event.old?.data?.videoQualityMode) {
+						field {
+							name = "Video Quality Changed"
+							value = "Old: ${event.old?.data?.videoQualityMode?.value}\n" +
+								"New: ${event.channel.data.videoQualityMode.value}"
+						}
+					}
+					if (event.channel.data.defaultAutoArchiveDuration != event.old?.data?.defaultAutoArchiveDuration) {
+						field {
+							name = "Default Automatic Archive Duration"
+							value = "Old: ${event.old?.data?.defaultAutoArchiveDuration?.value}\n" +
+								"New: ${event.channel.data.defaultAutoArchiveDuration.value}"
+						}
+					}
+					if (event.channel.data.flags != event.old?.data?.flags) {
+						field {
+							name = "Channel Flags Changed"
+							value = "Old: ${event.old?.data?.flags?.value}\n" +
+								"New: ${event.channel.data.flags.value}"
+						}
+					}
+					if (event.channel.data.defaultSortOrder != event.old?.data?.defaultSortOrder) {
+						field {
+							name = "Default Sort Changed"
+							value = "Old: ${event.old?.data?.defaultSortOrder?.value}\n" +
+								"New: ${event.channel.data.defaultSortOrder.value}"
+						}
+					}
+					if (event.channel.data.defaultForumLayout != event.old?.data?.defaultForumLayout) {
+						field {
+							name = "Default Layout Changed"
+							value = "Old: ${event.old?.data?.defaultForumLayout?.value}\n" +
+								"New: ${event.channel.data.defaultForumLayout.value}"
+						}
+					}
+					if (event.channel.data.availableTags != event.old?.data?.availableTags) {
+						field {
+							name = "Available Tags Changed"
+							value = "Old: ${event.old?.data?.availableTags?.value}\n" +
+								"New: ${event.channel.data.availableTags.value}"
+						}
+					}
+					if (event.channel.data.appliedTags != event.old?.data?.appliedTags) {
+						field {
+							name = "Applied Tags Changed"
+							value = "Old: ${event.old?.data?.appliedTags?.value}\n" +
+								"New: ${event.channel.data.appliedTags.value}"
+						}
+					}
+					if (event.channel.data.defaultReactionEmoji != event.old?.data?.defaultReactionEmoji) {
+						field {
+							name = "Default Reaction Emoji Changed"
+							value = "Old: ${event.old?.data?.defaultReactionEmoji?.value?.emojiName}\n" +
+								"New: ${event.channel.data.defaultReactionEmoji.value?.emojiName}"
+						}
+					}
+					if (event.channel.data.defaultThreadRateLimitPerUser != event.old?.data?.defaultThreadRateLimitPerUser) {
+						field {
+							name = "Default Thread Slowmode Changed"
+							value = "Old: ${event.old?.data?.defaultThreadRateLimitPerUser?.value}\n" +
+								"New: ${event.channel.data.defaultThreadRateLimitPerUser.value}"
 						}
 					}
 					if (oldAllowed != newAllowed) {
@@ -353,7 +459,8 @@ class ModerationEvents : Extension() {
 		}
 	}
 
-	private fun writeChannelType(type: ChannelType): String? = when (type) {
+	// TODO Docs
+	private fun writeChannelType(type: ChannelType?): String? = when (type) {
 		ChannelType.GuildCategory -> "Category"
 		ChannelType.GuildNews -> "Announcement Channel"
 		ChannelType.GuildForum -> "Forum Channel"
@@ -363,6 +470,7 @@ class ModerationEvents : Extension() {
 		else -> null
 	}
 
+	// TODO Docs
 	private suspend fun formatPermissionsForDisplay(guild: GuildBehavior?, channel: Channel?): Map<String, String> {
 		var map = mutableMapOf<String, String>()
 		map[ALLOWED] = ""
