@@ -261,3 +261,12 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 		}
 	}
 }
+
+/**
+ * Takes a value [T], converts it to a string and returns the part after a full-stop/period.
+ * Generally used on class values, i.e. ArchiveDuration.Day to return just "Day"
+ *
+ * @author NoComment1105
+ * @since 5.0.0
+ */
+fun <T : Any> T?.afterDot() = this.toString().substringAfter(".")

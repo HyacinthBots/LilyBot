@@ -2,12 +2,14 @@ package org.hyacinthbots.lilybot.extensions.events
 
 import com.kotlindiscord.kord.extensions.DISCORD_GREEN
 import com.kotlindiscord.kord.extensions.DISCORD_RED
+import com.kotlindiscord.kord.extensions.DISCORD_YELLOW
 import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import dev.kord.common.entity.ChannelType
+import dev.kord.common.entity.ForumTag
 import dev.kord.common.entity.optional.value
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
@@ -36,13 +38,18 @@ import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.extensions.moderation.ModerationAction
+import org.hyacinthbots.lilybot.utils.afterDot
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.formatPermissionSet
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
 import org.hyacinthbots.lilybot.utils.interval
 
+/** A String identifier to use for the permission map to get allowed permissions. */
 private const val ALLOWED = "Allowed"
+
+/** A String identifier to use for the permission map to get denied permissions. */
 private const val DENIED = "Denied"
 
 class ModerationEvents : Extension() {
@@ -250,7 +257,6 @@ class ModerationEvents : Extension() {
 			}
 		}
 
-		// TODO Test
 		event<ChannelUpdateEvent> {
 			action {
 				val guild = event.channel.data.guildId.value?.let { GuildBehavior(it, event.kord) }
@@ -276,7 +282,7 @@ class ModerationEvents : Extension() {
 							value = "Old: ${event.old?.data?.name?.value}\nNew: ${event.channel.data.name.value}"
 						}
 					}
-					if (event.channel.data.topic != event.old?.data?.topic) {
+					if (event.channel.data.topic.value != event.old?.data?.topic?.value) {
 						field {
 							name = "Topic changed"
 							value = "Old: ${event.old?.data?.topic?.value}\nNew: ${event.channel.data.topic.value}"
@@ -332,43 +338,36 @@ class ModerationEvents : Extension() {
 					if (event.channel.data.videoQualityMode != event.old?.data?.videoQualityMode) {
 						field {
 							name = "Video Quality Changed"
-							value = "Old: ${event.old?.data?.videoQualityMode?.value}\n" +
-								"New: ${event.channel.data.videoQualityMode.value}"
+							value = "Old: ${event.old?.data?.videoQualityMode?.value.afterDot()}\n" +
+								"New: ${event.channel.data.videoQualityMode.value.afterDot()}"
 						}
 					}
 					if (event.channel.data.defaultAutoArchiveDuration != event.old?.data?.defaultAutoArchiveDuration) {
 						field {
-							name = "Default Automatic Archive Duration"
-							value = "Old: ${event.old?.data?.defaultAutoArchiveDuration?.value}\n" +
-								"New: ${event.channel.data.defaultAutoArchiveDuration.value}"
-						}
-					}
-					if (event.channel.data.flags != event.old?.data?.flags) {
-						field {
-							name = "Channel Flags Changed"
-							value = "Old: ${event.old?.data?.flags?.value}\n" +
-								"New: ${event.channel.data.flags.value}"
+							name = "Default Auto-Archive Duration"
+							value = "Old: ${event.old?.data?.defaultAutoArchiveDuration?.value?.duration}\n" +
+								"New: ${event.channel.data.defaultAutoArchiveDuration.value?.duration}"
 						}
 					}
 					if (event.channel.data.defaultSortOrder != event.old?.data?.defaultSortOrder) {
 						field {
 							name = "Default Sort Changed"
-							value = "Old: ${event.old?.data?.defaultSortOrder?.value}\n" +
-								"New: ${event.channel.data.defaultSortOrder.value}"
+							value = "Old: ${event.old?.data?.defaultSortOrder?.value.afterDot()}\n" +
+								"New: ${event.channel.data.defaultSortOrder.value.afterDot()}"
 						}
 					}
 					if (event.channel.data.defaultForumLayout != event.old?.data?.defaultForumLayout) {
 						field {
 							name = "Default Layout Changed"
-							value = "Old: ${event.old?.data?.defaultForumLayout?.value}\n" +
-								"New: ${event.channel.data.defaultForumLayout.value}"
+							value = "Old: ${event.old?.data?.defaultForumLayout?.value.afterDot()}\n" +
+								"New: ${event.channel.data.defaultForumLayout.value.afterDot()}"
 						}
 					}
 					if (event.channel.data.availableTags != event.old?.data?.availableTags) {
 						field {
 							name = "Available Tags Changed"
-							value = "Old: ${event.old?.data?.availableTags?.value}\n" +
-								"New: ${event.channel.data.availableTags.value}"
+							value = "Old: ${formatAvailableTags(event.old?.data?.availableTags?.value)}\n" +
+								"New: ${formatAvailableTags(event.channel.data.availableTags.value)}"
 						}
 					}
 					if (event.channel.data.appliedTags != event.old?.data?.appliedTags) {
@@ -398,14 +397,26 @@ class ModerationEvents : Extension() {
 							value = newAllowed
 							inline = true
 						}
-					}
-					if (oldDenied != newDenied) {
 						field {
-							name = "Old Denied Permissions"
-							value = newDenied
+							name = "Old Allowed Permissions"
+							value = oldAllowed
 							inline = true
 						}
 					}
+					if (oldDenied != newDenied) {
+						field {
+							name = "New Denied Permissions"
+							value = newDenied
+							inline = false
+						}
+						field {
+							name = "Old Denied Permissions"
+							value = oldDenied
+							inline = true
+						}
+					}
+					color = DISCORD_YELLOW
+					timestamp = Clock.System.now()
 				}
 			}
 		}
@@ -459,7 +470,14 @@ class ModerationEvents : Extension() {
 		}
 	}
 
-	// TODO Docs
+	/**
+	 * Writes a [ChannelType] into a String to use as a reasonable title.
+	 *
+	 * @param type The type of the channel
+	 * @return A String for the channel title
+	 * @author NoComment1105
+	 * @since 5.0.0
+	 */
 	private fun writeChannelType(type: ChannelType?): String? = when (type) {
 		ChannelType.GuildCategory -> "Category"
 		ChannelType.GuildNews -> "Announcement Channel"
@@ -470,8 +488,19 @@ class ModerationEvents : Extension() {
 		else -> null
 	}
 
-	// TODO Docs
-	private suspend fun formatPermissionsForDisplay(guild: GuildBehavior?, channel: Channel?): Map<String, String> {
+	/**
+	 * Formats the permission overwrites for a [channel] to a string map of allowed and denied permissions.
+	 *
+	 * @param guild The guild the channel is in
+	 * @param channel The channel object to get the permissions for
+	 * @return A [Map] of strings for allowed and denied permissions
+	 * @author NoComment1105
+	 * @since 5.0.0
+	 */
+	private suspend inline fun formatPermissionsForDisplay(
+		guild: GuildBehavior?,
+		channel: Channel?
+	): Map<String, String> {
 		var map = mutableMapOf<String, String>()
 		map[ALLOWED] = ""
 		map[DENIED] = ""
@@ -480,5 +509,22 @@ class ModerationEvents : Extension() {
 			map[DENIED] += "${guild.getRoleOrNull(it.id)?.mention}: ${formatPermissionSet(it.deny)}\n"
 		}
 		return map
+	}
+
+	/**
+	 * Formats the Available tags ([ForumTag]) into a readable bullet pointed display for the update embed.
+	 *
+	 * @param tagList A List of [ForumTag]s to format
+	 * @return The formated string from [tagList]
+	 * @author NoComment1105
+	 * @since 5.0.0
+	 */
+	private suspend fun formatAvailableTags(tagList: List<ForumTag>?): String {
+		var tagString = ""
+		tagList?.forEach {
+			tagString += "\n* Name: ${it.name}\n* Moderated: ${it.moderated}\n" +
+				"* Emoji: ${if (it.emojiId != null) "<!${it.emojiId}>" else it.emojiName}\n---"
+		}
+		return tagString.ifNullOrEmpty { "None" }
 	}
 }
