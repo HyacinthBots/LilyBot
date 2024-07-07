@@ -10,6 +10,7 @@ import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.ForumTag
+import dev.kord.common.entity.GuildScheduledEventPrivacyLevel
 import dev.kord.common.entity.optional.value
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
@@ -26,6 +27,7 @@ import dev.kord.core.event.guild.BanAddEvent
 import dev.kord.core.event.guild.BanRemoveEvent
 import dev.kord.core.event.guild.GuildScheduledEventCreateEvent
 import dev.kord.core.event.guild.GuildScheduledEventDeleteEvent
+import dev.kord.core.event.guild.GuildScheduledEventEvent
 import dev.kord.core.event.guild.GuildScheduledEventUpdateEvent
 import dev.kord.core.event.guild.InviteCreateEvent
 import dev.kord.core.event.guild.InviteDeleteEvent
@@ -33,6 +35,7 @@ import dev.kord.core.event.guild.MemberUpdateEvent
 import dev.kord.core.event.role.RoleCreateEvent
 import dev.kord.core.event.role.RoleDeleteEvent
 import dev.kord.core.event.role.RoleUpdateEvent
+import dev.kord.rest.builder.message.EmbedBuilder
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
@@ -422,15 +425,97 @@ class ModerationEvents : Extension() {
 		}
 		event<GuildScheduledEventCreateEvent> {
 			check { anyGuild() }
-			action { }
+			action {
+				val guild = GuildBehavior(event.guildId, kord)
+				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
+					title = "Scheduled Event Created!"
+					description = "An event has been created!"
+					guildEventEmbed(event, guild)
+					// This appears to exist in the front end but the api doesn't have it anywhere, api payloads contain
+					// a recurrence field that would fill this but the api doesn't mention it
+// 					field {
+// 						name = "Repeating Frequency"
+// 						value = event.scheduledEvent.
+// 					}
+					field {
+						name = "Guild Members only"
+						value = if (event.scheduledEvent.privacyLevel == GuildScheduledEventPrivacyLevel.GuildOnly) {
+							"true"
+						} else {
+							"false"
+						}
+					}
+					color = DISCORD_GREEN
+					footer {
+						text =
+							"Created by ${event.scheduledEvent.creatorId?.let { guild.getMemberOrNull(it) }?.username}"
+						icon =
+							event.scheduledEvent.creatorId?.let { guild.getMemberOrNull(it) }?.avatar?.cdnUrl?.toUrl()
+					}
+				}
+			}
 		}
 		event<GuildScheduledEventDeleteEvent> {
 			check { anyGuild() }
-			action { }
+			action {
+				val guild = GuildBehavior(event.guildId, kord)
+				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
+					title = "Scheduled Event Deleted!"
+					description = "An event has been deleted"
+					guildEventEmbed(event, guild)
+					color = DISCORD_RED
+					footer {
+						text =
+							"Originally created by ${event.scheduledEvent.creatorId?.let { guild.getMemberOrNull(it) }?.username}"
+						icon =
+							event.scheduledEvent.creatorId?.let { guild.getMemberOrNull(it) }?.avatar?.cdnUrl?.toUrl()
+					}
+				}
+			}
 		}
 		event<GuildScheduledEventUpdateEvent> {
 			check { anyGuild() }
-			action { }
+			action {
+				val guild = GuildBehavior(event.guildId, kord)
+				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
+					title = "Scheduled Event Updated!"
+					description = "An event has been updated"
+					if (event.scheduledEvent.name != event.oldEvent?.name) {
+						field {
+							name = "Name changed"
+							value = "Old: ${event.oldEvent?.name}\nNew: ${event.scheduledEvent.name}"
+						}
+					}
+					if (event.scheduledEvent.description != event.oldEvent?.description) {
+						field {
+							name = "Description changed"
+							value = "Old: ${event.oldEvent?.description}\nNew: ${event.scheduledEvent.description}"
+						}
+					}
+					if (event.scheduledEvent.channelId != event.oldEvent?.channelId) {
+						field {
+							name = "Location changed"
+							value =
+								"Old: ${
+									event.oldEvent?.channelId?.let { guild.getChannelOrNull(it) }?.mention
+										?: "Unable to get channel"
+								}\nNew: ${
+									event.scheduledEvent.channelId?.let { guild.getChannelOrNull(it) }?.mention
+										?: "Unable to get channel"
+								}"
+						}
+					}
+					if (event.scheduledEvent.scheduledStartTime != event.oldEvent?.scheduledStartTime) {
+						field {
+							name = "Start time changed"
+							value =
+								"Old: ${event.oldEvent?.scheduledStartTime?.toDiscord(TimestampType.ShortDateTime)}" +
+									"\nNew: ${event.scheduledEvent.scheduledStartTime.toDiscord(TimestampType.ShortDateTime)}"
+						}
+					}
+					color = DISCORD_YELLOW
+				}
+			}
 		}
 		event<InviteCreateEvent> {
 			check { anyGuild() }
@@ -526,5 +611,37 @@ class ModerationEvents : Extension() {
 				"* Emoji: ${if (it.emojiId != null) "<!${it.emojiId}>" else it.emojiName}\n---"
 		}
 		return tagString.ifNullOrEmpty { "None" }
+	}
+
+	/**
+	 * Fills out the content for Guild event updates to avoid repeating code.
+	 *
+	 * @param event The event instance
+	 * @param guild The guild for the event
+	 * @author NoComment1105
+	 * @since 5.0.0
+	 */
+	private suspend fun EmbedBuilder.guildEventEmbed(event: GuildScheduledEventEvent, guild: GuildBehavior) {
+		field {
+			name = "Event Name"
+			value = event.scheduledEvent.name
+		}
+		field {
+			name = "Event Description"
+			value = event.scheduledEvent.description ?: "No description provided"
+		}
+		field {
+			name = "Event location"
+			value = if (event.scheduledEvent.channelId != null) {
+				guild.getChannelOrNull(event.scheduledEvent.channelId!!)?.mention ?: "Unable to get channel"
+			} else {
+				"External event, no channel."
+			}
+		}
+		field {
+			name = "Start time"
+			value = event.scheduledEvent.scheduledStartTime.toDiscord(TimestampType.ShortDateTime)
+		}
+		image = event.scheduledEvent.image?.cdnUrl?.toUrl().ifNullOrEmpty { "No image" }
 	}
 }
