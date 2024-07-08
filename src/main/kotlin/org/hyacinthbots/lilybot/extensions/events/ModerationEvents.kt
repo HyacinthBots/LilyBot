@@ -15,6 +15,7 @@ import dev.kord.common.entity.optional.value
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.createEmbed
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.channel.Category
 import dev.kord.core.entity.channel.Channel
 import dev.kord.core.event.channel.ChannelCreateEvent
@@ -36,6 +37,7 @@ import dev.kord.core.event.role.RoleCreateEvent
 import dev.kord.core.event.role.RoleDeleteEvent
 import dev.kord.core.event.role.RoleUpdateEvent
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.builder.message.embed
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
@@ -58,7 +60,7 @@ private const val DENIED = "Denied"
 class ModerationEvents : Extension() {
 	override val name: String = "moderation-events"
 
-	private val logger = KotlinLogging.logger { "Moderation Events" }
+	private val logger = KotlinLogging.logger("Moderation Events")
 
 	override suspend fun setup() {
 		event<BanAddEvent> {
@@ -138,8 +140,8 @@ class ModerationEvents : Extension() {
 							field {
 								name = "Duration:"
 								value =
-									existingAction.data.timeData.durationInst?.toDiscord(TimestampType.Default) + " (${
-										existingAction.data.timeData.durationDtp?.interval()
+									existingAction.data.timeData!!.durationInst?.toDiscord(TimestampType.Default) + " (${
+										existingAction.data.timeData!!.durationDtp?.interval()
 									})"
 							}
 						}
@@ -265,10 +267,10 @@ class ModerationEvents : Extension() {
 				val guild = event.channel.data.guildId.value?.let { GuildBehavior(it, event.kord) }
 				val oldPerms = formatPermissionsForDisplay(guild, event.old)
 				val newPerms = formatPermissionsForDisplay(guild, event.channel)
-				var oldAllowed = oldPerms.getValue(ALLOWED)
-				var oldDenied = oldPerms.getValue(DENIED)
-				var newAllowed = newPerms.getValue(ALLOWED)
-				var newDenied = newPerms.getValue(DENIED)
+				val oldAllowed = oldPerms.getValue(ALLOWED)
+				val oldDenied = oldPerms.getValue(DENIED)
+				val newAllowed = newPerms.getValue(ALLOWED)
+				val newDenied = newPerms.getValue(DENIED)
 
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)?.createEmbed {
 					title = "${writeChannelType(event.channel.type)} Updated"
@@ -519,27 +521,203 @@ class ModerationEvents : Extension() {
 		}
 		event<InviteCreateEvent> {
 			check { anyGuild() }
-			action { }
+			action {
+				val guild = event.guildId?.let { GuildBehavior(it, kord) } ?: return@action
+				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
+					title = "Invite link created"
+					description = "An invite has been created"
+					field {
+						name = "Code"
+						value = event.code
+					}
+					field {
+						name = "Target Channel"
+						value = event.channel.mention
+					}
+					field {
+						name = "Max uses"
+						value = event.maxUses.toString()
+					}
+					field {
+						name = "Duration of Invite"
+						value = event.maxAge.toIsoString()
+					}
+					field {
+						name = "Temporary Membership invite"
+						value = event.isTemporary.toString()
+					}
+					footer {
+						text = "Created by ${event.getInviterAsMemberOrNull()?.mention}"
+						icon = event.getInviterAsMemberOrNull()?.avatar?.cdnUrl?.toUrl()
+					}
+					timestamp = Clock.System.now()
+					color = DISCORD_GREEN
+				}
+			}
 		}
 		event<InviteDeleteEvent> {
 			check { anyGuild() }
-			action { }
+			action {
+				val guild = event.guildId?.let { GuildBehavior(it, kord) } ?: return@action
+				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
+					title = "Invite link deleted"
+					description = "An invite has been deleted"
+					field {
+						name = "Code"
+						value = event.code
+					}
+					field {
+						name = "Target Channel"
+						value = event.channel.mention
+					}
+					timestamp = Clock.System.now()
+					color = DISCORD_RED
+				}
+			}
 		}
 		event<MemberUpdateEvent> {
 			check { anyGuild() }
 			action { }
 		}
 		event<RoleCreateEvent> {
-			check { anyGuild() }
-			action { }
+			action {
+				val guild = GuildBehavior(event.guildId, kord)
+				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
+					title = "Created a Role"
+					description = "A new role has been created"
+					field {
+						name = "Role name"
+						value = event.role.name
+						inline = true
+					}
+					field {
+						name = "Role Color"
+						value = event.role.color.rgb.toString()
+						inline = true
+					}
+					field {
+						name = "Position"
+						value = event.role.rawPosition.toString()
+						inline = true
+					}
+					field {
+						name = "Display separately?"
+						value = event.role.hoisted.toString()
+						inline = true
+					}
+					field {
+						name = "Mentionable"
+						value = event.role.mentionable.toString()
+						inline = true
+					}
+					field {
+						name = "Icon"
+						value = event.role.icon?.cdnUrl?.toUrl() ?: "No icon"
+						inline = true
+					}
+					field {
+						name = "Emoji"
+						value = event.role.unicodeEmoji ?: "No emoji"
+						inline = true
+					}
+					field {
+						name = "Managed by integration?"
+						value = event.role.managed.toString()
+						inline = true
+					}
+					field {
+						name = "Permissions"
+						value = formatPermissionSet(event.role.permissions)
+					}
+					color = DISCORD_GREEN
+					timestamp = Clock.System.now()
+				}
+			}
 		}
 		event<RoleDeleteEvent> {
-			check { anyGuild() }
-			action { }
+			action {
+				val guild = GuildBehavior(event.guildId, kord)
+				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
+					title = "Role deleted"
+					description = "A role has been deleted"
+					field {
+						name = "Role name"
+						value = event.role?.name ?: "Unable to get name"
+					}
+					color = DISCORD_RED
+					timestamp = Clock.System.now()
+				}
+			}
 		}
 		event<RoleUpdateEvent> {
-			check { anyGuild() }
-			action { }
+			action {
+				val guild = GuildBehavior(event.guildId, kord)
+				val channel = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+				channel?.createMessage {
+					embed {
+						title = "Updated a Role"
+						description = "A role has been updated"
+						if (event.old?.name != event.role.name) {
+							field {
+								name = "Name changed"
+								value = "Old: ${event.old?.name}\nNew: ${event.role.name}"
+							}
+						}
+						if (event.old?.hoisted != event.role.hoisted) {
+							field {
+								name = "Display separately setting changed"
+								value = "Old: ${event.old?.hoisted}\nNew: ${event.role.hoisted}"
+							}
+						}
+						if (event.old?.mentionable != event.role.mentionable) {
+							field {
+								name = "Mentionable setting changed"
+								value = "Old: ${event.old?.mentionable}\nNew: ${event.role.mentionable}"
+							}
+						}
+						if (event.old?.getPosition() != event.role.getPosition()) {
+							field {
+								name = "Position changed"
+								value = "Old: ${event.old?.getPosition()}\nNew: ${event.role.getPosition()}"
+							}
+						}
+						if (event.old?.icon != event.role.icon) {
+							field {
+								name = "Icon changed"
+								value = "Old: ${event.old?.icon?.cdnUrl?.toUrl() ?: "No icon"}\n" +
+									"New: ${event.role.icon?.cdnUrl?.toUrl() ?: "No icon"}"
+							}
+						}
+						if (event.old?.unicodeEmoji != event.role.unicodeEmoji) {
+							field {
+								name = "Emoji changed"
+								value =
+									"Old: ${event.old?.unicodeEmoji ?: "No emoji"}\nNew:${event.role.unicodeEmoji ?: "No emoji"}"
+							}
+						}
+						if (event.old?.permissions != event.role.permissions) {
+							field {
+								name = "Permissions changed"
+								value = "Old: ${
+									event.old?.permissions?.let { formatPermissionSet(it) } ?: "Unable to get permissions"
+								}\nNew: ${formatPermissionSet(event.role.permissions)}"
+							}
+						}
+						color = DISCORD_GREEN
+						timestamp = Clock.System.now()
+					}
+					if (event.old?.color != event.role.color) {
+						embed {
+							description = "Old color"
+							color = if (event.old?.color?.rgb != 0) event.old?.color else null
+						}
+						embed {
+							description = "New color"
+							color = event.role.color
+						}
+					}
+				}
+			}
 		}
 		event<ThreadChannelCreateEvent> {
 			check { anyGuild() }
@@ -586,7 +764,7 @@ class ModerationEvents : Extension() {
 		guild: GuildBehavior?,
 		channel: Channel?
 	): Map<String, String> {
-		var map = mutableMapOf<String, String>()
+		val map = mutableMapOf<String, String>()
 		map[ALLOWED] = ""
 		map[DENIED] = ""
 		channel?.data?.permissionOverwrites?.value?.forEach {
@@ -604,7 +782,7 @@ class ModerationEvents : Extension() {
 	 * @author NoComment1105
 	 * @since 5.0.0
 	 */
-	private suspend fun formatAvailableTags(tagList: List<ForumTag>?): String {
+	private fun formatAvailableTags(tagList: List<ForumTag>?): String {
 		var tagString = ""
 		tagList?.forEach {
 			tagString += "\n* Name: ${it.name}\n* Moderated: ${it.moderated}\n" +
