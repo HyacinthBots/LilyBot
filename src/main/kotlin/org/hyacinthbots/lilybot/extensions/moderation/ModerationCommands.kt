@@ -180,7 +180,7 @@ class ModerationCommands : Extension() {
 										}
 										ModerationActionCollection().addAction(
 											ModerationAction.BAN, guild!!.id, senderId,
-											    ActionData(
+											ActionData(
 												user.id,
 												null,
 												null,
@@ -205,7 +205,7 @@ class ModerationCommands : Extension() {
 															"for sending this message."
 													}
 												}
-											} catch (e: KtorRequestException) {
+											} catch (_: KtorRequestException) {
 												channel.createEmbed {
 													title = "Banned."
 													description = "${sender.mention} user was banned " +
@@ -232,7 +232,7 @@ class ModerationCommands : Extension() {
 
 										ModerationActionCollection().addAction(
 											ModerationAction.SOFT_BAN, guild!!.id, senderId,
-											    ActionData(
+											ActionData(
 												user.id,
 												null,
 												null,
@@ -263,7 +263,7 @@ class ModerationCommands : Extension() {
 															"for sending this message."
 													}
 												}
-											} catch (e: KtorRequestException) {
+											} catch (_: KtorRequestException) {
 												channel.createEmbed {
 													title = "Soft-Banned."
 													description = "${sender.mention} user was soft-banned " +
@@ -297,7 +297,7 @@ class ModerationCommands : Extension() {
 															"for sending this message."
 													}
 												}
-											} catch (e: KtorRequestException) {
+											} catch (_: KtorRequestException) {
 												channel.createEmbed {
 													title = "Kicked."
 													description = "${sender.mention} user was kicked " +
@@ -308,7 +308,7 @@ class ModerationCommands : Extension() {
 
 										ModerationActionCollection().addAction(
 											ModerationAction.KICK, guild!!.id, senderId,
-											    ActionData(
+											ActionData(
 												user.id,
 												null,
 												null,
@@ -356,7 +356,7 @@ class ModerationCommands : Extension() {
 															"${timeoutTime.interval()} for sending this message."
 													}
 												}
-											} catch (e: KtorRequestException) {
+											} catch (_: KtorRequestException) {
 												channel.createEmbed {
 													title = "Timed-out."
 													description = "${sender.mention} user was timed-out for " +
@@ -365,24 +365,18 @@ class ModerationCommands : Extension() {
 											}
 										}
 
-										loggingChannel.createEmbed {
-											title = "Timed-out a user"
-											description = "${
-												sender.mention
-											} has be timed-out!"
-											baseModerationEmbed(
+										ModerationActionCollection().addAction(
+											ModerationAction.TIMEOUT, guild!!.id, senderId,
+											ActionData(
+												user.id,
+												null,
+												TimeData(timeoutTime, null, null, null),
 												"Quick timed-out via moderate menu $reasonSuffix",
-												sender,
-												user
+												dm != null,
+												null,
+												null
 											)
-											dmNotificationStatusEmbedField(dm, true)
-											field {
-												name = "Length"
-												value = modConfig?.quickTimeoutLength.interval()
-													?: "Failed to load timeout length"
-											}
-											timestamp = Clock.System.now()
-										}
+										)
 
 										menuMessage?.edit {
 											content = "Timed-out a user."
@@ -454,7 +448,7 @@ class ModerationCommands : Extension() {
 															"for sending this message."
 													}
 												}
-											} catch (e: KtorRequestException) {
+											} catch (_: KtorRequestException) {
 												channel.createEmbed {
 													title = "Warned."
 													description = "${sender.mention} user was warned " +
@@ -752,7 +746,7 @@ class ModerationCommands : Extension() {
 				}
 				ModerationActionCollection().addAction(
 					ModerationAction.KICK, guild!!.id, arguments.userArgument.id,
-					    ActionData(
+					ActionData(
 						user.id, null, null, arguments.reason, dmStatus != null, arguments.dm, arguments.image?.url
 					)
 				)
@@ -803,20 +797,19 @@ class ModerationCommands : Extension() {
 					}
 				}
 
-				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-					embed {
-						title = "Timeout"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
-						timestamp = Clock.System.now()
-						field {
-							name = "Duration:"
-							value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
-							inline = false
-						}
-					}
-				}
+				ModerationActionCollection().addAction(
+					ModerationAction.TIMEOUT, guild!!.id, arguments.userArgument.id,
+					    ActionData(
+						user.id,
+						null,
+						TimeData(durationArg, duration, Clock.System.now(), duration),
+						arguments.reason,
+						dmStatus != null,
+						arguments.dm,
+						arguments.image?.url
+					)
+				)
+
 				if (modConfig?.publicLogging == true) {
 					event.interaction.channel.createEmbed {
 						title = "Timeout"
@@ -857,23 +850,13 @@ class ModerationCommands : Extension() {
 						}
 					}
 				}
-				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-					embed {
-						title = "Timeout Removed"
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
-						field {
-							name = "User:"
-							value = "${arguments.userArgument.username} \n${arguments.userArgument.id}"
-							inline = false
-						}
-						footer {
-							text = "Requested by ${user.asUserOrNull()?.username}"
-							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-						}
-						timestamp = Clock.System.now()
-						color = DISCORD_BLACK
-					}
-				}
+
+				ModerationActionCollection().addAction(
+					ModerationAction.REMOVE_TIMEOUT, guild!!.id, arguments.userArgument.id,
+					    ActionData(
+						user.id, null, null, null, dmStatus != null, arguments.dm, null
+					)
+				)
 
 				respond {
 					content = "Removed timeout from user."

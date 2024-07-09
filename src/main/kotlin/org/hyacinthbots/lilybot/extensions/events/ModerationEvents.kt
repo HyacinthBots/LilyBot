@@ -141,9 +141,8 @@ class ModerationEvents : Extension() {
 							field {
 								name = "Duration:"
 								value =
-									existingAction.data.timeData!!.durationInst?.toDiscord(TimestampType.Default) + " (${
-										existingAction.data.timeData!!.durationDtp?.interval()
-									})"
+									existingAction.data.timeData.durationInst?.toDiscord(TimestampType.Default) +
+										" (${existingAction.data.timeData.durationDtp?.interval()})"
 							}
 						}
 					}
@@ -590,6 +589,100 @@ class ModerationEvents : Extension() {
 		event<MemberUpdateEvent> {
 			check { anyGuild() }
 			action {
+				val channel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.guild)
+				if (event.old?.communicationDisabledUntil != event.member.communicationDisabledUntil) {
+					var existingAction =
+						ModerationActionCollection().getAction(ModerationAction.TIMEOUT, event.guildId, event.member.id)
+
+					if (existingAction == null) {
+						existingAction =
+							ModerationActionCollection().getAction(
+								ModerationAction.TIMEOUT,
+								event.guildId,
+								event.member.id
+							)
+					}
+
+					if (existingAction != null) {
+						val data = existingAction.data
+						val isRemove = existingAction.actionType == ModerationAction.REMOVE_TIMEOUT
+						val user = UserBehavior(existingAction.targetUserId, kord).asUserOrNull()
+						val actioner = data.actioner?.let { UserBehavior(it, kord) }?.asUserOrNull()
+						channel?.createEmbed {
+							if (isRemove) {
+								title = "Timeout removed"
+								dmNotificationStatusEmbedField(data.dmOutcome, data.dmOverride)
+								field {
+									name = "User:"
+									value = "${user?.username} (${user?.id})"
+								}
+								footer {
+									text = "Requested by ${actioner?.username}"
+									icon = user?.avatar?.cdnUrl?.toUrl()
+								}
+								timestamp = Clock.System.now()
+								color = DISCORD_GREEN
+							} else {
+								title = "Timeout"
+								image = data.imageUrl
+								baseModerationEmbed(data.reason, event.member, user)
+								dmNotificationStatusEmbedField(data.dmOutcome, data.dmOverride)
+								timestamp = data.timeData?.start
+								color = DISCORD_RED
+								field {
+									name = "Duration"
+									value = data.timeData?.durationInst?.toDiscord(TimestampType.Default) +
+										" (${data.timeData?.durationDtp.interval()})"
+								}
+							}
+						}
+					}
+				} else {
+					if (event.member.communicationDisabledUntil != event.old?.communicationDisabledUntil) {
+						channel?.createEmbed {
+							title = "Timeout"
+							timestamp = Clock.System.now()
+							color = DISCORD_RED
+							field {
+								name = "Duration"
+								value = event.member.communicationDisabledUntil?.toDiscord(TimestampType.Default) ?: "0"
+							}
+						}
+					} else {
+						val newRoles = mutableListOf<String>()
+						val oldRoles = mutableListOf<String>()
+						event.member.roleBehaviors.forEach { newRoles.add(it.mention) }
+						event.old?.roleBehaviors?.forEach { oldRoles.add(it.mention) }
+						channel?.createEmbed {
+							title = "Member updated"
+							description = "${event.member.username} has been updated"
+							if (event.member.nickname != event.old?.nickname) {
+								field {
+									name = "Nickname change"
+									value = "Old: ${event.old?.nickname}\nNew: ${event.member.nickname}"
+								}
+							}
+							if (event.member.isOwner() != event.old?.isOwner()) {
+								field {
+									name = "Became server owner"
+								}
+							}
+							if (event.member.roles != event.old?.roles) {
+								field {
+									name = "New Roles"
+									value = newRoles.joinToString(", ")
+									inline = true
+								}
+								field {
+									name = "Old roles"
+									value = oldRoles.joinToString(", ")
+									inline = true
+								}
+							}
+							color = DISCORD_YELLOW
+						}
+					}
+				}
 			}
 		}
 		event<RoleCreateEvent> {
