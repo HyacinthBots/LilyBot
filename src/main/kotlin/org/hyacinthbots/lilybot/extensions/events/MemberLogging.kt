@@ -121,6 +121,7 @@ class MemberLogging : Extension() {
 					color = DISCORD_RED
 				}
 
+				// Check if the member was kicked, and send a log if they were.
 				val kickData = ModerationActionCollection().getAction(ModerationAction.KICK, event.guildId, event.user.id)
 				if (kickData != null) {
 					val targetUser = event.kord.getUser(kickData.targetUserId)!!

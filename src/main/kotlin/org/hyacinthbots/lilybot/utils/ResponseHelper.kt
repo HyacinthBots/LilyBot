@@ -59,6 +59,14 @@ fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?, override: Boolean)
 	}
 }
 
+/**
+ * This function uses a success variable and checks to see if it succeeded in sending the user a DM.
+ *
+ * @param success Whether the DM was a success or not
+ * @param override Whether the DM was forcefully disabled by the command runner.
+ * @author NoComment1105
+ * @since 5.0.0
+ */
 fun EmbedBuilder.dmNotificationStatusEmbedField(success: Boolean?, override: Boolean?) {
 	field {
 		name = "User Notification:"

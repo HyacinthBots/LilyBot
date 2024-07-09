@@ -258,6 +258,14 @@ suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: Permissi
 	hasPermission(actionPermission)
 }
 
+/**
+ * Formats [Permissions] into a readable string list, returning "None" if there are no permissions there.
+ *
+ * @param permissions The [Permissions] to format
+ * @return A string containing the permissions
+ * @author NoComment1105
+ * @since 5.0.0
+ */
 fun formatPermissionSet(permissions: Permissions): String {
 	val permissionsSet: MutableSet<String> = mutableSetOf()
 	var count = 0

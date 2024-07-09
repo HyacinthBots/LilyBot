@@ -6,7 +6,16 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import org.hyacinthbots.lilybot.extensions.moderation.ModerationAction
 
-// TODO DOCS
+/**
+ * The data for Moderation action.
+ *
+ * @property actionType The type of action you're adding
+ * @property guildId The ID of the guild the action occurred in
+ * @property targetUserId The ID of the user this action happened to
+ * @property data The [ActionData] for the action
+ * @property ignore Whether to ignore the action or not. Defaults to false
+ * @since 5.0.0
+ */
 @Serializable
 data class ModerationActionData(
 	val actionType: ModerationAction,
@@ -16,7 +25,18 @@ data class ModerationActionData(
 	val ignore: Boolean = false
 )
 
-// TODO DOCS
+/**
+ * Further, more in-depth data about a [moderation action][ModerationActionData].
+ *
+ * @property actioner The ID of the user that requested the action
+ * @property deletedMessages The amount of messages deleted in the action
+ * @property timeData The [TimeData] for the action
+ * @property reason The reason for the action
+ * @property dmOutcome The outcome of trying to send a DM to the user
+ * @property dmOverride Whether the DM sending function was override
+ * @property imageUrl The URL for the image attached to the action
+ * @since 5.0.0
+ */
 @Serializable
 data class ActionData(
 	val actioner: Snowflake?,
@@ -28,7 +48,15 @@ data class ActionData(
 	val imageUrl: String?
 )
 
-// TODO DOCS
+/**
+ * Further, more in-depth data about the [time data for actions][ActionData.timeData].
+ *
+ * @property durationDtp The Duration as a [DateTimePeriod]
+ * @property durationInst The Duration as an [Instant]
+ * @property start The start [Instant] of the action
+ * @property end The end [Instant] of the action
+ * @since 5.0.0
+ */
 @Serializable
 data class TimeData(
 	val durationDtp: DateTimePeriod?,
