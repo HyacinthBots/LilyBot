@@ -867,6 +867,10 @@ class ModerationCommands : Extension() {
 					}
 				}
 
+				arguments.userArgument.asMemberOrNull(guild!!.id)?.edit {
+					timeoutUntil = duration
+				}
+
 				respond {
 					content = "Timed-out ${arguments.userArgument.mention}."
 				}
@@ -910,6 +914,10 @@ class ModerationCommands : Extension() {
 						timestamp = Clock.System.now()
 						color = DISCORD_BLACK
 					}
+				}
+
+				arguments.userArgument.asMemberOrNull(guild!!.id)?.edit {
+					timeoutUntil = null
 				}
 
 				respond {
