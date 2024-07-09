@@ -823,6 +823,10 @@ class ModerationCommands : Extension() {
 					}
 				}
 
+				arguments.userArgument.asMemberOrNull(guild!!.id)?.edit {
+					timeoutUntil = duration
+				}
+
 				respond {
 					content = "Timed-out ${arguments.userArgument.mention}."
 				}
@@ -857,6 +861,10 @@ class ModerationCommands : Extension() {
 						user.id, null, null, null, dmStatus != null, arguments.dm, null
 					)
 				)
+
+				arguments.userArgument.asMemberOrNull(guild!!.id)?.edit {
+					timeoutUntil = null
+				}
 
 				respond {
 					content = "Removed timeout from user."
