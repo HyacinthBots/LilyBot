@@ -11,4 +11,5 @@ suspend fun mainV10(db: CoroutineDatabase) {
 	}
 	db.createCollection("lockedChannelData")
 	db.createCollection("temporaryBanData")
+	db.createCollection("moderationActionCacheData")
 }
