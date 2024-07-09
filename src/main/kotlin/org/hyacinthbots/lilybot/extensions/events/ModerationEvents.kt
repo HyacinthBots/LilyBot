@@ -14,16 +14,17 @@ import dev.kord.common.entity.GuildScheduledEventPrivacyLevel
 import dev.kord.common.entity.optional.value
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.channel.Category
 import dev.kord.core.entity.channel.Channel
+import dev.kord.core.entity.channel.ForumChannel
 import dev.kord.core.event.channel.ChannelCreateEvent
 import dev.kord.core.event.channel.ChannelDeleteEvent
 import dev.kord.core.event.channel.ChannelUpdateEvent
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.event.channel.thread.ThreadChannelDeleteEvent
-import dev.kord.core.event.channel.thread.ThreadUpdateEvent
 import dev.kord.core.event.guild.BanAddEvent
 import dev.kord.core.event.guild.BanRemoveEvent
 import dev.kord.core.event.guild.GuildScheduledEventCreateEvent
@@ -223,6 +224,12 @@ class ModerationEvents : Extension() {
 			}
 		}
 		event<ChannelCreateEvent> {
+			check {
+				failIf {
+					// We get more detail from the specific event
+					event.channel.type != ChannelType.PublicGuildThread || event.channel.type != ChannelType.PrivateThread
+				}
+			}
 			action {
 				val guild = event.channel.data.guildId.value?.let { GuildBehavior(it, event.kord) }
 				val perms = formatPermissionsForDisplay(guild, event.channel)
@@ -261,8 +268,13 @@ class ModerationEvents : Extension() {
 				}
 			}
 		}
-
 		event<ChannelUpdateEvent> {
+			check {
+				failIf {
+					// Data from old threads is almost always null, so we should not try to display changes
+					event.channel.type != ChannelType.PublicGuildThread || event.channel.type != ChannelType.PrivateThread
+				}
+			}
 			action {
 				val guild = event.channel.data.guildId.value?.let { GuildBehavior(it, event.kord) }
 				val oldPerms = formatPermissionsForDisplay(guild, event.old)
@@ -577,7 +589,8 @@ class ModerationEvents : Extension() {
 		}
 		event<MemberUpdateEvent> {
 			check { anyGuild() }
-			action { }
+			action {
+			}
 		}
 		event<RoleCreateEvent> {
 			action {
@@ -721,16 +734,48 @@ class ModerationEvents : Extension() {
 		}
 		event<ThreadChannelCreateEvent> {
 			check { anyGuild() }
-			action { }
+			action {
+				val appliedTags = mutableListOf<String>()
+				event.channel.appliedTags.forEach { tag ->
+					event.channel.parent.asChannelOfOrNull<ForumChannel>()
+						?.availableTags?.filter { it.id == tag }?.get(0)?.name?.let { appliedTags.add(it) }
+				}
+
+				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.channel.guild)?.createEmbed {
+					title = "${writeChannelType(event.channel.type)} Created"
+					description = "${event.channel.mention} (${event.channel.data.name.value}) was created."
+					field {
+						name = "Parent Channel"
+						value = "${event.channel.parent.mention} (`${event.channel.parent.asChannelOrNull()?.name}`)"
+					}
+					field {
+						name = "Archive duration"
+						value = event.channel.autoArchiveDuration.duration.toString()
+					}
+					if (appliedTags.isNotEmpty()) {
+						field {
+							name = "Applied tags"
+							value = appliedTags.joinToString(", ")
+						}
+					}
+					timestamp = Clock.System.now()
+					color = DISCORD_GREEN
+				}
+			}
 		}
 		event<ThreadChannelDeleteEvent> {
 			check { anyGuild() }
-			action { }
+			action {
+				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.channel.guild)?.createEmbed {
+					title = "${writeChannelType(event.channel.type)} Deleted"
+					description = "`${event.channel.data.name.value}` was deleted."
+					timestamp = Clock.System.now()
+					color = DISCORD_RED
+				}
+			}
 		}
-		event<ThreadUpdateEvent> {
-			check { anyGuild() }
-			action { }
-		}
+		// No thread update event because the old object is almost always null, meaning that displaying the changes is
+		// effectively pointless because no original values are available.
 	}
 
 	/**
@@ -748,6 +793,8 @@ class ModerationEvents : Extension() {
 		ChannelType.GuildStageVoice -> "Stage Channel"
 		ChannelType.GuildText -> "Text Channel"
 		ChannelType.GuildVoice -> "Voice Channel"
+		ChannelType.PublicGuildThread -> "Thread"
+		ChannelType.PrivateThread -> "Private Thread"
 		else -> null
 	}
 
