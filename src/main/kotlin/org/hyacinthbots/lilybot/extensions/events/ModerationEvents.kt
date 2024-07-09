@@ -8,6 +8,7 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.time.TimestampType
 import com.kotlindiscord.kord.extensions.time.toDiscord
+import com.kotlindiscord.kord.extensions.utils.timeoutUntil
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.ForumTag
 import dev.kord.common.entity.GuildScheduledEventPrivacyLevel
@@ -590,14 +591,14 @@ class ModerationEvents : Extension() {
 			check { anyGuild() }
 			action {
 				val channel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.guild)
-				if (event.old?.communicationDisabledUntil != event.member.communicationDisabledUntil) {
+				if (event.old?.timeoutUntil != event.member.timeoutUntil) {
 					var existingAction =
 						ModerationActionCollection().getAction(ModerationAction.TIMEOUT, event.guildId, event.member.id)
 
 					if (existingAction == null) {
 						existingAction =
 							ModerationActionCollection().getAction(
-								ModerationAction.TIMEOUT,
+								ModerationAction.REMOVE_TIMEOUT,
 								event.guildId,
 								event.member.id
 							)
@@ -636,19 +637,30 @@ class ModerationEvents : Extension() {
 								}
 							}
 						}
+
+						ModerationActionCollection().removeAction(existingAction.actionType, event.guild.id, event.member.id)
+					} else {
+						channel?.createEmbed {
+							if (event.member.timeoutUntil != null) {
+								title = "Timeout"
+								color = DISCORD_RED
+								field {
+									name = "Duration"
+									value = event.member.timeoutUntil?.toDiscord(TimestampType.Default) ?: "0"
+								}
+							} else {
+								title = "Removed timeout"
+								color = DISCORD_GREEN
+							}
+							field {
+								name = "User"
+								value = event.member.mention + "(${event.member.id})"
+							}
+							description = "via Discord menus"
+							timestamp = Clock.System.now()
+						}
 					}
 				} else {
-					if (event.member.communicationDisabledUntil != event.old?.communicationDisabledUntil) {
-						channel?.createEmbed {
-							title = "Timeout"
-							timestamp = Clock.System.now()
-							color = DISCORD_RED
-							field {
-								name = "Duration"
-								value = event.member.communicationDisabledUntil?.toDiscord(TimestampType.Default) ?: "0"
-							}
-						}
-					} else {
 						val newRoles = mutableListOf<String>()
 						val oldRoles = mutableListOf<String>()
 						event.member.roleBehaviors.forEach { newRoles.add(it.mention) }
@@ -683,7 +695,6 @@ class ModerationEvents : Extension() {
 						}
 					}
 				}
-			}
 		}
 		event<RoleCreateEvent> {
 			action {
