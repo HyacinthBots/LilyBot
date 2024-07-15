@@ -37,7 +37,7 @@ None
 * **Arguments**:
 	* `channel` - The channel to view the auto-threading settings for. - Channel
 
-Hopefull---
+---
 ### Command name: `clear count`
 **Description**: Clear a specific count of messages
 
