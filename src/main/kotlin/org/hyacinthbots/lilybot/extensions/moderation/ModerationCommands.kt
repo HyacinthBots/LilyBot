@@ -13,6 +13,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBool
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalAttachment
+import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.user
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.ephemeralStringSelectMenu
@@ -493,7 +494,8 @@ class ModerationCommands : Extension() {
 
 				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
 				var dmStatus: Message? = null
-				if (arguments.dm) {
+				val dmControl = if (arguments.dm != null) arguments.dm!! else modConfig?.dmDefault == true
+				if (dmControl) {
 					dmStatus = arguments.userArgument.dm {
 						embed {
 							title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
@@ -525,7 +527,7 @@ class ModerationCommands : Extension() {
 						}
 						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
 						image = arguments.image?.url
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+						dmNotificationStatusEmbedField(dmStatus, dmControl)
 						timestamp = Clock.System.now()
 						field {
 							name = "Days of messages deleted:"
@@ -585,7 +587,8 @@ class ModerationCommands : Extension() {
 					val duration = now.plus(arguments.duration, TimeZone.UTC)
 					val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
 					var dmStatus: Message? = null
-					if (arguments.dm) {
+					val dmControl = if (arguments.dm != null) arguments.dm!! else modConfig?.dmDefault == true
+					if (dmControl) {
 						dmStatus = arguments.userArgument.dm {
 							embed {
 								title = "You have been temporarily banned from ${guild?.fetchGuild()?.name}"
@@ -601,7 +604,7 @@ class ModerationCommands : Extension() {
 								"${arguments.userArgument.mention} has been temporarily banned!"
 							image = arguments.image?.url
 							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-							dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+							dmNotificationStatusEmbedField(dmStatus, dmControl)
 							field {
 								name = "Duration:"
 								value =
@@ -775,7 +778,8 @@ class ModerationCommands : Extension() {
 
 				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
 				var dmStatus: Message? = null
-				if (arguments.dm) {
+				val dmControl = if (arguments.dm != null) arguments.dm!! else modConfig?.dmDefault == true
+				if (dmControl) {
 					dmStatus = arguments.userArgument.dm {
 						embed {
 							title = "You have been kicked from ${guild?.fetchGuild()?.name}"
@@ -789,7 +793,7 @@ class ModerationCommands : Extension() {
 						description = "${arguments.userArgument.mention} has been kicked!"
 						image = arguments.image?.url
 						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+						dmNotificationStatusEmbedField(dmStatus, dmControl)
 						timestamp = Clock.System.now()
 					}
 				}
@@ -829,7 +833,8 @@ class ModerationCommands : Extension() {
 				isBotOrModerator(event.kord, arguments.userArgument, guild, "timeout") ?: return@action
 
 				var dmStatus: Message? = null
-				if (arguments.dm) {
+				val dmControl = if (arguments.dm != null) arguments.dm!! else modConfig?.dmDefault == true
+				if (dmControl) {
 					dmStatus = arguments.userArgument.dm {
 						embed {
 							title = "You have been timed out in ${guild?.fetchGuild()?.name}"
@@ -845,7 +850,7 @@ class ModerationCommands : Extension() {
 						title = "Timeout"
 						image = arguments.image?.url
 						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+						dmNotificationStatusEmbedField(dmStatus, dmControl)
 						timestamp = Clock.System.now()
 						field {
 							name = "Duration:"
@@ -889,8 +894,10 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
+				val config = ModerationConfigCollection().getConfig(guild!!.id)
 				var dmStatus: Message? = null
-				if (arguments.dm) {
+				val dmControl = if (arguments.dm != null) arguments.dm!! else config?.dmDefault == true
+				if (dmControl) {
 					dmStatus = arguments.userArgument.dm {
 						embed {
 							title = "Timeout removed in ${guild!!.asGuildOrNull()?.name}"
@@ -901,7 +908,7 @@ class ModerationCommands : Extension() {
 				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
 					embed {
 						title = "Timeout Removed"
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+						dmNotificationStatusEmbedField(dmStatus, dmControl)
 						field {
 							name = "User:"
 							value = "${arguments.userArgument.username} \n${arguments.userArgument.id}"
@@ -954,7 +961,9 @@ class ModerationCommands : Extension() {
 
 				var dmStatus: Message? = null
 
-				if (arguments.dm) {
+				val dmControl = if (arguments.dm != null) arguments.dm!! else config.dmDefault == true
+
+				if (dmControl) {
 					val warnText = if (config.autoPunishOnWarn == false) {
 						"No moderation action has been taken.\n $warnSuffix"
 					} else {
@@ -990,7 +999,7 @@ class ModerationCommands : Extension() {
 						title = "Warning"
 						image = arguments.image?.url
 						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
+						dmNotificationStatusEmbedField(dmStatus, dmControl)
 						timestamp = Clock.System.now()
 						field {
 							name = "Total strikes"
@@ -1163,10 +1172,9 @@ class ModerationCommands : Extension() {
 		}
 
 		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
+		val dm by optionalBoolean {
 			name = "dm"
 			description = "Whether to send a direct message to the user about the ban"
-			defaultValue = true
 		}
 
 		/** An image that the user wishes to provide for context to the ban. */
@@ -1203,10 +1211,9 @@ class ModerationCommands : Extension() {
 		}
 
 		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
+		val dm by optionalBoolean {
 			name = "dm"
 			description = "Whether to send a direct message to the user about the ban"
-			defaultValue = true
 		}
 
 		/** An image that the user wishes to provide for context to the ban. */
@@ -1246,10 +1253,9 @@ class ModerationCommands : Extension() {
 		}
 
 		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
+		val dm by optionalBoolean {
 			name = "dm"
 			description = "Whether to send a direct message to the user about the kick"
-			defaultValue = true
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
@@ -1280,10 +1286,9 @@ class ModerationCommands : Extension() {
 		}
 
 		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
+		val dm by optionalBoolean {
 			name = "dm"
 			description = "Whether to send a direct message to the user about the timeout"
-			defaultValue = true
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
@@ -1301,10 +1306,9 @@ class ModerationCommands : Extension() {
 		}
 
 		/** Whether to DM the user about the timeout removal or not. */
-		val dm by defaultingBoolean {
+		val dm by optionalBoolean {
 			name = "dm"
 			description = "Whether to dm the user about this or not"
-			defaultValue = true
 		}
 	}
 
@@ -1323,10 +1327,9 @@ class ModerationCommands : Extension() {
 		}
 
 		/** Whether to DM the user or not. */
-		val dm by defaultingBoolean {
+		val dm by optionalBoolean {
 			name = "dm"
 			description = "Whether to send a direct message to the user about the warning"
-			defaultValue = true
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */

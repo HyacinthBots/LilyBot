@@ -55,6 +55,7 @@ data class ModerationConfigData(
 	val quickTimeoutLength: DateTimePeriod?,
 	val autoPunishOnWarn: Boolean?,
 	val publicLogging: Boolean?,
+	val dmDefault: Boolean?,
 	val banDmMessage: String?,
 	val autoInviteModeratorRole: Boolean?
 )

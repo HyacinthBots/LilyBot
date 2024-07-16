@@ -28,6 +28,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.embed
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimePeriod
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -65,7 +66,7 @@ class Config : Extension() {
 					if (moderationConfig != null) {
 						respond {
 							content = "You already have a moderation configuration set. " +
-									"Please clear it before attempting to set a new one."
+								"Please clear it before attempting to set a new one."
 						}
 						return@action
 					}
@@ -75,6 +76,7 @@ class Config : Extension() {
 							ModerationConfigData(
 								guild!!.id,
 								false,
+								null,
 								null,
 								null,
 								null,
@@ -105,7 +107,7 @@ class Config : Extension() {
 						respond {
 							content =
 								"I cannot use the role: ${arguments.moderatorRole!!.mention}, because it is not mentionable by " +
-										"regular users. Please enable this in the role settings, or use a different role."
+									"regular users. Please enable this in the role settings, or use a different role."
 						}
 						return@action
 					}
@@ -116,7 +118,7 @@ class Config : Extension() {
 						if (modActionLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
 							respond {
 								content = "The mod action log you've selected is invalid, or I can't view it. " +
-										"Please attempt to resolve this and try again."
+									"Please attempt to resolve this and try again."
 							}
 							return@action
 						}
@@ -132,38 +134,14 @@ class Config : Extension() {
 							name = "Action log"
 							value = arguments.modActionLog?.mention ?: "Disabled"
 						}
-						field {
-							name = "Log publicly"
-							value = when (arguments.logPublicly) {
-								true -> "Enabled"
-								false -> "Disabled"
-								null -> "Disabled"
-							}
-						}
-						field {
-							name = "Quick timeout length"
-							value = arguments.quickTimeoutLength.interval() ?: "No quick timeout length set"
-						}
-						field {
-							name = "Warning Auto-punishments"
-							value = when (arguments.warnAutoPunishments) {
-								true -> "Enabled"
-								false -> "Disabled"
-								null -> "Disabled"
-							}
-						}
-						field {
-							name = "Ban DM Message"
-							value = arguments.banDmMessage ?: "No custom Ban DM message set"
-						}
-						field {
-							name = "Auto-invite Moderator Role"
-							value = when (arguments.autoInviteModeratorRole) {
-								true -> "Enabled"
-								false -> "Disabled"
-								null -> "Disabled"
-							}
-						}
+						modConfigEmbed(
+							arguments.logPublicly,
+							arguments.quickTimeoutLength,
+							arguments.warnAutoPunishments,
+							arguments.dmDefault,
+							arguments.banDmMessage,
+							arguments.autoInviteModeratorRole
+						)
 						footer {
 							text = "Configured by ${user.asUserOrNull()?.username}"
 						}
@@ -184,8 +162,9 @@ class Config : Extension() {
 							arguments.quickTimeoutLength,
 							arguments.warnAutoPunishments,
 							arguments.logPublicly,
+							arguments.dmDefault,
 							arguments.banDmMessage,
-							arguments.autoInviteModeratorRole
+							arguments.autoInviteModeratorRole,
 						)
 					)
 
@@ -225,7 +204,7 @@ class Config : Extension() {
 						ackEphemeral()
 						respondEphemeral {
 							content = "You already have a logging configuration set. " +
-									"Please clear it before attempting to set a new one."
+								"Please clear it before attempting to set a new one."
 						}
 						return@action
 					}
@@ -257,7 +236,7 @@ class Config : Extension() {
 							ackEphemeral()
 							respondEphemeral {
 								content = "The member log you've selected is invalid, or I can't view it. " +
-										"Please attempt to resolve this and try again."
+									"Please attempt to resolve this and try again."
 							}
 							return@action
 						}
@@ -270,7 +249,7 @@ class Config : Extension() {
 							ackEphemeral()
 							respondEphemeral {
 								content = "The message log you've selected is invalid, or I can't view it. " +
-										"Please attempt to resolve this and try again."
+									"Please attempt to resolve this and try again."
 							}
 							return@action
 						}
@@ -287,7 +266,7 @@ class Config : Extension() {
 							ackEphemeral()
 							respondEphemeral {
 								content = "The public member log you've selected is invalid, or I can't view it. " +
-										"Please attempt to resolve this and try again."
+									"Please attempt to resolve this and try again."
 							}
 							return@action
 						}
@@ -431,7 +410,7 @@ class Config : Extension() {
 					if (utilityConfig != null) {
 						respond {
 							content = "You already have a utility configuration set. " +
-									"Please clear it before attempting to set a new one."
+								"Please clear it before attempting to set a new one."
 						}
 						return@action
 					}
@@ -442,7 +421,7 @@ class Config : Extension() {
 						if (utilityLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
 							respond {
 								content = "The utility log you've selected is invalid, or I can't view it. " +
-										"Please attempt to resolve this and try again."
+									"Please attempt to resolve this and try again."
 							}
 							return@action
 						}
@@ -642,40 +621,17 @@ class Config : Extension() {
 									}
 									field {
 										name = "Action log"
-										value = config.channel?.let { guild!!.getChannelOrNull(it)?.mention } ?: "Disabled"
+										value =
+											config.channel?.let { guild!!.getChannelOrNull(it)?.mention } ?: "Disabled"
 									}
-									field {
-										name = "Log publicly"
-										value = when (config.publicLogging) {
-											true -> "Enabled"
-											false -> "Disabled"
-											null -> "Disabled"
-										}
-									}
-									field {
-										name = "Quick timeout length"
-										value = config.quickTimeoutLength.interval() ?: "No quick timeout length set"
-									}
-									field {
-										name = "Warning Auto-punishments"
-										value = when (config.autoPunishOnWarn) {
-											true -> "Enabled"
-											false -> "Disabled"
-											null -> "Disabled"
-										}
-									}
-									field {
-										name = "Ban DM Message"
-										value = config.banDmMessage ?: "No custom Ban DM message set"
-									}
-									field {
-										name = "Auto-invite Moderator Role"
-										value = when (config.autoInviteModeratorRole) {
-											true -> "Enabled"
-											false -> "Disabled"
-											null -> "Disabled"
-										}
-									}
+									modConfigEmbed(
+										config.publicLogging,
+										config.quickTimeoutLength,
+										config.autoPunishOnWarn,
+										config.dmDefault,
+										config.banDmMessage,
+										config.autoInviteModeratorRole
+									)
 									timestamp = Clock.System.now()
 								}
 							}
@@ -698,8 +654,8 @@ class Config : Extension() {
 										name = "Message delete logs"
 										value = if (config.enableMessageDeleteLogs) {
 											"Enabled\n" +
-													"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
-													"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel name"})"
+												"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
+												"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel name"})"
 										} else {
 											"Disabled"
 										}
@@ -708,8 +664,8 @@ class Config : Extension() {
 										name = "Message edit logs"
 										value = if (config.enableMessageEditLogs) {
 											"Enabled\n" +
-													"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
-													"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel mention"})"
+												"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
+												"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel mention"})"
 										} else {
 											"Disabled"
 										}
@@ -718,8 +674,8 @@ class Config : Extension() {
 										name = "Member logs"
 										value = if (config.enableMemberLogs) {
 											"Enabled\n" +
-													"* ${guild!!.getChannelOrNull(config.memberLog!!)?.mention ?: "Unable to get channel mention"} (" +
-													"${guild!!.getChannelOrNull(config.memberLog)?.name ?: "Unable to get channel mention."})"
+												"* ${guild!!.getChannelOrNull(config.memberLog!!)?.mention ?: "Unable to get channel mention"} (" +
+												"${guild!!.getChannelOrNull(config.memberLog)?.name ?: "Unable to get channel mention."})"
 										} else {
 											"Disabled"
 										}
@@ -788,6 +744,11 @@ class Config : Extension() {
 		val logPublicly by optionalBoolean {
 			name = "log-publicly"
 			description = "Whether to log moderation publicly or not."
+		}
+
+		val dmDefault by optionalBoolean {
+			name = "dm-default"
+			description = "The default value for whether to DM a user in a ban action or not."
 		}
 
 		val banDmMessage by optionalString {
@@ -889,6 +850,59 @@ class Config : Extension() {
 		val ping = lineText {
 			label = "Type `yes` to ping new users when they join"
 			placeholder = "Defaults to false if input is invalid or not `yes`"
+		}
+	}
+}
+
+/**
+ * Builds the contents of the moderation config embed. Avoids code duplication by extracting into a function.
+ */
+private fun EmbedBuilder.modConfigEmbed(
+	logPublicly: Boolean?,
+	quickTimeoutLength: DateTimePeriod?,
+	autoPunishment: Boolean?,
+	dmDefault: Boolean?,
+	dmMessage: String?,
+	autoInvite: Boolean?
+) {
+	field {
+		name = "Log publicly"
+		value = when (logPublicly) {
+			true -> "Enabled"
+			false -> "Disabled"
+			null -> "Disabled"
+		}
+	}
+	field {
+		name = "Quick timeout length"
+		value = quickTimeoutLength.interval() ?: "No quick timeout length set"
+	}
+	field {
+		name = "Warning Auto-punishments"
+		value = when (autoPunishment) {
+			true -> "Enabled"
+			false -> "Disabled"
+			null -> "Disabled"
+		}
+	}
+	field {
+		name = "Dm default"
+		value = when (dmDefault) {
+			true -> "DM argument will default to true"
+			false -> "DM argument will default to false"
+			null -> "DM argument will default to false"
+		}
+	}
+	field {
+		name = "Ban DM Message"
+		value = dmMessage ?: "No custom Ban DM message set"
+	}
+	field {
+		name = "Auto-invite Moderator Role"
+		value = when (autoInvite) {
+			true -> "Enabled"
+			false -> "Disabled"
+			null -> "Disabled"
 		}
 	}
 }
