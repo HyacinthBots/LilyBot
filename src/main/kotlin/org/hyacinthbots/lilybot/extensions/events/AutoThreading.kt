@@ -621,7 +621,7 @@ class AutoThreading : Extension() {
 
 		var threadName: String? = event.message.content.trim().split("\n").firstOrNull()?.take(75)
 
-		if (!options.contentAwareNaming || threadName == null) {
+		if (!options.contentAwareNaming || threadName.isNullOrEmpty()) {
 			threadName = "Thread for ${
 				message?.author?.asUser()?.username ?: proxiedMessage?.member?.name
 			}".take(75)
