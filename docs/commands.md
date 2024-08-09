@@ -103,6 +103,21 @@ None
 	* `author` - The author of the messages to clear - Optional User
 
 ---
+### Command name: `config logging`
+**Description**: Configure Lily's logging system
+
+**Required Member Permissions**: Manage Server
+
+* **Arguments**:
+	* `enable-delete-logs` - Enable logging of message deletions - Boolean
+	* `enable-edit-logs` - Enable logging of message edits - Boolean
+	* `enable-member-logging` - Enable logging of members joining and leaving the guild - Boolean
+	* `enable-public-member-logging` - Enable logging of members joining and leaving the guild with a public message and ping if enabled - Boolean
+	* `message-logs` - The channel for logging message deletions - Optional Channel
+	* `member-log` - The channel for logging members joining and leaving the guild - Optional Channel
+	* `public-member-log` - The channel for the public logging of members joining and leaving the guild - Optional Channel
+
+---
 ### Command name: `config moderation`
 **Description**: Configure Lily's moderation system
 
@@ -117,21 +132,6 @@ None
 	* `log-publicly` - Whether to log moderation publicly or not. - Optional Boolean
 	* `ban-dm-message` - A custom message to send to users when they are banned. - Optional String
 	* `auto-invite-moderator-role` - Silently ping moderators to invite them to new threads. - Optional Boolean
-
----
-### Command name: `config logging`
-**Description**: Configure Lily's logging system
-
-**Required Member Permissions**: Manage Server
-
-* **Arguments**:
-	* `enable-delete-logs` - Enable logging of message deletions - Boolean
-	* `enable-edit-logs` - Enable logging of message edits - Boolean
-	* `enable-member-logging` - Enable logging of members joining and leaving the guild - Boolean
-	* `enable-public-member-logging` - Enable logging of members joining and leaving the guild with a public message and ping if enabled - Boolean
-	* `message-logs` - The channel for logging message deletions - Optional Channel
-	* `member-log` - The channel for logging members joining and leaving the guild - Optional Channel
-	* `public-member-log` - The channel for the public logging of members joining and leaving the guild - Optional Channel
 
 ---
 ### Command name: `config utility`

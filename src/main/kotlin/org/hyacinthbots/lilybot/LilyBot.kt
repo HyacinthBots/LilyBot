@@ -17,31 +17,14 @@ import org.hyacinthbots.docgenerator.enums.CommandTypes
 import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
-import org.hyacinthbots.lilybot.extensions.config.Config
+import org.hyacinthbots.lilybot.extensions.config.ConfigExtension
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.GuildLogging
-import org.hyacinthbots.lilybot.extensions.events.AutoThreading
-import org.hyacinthbots.lilybot.extensions.events.MemberLogging
-import org.hyacinthbots.lilybot.extensions.events.MessageDelete
-import org.hyacinthbots.lilybot.extensions.events.MessageEdit
-import org.hyacinthbots.lilybot.extensions.events.ModThreadInviting
-import org.hyacinthbots.lilybot.extensions.moderation.ClearCommands
-import org.hyacinthbots.lilybot.extensions.moderation.LockingCommands
-import org.hyacinthbots.lilybot.extensions.moderation.ModerationCommands
-import org.hyacinthbots.lilybot.extensions.moderation.Report
-import org.hyacinthbots.lilybot.extensions.util.GalleryChannel
-import org.hyacinthbots.lilybot.extensions.util.Github
-import org.hyacinthbots.lilybot.extensions.util.GuildAnnouncements
-import org.hyacinthbots.lilybot.extensions.util.InfoCommands
-import org.hyacinthbots.lilybot.extensions.util.ModUtilities
-import org.hyacinthbots.lilybot.extensions.util.NewsChannelPublishing
-import org.hyacinthbots.lilybot.extensions.util.PublicUtilities
-import org.hyacinthbots.lilybot.extensions.util.Reminders
-import org.hyacinthbots.lilybot.extensions.util.RoleMenu
-import org.hyacinthbots.lilybot.extensions.util.StartupHooks
-import org.hyacinthbots.lilybot.extensions.util.StatusPing
-import org.hyacinthbots.lilybot.extensions.util.Tags
-import org.hyacinthbots.lilybot.extensions.util.ThreadControl
+import org.hyacinthbots.lilybot.extensions.logging.events.*
+import org.hyacinthbots.lilybot.extensions.moderation.commands.*
+import org.hyacinthbots.lilybot.extensions.threads.AutoThreading
+import org.hyacinthbots.lilybot.extensions.threads.ModThreadInviting
+import org.hyacinthbots.lilybot.extensions.threads.ThreadControl
+import org.hyacinthbots.lilybot.extensions.utils.commands.*
 import org.hyacinthbots.lilybot.utils.BOT_TOKEN
 import org.hyacinthbots.lilybot.utils.ENVIRONMENT
 import org.hyacinthbots.lilybot.utils.database
@@ -77,7 +60,7 @@ suspend fun main() {
 		extensions {
 			add(::AutoThreading)
 			add(::ClearCommands)
-			add(::Config)
+			add(::ConfigExtension)
 			add(::GalleryChannel)
 			add(::Github)
 			add(::GuildAnnouncements)
@@ -104,17 +87,17 @@ suspend fun main() {
 			The welcome channel extension allows users to designate a YAML file to create a channel with
 			a variety of pre-built blocks.
 			 */
- 			welcomeChannel(WelcomeChannelCollection()) {
- 				staffCommandCheck {
- 					hasPermission(Permission.BanMembers)
- 				}
+			welcomeChannel(WelcomeChannelCollection()) {
+				staffCommandCheck {
+					hasPermission(Permission.BanMembers)
+				}
 
- 				getLogChannel { _, guild ->
- 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
- 				}
+				getLogChannel { _, guild ->
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+				}
 
- 				refreshDuration = 5.minutes
- 			}
+				refreshDuration = 5.minutes
+			}
 
 			/*
 			The anti-phishing extension automatically deletes and logs scam links. It also allows users to check links
