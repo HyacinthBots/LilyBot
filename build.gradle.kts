@@ -102,19 +102,6 @@ tasks {
 		// To update the gradle wrapper version run `./gradlew wrapper --gradle-version=<NEW_VERSION>`
 		distributionType = Wrapper.DistributionType.BIN
 	}
-
-	val dev = create<JavaExec>("dev") {
-		// Better than modifying the application plugin config, as it'll apply these settings to the distributions
-		// it generates.
-
-		group = "application"
-		description = "Run LilyBot in development mode"
-
-		jvmArguments.add("-DdevMode=true")
-
-		classpath = sourceSets.named("main").get().runtimeClasspath
-		mainClass = className
-	}
 }
 
 detekt {
