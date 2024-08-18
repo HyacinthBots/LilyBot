@@ -1,26 +1,5 @@
 package org.hyacinthbots.lilybot.extensions.util
 
-import com.kotlindiscord.kord.extensions.DISCORD_BLACK
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.checks.hasPermissions
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
-import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingColor
-import com.kotlindiscord.kord.extensions.commands.converters.impl.role
-import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
-import com.kotlindiscord.kord.extensions.commands.converters.impl.string
-import com.kotlindiscord.kord.extensions.components.components
-import com.kotlindiscord.kord.extensions.components.ephemeralButton
-import com.kotlindiscord.kord.extensions.components.ephemeralStringSelectMenu
-import com.kotlindiscord.kord.extensions.components.linkButton
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.utils.getJumpUrl
-import com.kotlindiscord.kord.extensions.utils.getTopRole
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -35,6 +14,27 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.Role
 import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
 import dev.kord.rest.builder.message.embed
+import dev.kordex.core.DISCORD_BLACK
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.checks.hasPermissions
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.application.slash.EphemeralSlashCommandContext
+import dev.kordex.core.commands.application.slash.ephemeralSubCommand
+import dev.kordex.core.commands.converters.impl.defaultingBoolean
+import dev.kordex.core.commands.converters.impl.defaultingColor
+import dev.kordex.core.commands.converters.impl.role
+import dev.kordex.core.commands.converters.impl.snowflake
+import dev.kordex.core.commands.converters.impl.string
+import dev.kordex.core.components.components
+import dev.kordex.core.components.ephemeralButton
+import dev.kordex.core.components.ephemeralStringSelectMenu
+import dev.kordex.core.components.linkButton
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.ephemeralSlashCommand
+import dev.kordex.core.extensions.event
+import dev.kordex.core.utils.getJumpUrl
+import dev.kordex.core.utils.getTopRole
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
@@ -100,13 +100,13 @@ class RoleMenu : Extension() {
 					}
 
 					// While we don't normally edit in components, in this case we need the message ID.
-					menuMessage!!.edit {
+					menuMessage.edit {
 						val components = components {
 							ephemeralButton {
 								label = "Select roles"
 								style = ButtonStyle.Primary
 
-								id = "role-menu${menuMessage!!.id}"
+								id = "role-menu${menuMessage.id}"
 
 								action { }
 							}
@@ -116,7 +116,7 @@ class RoleMenu : Extension() {
 					}
 
 					RoleMenuCollection().setRoleMenu(
-						menuMessage!!.id,
+						menuMessage.id,
 						channel.id,
 						guild!!.id,
 						mutableListOf(arguments.initialRole.id)
@@ -154,7 +154,7 @@ class RoleMenu : Extension() {
 						components {
 							linkButton {
 								label = "Jump to role menu"
-								url = menuMessage!!.getJumpUrl()
+								url = menuMessage.getJumpUrl()
 							}
 						}
 					}
@@ -371,7 +371,7 @@ class RoleMenu : Extension() {
 
 							roles.add(newRole.id)
 						} else {
-							utilsLogger.debug("skipped creating new roles")
+							utilsLogger.debug { "skipped creating new roles" }
 							roles.add(existingRole.id)
 						}
 					}
@@ -707,7 +707,7 @@ class RoleMenu : Extension() {
 						return@action
 					}
 
-					if (!config!!.subscribableRoles.contains(arguments.role.id)) {
+					if (!config.subscribableRoles.contains(arguments.role.id)) {
 						respond {
 							content = "That is not a subscribable role."
 						}

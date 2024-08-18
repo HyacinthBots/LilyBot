@@ -2,15 +2,15 @@
 
 package org.hyacinthbots.lilybot
 
-import com.kotlindiscord.kord.extensions.ExtensibleBot
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
-import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
-import com.kotlindiscord.kord.extensions.modules.extra.welcome.welcomeChannel
 import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import dev.kordex.core.ExtensibleBot
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.modules.func.phishing.DetectionAction
+import dev.kordex.modules.func.phishing.extPhishing
+import dev.kordex.modules.func.welcome.welcomeChannel
+import dev.kordex.modules.pluralkit.extPluralKit
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.hyacinthbots.docgenerator.docsGenerator
 import org.hyacinthbots.docgenerator.enums.CommandTypes

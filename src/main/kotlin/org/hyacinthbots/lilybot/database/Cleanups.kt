@@ -1,10 +1,10 @@
 package org.hyacinthbots.lilybot.database
 
-import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.core.Kord
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.request.KtorRequestException
+import dev.kordex.core.koin.KordExKoinComponent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.GithubCollection

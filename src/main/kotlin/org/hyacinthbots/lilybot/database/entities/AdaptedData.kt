@@ -5,8 +5,8 @@
 */
 package org.hyacinthbots.lilybot.database.entities
 
-import com.kotlindiscord.kord.extensions.storage.StorageType
 import dev.kord.common.entity.Snowflake
+import dev.kordex.core.storage.StorageType
 import kotlinx.serialization.Serializable
 
 @Serializable
