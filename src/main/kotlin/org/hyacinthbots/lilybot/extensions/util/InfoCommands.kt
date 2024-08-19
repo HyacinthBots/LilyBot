@@ -38,7 +38,7 @@ class InfoCommands : Extension() {
 						title = "What is LilyBot?"
 						description = "Lily is a FOSS multi-purpose bot for Discord created by " +
 								"the HyacinthBots organization. " +
-								"Use `/info` to learn more, or `/invite` to get an invite link."
+								"Use `/about` to learn more, or `/invite` to get an invite link."
 
 						field {
 							name = "How do I configure Lily?"

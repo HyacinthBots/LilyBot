@@ -9,7 +9,6 @@ import dev.kordex.core.ExtensibleBot
 import dev.kordex.core.checks.hasPermission
 import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
-import dev.kordex.core.utils.toReaction
 import dev.kordex.data.api.DataCollection
 import dev.kordex.modules.func.phishing.DetectionAction
 import dev.kordex.modules.func.phishing.extPhishing
@@ -86,30 +85,25 @@ suspend fun main() {
 
 		about {
 			ephemeral = false
-			name = "LilyBot"
-			version = "${BuildInfo.LILY_VERSION} (${BuildInfo.BUILD_ID})"
+			name = "Info about LilyBot"
 
 			logoUrl = "https://github.com/HyacinthBots/LilyBot/blob/main/docs/lily-logo-transparent.png?raw=true"
 
 			description = "Lily is a FOSS multi-purpose bot for Discord created by the HyacinthBots organization. " +
 				"Use `/help` for support or `/invite` to get an invite link."
 
-			inviteButton(
-				"https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
+			button {
+				name = "extensions.about.buttons.invite"
+				url = "https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
 					"&permissions=1151990787078&scope=bot%20applications.commands"
-			)
-
-			donationButton("https://buymeacoffee.com/HyacinthBots")
-			sourceButton("https://github.com/HyacinthBots/LilyBot")
+			}
 
 			button {
-				emoji = "🔍".toReaction()
 				name = "Privacy Policy"
 				url = "$HYACINTH_GITHUB/LilyBot/blob/main/docs/privacy-policy.md"
 			}
 
 			button {
-				emoji = "📃".toReaction()
 				name = "Terms of Service"
 				url = "$HYACINTH_GITHUB/.github/blob/main/terms-of-service.md"
 			}
