@@ -1,8 +1,8 @@
 package org.hyacinthbots.lilybot.extensions.util
 
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.utils.scheduling.Scheduler
-import com.kotlindiscord.kord.extensions.utils.scheduling.Task
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.utils.scheduling.Scheduler
+import dev.kordex.core.utils.scheduling.Task
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get

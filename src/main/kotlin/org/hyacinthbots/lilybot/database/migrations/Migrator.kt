@@ -11,7 +11,7 @@
 
 package org.hyacinthbots.lilybot.database.migrations
 
-import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import dev.kordex.core.koin.KordExKoinComponent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection

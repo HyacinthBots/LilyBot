@@ -1,13 +1,5 @@
 package org.hyacinthbots.lilybot.utils
 
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.channelFor
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.checks.types.CheckContext
-import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
-import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
-import com.kotlindiscord.kord.extensions.utils.botHasPermissions
-import com.kotlindiscord.kord.extensions.utils.getTopRole
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.Kord
@@ -20,6 +12,14 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.channelFor
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.checks.types.CheckContext
+import dev.kordex.core.checks.types.CheckContextWithCache
+import dev.kordex.core.types.EphemeralInteractionContext
+import dev.kordex.core.utils.botHasPermissions
+import dev.kordex.core.utils.getTopRole
 import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection

@@ -2,19 +2,25 @@
 
 package org.hyacinthbots.lilybot
 
-import com.kotlindiscord.kord.extensions.ExtensibleBot
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.modules.extra.phishing.DetectionAction
-import com.kotlindiscord.kord.extensions.modules.extra.phishing.extPhishing
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.extPluralKit
-import com.kotlindiscord.kord.extensions.modules.extra.welcome.welcomeChannel
 import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import dev.kordex.core.ExtensibleBot
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.time.TimestampType
+import dev.kordex.core.time.toDiscord
+import dev.kordex.data.api.DataCollection
+import dev.kordex.modules.func.phishing.DetectionAction
+import dev.kordex.modules.func.phishing.extPhishing
+import dev.kordex.modules.func.welcome.welcomeChannel
+import dev.kordex.modules.pluralkit.extPluralKit
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.hyacinthbots.docgenerator.docsGenerator
 import org.hyacinthbots.docgenerator.enums.CommandTypes
 import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
+import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
 import org.hyacinthbots.lilybot.extensions.config.Config
@@ -42,8 +48,10 @@ import org.hyacinthbots.lilybot.extensions.util.StartupHooks
 import org.hyacinthbots.lilybot.extensions.util.StatusPing
 import org.hyacinthbots.lilybot.extensions.util.Tags
 import org.hyacinthbots.lilybot.extensions.util.ThreadControl
+import org.hyacinthbots.lilybot.internal.BuildInfo
 import org.hyacinthbots.lilybot.utils.BOT_TOKEN
 import org.hyacinthbots.lilybot.utils.ENVIRONMENT
+import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
 import org.hyacinthbots.lilybot.utils.database
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.kohsuke.github.GitHub
@@ -60,6 +68,8 @@ val docFile = Path("./docs/commands.md")
 
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
+		dataCollectionMode = DataCollection.None
+
 		database(true)
 		dataAdapter(::MongoDBDataAdapter)
 
@@ -71,6 +81,78 @@ suspend fun main() {
 		// Enable the members intent to allow us to get accurate member counts for join logging
 		intents {
 			+Intent.GuildMembers
+		}
+
+		about {
+			ephemeral = false
+			name = "Info about LilyBot"
+
+			logoUrl = "https://github.com/HyacinthBots/LilyBot/blob/main/docs/lily-logo-transparent.png?raw=true"
+
+			description = "Lily is a FOSS multi-purpose bot for Discord created by the HyacinthBots organization. " +
+				"Use `/help` for support or `/invite` to get an invite link."
+
+			button {
+				name = "extensions.about.buttons.invite"
+				url = "https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
+					"&permissions=1151990787078&scope=bot%20applications.commands"
+			}
+
+			button {
+				name = "Privacy Policy"
+				url = "$HYACINTH_GITHUB/LilyBot/blob/main/docs/privacy-policy.md"
+			}
+
+			button {
+				name = "Terms of Service"
+				url = "$HYACINTH_GITHUB/.github/blob/main/terms-of-service.md"
+			}
+
+			field {
+				name = "How can I support the continued development of Lily?"
+
+				value = "Lily is developed primarily by NoComment#6411 and tempest#4510 " +
+					"in our free time. Neither of us have resources to invest in hosting, " +
+					"so financial donations via [Buy Me a Coffee]" +
+					"(https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. Currently, we run" +
+					"lily on a Hetzner cloud server, which we can afford in our current situation. " +
+					"We will also have domain costs for our website.\n\n" +
+					"Contributions of code & documentation are also incredibly appreciated, " +
+					"and you can read our [contributing guide]" +
+					"($HYACINTH_GITHUB/LilyBot/blob/main/CONTRIBUTING.md) " +
+					"or [development guide]" +
+					"($HYACINTH_GITHUB/LilyBot/blob/main/docs/development-guide.md) " +
+					"to get started."
+			}
+
+			field {
+				name = "Version"
+				// To avoid IntelliJ shouting about build errors, use https://plugins.jetbrains.com/plugin/9407-pebble
+				value =
+					"${BuildInfo.LILY_VERSION} (${BuildInfo.BUILD_ID})"
+				inline = true
+			}
+
+			field {
+				name = "Up Since"
+				value = "${
+					UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)
+						?.time.toString().split(".")[0]
+				} ${UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)?.date} UTC\n " +
+					"(${UptimeCollection().get()?.onTime?.toDiscord(TimestampType.RelativeTime) ?: "??"})"
+				inline = true
+			}
+
+			field {
+				name = "Useful links"
+				value =
+					"Website: Coming Soon™️\n" +
+						"GitHub: ${HYACINTH_GITHUB}\n" +
+						"Buy Me a Coffee: https://buymeacoffee.com/HyacinthBots\n" +
+						"Twitter: https://twitter.com/HyacinthBots\n" +
+						"Email: `hyacinthbots@outlook.com`\n" +
+						"Discord: https://discord.gg/hy2329fcTZ"
+			}
 		}
 
 		// Add the extensions to the bot

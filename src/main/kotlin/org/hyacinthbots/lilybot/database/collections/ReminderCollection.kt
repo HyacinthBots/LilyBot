@@ -1,7 +1,7 @@
 package org.hyacinthbots.lilybot.database.collections
 
-import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
+import dev.kordex.core.koin.KordExKoinComponent
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus

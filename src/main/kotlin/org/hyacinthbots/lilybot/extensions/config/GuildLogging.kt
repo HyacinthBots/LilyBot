@@ -1,10 +1,10 @@
 package org.hyacinthbots.lilybot.extensions.config
 
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
 import dev.kord.rest.request.KtorRequestException
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.event
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import java.util.concurrent.CancellationException
