@@ -40,7 +40,6 @@ import dev.kordex.core.extensions.event
 import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
 import dev.kordex.core.utils.timeoutUntil
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -61,8 +60,6 @@ private const val DENIED = "Denied"
 
 class ModerationEvents : Extension() {
 	override val name: String = "moderation-events"
-
-	private val logger = KotlinLogging.logger("Moderation Events")
 
 	override suspend fun setup() {
 		event<BanAddEvent> {
@@ -86,8 +83,6 @@ class ModerationEvents : Extension() {
 				}
 
 				if (existingAction != null && existingAction.targetUserId != event.user.id) {
-					// If this happens I will eat my hat
-					logger.warn { "It's hat eating time from the ban command" }
 					return@action
 				}
 
@@ -178,8 +173,6 @@ class ModerationEvents : Extension() {
 				val existingAction =
 					ModerationActionCollection().getAction(ModerationAction.UNBAN, event.guildId, event.user.id)
 				if (existingAction != null && existingAction.targetUserId != event.user.id) {
-					// If this happens I will eat my hat
-					logger.warn { "It's hat eating time from the unban command" }
 					return@action
 				}
 
@@ -454,9 +447,9 @@ class ModerationEvents : Extension() {
 					field {
 						name = "Guild Members only"
 						value = if (event.scheduledEvent.privacyLevel == GuildScheduledEventPrivacyLevel.GuildOnly) {
-							"true"
+							"True"
 						} else {
-							"false"
+							"False"
 						}
 					}
 					color = DISCORD_GREEN
