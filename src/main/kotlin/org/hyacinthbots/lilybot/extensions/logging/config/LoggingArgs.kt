@@ -1,8 +1,8 @@
 package org.hyacinthbots.lilybot.extensions.logging.config
 
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.converters.impl.boolean
+import dev.kordex.core.commands.converters.impl.optionalChannel
 
 class LoggingArgs : Arguments() {
 	val enableMessageDeleteLogs by boolean {

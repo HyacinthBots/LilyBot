@@ -1,6 +1,6 @@
 package org.hyacinthbots.lilybot.extensions.logging.config
 
-import com.kotlindiscord.kord.extensions.components.forms.ModalForm
+import dev.kordex.core.components.forms.ModalForm
 
 class PublicLoggingModal : ModalForm() {
 	override var title = "Public logging configuration"

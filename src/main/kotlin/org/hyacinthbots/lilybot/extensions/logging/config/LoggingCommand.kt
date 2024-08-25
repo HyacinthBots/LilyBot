@@ -1,14 +1,5 @@
 package org.hyacinthbots.lilybot.extensions.logging.config
 
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.commands.application.slash.SlashCommand
-import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
-import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubCommand
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
-import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOfOrNull
@@ -16,6 +7,13 @@ import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.embed
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.commands.application.slash.SlashCommand
+import dev.kordex.core.utils.botHasPermissions
+import dev.kordex.modules.dev.unsafe.annotations.UnsafeAPI
+import dev.kordex.modules.dev.unsafe.commands.slash.InitialSlashCommandResponse
+import dev.kordex.modules.dev.unsafe.extensions.unsafeSubCommand
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 import org.hyacinthbots.lilybot.database.entities.PublicMemberLogData

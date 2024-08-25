@@ -1,12 +1,12 @@
 package org.hyacinthbots.lilybot.extensions.moderation.config
 
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.boolean
-import com.kotlindiscord.kord.extensions.commands.converters.impl.coalescingOptionalDuration
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.converters.impl.boolean
+import dev.kordex.core.commands.converters.impl.coalescingOptionalDuration
+import dev.kordex.core.commands.converters.impl.optionalBoolean
+import dev.kordex.core.commands.converters.impl.optionalChannel
+import dev.kordex.core.commands.converters.impl.optionalRole
+import dev.kordex.core.commands.converters.impl.optionalString
 
 class ModerationArgs : Arguments() {
 	val enabled by boolean {

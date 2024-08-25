@@ -1,7 +1,7 @@
 package org.hyacinthbots.lilybot.extensions.utils.config
 
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.converters.impl.optionalChannel
 
 class UtilityArgs : Arguments() {
 	val utilityLogChannel by optionalChannel {
