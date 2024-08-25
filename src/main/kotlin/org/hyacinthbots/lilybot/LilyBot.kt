@@ -5,6 +5,8 @@ package org.hyacinthbots.lilybot
 import dev.kord.common.entity.Permission
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.message.embed
 import dev.kordex.core.ExtensibleBot
 import dev.kordex.core.checks.hasPermission
 import dev.kordex.core.time.TimestampType
@@ -85,73 +87,79 @@ suspend fun main() {
 
 		about {
 			ephemeral = false
-			name = "Info about LilyBot"
+			general {
+				message { locale ->
+					embed {
+						title = "Info about LilyBot"
 
-			logoUrl = "https://github.com/HyacinthBots/LilyBot/blob/main/docs/lily-logo-transparent.png?raw=true"
+						thumbnail {
+							url =
+								"https://github.com/HyacinthBots/LilyBot/blob/main/docs/lily-logo-transparent.png?raw=true"
+						}
 
-			description = "Lily is a FOSS multi-purpose bot for Discord created by the HyacinthBots organization. " +
-				"Use `/help` for support or `/invite` to get an invite link."
+						description =
+							"Lily is a FOSS multi-purpose bot for Discord created by the HyacinthBots organization. " +
+								"Use `/help` for support or `/invite` to get an invite link."
+						field {
+							name = "How can I support the continued development of Lily?"
 
-			button {
-				name = "extensions.about.buttons.invite"
-				url = "https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
-					"&permissions=1151990787078&scope=bot%20applications.commands"
-			}
+							value = "Lily is developed primarily by NoComment#6411 in their free time. Hyacinth " +
+								"doesn't have the resources to invest in hosting, so financial donations via " +
+								"[Buy Me a Coffee](https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. " +
+								"Currently, we run lily on a Hetzner cloud server, which we can afford in our " +
+								"current situation. We also have domain costs for our website.\n\nContributions of " +
+								"code & documentation are also incredibly appreciated, and you can read our " +
+								"[contributing guide]($HYACINTH_GITHUB/LilyBot/blob/main/CONTRIBUTING.md) or " +
+								"[development guide]($HYACINTH_GITHUB/LilyBot/blob/main/docs/development-guide.md) " +
+								"to get started."
+						}
 
-			button {
-				name = "Privacy Policy"
-				url = "$HYACINTH_GITHUB/LilyBot/blob/main/docs/privacy-policy.md"
-			}
+						field {
+							name = "Version"
+							// To avoid IntelliJ shouting about build errors, use https://plugins.jetbrains.com/plugin/9407-pebble
+							value = "${BuildInfo.LILY_VERSION} (${BuildInfo.BUILD_ID})"
+							inline = true
+						}
 
-			button {
-				name = "Terms of Service"
-				url = "$HYACINTH_GITHUB/.github/blob/main/terms-of-service.md"
-			}
+						field {
+							name = "Up Since"
+							value = "${
+								UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)
+									?.time.toString().split(".")[0]
+							} ${UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)?.date} UTC\n " +
+								"(${UptimeCollection().get()?.onTime?.toDiscord(TimestampType.RelativeTime) ?: "??"})"
+							inline = true
+						}
 
-			field {
-				name = "How can I support the continued development of Lily?"
+						field {
+							name = "Useful links"
+							value =
+								"Website: Coming Soon™️\n" +
+									"GitHub: ${HYACINTH_GITHUB}\n" +
+									"Buy Me a Coffee: https://buymeacoffee.com/HyacinthBots\n" +
+									"Twitter: https://twitter.com/HyacinthBots\n" +
+									"Email: `hyacinthbots@outlook.com`\n" +
+									"Discord: https://discord.gg/hy2329fcTZ"
+						}
+					}
 
-				value = "Lily is developed primarily by NoComment#6411 and tempest#4510 " +
-					"in our free time. Neither of us have resources to invest in hosting, " +
-					"so financial donations via [Buy Me a Coffee]" +
-					"(https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. Currently, we run" +
-					"lily on a Hetzner cloud server, which we can afford in our current situation. " +
-					"We will also have domain costs for our website.\n\n" +
-					"Contributions of code & documentation are also incredibly appreciated, " +
-					"and you can read our [contributing guide]" +
-					"($HYACINTH_GITHUB/LilyBot/blob/main/CONTRIBUTING.md) " +
-					"or [development guide]" +
-					"($HYACINTH_GITHUB/LilyBot/blob/main/docs/development-guide.md) " +
-					"to get started."
-			}
+					actionRow {
+						linkButton(
+						    "https://discord.com/api/oauth2/authorize?client_id=876278900836139008&" +
+							"permissions=1151990787078&scope=bot%20applications.commands"
+						) {
+							label = "extensions.about.buttons.invite"
+						}
 
-			field {
-				name = "Version"
-				// To avoid IntelliJ shouting about build errors, use https://plugins.jetbrains.com/plugin/9407-pebble
-				value =
-					"${BuildInfo.LILY_VERSION} (${BuildInfo.BUILD_ID})"
-				inline = true
-			}
+						linkButton("$HYACINTH_GITHUB/LilyBot/blob/main/docs/privacy-policy.md") {
+							label = "Privacy Policy"
+						}
 
-			field {
-				name = "Up Since"
-				value = "${
-					UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)
-						?.time.toString().split(".")[0]
-				} ${UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)?.date} UTC\n " +
-					"(${UptimeCollection().get()?.onTime?.toDiscord(TimestampType.RelativeTime) ?: "??"})"
-				inline = true
-			}
-
-			field {
-				name = "Useful links"
-				value =
-					"Website: Coming Soon™️\n" +
-						"GitHub: ${HYACINTH_GITHUB}\n" +
-						"Buy Me a Coffee: https://buymeacoffee.com/HyacinthBots\n" +
-						"Twitter: https://twitter.com/HyacinthBots\n" +
-						"Email: `hyacinthbots@outlook.com`\n" +
-						"Discord: https://discord.gg/hy2329fcTZ"
+						linkButton("$HYACINTH_GITHUB/.github/blob/main/terms-of-service.md") {
+							label = "Terms of Service"
+						}
+					}
+				}
 			}
 		}
 
@@ -186,17 +194,17 @@ suspend fun main() {
 			The welcome channel extension allows users to designate a YAML file to create a channel with
 			a variety of pre-built blocks.
 			 */
- 			welcomeChannel(WelcomeChannelCollection()) {
- 				staffCommandCheck {
- 					hasPermission(Permission.BanMembers)
- 				}
+			welcomeChannel(WelcomeChannelCollection()) {
+				staffCommandCheck {
+					hasPermission(Permission.BanMembers)
+				}
 
- 				getLogChannel { _, guild ->
- 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
- 				}
+				getLogChannel { _, guild ->
+					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+				}
 
- 				refreshDuration = 5.minutes
- 			}
+				refreshDuration = 5.minutes
+			}
 
 			/*
 			The anti-phishing extension automatically deletes and logs scam links. It also allows users to check links
