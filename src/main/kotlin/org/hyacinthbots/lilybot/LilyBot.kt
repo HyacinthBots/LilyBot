@@ -31,6 +31,7 @@ import org.hyacinthbots.lilybot.extensions.logging.events.GuildLogging
 import org.hyacinthbots.lilybot.extensions.logging.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.logging.events.MessageDelete
 import org.hyacinthbots.lilybot.extensions.logging.events.MessageEdit
+import org.hyacinthbots.lilybot.extensions.logging.events.ModerationEvents
 import org.hyacinthbots.lilybot.extensions.moderation.commands.ClearCommands
 import org.hyacinthbots.lilybot.extensions.moderation.commands.LockingCommands
 import org.hyacinthbots.lilybot.extensions.moderation.commands.ModUtilities

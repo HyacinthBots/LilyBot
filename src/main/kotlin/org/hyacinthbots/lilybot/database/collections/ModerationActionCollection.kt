@@ -73,8 +73,8 @@ class ModerationActionCollection : KordExKoinComponent {
 	 */
 	suspend inline fun getAction(
 		type: ModerationAction,
-        guildId: Snowflake,
-        targetUserId: Snowflake
+		guildId: Snowflake,
+		targetUserId: Snowflake
 	): ModerationActionData? =
 		collection.findOne(
 			ModerationActionData::actionType eq type,

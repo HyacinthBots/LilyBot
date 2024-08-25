@@ -61,7 +61,7 @@ import org.hyacinthbots.lilybot.database.entities.ActionData
 import org.hyacinthbots.lilybot.database.entities.TemporaryBanData
 import org.hyacinthbots.lilybot.database.entities.TimeData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.moderation.utils.ModerationActions
+import org.hyacinthbots.lilybot.extensions.moderation.ModerationAction
 import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField

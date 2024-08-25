@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.events
+package org.hyacinthbots.lilybot.extensions.logging.events
 
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.ForumTag
