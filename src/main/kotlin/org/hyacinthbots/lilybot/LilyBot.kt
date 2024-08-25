@@ -25,31 +25,31 @@ import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
-import org.hyacinthbots.lilybot.extensions.config.Config
+import org.hyacinthbots.lilybot.extensions.config.ConfigExtension
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.config.GuildLogging
-import org.hyacinthbots.lilybot.extensions.events.AutoThreading
-import org.hyacinthbots.lilybot.extensions.events.MemberLogging
-import org.hyacinthbots.lilybot.extensions.events.MessageDelete
-import org.hyacinthbots.lilybot.extensions.events.MessageEdit
-import org.hyacinthbots.lilybot.extensions.events.ModThreadInviting
-import org.hyacinthbots.lilybot.extensions.moderation.ClearCommands
-import org.hyacinthbots.lilybot.extensions.moderation.LockingCommands
-import org.hyacinthbots.lilybot.extensions.moderation.ModerationCommands
-import org.hyacinthbots.lilybot.extensions.moderation.Report
-import org.hyacinthbots.lilybot.extensions.util.GalleryChannel
-import org.hyacinthbots.lilybot.extensions.util.Github
-import org.hyacinthbots.lilybot.extensions.util.GuildAnnouncements
-import org.hyacinthbots.lilybot.extensions.util.InfoCommands
-import org.hyacinthbots.lilybot.extensions.util.ModUtilities
-import org.hyacinthbots.lilybot.extensions.util.NewsChannelPublishing
-import org.hyacinthbots.lilybot.extensions.util.PublicUtilities
-import org.hyacinthbots.lilybot.extensions.util.Reminders
-import org.hyacinthbots.lilybot.extensions.util.RoleMenu
-import org.hyacinthbots.lilybot.extensions.util.StartupHooks
-import org.hyacinthbots.lilybot.extensions.util.StatusPing
-import org.hyacinthbots.lilybot.extensions.util.Tags
-import org.hyacinthbots.lilybot.extensions.util.ThreadControl
+import org.hyacinthbots.lilybot.extensions.logging.events.GuildLogging
+import org.hyacinthbots.lilybot.extensions.logging.events.MemberLogging
+import org.hyacinthbots.lilybot.extensions.logging.events.MessageDelete
+import org.hyacinthbots.lilybot.extensions.logging.events.MessageEdit
+import org.hyacinthbots.lilybot.extensions.moderation.commands.ClearCommands
+import org.hyacinthbots.lilybot.extensions.moderation.commands.LockingCommands
+import org.hyacinthbots.lilybot.extensions.moderation.commands.ModUtilities
+import org.hyacinthbots.lilybot.extensions.moderation.commands.ModerationCommands
+import org.hyacinthbots.lilybot.extensions.moderation.commands.Report
+import org.hyacinthbots.lilybot.extensions.threads.AutoThreading
+import org.hyacinthbots.lilybot.extensions.threads.ModThreadInviting
+import org.hyacinthbots.lilybot.extensions.threads.ThreadControl
+import org.hyacinthbots.lilybot.extensions.utils.commands.GalleryChannel
+import org.hyacinthbots.lilybot.extensions.utils.commands.Github
+import org.hyacinthbots.lilybot.extensions.utils.commands.GuildAnnouncements
+import org.hyacinthbots.lilybot.extensions.utils.commands.InfoCommands
+import org.hyacinthbots.lilybot.extensions.utils.commands.NewsChannelPublishing
+import org.hyacinthbots.lilybot.extensions.utils.commands.PublicUtilities
+import org.hyacinthbots.lilybot.extensions.utils.commands.Reminders
+import org.hyacinthbots.lilybot.extensions.utils.commands.RoleMenu
+import org.hyacinthbots.lilybot.extensions.utils.commands.StartupHooks
+import org.hyacinthbots.lilybot.extensions.utils.commands.StatusPing
+import org.hyacinthbots.lilybot.extensions.utils.commands.Tags
 import org.hyacinthbots.lilybot.internal.BuildInfo
 import org.hyacinthbots.lilybot.utils.BOT_TOKEN
 import org.hyacinthbots.lilybot.utils.ENVIRONMENT
@@ -167,7 +167,7 @@ suspend fun main() {
 		extensions {
 			add(::AutoThreading)
 			add(::ClearCommands)
-			add(::Config)
+			add(::ConfigExtension)
 			add(::GalleryChannel)
 			add(::Github)
 			add(::GuildAnnouncements)
