@@ -1,12 +1,5 @@
 package org.hyacinthbots.lilybot.extensions.logging.events
 
-import com.kotlindiscord.kord.extensions.DISCORD_GREEN
-import com.kotlindiscord.kord.extensions.DISCORD_RED
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.guildFor
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.utils.botHasPermissions
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
@@ -15,6 +8,13 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import dev.kord.rest.builder.message.embed
+import dev.kordex.core.DISCORD_GREEN
+import dev.kordex.core.DISCORD_RED
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.guildFor
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.event
+import dev.kordex.core.utils.botHasPermissions
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions

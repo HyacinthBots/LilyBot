@@ -1,18 +1,12 @@
 package org.hyacinthbots.lilybot.extensions.utils.commands
 
-import com.kotlindiscord.kord.extensions.DISCORD_BLURPLE
-import com.kotlindiscord.kord.extensions.components.components
-import com.kotlindiscord.kord.extensions.components.linkButton
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
-import com.kotlindiscord.kord.extensions.time.TimestampType
-import com.kotlindiscord.kord.extensions.time.toDiscord
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.embed
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import org.hyacinthbots.lilybot.database.collections.UptimeCollection
-import org.hyacinthbots.lilybot.internal.BuildInfo
+import dev.kordex.core.DISCORD_BLURPLE
+import dev.kordex.core.components.components
+import dev.kordex.core.components.linkButton
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.publicSlashCommand
 import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
 
 /**
@@ -44,7 +38,7 @@ class InfoCommands : Extension() {
 						title = "What is LilyBot?"
 						description = "Lily is a FOSS multi-purpose bot for Discord created by " +
 								"the HyacinthBots organization. " +
-								"Use `/info` to learn more, or `/invite` to get an invite link."
+								"Use `/about` to learn more, or `/invite` to get an invite link."
 
 						field {
 							name = "How do I configure Lily?"
@@ -68,77 +62,6 @@ class InfoCommands : Extension() {
 									"https://discord.gg/hy2329fcTZ"
 						}
 
-						field {
-							name = "Useful links"
-							value =
-								"Website: Coming Soon™️\n" +
-										"GitHub: ${HYACINTH_GITHUB}\n" +
-										"Buy Me a Coffee: https://buymeacoffee.com/HyacinthBots\n" +
-										"Twitter: https://twitter.com/HyacinthBots\n" +
-										"Email: `hyacinthbots@outlook.com`\n" +
-										"Discord: https://discord.gg/hy2329fcTZ"
-						}
-						color = DISCORD_BLURPLE
-					}
-
-					buttons()
-				}
-			}
-		}
-
-		/**
-		 * A command that creates an embed providing basic info about Lily and uptime data.
-		 *
-		 * @author NoComment1105
-		 * @author tempest15
-		 * @since 4.4.0
-		 */
-		publicSlashCommand {
-			name = "info"
-			description = "Learn about Lily, and get uptime data!"
-
-			action {
-				respond {
-					embed {
-						thumbnail {
-							url = event.kord.getSelf().avatar?.cdnUrl!!.toUrl()
-						}
-						title = "Info about LilyBot"
-						description = "Lily is a FOSS multi-purpose bot for Discord created by " +
-								"the HyacinthBots organization. " +
-								"Use `/help` for support or `/invite` to get an invite link."
-
-						field {
-							name = "How can I support the continued development of Lily?"
-							value = "Lily is developed primarily by NoComment#6411 and tempest#4510 " +
-									"in our free time. Neither of us have resources to invest in hosting, " +
-									"so financial donations via [Buy Me a Coffee]" +
-									"(https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. Currently, we run" +
-									"lily on a Hetzner cloud server, which we can afford in our current situation. " +
-									"We will also have domain costs for our website.\n\n" +
-									"Contributions of code & documentation are also incredibly appreciated, " +
-									"and you can read our [contributing guide]" +
-									"($HYACINTH_GITHUB/LilyBot/blob/main/CONTRIBUTING.md) " +
-									"or [development guide]" +
-									"($HYACINTH_GITHUB/LilyBot/blob/main/docs/development-guide.md) " +
-									"to get started."
-						}
-						field {
-							name = "Version"
-							// To avoid IntelliJ shouting about build errors, use https://plugins.jetbrains.com/plugin/9407-pebble
-							value =
-								"${BuildInfo.LILY_VERSION} (${BuildInfo.BUILD_ID})"
-							inline = true
-						}
-						field {
-							name = "Up Since"
-							value = "${
-								UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)
-									?.time.toString().split(".")[0]
-								} ${UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)?.date} UTC\n " +
-									"(${UptimeCollection().get()?.onTime?.toDiscord(TimestampType.RelativeTime) ?: "??"})"
-							inline = true
-						}
 						field {
 							name = "Useful links"
 							value =

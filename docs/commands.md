@@ -1,5 +1,11 @@
 ## Slash Commands
 
+### Command name: `about`
+**Description**: Learn about this bot
+
+* Arguments:
+None
+---
 ### Command name: `auto-threading enable`
 **Description**: Automatically create a thread for each message sent in this channel.
 
@@ -233,12 +239,6 @@ None
 ---
 ### Command name: `help`
 **Description**: Get help with using Lily!
-
-* Arguments:
-None
----
-### Command name: `info`
-**Description**: Learn about Lily, and get uptime data!
 
 * Arguments:
 None

@@ -1,16 +1,5 @@
 package org.hyacinthbots.lilybot.extensions.moderation.commands
 
-import com.kotlindiscord.kord.extensions.DISCORD_GREEN
-import com.kotlindiscord.kord.extensions.DISCORD_RED
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChannel
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
 import dev.kord.common.DiscordBitSet
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -23,6 +12,17 @@ import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.ThreadParentChannel
 import dev.kord.core.entity.channel.thread.TextChannelThread
+import dev.kordex.core.DISCORD_GREEN
+import dev.kordex.core.DISCORD_RED
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.application.slash.ephemeralSubCommand
+import dev.kordex.core.commands.converters.impl.defaultingString
+import dev.kordex.core.commands.converters.impl.optionalChannel
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.ephemeralSlashCommand
+import dev.kordex.core.types.EphemeralInteractionContext
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LockedChannelCollection
 import org.hyacinthbots.lilybot.database.entities.LockedChannelData

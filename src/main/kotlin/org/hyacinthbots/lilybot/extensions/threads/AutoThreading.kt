@@ -1,28 +1,5 @@
 package org.hyacinthbots.lilybot.extensions.threads
 
-import com.kotlindiscord.kord.extensions.DISCORD_BLACK
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
-import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalRole
-import com.kotlindiscord.kord.extensions.components.forms.ModalForm
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.PKMessageCreateEvent
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageCreateEvent
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageCreateEvent
-import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
-import com.kotlindiscord.kord.extensions.modules.unsafe.extensions.unsafeSubCommand
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.InitialSlashCommandResponse
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.ackEphemeral
-import com.kotlindiscord.kord.extensions.modules.unsafe.types.respondEphemeral
-import com.kotlindiscord.kord.extensions.utils.delete
-import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.ArchiveDuration
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.MessageType
@@ -44,6 +21,27 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.embed
+import dev.kordex.core.DISCORD_BLACK
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.application.slash.ephemeralSubCommand
+import dev.kordex.core.commands.converters.impl.channel
+import dev.kordex.core.commands.converters.impl.defaultingBoolean
+import dev.kordex.core.commands.converters.impl.optionalRole
+import dev.kordex.core.components.forms.ModalForm
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.ephemeralSlashCommand
+import dev.kordex.core.extensions.event
+import dev.kordex.core.utils.delete
+import dev.kordex.core.utils.respond
+import dev.kordex.modules.dev.unsafe.annotations.UnsafeAPI
+import dev.kordex.modules.dev.unsafe.commands.slash.InitialSlashCommandResponse
+import dev.kordex.modules.dev.unsafe.extensions.unsafeSubCommand
+import dev.kordex.modules.pluralkit.api.PKMessage
+import dev.kordex.modules.pluralkit.events.PKMessageCreateEvent
+import dev.kordex.modules.pluralkit.events.ProxiedMessageCreateEvent
+import dev.kordex.modules.pluralkit.events.UnProxiedMessageCreateEvent
 import kotlinx.datetime.Clock
 import org.hyacinthbots.docgenerator.subCommandAdditionalDocumentation
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
@@ -259,7 +257,7 @@ class AutoThreading : Extension() {
 					var responseContent: String? = null
 					autoThreads.forEach {
 						responseContent += "\n<#${it.channelId}>"
-						if (responseContent!!.length > 4080) {
+						if (responseContent.length > 4080) {
 							responseContent += "(List trimmed.)"
 							return@forEach
 						}

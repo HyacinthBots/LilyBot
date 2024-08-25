@@ -1,16 +1,16 @@
 package org.hyacinthbots.lilybot.extensions.config
 
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.stringChoice
-import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.modules.unsafe.annotations.UnsafeAPI
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.embed
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.application.slash.converters.impl.stringChoice
+import dev.kordex.core.commands.application.slash.ephemeralSubCommand
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.ephemeralSlashCommand
+import dev.kordex.modules.dev.unsafe.annotations.UnsafeAPI
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection

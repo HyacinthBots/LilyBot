@@ -1,19 +1,19 @@
 package org.hyacinthbots.lilybot.extensions.utils.commands
 
-import com.kotlindiscord.kord.extensions.DISCORD_RED
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
-import com.kotlindiscord.kord.extensions.commands.application.slash.publicSubCommand
-import com.kotlindiscord.kord.extensions.commands.converters.impl.int
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
-import com.kotlindiscord.kord.extensions.commands.converters.impl.string
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
-import com.kotlindiscord.kord.extensions.sentry.BreadcrumbType
 import dev.kord.common.entity.Permission
 import dev.kord.rest.builder.message.embed
+import dev.kordex.core.DISCORD_RED
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.application.slash.ephemeralSubCommand
+import dev.kordex.core.commands.application.slash.publicSubCommand
+import dev.kordex.core.commands.converters.impl.int
+import dev.kordex.core.commands.converters.impl.optionalString
+import dev.kordex.core.commands.converters.impl.string
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.publicSlashCommand
+import dev.kordex.core.sentry.BreadcrumbType
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.github
@@ -266,7 +266,7 @@ class Github : Extension() {
 									labels.add(label.name)
 								}
 
-								if (labels.size > 0) {
+								if (labels.isNotEmpty()) {
 									field {
 										name = "Labels:"
 										value = labels.joinToString(", ")

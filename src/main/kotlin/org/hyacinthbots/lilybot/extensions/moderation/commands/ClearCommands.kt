@@ -1,17 +1,5 @@
 package org.hyacinthbots.lilybot.extensions.moderation.commands
 
-import com.kotlindiscord.kord.extensions.DISCORD_BLACK
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
-import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
-import com.kotlindiscord.kord.extensions.commands.converters.impl.int
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalInt
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalUser
-import com.kotlindiscord.kord.extensions.commands.converters.impl.snowflake
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
@@ -20,6 +8,18 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.supplier.EntitySupplyStrategy
+import dev.kordex.core.DISCORD_BLACK
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.application.slash.EphemeralSlashCommandContext
+import dev.kordex.core.commands.application.slash.ephemeralSubCommand
+import dev.kordex.core.commands.converters.impl.int
+import dev.kordex.core.commands.converters.impl.optionalInt
+import dev.kordex.core.commands.converters.impl.optionalUser
+import dev.kordex.core.commands.converters.impl.snowflake
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.ephemeralSlashCommand
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map

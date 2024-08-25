@@ -1,17 +1,5 @@
 package org.hyacinthbots.lilybot.extensions.utils.commands
 
-import com.kotlindiscord.kord.extensions.DISCORD_GREEN
-import com.kotlindiscord.kord.extensions.DISCORD_RED
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.guildFor
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.utils.delete
-import com.kotlindiscord.kord.extensions.utils.permissionsForMember
-import com.kotlindiscord.kord.extensions.utils.respond
 import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -22,6 +10,18 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.rest.builder.message.embed
+import dev.kordex.core.DISCORD_GREEN
+import dev.kordex.core.DISCORD_RED
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.guildFor
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.commands.application.slash.ephemeralSubCommand
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.ephemeralSlashCommand
+import dev.kordex.core.extensions.event
+import dev.kordex.core.utils.delete
+import dev.kordex.core.utils.permissionsForMember
+import dev.kordex.core.utils.respond
 import kotlinx.coroutines.delay
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions

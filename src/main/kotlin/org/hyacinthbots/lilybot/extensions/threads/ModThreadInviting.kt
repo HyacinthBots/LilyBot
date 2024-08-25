@@ -1,12 +1,12 @@
 package org.hyacinthbots.lilybot.extensions.threads
 
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
 import dev.kord.core.supplier.EntitySupplyStrategy
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.event
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.utils.canPingRole
