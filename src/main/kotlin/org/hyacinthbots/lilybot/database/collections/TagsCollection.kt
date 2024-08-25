@@ -1,7 +1,7 @@
 package org.hyacinthbots.lilybot.database.collections
 
-import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
+import dev.kordex.core.koin.KordExKoinComponent
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.TagsData
 import org.koin.core.component.inject

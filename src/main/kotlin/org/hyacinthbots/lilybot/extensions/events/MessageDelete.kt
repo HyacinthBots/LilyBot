@@ -1,12 +1,5 @@
 package org.hyacinthbots.lilybot.extensions.events
 
-import com.kotlindiscord.kord.extensions.DISCORD_PINK
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.api.PKMessage
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.ProxiedMessageDeleteEvent
-import com.kotlindiscord.kord.extensions.modules.extra.pluralkit.events.UnProxiedMessageDeleteEvent
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
@@ -15,6 +8,13 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageBulkDeleteEvent
 import dev.kord.rest.builder.message.create.UserMessageCreateBuilder
 import dev.kord.rest.builder.message.embed
+import dev.kordex.core.DISCORD_PINK
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.event
+import dev.kordex.modules.pluralkit.api.PKMessage
+import dev.kordex.modules.pluralkit.events.ProxiedMessageDeleteEvent
+import dev.kordex.modules.pluralkit.events.UnProxiedMessageDeleteEvent
 import io.ktor.client.request.forms.ChannelProvider
 import io.ktor.util.cio.toByteReadChannel
 import kotlinx.datetime.Clock

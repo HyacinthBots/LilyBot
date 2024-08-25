@@ -17,6 +17,8 @@ plugins {
 group = "org.hyacinthbots.lilybot"
 version = "4.9.0"
 
+val className = "org.hyacinthbots.lilybot.LilyBotKt"
+
 repositories {
 	mavenCentral()
 
@@ -28,6 +30,11 @@ repositories {
 	maven {
 		name = "Sonatype Snapshots"
 		url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+	}
+
+	maven {
+		name = "Kord Extensions (Snapshots)"
+		url = uri("https://snapshots-repo.kordex.dev")
 	}
 
 	maven {
@@ -61,7 +68,7 @@ dependencies {
 }
 
 application {
-	mainClass.set("org.hyacinthbots.lilybot.LilyBotKt")
+	mainClass.set(className)
 }
 
 gitHooks {
@@ -80,9 +87,14 @@ tasks {
 		}
 	}
 
+	java {  // Should match the Kotlin compiler options ideally
+		sourceCompatibility = JavaVersion.toVersion("21")
+		targetCompatibility = JavaVersion.toVersion("21")
+	}
+
 	jar {
 		manifest {
-			attributes("Main-Class" to "org.hyacinthbots.lilybot.LilyBotKt")
+			attributes("Main-Class" to className)
 		}
 	}
 

@@ -1,6 +1,6 @@
 [versions]
 # Plugins
-kotlin = "2.0.20-Beta1"
+kotlin = "2.0.10"
 shadow = "8.1.1"
 detekt = "1.23.6"
 git-hooks = "0.0.2"
@@ -8,19 +8,20 @@ grgit = "5.2.2"
 blossom = "2.1.0"
 
 # Libraries
-kord-extensions = "1.9.0-20240708.200715-4"
+kord-extensions = "2.2.0-20240824.203242-3"
 logging = "7.0.0"
-logback = "1.5.6"
-github-api = "1.322"
+logback = "1.5.7"
+github-api = "1.324"
 kmongo = "5.1.0"
-docgenerator = "0.2.0-SNAPSHOT"
+docgenerator = "0.2.2-SNAPSHOT"
 
 [libraries]
-kord-extensions-core = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
-kord-extensions-phishing = { module = "com.kotlindiscord.kord.extensions:extra-phishing", version.ref = "kord-extensions" }
-kord-extensions-pluralkit = { module = "com.kotlindiscord.kord.extensions:extra-pluralkit", version.ref = "kord-extensions"}
-kord-extensions-unsafe = { module = "com.kotlindiscord.kord.extensions:unsafe", version.ref = "kord-extensions"}
-kord-extensions-welcome = { module = "com.kotlindiscord.kord.extensions:extra-welcome", version.ref = "kord-extensions"}
+kord-extensions-core = { module = "dev.kordex:kord-extensions", version.ref = "kord-extensions" }
+kord-extensions-phishing = { module = "dev.kordex.modules:func-phishing", version.ref = "kord-extensions" }
+kord-extensions-pluralkit = { module = "dev.kordex.modules:pluralkit", version.ref = "kord-extensions"}
+kord-extensions-unsafe = { module = "dev.kordex.modules:dev-unsafe", version.ref = "kord-extensions"}
+kord-extensions-welcome = { module = "dev.kordex.modules:func-welcome", version.ref = "kord-extensions"}
+
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logging = { module = "io.github.oshai:kotlin-logging", version.ref = "logging" }
