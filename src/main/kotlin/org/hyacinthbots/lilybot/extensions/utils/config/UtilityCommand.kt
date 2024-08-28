@@ -58,6 +58,22 @@ suspend fun SlashCommand<*, *, *>.utilityCommand() = ephemeralSubCommand(::Utili
 					"Disabled"
 				}
 			}
+			field {
+				name = "Log Channel updates"
+				value = if (arguments.logChannelUpdates) "Yes" else "No"
+			}
+			field {
+				name = "Log Event updates"
+				value = if (arguments.logEventUpdates) "Yes" else "No"
+			}
+			field {
+				name = "Log Invite updates"
+				value = if (arguments.logInviteUpdates) "Yes" else "No"
+			}
+			field {
+				name = "Log Role updates"
+				value = if (arguments.logRoleUpdates) "Yes" else "No"
+			}
 
 			footer {
 				text = "Configured by ${user.asUserOrNull()?.username}"
@@ -74,7 +90,11 @@ suspend fun SlashCommand<*, *, *>.utilityCommand() = ephemeralSubCommand(::Utili
 		UtilityConfigCollection().setConfig(
 			UtilityConfigData(
 				guild!!.id,
-				arguments.utilityLogChannel?.id
+				arguments.utilityLogChannel?.id,
+				arguments.logChannelUpdates,
+				arguments.logEventUpdates,
+				arguments.logInviteUpdates,
+				arguments.logRoleUpdates
 			)
 		)
 

@@ -31,12 +31,12 @@ import org.hyacinthbots.lilybot.extensions.logging.events.GuildLogging
 import org.hyacinthbots.lilybot.extensions.logging.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.logging.events.MessageDelete
 import org.hyacinthbots.lilybot.extensions.logging.events.MessageEdit
-import org.hyacinthbots.lilybot.extensions.logging.events.ModerationEvents
 import org.hyacinthbots.lilybot.extensions.moderation.commands.ClearCommands
 import org.hyacinthbots.lilybot.extensions.moderation.commands.LockingCommands
 import org.hyacinthbots.lilybot.extensions.moderation.commands.ModUtilities
 import org.hyacinthbots.lilybot.extensions.moderation.commands.ModerationCommands
 import org.hyacinthbots.lilybot.extensions.moderation.commands.Report
+import org.hyacinthbots.lilybot.extensions.moderation.events.ModerationEvents
 import org.hyacinthbots.lilybot.extensions.threads.AutoThreading
 import org.hyacinthbots.lilybot.extensions.threads.ModThreadInviting
 import org.hyacinthbots.lilybot.extensions.threads.ThreadControl
@@ -51,6 +51,7 @@ import org.hyacinthbots.lilybot.extensions.utils.commands.RoleMenu
 import org.hyacinthbots.lilybot.extensions.utils.commands.StartupHooks
 import org.hyacinthbots.lilybot.extensions.utils.commands.StatusPing
 import org.hyacinthbots.lilybot.extensions.utils.commands.Tags
+import org.hyacinthbots.lilybot.extensions.utils.events.UtilityEvents
 import org.hyacinthbots.lilybot.internal.BuildInfo
 import org.hyacinthbots.lilybot.utils.BOT_TOKEN
 import org.hyacinthbots.lilybot.utils.ENVIRONMENT
@@ -191,6 +192,7 @@ suspend fun main() {
 			add(::StatusPing)
 			add(::Tags)
 			add(::ThreadControl)
+			add(::UtilityEvents)
 
 			/*
 			The welcome channel extension allows users to designate a YAML file to create a channel with
