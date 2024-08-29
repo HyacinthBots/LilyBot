@@ -192,7 +192,11 @@ class UtilityEvents : Extension() {
 						formatAvailableTags(oldData?.availableTags?.value),
 						formatAvailableTags(newData.availableTags.value)
 					)
-					oldNewEmbedField("Applied tags Changed", oldAppliedTags.toString(), newAppliedTags.toString())
+					oldNewEmbedField(
+						"Applied tags Changed",
+						oldAppliedTags.joinToString(", "),
+						newAppliedTags.joinToString(", ")
+					)
 					oldNewEmbedField(
 						"Default Reaction Emoji Changed",
 						oldData?.defaultReactionEmoji?.value?.emojiName,
