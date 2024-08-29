@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.utils.config
+package org.hyacinthbots.lilybot.extensions.utility.config
 
 import dev.kordex.core.commands.Arguments
 import dev.kordex.core.commands.converters.impl.defaultingBoolean

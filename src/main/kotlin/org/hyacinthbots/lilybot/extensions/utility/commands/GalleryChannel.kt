@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.utils.commands
+package org.hyacinthbots.lilybot.extensions.utility.commands
 
 import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
@@ -222,7 +222,7 @@ class GalleryChannel : Extension() {
 								// Delete the explanation after 3 seconds. If an exception is thrown, the
 								// message has already been deleted
 								response.delete(2.5.seconds.inWholeMilliseconds)
-							} catch (e: EntityNotFoundException) {
+							} catch (_: EntityNotFoundException) {
 								// The message that we're attempting to delete has already been deleted.
 							}
 						}

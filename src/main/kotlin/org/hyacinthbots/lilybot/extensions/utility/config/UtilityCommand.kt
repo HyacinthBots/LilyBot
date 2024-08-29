@@ -1,10 +1,9 @@
-package org.hyacinthbots.lilybot.extensions.utils.config
+package org.hyacinthbots.lilybot.extensions.utility.config
 
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.TextChannel
-import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.checks.anyGuild
 import dev.kordex.core.checks.hasPermission
@@ -13,6 +12,7 @@ import dev.kordex.core.commands.application.slash.ephemeralSubCommand
 import dev.kordex.core.utils.botHasPermissions
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
+import org.hyacinthbots.lilybot.extensions.config.utils.utilityEmbed
 
 suspend fun SlashCommand<*, *, *>.utilityCommand() = ephemeralSubCommand(::UtilityArgs) {
 	name = "utility"
@@ -48,42 +48,9 @@ suspend fun SlashCommand<*, *, *>.utilityCommand() = ephemeralSubCommand(::Utili
 			}
 		}
 
-		suspend fun EmbedBuilder.utilityEmbed() {
-			title = "Configuration: Utility"
-			field {
-				name = "Utility Log"
-				value = if (arguments.utilityLogChannel != null) {
-					"${arguments.utilityLogChannel!!.mention} ${arguments.utilityLogChannel!!.data.name.value}"
-				} else {
-					"Disabled"
-				}
-			}
-			field {
-				name = "Log Channel updates"
-				value = if (arguments.logChannelUpdates) "Yes" else "No"
-			}
-			field {
-				name = "Log Event updates"
-				value = if (arguments.logEventUpdates) "Yes" else "No"
-			}
-			field {
-				name = "Log Invite updates"
-				value = if (arguments.logInviteUpdates) "Yes" else "No"
-			}
-			field {
-				name = "Log Role updates"
-				value = if (arguments.logRoleUpdates) "Yes" else "No"
-			}
-
-			footer {
-				text = "Configured by ${user.asUserOrNull()?.username}"
-				icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-			}
-		}
-
 		respond {
 			embed {
-				utilityEmbed()
+				utilityEmbed(arguments, user)
 			}
 		}
 
@@ -100,7 +67,7 @@ suspend fun SlashCommand<*, *, *>.utilityCommand() = ephemeralSubCommand(::Utili
 
 		utilityLog?.createMessage {
 			embed {
-				utilityEmbed()
+				utilityEmbed(arguments, user)
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.moderation
+package org.hyacinthbots.lilybot.extensions.moderation.utils
 
 enum class ModerationAction {
 	BAN,

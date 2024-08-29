@@ -4,7 +4,7 @@ import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import org.hyacinthbots.lilybot.extensions.moderation.ModerationAction
+import org.hyacinthbots.lilybot.extensions.moderation.utils.ModerationAction
 
 /**
  * The data for Moderation action.

@@ -5,7 +5,7 @@ import dev.kordex.core.koin.KordExKoinComponent
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.ActionData
 import org.hyacinthbots.lilybot.database.entities.ModerationActionData
-import org.hyacinthbots.lilybot.extensions.moderation.ModerationAction
+import org.hyacinthbots.lilybot.extensions.moderation.utils.ModerationAction
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
 

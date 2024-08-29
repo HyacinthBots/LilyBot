@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.utils.commands
+package org.hyacinthbots.lilybot.extensions.utility.commands
 
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.utils.scheduling.Scheduler

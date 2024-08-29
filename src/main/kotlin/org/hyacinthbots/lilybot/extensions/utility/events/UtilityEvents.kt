@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.utils.events
+package org.hyacinthbots.lilybot.extensions.utility.events
 
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.ForumTag
@@ -123,131 +123,86 @@ class UtilityEvents : Extension() {
 				val oldDenied = oldPerms.getValue(DENIED)
 				val newAllowed = newPerms.getValue(ALLOWED)
 				val newDenied = newPerms.getValue(DENIED)
+				val oldData = event.old?.data
+				val newData = event.channel.data
+				val oldAppliedTags = mutableListOf<String>()
+				newData.appliedTags.value?.forEach { tag ->
+					event.old?.asChannelOrNull()?.data?.availableTags?.value?.filter { it.id == tag }
+						?.get(0)?.name?.let { oldAppliedTags.add(it) }
+				}
+				val newAppliedTags = mutableListOf<String>()
+				newData.appliedTags.value?.forEach { tag ->
+					event.channel.asChannelOrNull()?.data?.availableTags?.value?.filter { it.id == tag }
+						?.get(0)?.name?.let { newAppliedTags.add(it) }
+				}
 
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)?.createEmbed {
 					title = "${writeChannelType(event.channel.type)} Updated"
-					if (event.channel.type != event.old?.type) {
-						field {
-							name = "Type change"
-							value =
-								"Old: ${writeChannelType(event.old?.type)}\nNew: ${writeChannelType(event.channel.type)}"
-						}
-					}
-					if (event.channel.data.name != event.old?.data?.name) {
-						field {
-							name = "Name Change"
-							value = "Old: ${event.old?.data?.name?.value}\nNew: ${event.channel.data.name.value}"
-						}
-					}
-					if (event.channel.data.topic.value != event.old?.data?.topic?.value) {
-						field {
-							name = "Topic changed"
-							value = "Old: ${event.old?.data?.topic?.value}\nNew: ${event.channel.data.topic.value}"
-						}
-					}
-					if (event.channel.data.parentId != event.old?.data?.parentId) {
-						field {
-							name = "Parent Category Changed"
-							value =
-								"Old: ${kord.getChannelOf<Category>(event.old?.data?.parentId.value!!)?.mention}\n" +
-									"New: ${kord.getChannelOf<Category>(event.channel.data.parentId.value!!)?.mention}"
-						}
-					}
+					oldNewEmbedField(
+						"Type Change", writeChannelType(event.old?.type), writeChannelType(event.channel.type)
+					)
+					oldNewEmbedField("Name Change", oldData?.name?.value, newData.name.value)
+					oldNewEmbedField("Topic Changed", oldData?.topic?.value, newData.topic.value)
+					oldNewEmbedField(
+						"Parent Category Change",
+						kord.getChannelOf<Category>(oldData?.parentId.value!!)?.mention,
+						kord.getChannelOf<Category>(newData.parentId.value!!)?.mention
+					)
 					if (event.channel.data.nsfw != event.old?.data?.nsfw) {
 						field {
 							name = "NSFW Setting"
 							value = event.channel.data.nsfw.discordBoolean.toString()
 						}
 					}
-					if (event.channel.data.position != event.old?.data?.position) {
-						field {
-							name = "Position changed"
-							value = "Old: ${event.old?.data?.position.value}\nNew: ${event.channel.data.position.value}"
-						}
-					}
-					if (event.channel.data.rateLimitPerUser != event.old?.data?.rateLimitPerUser) {
-						field {
-							name = "Slowmode time changed"
-							value = "Old: ${event.old?.data?.rateLimitPerUser?.value ?: "0"}\n" +
-								"New: ${event.channel.data.rateLimitPerUser.value ?: "0"}"
-						}
-					}
-					if (event.channel.data.bitrate != event.old?.data?.bitrate) {
-						field {
-							name = "Bitrate changed"
-							value = "Old: ${event.old?.data?.bitrate.value}\nNew: ${event.channel.data.bitrate.value}"
-						}
-					}
-					if (event.channel.data.userLimit != event.old?.data?.userLimit) {
-						field {
-							name = "User limit changed"
-							value = "Old: ${event.old?.data?.userLimit.value ?: "0"}\n" +
-								"New: ${event.channel.data.userLimit.value ?: "0"}"
-						}
-					}
-					if (event.channel.data.rtcRegion != event.old?.data?.rtcRegion) {
-						field {
-							name = "Region changed"
-							value = "Old: ${event.old?.data?.rtcRegion?.value ?: "Automatic"}\n" +
-								"New: ${event.channel.data.rtcRegion.value ?: "Automatic"}"
-						}
-					}
-					if (event.channel.data.videoQualityMode != event.old?.data?.videoQualityMode) {
-						field {
-							name = "Video Quality Changed"
-							value = "Old: ${event.old?.data?.videoQualityMode?.value.afterDot()}\n" +
-								"New: ${event.channel.data.videoQualityMode.value.afterDot()}"
-						}
-					}
-					if (event.channel.data.defaultAutoArchiveDuration != event.old?.data?.defaultAutoArchiveDuration) {
-						field {
-							name = "Default Auto-Archive Duration"
-							value = "Old: ${event.old?.data?.defaultAutoArchiveDuration?.value?.duration}\n" +
-								"New: ${event.channel.data.defaultAutoArchiveDuration.value?.duration}"
-						}
-					}
-					if (event.channel.data.defaultSortOrder != event.old?.data?.defaultSortOrder) {
-						field {
-							name = "Default Sort Changed"
-							value = "Old: ${event.old?.data?.defaultSortOrder?.value.afterDot()}\n" +
-								"New: ${event.channel.data.defaultSortOrder.value.afterDot()}"
-						}
-					}
-					if (event.channel.data.defaultForumLayout != event.old?.data?.defaultForumLayout) {
-						field {
-							name = "Default Layout Changed"
-							value = "Old: ${event.old?.data?.defaultForumLayout?.value.afterDot()}\n" +
-								"New: ${event.channel.data.defaultForumLayout.value.afterDot()}"
-						}
-					}
-					if (event.channel.data.availableTags != event.old?.data?.availableTags) {
-						field {
-							name = "Available Tags Changed"
-							value = "Old: ${formatAvailableTags(event.old?.data?.availableTags?.value)}\n" +
-								"New: ${formatAvailableTags(event.channel.data.availableTags.value)}"
-						}
-					}
-					if (event.channel.data.appliedTags != event.old?.data?.appliedTags) {
-						field {
-							name = "Applied Tags Changed"
-							value = "Old: ${event.old?.data?.appliedTags?.value}\n" +
-								"New: ${event.channel.data.appliedTags.value}"
-						}
-					}
-					if (event.channel.data.defaultReactionEmoji != event.old?.data?.defaultReactionEmoji) {
-						field {
-							name = "Default Reaction Emoji Changed"
-							value = "Old: ${event.old?.data?.defaultReactionEmoji?.value?.emojiName}\n" +
-								"New: ${event.channel.data.defaultReactionEmoji.value?.emojiName}"
-						}
-					}
-					if (event.channel.data.defaultThreadRateLimitPerUser != event.old?.data?.defaultThreadRateLimitPerUser) {
-						field {
-							name = "Default Thread Slowmode Changed"
-							value = "Old: ${event.old?.data?.defaultThreadRateLimitPerUser?.value}\n" +
-								"New: ${event.channel.data.defaultThreadRateLimitPerUser.value}"
-						}
-					}
+					oldNewEmbedField("Position Changed", oldData?.position.value, newData.position.value)
+					oldNewEmbedField(
+						"Slowmode time changed",
+						oldData?.rateLimitPerUser?.value?.toString() ?: "0",
+						newData.rateLimitPerUser.value?.toString() ?: "0"
+					)
+					oldNewEmbedField("Bitrate changed", oldData?.bitrate.value, newData.bitrate.value)
+					oldNewEmbedField("User limit changed", oldData?.userLimit.value ?: 0, newData.userLimit.value ?: 0)
+					oldNewEmbedField(
+						"Region Changed",
+						oldData?.rtcRegion?.value ?: "Automatic",
+						newData.rtcRegion.value ?: "Automatic"
+					)
+					oldNewEmbedField(
+						"Video Quality Changed",
+						oldData?.videoQualityMode?.value.afterDot(),
+						newData.videoQualityMode.value.afterDot()
+					)
+					oldNewEmbedField(
+						"Default Auto-Archive Duration",
+						oldData?.defaultAutoArchiveDuration?.value?.duration.toString(),
+						newData.defaultAutoArchiveDuration.value?.duration.toString()
+					)
+					oldNewEmbedField(
+						"Default Sort Changed",
+						oldData?.defaultSortOrder?.value.afterDot(),
+						newData.defaultSortOrder.value.afterDot()
+					)
+					oldNewEmbedField(
+						"Default Layout Changed",
+						oldData?.defaultForumLayout?.value.afterDot(),
+						newData.defaultForumLayout.value.afterDot()
+					)
+					oldNewEmbedField(
+						"Available tags Changed",
+						formatAvailableTags(oldData?.availableTags?.value),
+						formatAvailableTags(newData.availableTags.value)
+					)
+					oldNewEmbedField("Applied tags Changed", oldAppliedTags.toString(), newAppliedTags.toString())
+					oldNewEmbedField(
+						"Default Reaction Emoji Changed",
+						oldData?.defaultReactionEmoji?.value?.emojiName,
+						newData.defaultReactionEmoji.value?.emojiName
+					)
+					oldNewEmbedField(
+						"Default Thread Slowmode Changed",
+						oldData?.defaultThreadRateLimitPerUser?.value.toString(),
+						newData.defaultThreadRateLimitPerUser.value.toString()
+					)
 					if (oldAllowed != newAllowed) {
 						field {
 							name = "New Allowed Permissions"
@@ -337,42 +292,23 @@ class UtilityEvents : Extension() {
 				// Do not log if event updates are disabled
 				if (UtilityConfigCollection().getConfig(event.guildId)?.logEventUpdates == false) return@action
 				val guild = GuildBehavior(event.guildId, kord)
+				val oldEvent = event.oldEvent
+				val newEvent = event.scheduledEvent
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
 					title = "Scheduled Event Updated!"
 					description = "An event has been updated"
-					if (event.scheduledEvent.name != event.oldEvent?.name) {
-						field {
-							name = "Name changed"
-							value = "Old: ${event.oldEvent?.name}\nNew: ${event.scheduledEvent.name}"
-						}
-					}
-					if (event.scheduledEvent.description != event.oldEvent?.description) {
-						field {
-							name = "Description changed"
-							value = "Old: ${event.oldEvent?.description}\nNew: ${event.scheduledEvent.description}"
-						}
-					}
-					if (event.scheduledEvent.channelId != event.oldEvent?.channelId) {
-						field {
-							name = "Location changed"
-							value =
-								"Old: ${
-									event.oldEvent?.channelId?.let { guild.getChannelOrNull(it) }?.mention
-										?: "Unable to get channel"
-								}\nNew: ${
-									event.scheduledEvent.channelId?.let { guild.getChannelOrNull(it) }?.mention
-										?: "Unable to get channel"
-								}"
-						}
-					}
-					if (event.scheduledEvent.scheduledStartTime != event.oldEvent?.scheduledStartTime) {
-						field {
-							name = "Start time changed"
-							value =
-								"Old: ${event.oldEvent?.scheduledStartTime?.toDiscord(TimestampType.ShortDateTime)}" +
-									"\nNew: ${event.scheduledEvent.scheduledStartTime.toDiscord(TimestampType.ShortDateTime)}"
-						}
-					}
+					oldNewEmbedField("Name Changed", oldEvent?.name, newEvent.name)
+					oldNewEmbedField("Description Changed", oldEvent?.description, newEvent.description)
+					oldNewEmbedField(
+						"Location Changed",
+						oldEvent?.channelId?.let { guild.getChannelOrNull(it) }?.mention ?: "Unable to get channel",
+						newEvent.channelId?.let { guild.getChannelOrNull(it) }?.mention ?: "Unable to get channel"
+					)
+					oldNewEmbedField(
+						"Start time changed",
+						oldEvent?.scheduledStartTime?.toDiscord(TimestampType.ShortDateTime),
+						newEvent.scheduledStartTime.toDiscord(TimestampType.ShortDateTime)
+					)
 					color = DISCORD_YELLOW
 				}
 			}
@@ -521,52 +457,23 @@ class UtilityEvents : Extension() {
 					embed {
 						title = "Updated a Role"
 						description = "A role has been updated"
-						if (event.old?.name != event.role.name) {
-							field {
-								name = "Name changed"
-								value = "Old: ${event.old?.name}\nNew: ${event.role.name}"
-							}
-						}
-						if (event.old?.hoisted != event.role.hoisted) {
-							field {
-								name = "Display separately setting changed"
-								value = "Old: ${event.old?.hoisted}\nNew: ${event.role.hoisted}"
-							}
-						}
-						if (event.old?.mentionable != event.role.mentionable) {
-							field {
-								name = "Mentionable setting changed"
-								value = "Old: ${event.old?.mentionable}\nNew: ${event.role.mentionable}"
-							}
-						}
-						if (event.old?.getPosition() != event.role.getPosition()) {
-							field {
-								name = "Position changed"
-								value = "Old: ${event.old?.getPosition()}\nNew: ${event.role.getPosition()}"
-							}
-						}
-						if (event.old?.icon != event.role.icon) {
-							field {
-								name = "Icon changed"
-								value = "Old: ${event.old?.icon?.cdnUrl?.toUrl() ?: "No icon"}\n" +
-									"New: ${event.role.icon?.cdnUrl?.toUrl() ?: "No icon"}"
-							}
-						}
-						if (event.old?.unicodeEmoji != event.role.unicodeEmoji) {
-							field {
-								name = "Emoji changed"
-								value =
-									"Old: ${event.old?.unicodeEmoji ?: "No emoji"}\nNew:${event.role.unicodeEmoji ?: "No emoji"}"
-							}
-						}
-						if (event.old?.permissions != event.role.permissions) {
-							field {
-								name = "Permissions changed"
-								value = "Old: ${
-									event.old?.permissions?.let { formatPermissionSet(it) } ?: "Unable to get permissions"
-								}\nNew: ${formatPermissionSet(event.role.permissions)}"
-							}
-						}
+						oldNewEmbedField("Name changed", event.old?.name, event.role.name)
+						oldNewEmbedField("Display separately setting changed", event.old?.hoisted, event.role.hoisted)
+						oldNewEmbedField("Mentionable setting changed", event.old?.mentionable, event.role.mentionable)
+						oldNewEmbedField("Position changed", event.old?.getPosition(), event.role.getPosition())
+						oldNewEmbedField(
+							"Icon changed",
+							event.old?.icon?.cdnUrl?.toUrl() ?: "No icon",
+							event.role.icon?.cdnUrl?.toUrl() ?: "No icon"
+						)
+						oldNewEmbedField(
+							"Emoji changed", event.old?.unicodeEmoji ?: "No icon", event.role.unicodeEmoji ?: "No icon"
+						)
+						oldNewEmbedField(
+							"Permissions changed",
+							event.old?.permissions?.let { formatPermissionSet(it) } ?: "Unable to get permissions",
+							formatPermissionSet(event.role.permissions)
+						)
 						color = DISCORD_GREEN
 						timestamp = Clock.System.now()
 					}
@@ -632,6 +539,45 @@ class UtilityEvents : Extension() {
 		// No thread update event because the old object is almost always null, meaning that displaying the changes is
 		// effectively pointless because no original values are available.
 	}
+
+	/**
+	 * Compare two values to see if they've changed and format an embed field indicating the old value versus the new
+	 * value.
+	 *
+	 * @param detailName The title for the embed field, the information on what has changed
+	 * @param oldValue The original value
+	 * @param newValue The new value
+	 * @author NoComment1105
+	 * @since 5.0.0
+	 */
+	private fun EmbedBuilder.oldNewEmbedField(detailName: String, oldValue: String?, newValue: String?) {
+		if (newValue != oldValue) {
+			field {
+				name = detailName
+				value = "Old: $oldValue\nNew: $newValue"
+			}
+		}
+	}
+
+	/**
+	 * A version of [oldNewEmbedField] that takes integers and converts them itself.
+	 *
+	 * @see oldNewEmbedField
+	 * @author NoComment1105
+	 * @since 5.0.0
+	 */
+	private fun EmbedBuilder.oldNewEmbedField(detailName: String, oldValue: Int?, newValue: Int?) =
+		oldNewEmbedField(detailName, oldValue.toString(), newValue.toString())
+
+	/**
+	 * A version of [oldNewEmbedField] that takes booleans and converts them itself.
+	 *
+	 * @see oldNewEmbedField
+	 * @author NoComment1105
+	 * @since 5.0.0
+	 */
+	private fun EmbedBuilder.oldNewEmbedField(detailName: String, oldValue: Boolean?, newValue: Boolean?) =
+		oldNewEmbedField(detailName, oldValue.toString(), newValue.toString())
 
 	/**
 	 * Writes a [ChannelType] into a String to use as a reasonable title.

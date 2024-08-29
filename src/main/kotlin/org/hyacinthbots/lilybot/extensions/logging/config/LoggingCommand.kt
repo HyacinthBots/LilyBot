@@ -5,7 +5,6 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.entity.channel.TextChannel
-import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.checks.anyGuild
 import dev.kordex.core.checks.hasPermission
@@ -18,8 +17,8 @@ import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 import org.hyacinthbots.lilybot.database.entities.PublicMemberLogData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
+import org.hyacinthbots.lilybot.extensions.config.utils.loggingEmbed
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.trimmedContents
 
 @OptIn(UnsafeAPI::class)
 suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingArgs) {
@@ -109,65 +108,6 @@ suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingA
 			}
 		}
 
-		suspend fun EmbedBuilder.loggingEmbed() {
-			title = "Configuration: Logging"
-			field {
-				name = "Message Delete Logs"
-				value = if (arguments.enableMessageDeleteLogs && arguments.messageLogs != null) {
-					arguments.messageLogs!!.mention
-				} else {
-					"Disabled"
-				}
-			}
-			field {
-				name = "Message Edit Logs"
-				value = if (arguments.enableMessageEditLogs && arguments.messageLogs != null) {
-					arguments.messageLogs!!.mention
-				} else {
-					"Disabled"
-				}
-			}
-			field {
-				name = "Member Logs"
-				value = if (arguments.enableMemberLogging && arguments.memberLog != null) {
-					arguments.memberLog!!.mention
-				} else {
-					"Disabled"
-				}
-			}
-
-			field {
-				name = "Public Member logs"
-				value = if (arguments.enablePublicMemberLogging && arguments.publicMemberLog != null) {
-					arguments.publicMemberLog!!.mention
-				} else {
-					"Disabled"
-				}
-			}
-			if (arguments.enableMemberLogging && arguments.publicMemberLog != null) {
-				val config = LoggingConfigCollection().getConfig(guild!!.id)
-				if (config != null) {
-					field {
-						name = "Join Message"
-						value = config.publicMemberLogData?.joinMessage.trimmedContents(256)!!
-					}
-					field {
-						name = "Leave Message"
-						value = config.publicMemberLogData?.leaveMessage.trimmedContents(256)!!
-					}
-					field {
-						name = "Ping on join"
-						value = config.publicMemberLogData?.pingNewUsers.toString()
-					}
-				}
-			}
-
-			footer {
-				text = "Configured by ${user.asUserOrNull()?.username}"
-				icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-			}
-		}
-
 		var publicMemberLogData: PublicMemberLogData? = null
 		if (arguments.enablePublicMemberLogging) {
 			val modalObj = PublicLoggingModal()
@@ -209,9 +149,7 @@ suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingA
 		if (!arguments.enablePublicMemberLogging) {
 			ackEphemeral()
 		}
-		respondEphemeral {
-			embed { loggingEmbed() }
-		}
+		respondEphemeral { embed { loggingEmbed(arguments, guild, user) } }
 
 		val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)
 
@@ -222,10 +160,6 @@ suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingA
 			return@action
 		}
 
-		utilityLog.createMessage {
-			embed {
-				loggingEmbed()
-			}
-		}
+		utilityLog.createMessage { embed { loggingEmbed(arguments, guild, user) } }
 	}
 }
