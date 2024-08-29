@@ -176,7 +176,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  * point the check fails, null is returned. This should be handled with an elvis operator to return the action in the
  * code.
  *
- * @param kord The kord instance so the self of the bot can be gotten if needed
+ * @param kord The kord instance so the self of the bot can be got if needed
  * @param user The target user in the command
  * @param guild The guild the command was run in
  * @param commandName The name of the command. Used for the responses and error message

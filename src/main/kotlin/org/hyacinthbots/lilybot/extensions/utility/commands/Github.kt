@@ -69,10 +69,6 @@ class Github : Extension() {
 					}
 					// Clarify the input is formatted correctly, inform the user if not.
 					if (!repository.contains("/")) {
-						sentry.breadcrumb(BreadcrumbType.Error) {
-							category = "extensions.util.Github.issue.InputCheck"
-							message = "Input missing /"
-						}
 						respond {
 							embed {
 								title = "Make sure your repository input is formatted like this:"
@@ -124,11 +120,6 @@ class Github : Extension() {
 						if (iterator.hasNext()) {
 							issue = iterator.next()
 						} else {
-							sentry.breadcrumb(BreadcrumbType.Error) {
-								category = "extensions.util.Github.issue.getIssue"
-								message = "Unable to find issue"
-							}
-
 							respond {
 								embed {
 									title = "Invalid issue number. Make sure this issue exists!"
@@ -167,10 +158,6 @@ class Github : Extension() {
 									merged = pull.isMerged
 									draft = pull.isDraft
 								} catch (ioException: IOException) {
-									sentry.breadcrumb(BreadcrumbType.Error) {
-										category = "extensions.util.Github.issue.CheckPRStatus"
-										message = "Error initializing PR wtf"
-									}
 									ioException.printStackTrace()
 									title = "Error!"
 									description = "Error occurred initializing Pull Request. How did this happen?"
@@ -295,12 +282,8 @@ class Github : Extension() {
 						}
 						return@action
 					}
-					// Clarify the input is formatted correctly, inform the user if not
+
 					if (!repository.contains("/")) {
-						sentry.breadcrumb(BreadcrumbType.Error) {
-							category = "extensions.util.Github.repository.InputCheck"
-							message = "Input missing /"
-						}
 						respond {
 							embed {
 								title = "Make sure your input is formatted like this:"
@@ -320,10 +303,6 @@ class Github : Extension() {
 							)
 						} else {
 							github.getRepository(repository)
-						}
-						sentry.breadcrumb(BreadcrumbType.Info) {
-							category = "extensions.util.Github.repository.getRepository"
-							message = "Repository found"
 						}
 					} catch (_: IOException) {
 						sentry.breadcrumb(BreadcrumbType.Error) {
@@ -402,15 +381,7 @@ class Github : Extension() {
 						} else {
 							github.getUser(arguments.username)
 						}
-						sentry.breadcrumb(BreadcrumbType.Info) {
-							category = "extensions.util.Github.user.getUser"
-							message = "User found"
-						}
 					} catch (_: IOException) {
-						sentry.breadcrumb(BreadcrumbType.Error) {
-							category = "extensions.util.Github.user.getUser"
-							message = "Unable to find user"
-						}
 						respond {
 							embed {
 								title = "Invalid Username. Make sure this user exists!"

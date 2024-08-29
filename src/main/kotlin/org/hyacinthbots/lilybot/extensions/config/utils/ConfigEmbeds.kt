@@ -1,3 +1,5 @@
+@file:Suppress("DuplicatedCode")
+
 package org.hyacinthbots.lilybot.extensions.config.utils
 
 import dev.kord.core.behavior.GuildBehavior

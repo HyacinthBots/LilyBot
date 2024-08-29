@@ -1,7 +1,7 @@
 /*
 * This code was utilized from [cozy](https://github.com/QuiltMC/cozy-discord) by QuiltMC
-* and hence is subject to the terms of the Mozilla Public License V. 2.0
-* A copy of this license can be found at https://mozilla.org/MPL/2.0/.
+* and hence is subject to the terms of the Mozilla Public Licence V. 2.0
+* A copy of this licence can be found at https://mozilla.org/MPL/2.0/.
 */
 package org.hyacinthbots.lilybot.database.entities
 
