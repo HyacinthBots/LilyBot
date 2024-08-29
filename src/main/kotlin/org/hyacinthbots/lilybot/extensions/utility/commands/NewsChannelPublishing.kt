@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.utils.commands
+package org.hyacinthbots.lilybot.extensions.utility.commands
 
 import dev.kord.common.Locale
 import dev.kord.common.asJavaLocale

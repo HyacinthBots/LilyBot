@@ -17,7 +17,7 @@ import dev.kordex.modules.pluralkit.api.PKMessage
  * @author NoComment1105
  * @since 3.0.0
  */
-suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User?, commandUser: UserBehavior) {
+suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User?, commandUser: UserBehavior?) {
 	field {
 		name = "User:"
 		value = "${targetUser?.username ?: "Unable to get user"}\n${targetUser?.id ?: ""}"
@@ -28,9 +28,11 @@ suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser:
 		value = reason ?: "No reason provided"
 		inline = false
 	}
-	footer {
-		text = "Requested by ${commandUser.asUserOrNull()?.username}"
-		icon = commandUser.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+	if (commandUser != null) {
+		footer {
+			text = "Requested by ${commandUser.asUserOrNull()?.username}"
+			icon = commandUser.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+		}
 	}
 }
 
@@ -49,6 +51,28 @@ fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?, override: Boolean)
 		value = if (dm != null) {
 			"User notified with direct message"
 		} else if (!override) {
+			"DM Notification Disabled"
+		} else {
+			"Failed to notify user with direct message"
+		}
+		inline = false
+	}
+}
+
+/**
+ * This function uses a success variable and checks to see if it succeeded in sending the user a DM.
+ *
+ * @param success Whether the DM was a success or not
+ * @param override Whether the DM was forcefully disabled by the command runner.
+ * @author NoComment1105
+ * @since 5.0.0
+ */
+fun EmbedBuilder.dmNotificationStatusEmbedField(success: Boolean?, override: Boolean?) {
+	field {
+		name = "User Notification:"
+		value = if (success != null && success) {
+			"User notified with direct message"
+		} else if (override != null && !override) {
 			"DM Notification Disabled"
 		} else {
 			"Failed to notify user with direct message"

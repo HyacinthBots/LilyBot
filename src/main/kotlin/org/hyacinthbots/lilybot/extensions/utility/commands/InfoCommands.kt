@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.utils.commands
+package org.hyacinthbots.lilybot.extensions.utility.commands
 
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.embed

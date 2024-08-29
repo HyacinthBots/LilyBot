@@ -24,6 +24,7 @@ import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
+import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
@@ -237,6 +238,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
+				single { ModerationActionCollection() } bind ModerationActionCollection::class
 				single { ModerationConfigCollection() } bind ModerationConfigCollection::class
 				single { NewsChannelPublishingCollection() } bind NewsChannelPublishingCollection::class
 				single { ReminderCollection() } bind ReminderCollection::class
@@ -259,3 +261,12 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 		}
 	}
 }
+
+/**
+ * Takes a value [T], converts it to a string and returns the part after a full-stop/period.
+ * Generally used on class values, i.e. ArchiveDuration.Day to return just "Day"
+ *
+ * @author NoComment1105
+ * @since 5.0.0
+ */
+fun <T : Any> T?.afterDot() = this.toString().substringAfter(".")

@@ -36,20 +36,22 @@ import org.hyacinthbots.lilybot.extensions.moderation.commands.LockingCommands
 import org.hyacinthbots.lilybot.extensions.moderation.commands.ModUtilities
 import org.hyacinthbots.lilybot.extensions.moderation.commands.ModerationCommands
 import org.hyacinthbots.lilybot.extensions.moderation.commands.Report
+import org.hyacinthbots.lilybot.extensions.moderation.events.ModerationEvents
 import org.hyacinthbots.lilybot.extensions.threads.AutoThreading
 import org.hyacinthbots.lilybot.extensions.threads.ModThreadInviting
 import org.hyacinthbots.lilybot.extensions.threads.ThreadControl
-import org.hyacinthbots.lilybot.extensions.utils.commands.GalleryChannel
-import org.hyacinthbots.lilybot.extensions.utils.commands.Github
-import org.hyacinthbots.lilybot.extensions.utils.commands.GuildAnnouncements
-import org.hyacinthbots.lilybot.extensions.utils.commands.InfoCommands
-import org.hyacinthbots.lilybot.extensions.utils.commands.NewsChannelPublishing
-import org.hyacinthbots.lilybot.extensions.utils.commands.PublicUtilities
-import org.hyacinthbots.lilybot.extensions.utils.commands.Reminders
-import org.hyacinthbots.lilybot.extensions.utils.commands.RoleMenu
-import org.hyacinthbots.lilybot.extensions.utils.commands.StartupHooks
-import org.hyacinthbots.lilybot.extensions.utils.commands.StatusPing
-import org.hyacinthbots.lilybot.extensions.utils.commands.Tags
+import org.hyacinthbots.lilybot.extensions.utility.commands.GalleryChannel
+import org.hyacinthbots.lilybot.extensions.utility.commands.Github
+import org.hyacinthbots.lilybot.extensions.utility.commands.GuildAnnouncements
+import org.hyacinthbots.lilybot.extensions.utility.commands.InfoCommands
+import org.hyacinthbots.lilybot.extensions.utility.commands.NewsChannelPublishing
+import org.hyacinthbots.lilybot.extensions.utility.commands.PublicUtilities
+import org.hyacinthbots.lilybot.extensions.utility.commands.Reminders
+import org.hyacinthbots.lilybot.extensions.utility.commands.RoleMenu
+import org.hyacinthbots.lilybot.extensions.utility.commands.StartupHooks
+import org.hyacinthbots.lilybot.extensions.utility.commands.StatusPing
+import org.hyacinthbots.lilybot.extensions.utility.commands.Tags
+import org.hyacinthbots.lilybot.extensions.utility.events.UtilityEvents
 import org.hyacinthbots.lilybot.internal.BuildInfo
 import org.hyacinthbots.lilybot.utils.BOT_TOKEN
 import org.hyacinthbots.lilybot.utils.ENVIRONMENT
@@ -177,6 +179,7 @@ suspend fun main() {
 			add(::MemberLogging)
 			add(::MessageDelete)
 			add(::MessageEdit)
+			add(::ModerationEvents)
 			add(::ModThreadInviting)
 			add(::ModUtilities)
 			add(::ModerationCommands)
@@ -189,6 +192,7 @@ suspend fun main() {
 			add(::StatusPing)
 			add(::Tags)
 			add(::ThreadControl)
+			add(::UtilityEvents)
 
 			/*
 			The welcome channel extension allows users to designate a YAML file to create a channel with

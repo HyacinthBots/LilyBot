@@ -17,7 +17,11 @@ import dev.kordex.core.extensions.event
 import dev.kordex.core.utils.botHasPermissions
 import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
+import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
+import org.hyacinthbots.lilybot.extensions.moderation.utils.ModerationAction
+import org.hyacinthbots.lilybot.utils.baseModerationEmbed
+import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 
@@ -115,6 +119,21 @@ class MemberLogging : Extension() {
 					}
 					timestamp = Clock.System.now()
 					color = DISCORD_RED
+				}
+
+				// Check if the member was kicked, and send a log if they were.
+				val kickData = ModerationActionCollection().getAction(ModerationAction.KICK, event.guildId, event.user.id)
+				if (kickData != null) {
+					val targetUser = event.kord.getUser(kickData.targetUserId)!!
+					val actioner = kickData.data.actioner?.let { event.kord.getUser(it) }!!
+					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.guild)?.createEmbed {
+						title = "Kicked a user"
+						description = "${targetUser.mention} has been kicked"
+						image = kickData.data.imageUrl
+						baseModerationEmbed(kickData.data.reason, targetUser, actioner)
+						dmNotificationStatusEmbedField(kickData.data.dmOutcome != null, kickData.data.dmOutcome)
+						timestamp = Clock.System.now()
+					}
 				}
 
 				if (config != null && config.enablePublicMemberLogs) {

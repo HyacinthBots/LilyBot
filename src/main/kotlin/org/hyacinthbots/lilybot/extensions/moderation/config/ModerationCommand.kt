@@ -4,7 +4,6 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.TextChannel
-import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.checks.anyGuild
 import dev.kordex.core.checks.hasPermission
@@ -14,9 +13,9 @@ import dev.kordex.core.utils.botHasPermissions
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
+import org.hyacinthbots.lilybot.extensions.config.utils.moderationEmbed
 import org.hyacinthbots.lilybot.utils.canPingRole
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.interval
 
 suspend fun SlashCommand<*, *, *>.moderationCommand() =
 		ephemeralSubCommand(::ModerationArgs) {
@@ -92,56 +91,9 @@ suspend fun SlashCommand<*, *, *>.moderationCommand() =
 					}
 				}
 
-				suspend fun EmbedBuilder.moderationEmbed() {
-					title = "Configuration: Moderation"
-					field {
-						name = "Moderators"
-						value = arguments.moderatorRole?.mention ?: "Disabled"
-					}
-					field {
-						name = "Action log"
-						value = arguments.modActionLog?.mention ?: "Disabled"
-					}
-					field {
-						name = "Log publicly"
-						value = when (arguments.logPublicly) {
-							true -> "Enabled"
-							false -> "Disabled"
-							null -> "Disabled"
-						}
-					}
-					field {
-						name = "Quick timeout length"
-						value = arguments.quickTimeoutLength.interval() ?: "No quick timeout length set"
-					}
-					field {
-						name = "Warning Auto-punishments"
-						value = when (arguments.warnAutoPunishments) {
-							true -> "Enabled"
-							false -> "Disabled"
-							null -> "Disabled"
-						}
-					}
-					field {
-						name = "Ban DM Message"
-						value = arguments.banDmMessage ?: "No custom Ban DM message set"
-					}
-					field {
-						name = "Auto-invite Moderator Role"
-						value = when (arguments.autoInviteModeratorRole) {
-							true -> "Enabled"
-							false -> "Disabled"
-							null -> "Disabled"
-						}
-					}
-					footer {
-						text = "Configured by ${user.asUserOrNull()?.username}"
-					}
-				}
-
 				respond {
 					embed {
-						moderationEmbed()
+						moderationEmbed(arguments, user)
 					}
 				}
 
@@ -170,7 +122,7 @@ suspend fun SlashCommand<*, *, *>.moderationCommand() =
 
 				utilityLog.createMessage {
 					embed {
-						moderationEmbed()
+						moderationEmbed(arguments, user)
 					}
 				}
 			}

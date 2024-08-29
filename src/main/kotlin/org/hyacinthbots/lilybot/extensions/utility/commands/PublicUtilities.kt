@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.utils.commands
+package org.hyacinthbots.lilybot.extensions.utility.commands
 
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
@@ -281,7 +281,7 @@ class PublicUtilities : Extension() {
 									}
 								}
 							}
-					} catch (e: KtorRequestException) {
+					} catch (_: KtorRequestException) {
 						// Avoid hard failing on permission error, since the public won't know what it means
 						respond {
 							content = "Error sending message to moderators. Please ask the moderators to check" +

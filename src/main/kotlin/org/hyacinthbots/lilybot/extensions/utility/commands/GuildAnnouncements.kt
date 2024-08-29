@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.utils.commands
+package org.hyacinthbots.lilybot.extensions.utility.commands
 
 import dev.kord.common.Color
 import dev.kord.common.entity.ButtonStyle

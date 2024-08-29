@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.utils.commands
+package org.hyacinthbots.lilybot.extensions.utility.commands
 
 import dev.kord.common.entity.Permission
 import dev.kord.rest.builder.message.embed
@@ -93,7 +93,7 @@ class Github : Extension() {
 						} else {
 							try {
 								github.getRepository(repository)?.getIssue(arguments.issue)
-							} catch (e: GHFileNotFoundException) {
+							} catch (_: GHFileNotFoundException) {
 								respond {
 									embed {
 										title = "Unable to find issue number! Make sure this issue exists"
@@ -102,7 +102,7 @@ class Github : Extension() {
 								return@action
 							}
 						}
-					} catch (e: IOException) {
+					} catch (_: IOException) {
 						val iterator: PagedIterator<GHIssue>? = github.searchIssues()
 							?.q("${arguments.issue} repo:$repository")
 							?.order(GHDirection.DESC)
@@ -112,7 +112,7 @@ class Github : Extension() {
 						// Run a quick check on the iterator, in case the repository owner org/user doesn't exist
 						try {
 							iterator!!.hasNext()
-						} catch (e: GHException) {
+						} catch (_: GHException) {
 							respond {
 								embed {
 									title = "Unable to access repository, make sure this repository exists!"
@@ -140,7 +140,7 @@ class Github : Extension() {
 						val num = issue!!.number
 						try {
 							issue = github.getRepository(repository)?.getIssue(num)
-						} catch (e: GHFileNotFoundException) {
+						} catch (_: GHFileNotFoundException) {
 							respond {
 								embed {
 									title = "Unable to find issue number! Make sure this issue exists"
@@ -245,7 +245,7 @@ class Github : Extension() {
 										inline = false
 									}
 								}
-							} catch (ioException: IOException) {
+							} catch (_: IOException) {
 								field {
 									name = "Author:"
 									value = "Unknown Author"
@@ -325,7 +325,7 @@ class Github : Extension() {
 							category = "extensions.util.Github.repository.getRepository"
 							message = "Repository found"
 						}
-					} catch (exception: IOException) {
+					} catch (_: IOException) {
 						sentry.breadcrumb(BreadcrumbType.Error) {
 							category = "extensions.util.Github.repository.getRepository"
 							message = "Repository not found"
@@ -406,7 +406,7 @@ class Github : Extension() {
 							category = "extensions.util.Github.user.getUser"
 							message = "User found"
 						}
-					} catch (exception: IOException) {
+					} catch (_: IOException) {
 						sentry.breadcrumb(BreadcrumbType.Error) {
 							category = "extensions.util.Github.user.getUser"
 							message = "Unable to find user"
@@ -550,7 +550,7 @@ class Github : Extension() {
 						} else {
 							github.getRepository(arguments.defaultRepo)
 						}
-					} catch (e: IOException) {
+					} catch (_: IOException) {
 						respond {
 							content = "GitHub repository not found! Please make sure this repository exists"
 						}

@@ -7,13 +7,11 @@ import dev.kord.core.behavior.ban
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
-import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.interaction.followup.EphemeralFollowupMessage
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.embed
@@ -55,12 +53,15 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
+import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TemporaryBanCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
+import org.hyacinthbots.lilybot.database.entities.ActionData
 import org.hyacinthbots.lilybot.database.entities.TemporaryBanData
+import org.hyacinthbots.lilybot.database.entities.TimeData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.moderation.utils.ModerationActions
+import org.hyacinthbots.lilybot.extensions.moderation.utils.ModerationAction
 import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
@@ -137,23 +138,23 @@ class ModerationCommands : Extension() {
 							placeholder = "Select action..."
 							maximumChoices = 1 // Prevent selecting multiple options at once
 
-							option(label = "Ban user", ModerationActions.BAN.name) {
+							option("Ban user", ModerationAction.BAN.name) {
 								description = "Ban the user that sent this message"
 							}
 
-							option("Soft-ban", ModerationActions.SOFT_BAN.name) {
+							option("Soft-ban", ModerationAction.SOFT_BAN.name) {
 								description = "Soft-ban the user that sent this message"
 							}
 
-							option("Kick", ModerationActions.KICK.name) {
+							option("Kick", ModerationAction.KICK.name) {
 								description = "Kick the user that sent this message"
 							}
 
-							option("Timeout", ModerationActions.TIMEOUT.name) {
+							option("Timeout", ModerationAction.TIMEOUT.name) {
 								description = "Timeout the user that sent this message"
 							}
 
-							option("Warn", ModerationActions.WARN.name) {
+							option("Warn", ModerationAction.WARN.name) {
 								description = "Warn the user that sent this message"
 							}
 
@@ -169,7 +170,7 @@ class ModerationCommands : Extension() {
 								val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
 
 								when (option) {
-									ModerationActions.BAN.name -> {
+									ModerationAction.BAN.name -> {
 										val dm = sender.dm {
 											embed {
 												title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
@@ -178,6 +179,18 @@ class ModerationCommands : Extension() {
 												color = DISCORD_GREEN
 											}
 										}
+										ModerationActionCollection().addAction(
+											ModerationAction.BAN, guild!!.id, senderId,
+											ActionData(
+												user.id,
+												null,
+												null,
+												"Quick banned $reasonSuffix",
+												dm != null,
+												true,
+												null
+											)
+										)
 
 										sender.ban {
 											reason =
@@ -193,7 +206,7 @@ class ModerationCommands : Extension() {
 															"for sending this message."
 													}
 												}
-											} catch (e: KtorRequestException) {
+											} catch (_: KtorRequestException) {
 												channel.createEmbed {
 													title = "Banned."
 													description = "${sender.mention} user was banned " +
@@ -202,27 +215,13 @@ class ModerationCommands : Extension() {
 											}
 										}
 
-										loggingChannel.createEmbed {
-											title = "Banned a user"
-											description = "${
-												sender.mention
-											} has been banned!"
-											baseModerationEmbed(
-												"Quick banned via moderate menu $reasonSuffix",
-												sender,
-												user
-											)
-											dmNotificationStatusEmbedField(dm, true)
-											timestamp = Clock.System.now()
-										}
-
 										menuMessage?.edit {
 											content = "Banned a user."
 											components { removeAll() }
 										}
 									}
 
-									ModerationActions.SOFT_BAN.name -> {
+									ModerationAction.SOFT_BAN.name -> {
 										val dm = sender.dm {
 											embed {
 												title = "You have been soft-banned from ${guild?.asGuildOrNull()?.name}"
@@ -232,10 +231,27 @@ class ModerationCommands : Extension() {
 											}
 										}
 
+										ModerationActionCollection().addAction(
+											ModerationAction.SOFT_BAN, guild!!.id, senderId,
+											ActionData(
+												user.id,
+												null,
+												null,
+												"Quick banned $reasonSuffix",
+												dm != null,
+												true,
+												null
+											)
+										)
+
 										sender.ban {
 											reason =
 												"Quick soft-banned $reasonSuffix"
 										}
+
+										ModerationActionCollection().shouldIgnoreAction(
+											ModerationAction.SOFT_BAN, guild!!.id, senderId
+										)
 
 										guild!!.unban(senderId, "Quick soft-ban unban")
 
@@ -248,7 +264,7 @@ class ModerationCommands : Extension() {
 															"for sending this message."
 													}
 												}
-											} catch (e: KtorRequestException) {
+											} catch (_: KtorRequestException) {
 												channel.createEmbed {
 													title = "Soft-Banned."
 													description = "${sender.mention} user was soft-banned " +
@@ -257,27 +273,13 @@ class ModerationCommands : Extension() {
 											}
 										}
 
-										loggingChannel.createEmbed {
-											title = "Soft-Banned a user"
-											description = "${
-												sender.mention
-											} has been soft-banned!"
-											baseModerationEmbed(
-												"Quick soft-banned via moderate menu $reasonSuffix",
-												sender,
-												user
-											)
-											dmNotificationStatusEmbedField(dm, true)
-											timestamp = Clock.System.now()
-										}
-
 										menuMessage?.edit {
 											content = "Soft-Banned a user."
 											components { removeAll() }
 										}
 									}
 
-									ModerationActions.KICK.name -> {
+									ModerationAction.KICK.name -> {
 										val dm = sender.dm {
 											embed {
 												title = "You have been kicked from ${guild?.asGuildOrNull()?.name}"
@@ -296,7 +298,7 @@ class ModerationCommands : Extension() {
 															"for sending this message."
 													}
 												}
-											} catch (e: KtorRequestException) {
+											} catch (_: KtorRequestException) {
 												channel.createEmbed {
 													title = "Kicked."
 													description = "${sender.mention} user was kicked " +
@@ -305,19 +307,18 @@ class ModerationCommands : Extension() {
 											}
 										}
 
-										loggingChannel.createEmbed {
-											title = "Kicked a user"
-											description = "${
-												sender.mention
-											} has been kicked!"
-											baseModerationEmbed(
+										ModerationActionCollection().addAction(
+											ModerationAction.KICK, guild!!.id, senderId,
+											ActionData(
+												user.id,
+												null,
+												null,
 												"Quick kicked via moderate menu $reasonSuffix",
-												sender,
-												user
+												dm != null,
+												true,
+												null
 											)
-											dmNotificationStatusEmbedField(dm, true)
-											timestamp = Clock.System.now()
-										}
+										)
 
 										menuMessage?.edit {
 											content = "Kicked a user."
@@ -325,7 +326,7 @@ class ModerationCommands : Extension() {
 										}
 									}
 
-									ModerationActions.TIMEOUT.name -> {
+									ModerationAction.TIMEOUT.name -> {
 										val timeoutTime =
 											ModerationConfigCollection().getConfig(guild!!.id)?.quickTimeoutLength
 										if (timeoutTime == null) {
@@ -356,7 +357,7 @@ class ModerationCommands : Extension() {
 															"${timeoutTime.interval()} for sending this message."
 													}
 												}
-											} catch (e: KtorRequestException) {
+											} catch (_: KtorRequestException) {
 												channel.createEmbed {
 													title = "Timed-out."
 													description = "${sender.mention} user was timed-out for " +
@@ -365,24 +366,18 @@ class ModerationCommands : Extension() {
 											}
 										}
 
-										loggingChannel.createEmbed {
-											title = "Timed-out a user"
-											description = "${
-												sender.mention
-											} has be timed-out!"
-											baseModerationEmbed(
+										ModerationActionCollection().addAction(
+											ModerationAction.TIMEOUT, guild!!.id, senderId,
+											ActionData(
+												user.id,
+												null,
+												TimeData(timeoutTime, null, null, null),
 												"Quick timed-out via moderate menu $reasonSuffix",
-												sender,
-												user
+												dm != null,
+												null,
+												null
 											)
-											dmNotificationStatusEmbedField(dm, true)
-											field {
-												name = "Length"
-												value = modConfig?.quickTimeoutLength.interval()
-													?: "Failed to load timeout length"
-											}
-											timestamp = Clock.System.now()
-										}
+										)
 
 										menuMessage?.edit {
 											content = "Timed-out a user."
@@ -390,7 +385,7 @@ class ModerationCommands : Extension() {
 										}
 									}
 
-									ModerationActions.WARN.name -> {
+									ModerationAction.WARN.name -> {
 										WarnCollection().setWarn(senderId, guild!!.id, false)
 										val strikes = WarnCollection().getWarn(senderId, guild!!.id)?.strikes
 
@@ -454,7 +449,7 @@ class ModerationCommands : Extension() {
 															"for sending this message."
 													}
 												}
-											} catch (e: KtorRequestException) {
+											} catch (_: KtorRequestException) {
 												channel.createEmbed {
 													title = "Warned."
 													description = "${sender.mention} user was warned " +
@@ -505,35 +500,30 @@ class ModerationCommands : Extension() {
 								} else {
 									arguments.reason
 								}
-							}\n${if (arguments.softBan) {
-								"You were soft-banned. You are free to rejoin without the need to be unbanned"
-							} else {
-							    ""
-							}
+							}\n${
+								if (arguments.softBan) {
+									"You were soft-banned. You are free to rejoin without the need to be unbanned"
+								} else {
+									""
+								}
 							}"
 						}
 					}
 				}
-				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-					embed {
-						if (arguments.softBan) {
-							title = "Soft-Banned a User"
-							description = "${arguments.userArgument.mention} has been soft-banned!"
-						} else {
-							title = "Banned a User"
-							description = "${arguments.userArgument.mention} has been banned!"
-						}
-						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						image = arguments.image?.url
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
-						timestamp = Clock.System.now()
-						field {
-							name = "Days of messages deleted:"
-							value = if (arguments.softBan && arguments.messages == 0) "3" else arguments.messages.toString()
-							inline = false
-						}
-					}
-				}
+
+				ModerationActionCollection().addAction(
+					if (arguments.softBan) ModerationAction.SOFT_BAN else ModerationAction.BAN,
+					guild!!.id, arguments.userArgument.id,
+					ActionData(
+						user.id,
+						arguments.messages,
+						null,
+						arguments.reason,
+						dmStatus != null,
+						arguments.dm,
+						arguments.image?.url
+					)
+				)
 
 				if (modConfig?.publicLogging == true) {
 					event.interaction.channel.createEmbed {
@@ -557,10 +547,15 @@ class ModerationCommands : Extension() {
 					}
 				}
 
-				if (arguments.softBan) guild?.unban(arguments.userArgument.id, "User was soft-banned")
+				if (arguments.softBan) {
+					ModerationActionCollection().declareActionToIgnore(
+						ModerationAction.UNBAN, guild?.id!!, arguments.userArgument.id
+					)
+					guild?.unban(arguments.userArgument.id, "User was soft-banned. **SOFT-BAN**")
+				}
 
 				respond {
-					content = if (arguments.softBan) { "Soft-banned " } else { "Banned " } + arguments.userArgument.mention
+					content = if (arguments.softBan) "Soft-banned " else "Banned " + arguments.userArgument.mention
 				}
 			}
 		}
@@ -594,22 +589,19 @@ class ModerationCommands : Extension() {
 							}
 						}
 					}
-					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-						embed {
-							title = "Temporarily banned a user"
-							description =
-								"${arguments.userArgument.mention} has been temporarily banned!"
-							image = arguments.image?.url
-							baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-							dmNotificationStatusEmbedField(dmStatus, arguments.dm)
-							field {
-								name = "Duration:"
-								value =
-									duration.toDiscord(TimestampType.Default) + " (${arguments.duration.interval()})"
-							}
-							timestamp = now
-						}
-					}
+
+					ModerationActionCollection().addAction(
+						ModerationAction.TEMP_BAN, guild!!.id, arguments.userArgument.id,
+						ActionData(
+							user.id,
+							arguments.messages,
+							TimeData(arguments.duration, duration),
+							arguments.reason,
+							dmStatus != null,
+							arguments.dm,
+							arguments.image?.url
+						)
+					)
 
 					if (modConfig?.publicLogging == true) {
 						event.interaction.channel.createEmbed {
@@ -624,7 +616,7 @@ class ModerationCommands : Extension() {
 					)
 
 					guild?.ban(arguments.userArgument.id) {
-						reason = arguments.reason
+						reason = arguments.reason + " **TEMPORARY-BAN**"
 						deleteMessageDuration = DateTimePeriod(days = arguments.messages).toDuration(TimeZone.UTC)
 					}
 
@@ -706,52 +698,22 @@ class ModerationCommands : Extension() {
 			action {
 				val tempBan = TemporaryBanCollection().getUserTempBan(this.getGuild()!!.id, arguments.userArgument.id)
 				if (tempBan == null) {
-					guild?.unban(arguments.userArgument.id)
-					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-						embed {
-							title = "Unbanned a user"
-							description = "${arguments.userArgument.mention} has been unbanned!\n${
-								arguments.userArgument.id
-							} (${arguments.userArgument.username})"
-							field {
-								name = "Reason:"
-								value = arguments.reason
-							}
-							footer {
-								text = user.asUserOrNull()?.username ?: "Unable to get user username"
-								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-							}
-							timestamp = Clock.System.now()
-							color = DISCORD_GREEN
-						}
-					}
+					ModerationActionCollection().addAction(
+						ModerationAction.UNBAN, guild!!.id, arguments.userArgument.id,
+						ActionData(
+							user.id, null, null, arguments.reason, null, null, null
+						)
+					)
+					guild?.unban(arguments.userArgument.id, arguments.reason)
 				} else {
-					guild?.unban(arguments.userArgument.id)
+					ModerationActionCollection().addAction(
+						ModerationAction.UNBAN, guild!!.id, arguments.userArgument.id,
+						ActionData(
+							user.id, null, null, arguments.reason + "**TEMPORARY-BAN", null, null, null
+						)
+					)
+					guild?.unban(arguments.userArgument.id, arguments.reason + "**TEMPORARY-BAN**")
 					TemporaryBanCollection().removeTempBan(guild!!.id, arguments.userArgument.id)
-					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-						embed {
-							title = "Temporary Ban Removed"
-							description = "${arguments.userArgument.mention} has had their temporary ban removed!\n${
-								arguments.userArgument.id
-							} (${arguments.userArgument.username})"
-							field {
-								name = "Reason:"
-								value = arguments.reason
-							}
-							field {
-								name = "Original Action taker:"
-								value = guild?.getMemberOrNull(tempBan.moderatorUserId)?.username
-									?: this@ephemeralSlashCommand.kord.getUser(tempBan.moderatorUserId)?.username
-										?: "Unable to get username"
-							}
-							footer {
-								text = user.asUserOrNull()?.username ?: "Unable to get user username"
-								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-							}
-							timestamp = Clock.System.now()
-							color = DISCORD_GREEN
-						}
-					}
 				}
 				respond {
 					content = "Unbanned user."
@@ -783,16 +745,12 @@ class ModerationCommands : Extension() {
 						}
 					}
 				}
-				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-					embed {
-						title = "Kicked a user"
-						description = "${arguments.userArgument.mention} has been kicked!"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
-						timestamp = Clock.System.now()
-					}
-				}
+				ModerationActionCollection().addAction(
+					ModerationAction.KICK, guild!!.id, arguments.userArgument.id,
+					ActionData(
+						user.id, null, null, arguments.reason, dmStatus != null, arguments.dm, arguments.image?.url
+					)
+				)
 
 				if (modConfig?.publicLogging == true) {
 					event.interaction.channel.createEmbed {
@@ -840,20 +798,19 @@ class ModerationCommands : Extension() {
 					}
 				}
 
-				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-					embed {
-						title = "Timeout"
-						image = arguments.image?.url
-						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
-						timestamp = Clock.System.now()
-						field {
-							name = "Duration:"
-							value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
-							inline = false
-						}
-					}
-				}
+				ModerationActionCollection().addAction(
+					ModerationAction.TIMEOUT, guild!!.id, arguments.userArgument.id,
+					    ActionData(
+						user.id,
+						null,
+						TimeData(durationArg, duration, Clock.System.now(), duration),
+						arguments.reason,
+						dmStatus != null,
+						arguments.dm,
+						arguments.image?.url
+					)
+				)
+
 				if (modConfig?.publicLogging == true) {
 					event.interaction.channel.createEmbed {
 						title = "Timeout"
@@ -898,23 +855,13 @@ class ModerationCommands : Extension() {
 						}
 					}
 				}
-				getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!)?.createMessage {
-					embed {
-						title = "Timeout Removed"
-						dmNotificationStatusEmbedField(dmStatus, arguments.dm)
-						field {
-							name = "User:"
-							value = "${arguments.userArgument.username} \n${arguments.userArgument.id}"
-							inline = false
-						}
-						footer {
-							text = "Requested by ${user.asUserOrNull()?.username}"
-							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-						}
-						timestamp = Clock.System.now()
-						color = DISCORD_BLACK
-					}
-				}
+
+				ModerationActionCollection().addAction(
+					ModerationAction.REMOVE_TIMEOUT, guild!!.id, arguments.userArgument.id,
+					    ActionData(
+						user.id, null, null, null, dmStatus != null, arguments.dm, null
+					)
+				)
 
 				arguments.userArgument.asMemberOrNull(guild!!.id)?.edit {
 					timeoutUntil = null
@@ -1111,26 +1058,20 @@ class ModerationCommands : Extension() {
 				continue
 			}
 
+			ModerationActionCollection().addAction(
+				ModerationAction.UNBAN, guild.id, it.bannedUserId,
+				ActionData(
+					it.moderatorUserId,
+					null,
+					TimeData(null, null, it.startTime, it.endTime),
+					"**temporary-ban-expire**",
+					null,
+					null,
+					null
+				)
+			)
+
 			guild.unban(it.bannedUserId, "Temporary Ban expired")
-			val modChannelId = ModerationConfigCollection().getConfig(guild.id)?.channel
-			if (modChannelId != null) {
-				val modChannel = guild.getChannelOfOrNull<GuildMessageChannel>(modChannelId)
-				modChannel?.createMessage {
-					embed {
-						title = "Temporary ban Completed"
-						description = "${kord.getUser(it.bannedUserId)?.username} has served their temporary ban"
-						field {
-							name = "Initial Ban date:"
-							value = it.startTime.toDiscord(TimestampType.ShortDateTime)
-						}
-						color = DISCORD_GREEN
-						footer {
-							text = "Initial action taker: ${kord.getUser(it.moderatorUserId)?.username}"
-							icon = kord.getUser(it.moderatorUserId)?.avatar?.cdnUrl?.toUrl()
-						}
-					}
-				}
-			}
 			TemporaryBanCollection().removeTempBan(it.guildId, it.bannedUserId)
 		}
 	}

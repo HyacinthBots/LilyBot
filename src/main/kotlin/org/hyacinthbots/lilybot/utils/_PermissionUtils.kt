@@ -131,18 +131,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 
 	val eventChannel = channelFor(event)?.asChannelOrNull() ?: return
 
-	val permissionsSet: MutableSet<String> = mutableSetOf()
-	var count = 0
-	permissions.values.forEach { _ ->
-		permissionsSet.add(
-			permissions.values.toString()
-				.split(",")[count]
-				.split(".")[1]
-				.replace("[", "`")
-				.replace("]", "`")
-		)
-		count++
-	}
+	val permissionsSet: String = formatPermissionSet(permissions)
 
 	/* Use `TextChannel` when the channel is a Text channel */
 	if (eventChannel is TextChannel) {
@@ -267,4 +256,27 @@ suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: Permissi
 	anyGuild()
 	requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 	hasPermission(actionPermission)
+}
+
+/**
+ * Formats [Permissions] into a readable string list, returning "None" if there are no permissions there.
+ *
+ * @param permissions The [Permissions] to format
+ * @return A string containing the permissions
+ * @author NoComment1105
+ * @since 5.0.0
+ */
+fun formatPermissionSet(permissions: Permissions): String {
+	val permissionsSet: MutableSet<String> = mutableSetOf()
+	var count = 0
+	permissions.values.forEach { _ ->
+		permissionsSet.add(
+			permissions.values.toString()
+				.split(",")[count]
+				.split(".")[1]
+				.replace("]", "")
+		)
+		count++
+	}
+	return permissionsSet.toString().replace("[", "").replace("]", "").ifEmpty { "None" }
 }

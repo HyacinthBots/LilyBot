@@ -1,4 +1,4 @@
-package org.hyacinthbots.lilybot.extensions.utils.commands
+package org.hyacinthbots.lilybot.extensions.utility.commands
 
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.getChannelOfOrNull
