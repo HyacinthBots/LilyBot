@@ -2,7 +2,7 @@
 # Plugins
 kotlin = "2.0.10"
 shadow = "8.1.1"
-detekt = "1.23.6"
+detekt = "1.23.7"
 git-hooks = "0.0.2"
 grgit = "5.2.2"
 blossom = "2.1.0"
