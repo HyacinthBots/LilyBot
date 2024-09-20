@@ -50,6 +50,7 @@ suspend fun SlashCommand<*, *, *>.moderationCommand() =
 							null,
 							null,
 							null,
+							null,
 							null
 						)
 					)
@@ -106,6 +107,7 @@ suspend fun SlashCommand<*, *, *>.moderationCommand() =
 						arguments.quickTimeoutLength,
 						arguments.warnAutoPunishments,
 						arguments.logPublicly,
+						arguments.dmDefault,
 						arguments.banDmMessage,
 						arguments.autoInviteModeratorRole
 					)

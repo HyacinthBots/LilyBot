@@ -12,6 +12,10 @@ suspend fun configV7(db: CoroutineDatabase) {
 			ModerationConfigData::autoInviteModeratorRole exists false,
 			setValue(ModerationConfigData::autoInviteModeratorRole, null)
 		)
+		updateMany(
+			ModerationConfigData::dmDefault exists false,
+			setValue(ModerationConfigData::dmDefault, true)
+		)
 	}
 	with(db.getCollection<UtilityConfigData>("utilityConfigData")) {
 		updateMany(

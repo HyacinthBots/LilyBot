@@ -39,6 +39,11 @@ class ModerationArgs : Arguments() {
 		description = "Whether to log moderation publicly or not."
 	}
 
+	val dmDefault by optionalBoolean {
+		name = "dm-default"
+		description = "The default value for whether to DM a user in a ban action or not."
+	}
+
 	val banDmMessage by optionalString {
 		name = "ban-dm-message"
 		description = "A custom message to send to users when they are banned."

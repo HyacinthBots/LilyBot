@@ -76,6 +76,14 @@ suspend fun EmbedBuilder.moderationEmbed(arguments: ModerationArgs, user: UserBe
 		}
 	}
 	field {
+		name = "DM Default"
+		value = when (arguments.dmDefault) {
+			true -> "DM argument will default to true"
+			false -> "DM argument will default to false"
+			null -> "DM argument will default to false"
+		}
+	}
+	field {
 		name = "Ban DM Message"
 		value = arguments.banDmMessage ?: "No custom Ban DM message set"
 	}
