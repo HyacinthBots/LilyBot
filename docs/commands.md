@@ -1,5 +1,11 @@
 ## Slash Commands
 
+### Command name: `about`
+**Description**: Learn about this bot
+
+* Arguments:
+None
+---
 ### Command name: `auto-threading enable`
 **Description**: Automatically create a thread for each message sent in this channel.
 
@@ -36,6 +42,28 @@ None
 
 * **Arguments**:
 	* `channel` - The channel to view the auto-threading settings for. - Channel
+
+---
+### Command name: `auto-threading add-roles`
+**Description**: Add extra to threads in auto-threaded channels
+
+**Additional Information**: This command will add roles to be pinged alongside the default ping role for this auto-threaded channel
+
+**Required Member Permissions**: Manage Channels
+
+* **Arguments**:
+	* `role` - A role to invite to threads in this channel - Optional Role
+
+---
+### Command name: `auto-threading remove-roles`
+**Description**: Remove extra from threads in auto-threaded channels
+
+**Additional Information**: This command will remove roles that have been added to be pinged alongside the default ping role for this auto-threaded channel
+
+**Required Member Permissions**: Manage Channels
+
+* **Arguments**:
+	* `role` - A role to invite to threads in this channel - Optional Role
 
 ---
 ### Command name: `clear count`
@@ -81,21 +109,6 @@ None
 	* `author` - The author of the messages to clear - Optional User
 
 ---
-### Command name: `config moderation`
-**Description**: Configure Lily's moderation system
-
-**Required Member Permissions**: Manage Server
-
-* **Arguments**:
-	* `enable-moderation` - Whether to enable the moderation system - Boolean
-	* `moderator-role` - The role of your moderators, used for pinging in message logs. - Optional Role
-	* `action-log` - The channel used to store moderator actions. - Optional Channel
-	* `quick-timeout-length` - The length of timeouts to use for quick timeouts - Coalescing Optional Duration
-	* `warn-auto-punishments` - Whether to automatically punish users for reach a certain threshold on warns - Optional Boolean
-	* `log-publicly` - Whether to log moderation publicly or not. - Optional Boolean
-	* `ban-dm-message` - A custom message to send to users when they are banned. - Optional String
-
----
 ### Command name: `config logging`
 **Description**: Configure Lily's logging system
 
@@ -109,6 +122,22 @@ None
 	* `message-logs` - The channel for logging message deletions - Optional Channel
 	* `member-log` - The channel for logging members joining and leaving the guild - Optional Channel
 	* `public-member-log` - The channel for the public logging of members joining and leaving the guild - Optional Channel
+
+---
+### Command name: `config moderation`
+**Description**: Configure Lily's moderation system
+
+**Required Member Permissions**: Manage Server
+
+* **Arguments**:
+	* `enable-moderation` - Whether to enable the moderation system - Boolean
+	* `moderator-role` - The role of your moderators, used for pinging in message logs. - Optional Role
+	* `action-log` - The channel used to store moderator actions. - Optional Channel
+	* `quick-timeout-length` - The length of timeouts to use for quick timeouts - Coalescing Optional Duration
+	* `warn-auto-punishments` - Whether to automatically punish users for reach a certain threshold on warns - Optional Boolean
+	* `log-publicly` - Whether to log moderation publicly or not. - Optional Boolean
+	* `ban-dm-message` - A custom message to send to users when they are banned. - Optional String
+	* `auto-invite-moderator-role` - Silently ping moderators to invite them to new threads. - Optional Boolean
 
 ---
 ### Command name: `config utility`
@@ -210,12 +239,6 @@ None
 ---
 ### Command name: `help`
 **Description**: Get help with using Lily!
-
-* Arguments:
-None
----
-### Command name: `info`
-**Description**: Learn about Lily, and get uptime data!
 
 * Arguments:
 None
@@ -322,22 +345,32 @@ None
 	* `user` - Person to ban - User
 	* `delete-message-days` - The number of days worth of messages to delete - Int
 	* `reason` - The reason for the ban - Defaulting String
+	* `soft-ban` - Weather to soft-ban this user (unban them once messages are deleted) - Defaulting Boolean
 	* `dm` - Whether to send a direct message to the user about the ban - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
-### Command name: `soft-ban`
-**Description**: Soft-bans a user.
+### Command name: `temp-ban add`
+**Description**: Temporarily bans a user
 
 **Required Member Permissions**: Ban Members
 
-* Arguments:
-	* `user` - Person to Soft ban - User
-	* `delete-message-days` - The number of days worth of messages to delete - Optional Int/Long
+* **Arguments**:
+	* `user` - Person to ban - User
+	* `delete-message-days` - The number of days worth of messages to delete - Int
+	* `duration` - The duration of the temporary ban. - Coalescing Duration
 	* `reason` - The reason for the ban - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the soft-ban - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the ban - Defaulting Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
+---
+### Command name: `temp-ban view-all`
+**Description**: View all temporary bans for this guild
+
+**Required Member Permissions**: Ban Members
+
+* **Arguments**:
+None
 ---
 ### Command name: `unban`
 **Description**: Unbans a user.

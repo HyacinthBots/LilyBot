@@ -6,11 +6,11 @@
 
 package org.hyacinthbots.lilybot.database.storage
 
-import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import com.kotlindiscord.kord.extensions.storage.Data
-import com.kotlindiscord.kord.extensions.storage.DataAdapter
-import com.kotlindiscord.kord.extensions.storage.StorageUnit
 import com.mongodb.client.model.Filters.and
+import dev.kordex.core.koin.KordExKoinComponent
+import dev.kordex.core.storage.Data
+import dev.kordex.core.storage.DataAdapter
+import dev.kordex.core.storage.StorageUnit
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer

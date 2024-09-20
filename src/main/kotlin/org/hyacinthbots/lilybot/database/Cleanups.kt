@@ -1,15 +1,14 @@
 package org.hyacinthbots.lilybot.database
 
-import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.core.Kord
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.request.KtorRequestException
+import dev.kordex.core.koin.KordExKoinComponent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.Clock
-import mu.KotlinLogging
-import org.hyacinthbots.lilybot.database.Cleanups.cleanupGuildData
-import org.hyacinthbots.lilybot.database.Cleanups.cleanupThreadData
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
+import org.hyacinthbots.lilybot.database.collections.LockedChannelCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
@@ -53,17 +52,19 @@ object Cleanups : KordExKoinComponent {
 	 * @since 3.2.0
 	 */
 	suspend fun cleanupGuildData(kord: Kord) {
-		cleanupsLogger.info("Starting guild cleanup...")
+		cleanupsLogger.info { "Starting guild cleanup..." }
 		val leaveTimeData = guildLeaveTimeCollection.find().toList()
 		var deletedGuildData = 0
+		val now = Clock.System.now()
 
 		leaveTimeData.forEach {
 			// Calculate the time since Lily left the guild.
-			val leaveDuration = Clock.System.now() - it.guildLeaveTime
+			val leaveDuration = now - it.guildLeaveTime
 
 			if (leaveDuration.inWholeDays > 30) {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
 				GithubCollection().removeDefaultRepo(it.guildId)
+				LockedChannelCollection().removeAllLockedChannels(it.guildId)
 				LoggingConfigCollection().clearConfig(it.guildId)
 				ModerationConfigCollection().clearConfig(it.guildId)
 				NewsChannelPublishingCollection().clearAutoPublishingForGuild(it.guildId)
@@ -80,7 +81,7 @@ object Cleanups : KordExKoinComponent {
 			}
 		}
 
-		cleanupsLogger.info("Deleted old data for $deletedGuildData guilds from the database")
+		cleanupsLogger.info { "Deleted old data for $deletedGuildData guilds from the database" }
 	}
 
 	/**
@@ -90,7 +91,7 @@ object Cleanups : KordExKoinComponent {
 	 * @since 3.2.0
 	 */
 	suspend fun cleanupThreadData(kordInstance: Kord) {
-		cleanupsLogger.info("Starting thread cleanup...")
+		cleanupsLogger.info { "Starting thread cleanup..." }
 		val threads = threadDataCollection.find().toList()
 		var deletedThreads = 0
 		for (it in threads) {
@@ -114,6 +115,6 @@ object Cleanups : KordExKoinComponent {
 				continue
 			}
 		}
-		cleanupsLogger.info("Deleted $deletedThreads old threads from the database")
+		cleanupsLogger.info { "Deleted $deletedThreads old threads from the database" }
 	}
 }

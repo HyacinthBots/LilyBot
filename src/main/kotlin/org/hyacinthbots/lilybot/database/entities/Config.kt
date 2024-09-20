@@ -55,7 +55,9 @@ data class ModerationConfigData(
 	val quickTimeoutLength: DateTimePeriod?,
 	val autoPunishOnWarn: Boolean?,
 	val publicLogging: Boolean?,
+	val dmDefault: Boolean?,
 	val banDmMessage: String?,
+	val autoInviteModeratorRole: Boolean?
 )
 
 /**
@@ -69,5 +71,9 @@ data class ModerationConfigData(
 @Serializable
 data class UtilityConfigData(
 	val guildId: Snowflake,
-	val utilityLogChannel: Snowflake?
+	val utilityLogChannel: Snowflake?,
+	val logChannelUpdates: Boolean,
+	val logEventUpdates: Boolean,
+	val logInviteUpdates: Boolean,
+	val logRoleUpdates: Boolean
 )

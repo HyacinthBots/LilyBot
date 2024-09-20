@@ -28,5 +28,6 @@ data class AutoThreadingData(
 	val contentAwareNaming: Boolean,
 	val mention: Boolean,
 	val creationMessage: String?,
-	val addModsAndRole: Boolean
+	val addModsAndRole: Boolean,
+	val extraRoleIds: MutableList<Snowflake>
 )

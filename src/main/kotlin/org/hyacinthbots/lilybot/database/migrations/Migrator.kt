@@ -11,8 +11,8 @@
 
 package org.hyacinthbots.lilybot.database.migrations
 
-import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
-import mu.KotlinLogging
+import dev.kordex.core.koin.KordExKoinComponent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
@@ -24,7 +24,9 @@ import org.hyacinthbots.lilybot.database.migrations.config.configV3
 import org.hyacinthbots.lilybot.database.migrations.config.configV4
 import org.hyacinthbots.lilybot.database.migrations.config.configV5
 import org.hyacinthbots.lilybot.database.migrations.config.configV6
+import org.hyacinthbots.lilybot.database.migrations.config.configV7
 import org.hyacinthbots.lilybot.database.migrations.main.mainV1
+import org.hyacinthbots.lilybot.database.migrations.main.mainV10
 import org.hyacinthbots.lilybot.database.migrations.main.mainV2
 import org.hyacinthbots.lilybot.database.migrations.main.mainV3
 import org.hyacinthbots.lilybot.database.migrations.main.mainV4
@@ -72,6 +74,7 @@ object Migrator : KordExKoinComponent {
 					7 -> ::mainV7
 					8 -> ::mainV8
 					9 -> ::mainV9
+					10 -> ::mainV10
 					else -> break
 				}(db.mainDatabase)
 
@@ -121,6 +124,7 @@ object Migrator : KordExKoinComponent {
 					4 -> ::configV4
 					5 -> ::configV5
 					6 -> ::configV6
+					7 -> ::configV7
 					else -> break
 				}(db.configDatabase)
 
