@@ -17,13 +17,16 @@ class UtilityArgs : Arguments() {
 	val logEventUpdates by defaultingBoolean {
 		name = "log-event-updates"
 		description = "Whether to log changes made to scheduled events in this guild."
+		defaultValue = false
 	}
 	val logInviteUpdates by defaultingBoolean {
 		name = "log-invite-updates"
 		description = "Whether to log changes made to invites in this guild."
+		defaultValue = false
 	}
 	val logRoleUpdates by defaultingBoolean {
 		name = "log-role-updates"
 		description = "Whether to log changes made to roles in this guild."
+		defaultValue = false
 	}
 }
