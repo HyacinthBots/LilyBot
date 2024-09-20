@@ -1,9 +1,5 @@
 package org.hyacinthbots.lilybot.utils
 
-import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.utils.hasPermission
-import com.kotlindiscord.kord.extensions.utils.loadModule
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -11,6 +7,10 @@ import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.RoleBehavior
 import dev.kord.core.entity.Message
 import dev.kord.core.supplier.EntitySupplyStrategy
+import dev.kordex.core.builders.ExtensibleBotBuilder
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.utils.hasPermission
+import dev.kordex.core.utils.loadModule
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.runBlocking
@@ -24,6 +24,7 @@ import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
+import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
@@ -237,6 +238,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
+				single { ModerationActionCollection() } bind ModerationActionCollection::class
 				single { ModerationConfigCollection() } bind ModerationConfigCollection::class
 				single { NewsChannelPublishingCollection() } bind NewsChannelPublishingCollection::class
 				single { ReminderCollection() } bind ReminderCollection::class
@@ -259,3 +261,12 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 		}
 	}
 }
+
+/**
+ * Takes a value [T], converts it to a string and returns the part after a full-stop/period.
+ * Generally used on class values, i.e. ArchiveDuration.Day to return just "Day"
+ *
+ * @author NoComment1105
+ * @since 5.0.0
+ */
+fun <T : Any> T?.afterDot() = this.toString().substringAfter(".")

@@ -1,13 +1,5 @@
 package org.hyacinthbots.lilybot.utils
 
-import com.kotlindiscord.kord.extensions.checks.anyGuild
-import com.kotlindiscord.kord.extensions.checks.channelFor
-import com.kotlindiscord.kord.extensions.checks.hasPermission
-import com.kotlindiscord.kord.extensions.checks.types.CheckContext
-import com.kotlindiscord.kord.extensions.checks.types.CheckContextWithCache
-import com.kotlindiscord.kord.extensions.types.EphemeralInteractionContext
-import com.kotlindiscord.kord.extensions.utils.botHasPermissions
-import com.kotlindiscord.kord.extensions.utils.getTopRole
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.Kord
@@ -20,6 +12,14 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.kordex.core.checks.anyGuild
+import dev.kordex.core.checks.channelFor
+import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.checks.types.CheckContext
+import dev.kordex.core.checks.types.CheckContextWithCache
+import dev.kordex.core.types.EphemeralInteractionContext
+import dev.kordex.core.utils.botHasPermissions
+import dev.kordex.core.utils.getTopRole
 import kotlinx.coroutines.flow.toList
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
@@ -131,18 +131,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 
 	val eventChannel = channelFor(event)?.asChannelOrNull() ?: return
 
-	val permissionsSet: MutableSet<String> = mutableSetOf()
-	var count = 0
-	permissions.values.forEach { _ ->
-		permissionsSet.add(
-			permissions.values.toString()
-				.split(",")[count]
-				.split(".")[1]
-				.replace("[", "`")
-				.replace("]", "`")
-		)
-		count++
-	}
+	val permissionsSet: String = formatPermissionSet(permissions)
 
 	/* Use `TextChannel` when the channel is a Text channel */
 	if (eventChannel is TextChannel) {
@@ -187,7 +176,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  * point the check fails, null is returned. This should be handled with an elvis operator to return the action in the
  * code.
  *
- * @param kord The kord instance so the self of the bot can be gotten if needed
+ * @param kord The kord instance so the self of the bot can be got if needed
  * @param user The target user in the command
  * @param guild The guild the command was run in
  * @param commandName The name of the command. Used for the responses and error message
@@ -267,4 +256,27 @@ suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: Permissi
 	anyGuild()
 	requiredConfigs(ConfigOptions.MODERATION_ENABLED)
 	hasPermission(actionPermission)
+}
+
+/**
+ * Formats [Permissions] into a readable string list, returning "None" if there are no permissions there.
+ *
+ * @param permissions The [Permissions] to format
+ * @return A string containing the permissions
+ * @author NoComment1105
+ * @since 5.0.0
+ */
+fun formatPermissionSet(permissions: Permissions): String {
+	val permissionsSet: MutableSet<String> = mutableSetOf()
+	var count = 0
+	permissions.values.forEach { _ ->
+		permissionsSet.add(
+			permissions.values.toString()
+				.split(",")[count]
+				.split(".")[1]
+				.replace("]", "")
+		)
+		count++
+	}
+	return permissionsSet.toString().replace("[", "").replace("]", "").ifEmpty { "None" }
 }

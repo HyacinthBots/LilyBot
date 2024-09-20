@@ -1,8 +1,8 @@
 package org.hyacinthbots.lilybot.utils
 
-import com.kotlindiscord.kord.extensions.utils.env
-import com.kotlindiscord.kord.extensions.utils.envOrNull
 import dev.kord.common.entity.Snowflake
+import dev.kordex.core.utils.env
+import dev.kordex.core.utils.envOrNull
 
 /** The Bot Token. */
 val BOT_TOKEN = env("TOKEN")

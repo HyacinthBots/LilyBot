@@ -7,14 +7,14 @@
 
 package org.hyacinthbots.lilybot.database.collections
 
-import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kordex.core.koin.KordExKoinComponent
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.WelcomeChannelData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
-import com.kotlindiscord.kord.extensions.modules.extra.welcome.data.WelcomeChannelData as KordExWelcomeChannelData
+import dev.kordex.modules.func.welcome.data.WelcomeChannelData as KordExWelcomeChannelData
 
 /**
  * This class contains the functions for interacting with the [Welcome channel database][WelcomeChannelData]. This class

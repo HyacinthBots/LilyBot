@@ -1,8 +1,8 @@
 package org.hyacinthbots.lilybot.utils
 
-import com.kotlindiscord.kord.extensions.checks.guildFor
-import com.kotlindiscord.kord.extensions.checks.types.CheckContext
 import dev.kord.common.entity.Snowflake
+import dev.kordex.core.checks.guildFor
+import dev.kordex.core.checks.types.CheckContext
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -28,15 +28,29 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 		fail("There are no config options provided in the code. Please inform the developers immediately!")
 	}
 
+	val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
+	if (moderationConfig == null) {
+		fail("Unable to access moderation config for this guild! Please inform a member of staff.")
+		return
+	}
+
+	val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
+	if (loggingConfig == null) {
+		fail("Unable to access logging config for this guild! Please inform a member of staff.")
+		return
+	}
+
+	val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
+	if (utilityConfig == null) {
+		fail("Unable to access logging config for this guild! Please inform a member of staff.")
+		return
+	}
+
 	// Look at the config options and check the presence of the config in the database.
 	for (option in configOptions) {
 		when (option) {
 			ConfigOptions.MODERATION_ENABLED -> {
-				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
-				if (moderationConfig == null) {
-					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
-					break
-				} else if (!moderationConfig.enabled) {
+				if (!moderationConfig.enabled) {
 					fail("Moderation is disabled for this guild!")
 					break
 				} else {
@@ -45,11 +59,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 			}
 
 			ConfigOptions.MODERATOR_ROLE -> {
-				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
-				if (moderationConfig == null) {
-					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
-					break
-				} else if (moderationConfig.role == null) {
+				if (moderationConfig.role == null) {
 					fail("A moderator role has not been set for this guild!")
 					break
 				} else {
@@ -58,11 +68,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 			}
 
 			ConfigOptions.ACTION_LOG -> {
-				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
-				if (moderationConfig == null) {
-					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
-					break
-				} else if (moderationConfig.channel == null) {
+				if (moderationConfig.channel == null) {
 					fail("An action log has not been set for this guild!")
 					break
 				} else {
@@ -71,11 +77,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 			}
 
 			ConfigOptions.LOG_PUBLICLY -> {
-				val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
-				if (moderationConfig == null) {
-					fail("Unable to access moderation config for this guild! Please inform a member of staff.")
-					break
-				} else if (moderationConfig.publicLogging == null) {
+				if (moderationConfig.publicLogging == null) {
 					fail("Public logging has not been enabled for this guild!")
 					break
 				} else {
@@ -84,11 +86,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 			}
 
 			ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED -> {
-				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
-				if (loggingConfig == null) {
-					fail("Unable to access logging config for this guild! Please inform a member of staff.")
-					break
-				} else if (!loggingConfig.enableMessageDeleteLogs) {
+				if (!loggingConfig.enableMessageDeleteLogs) {
 					fail("Message delete logging is disabled for this guild!")
 					break
 				} else {
@@ -97,11 +95,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 			}
 
 			ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED -> {
-				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
-				if (loggingConfig == null) {
-					fail("Unable to access logging config for this guild! Please inform a member of staff.")
-					break
-				} else if (!loggingConfig.enableMessageEditLogs) {
+				if (!loggingConfig.enableMessageEditLogs) {
 					fail("Message edit logging is disabled for this guild!")
 					break
 				} else {
@@ -110,11 +104,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 			}
 
 			ConfigOptions.MESSAGE_LOG -> {
-				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
-				if (loggingConfig == null) {
-					fail("Unable to access logging config for this guild! Please inform a member of staff.")
-					break
-				} else if (loggingConfig.messageChannel == null) {
+				if (loggingConfig.messageChannel == null) {
 					fail("A message log has not been set for this guild!")
 					break
 				} else {
@@ -123,11 +113,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 			}
 
 			ConfigOptions.MEMBER_LOGGING_ENABLED -> {
-				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
-				if (loggingConfig == null) {
-					fail("Unable to access logging config for this guild! Please inform a member of staff.")
-					break
-				} else if (!loggingConfig.enableMemberLogs) {
+				if (!loggingConfig.enableMemberLogs) {
 					fail("Member logging is disabled for this guild!")
 					break
 				} else {
@@ -136,11 +122,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 			}
 
 			ConfigOptions.MEMBER_LOG -> {
-				val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
-				if (loggingConfig == null) {
-					fail("Unable to access logging config for this guild! Please inform a member of staff.")
-					break
-				} else if (loggingConfig.memberLog == null) {
+				if (loggingConfig.memberLog == null) {
 					fail("A member log has not been set for this guild")
 					break
 				} else {
@@ -149,11 +131,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 			}
 
 			ConfigOptions.UTILITY_LOG -> {
-				val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
-				if (utilityConfig == null) {
-					fail("Unable to access utility config for this guild! Please inform a member of staff.")
-					break
-				} else if (utilityConfig.utilityLogChannel == null) {
+				if (utilityConfig.utilityLogChannel == null) {
 					fail("A utility log has not been set for this guild")
 					break
 				} else {
@@ -174,7 +152,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
  */
 suspend inline fun configIsUsable(guildId: Snowflake, option: ConfigOptions): Boolean {
 	when (option) {
-		ConfigOptions.MODERATION_ENABLED -> return ModerationConfigCollection().getConfig(guildId)?.enabled ?: false
+		ConfigOptions.MODERATION_ENABLED -> return ModerationConfigCollection().getConfig(guildId)?.enabled == true
 
 		ConfigOptions.MODERATOR_ROLE -> {
 			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
@@ -192,18 +170,17 @@ suspend inline fun configIsUsable(guildId: Snowflake, option: ConfigOptions): Bo
 		}
 
 		ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED ->
-			return LoggingConfigCollection().getConfig(guildId)?.enableMessageDeleteLogs ?: false
+			return LoggingConfigCollection().getConfig(guildId)?.enableMessageDeleteLogs == true
 
 		ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED ->
-			return LoggingConfigCollection().getConfig(guildId)?.enableMessageEditLogs ?: false
+			return LoggingConfigCollection().getConfig(guildId)?.enableMessageEditLogs == true
 
 		ConfigOptions.MESSAGE_LOG -> {
 			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
 			return loggingConfig.messageChannel != null
 		}
 
-		ConfigOptions.MEMBER_LOGGING_ENABLED -> return LoggingConfigCollection().getConfig(guildId)?.enableMemberLogs
-			?: false
+		ConfigOptions.MEMBER_LOGGING_ENABLED -> return LoggingConfigCollection().getConfig(guildId)?.enableMemberLogs == true
 
 		ConfigOptions.MEMBER_LOG -> {
 			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false

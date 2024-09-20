@@ -1,6 +1,6 @@
 package org.hyacinthbots.lilybot.database.collections
 
-import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
+import dev.kordex.core.koin.KordExKoinComponent
 import kotlinx.datetime.Instant
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.UptimeData
