@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "4.9.0"
+version = "5.0.0"
 
 val className = "org.hyacinthbots.lilybot.LilyBotKt"
 

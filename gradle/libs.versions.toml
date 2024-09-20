@@ -2,7 +2,7 @@
 # Plugins
 kotlin = "2.0.10"
 shadow = "8.1.1"
-detekt = "1.23.6"
+detekt = "1.23.7"
 git-hooks = "0.0.2"
 grgit = "5.2.2"
 blossom = "2.1.0"
@@ -10,8 +10,8 @@ blossom = "2.1.0"
 # Libraries
 kord-extensions = "2.2.0-20240824.203242-3"
 logging = "7.0.0"
-logback = "1.5.7"
-github-api = "1.324"
+logback = "1.5.8"
+github-api = "1.325"
 kmongo = "5.1.0"
 docgenerator = "0.2.2-SNAPSHOT"
 
