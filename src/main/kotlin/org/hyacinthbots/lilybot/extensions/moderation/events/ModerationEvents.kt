@@ -265,6 +265,18 @@ class ModerationEvents : Extension() {
 						}
 					}
 				} else {
+					// FIXME I'm gonna be sick please fix this
+					if (event.member.nickname == event.old?.nickname &&
+						event.member.roleBehaviors == event.old?.roleBehaviors &&
+						(
+						    event.member.data != event.old?.data || event.member.avatar != event.old?.avatar ||
+							event.member.premiumSince != event.old?.premiumSince ||
+							event.member.isPending != event.old?.isPending || event.member.flags != event.old?.flags ||
+							event.member.avatarDecoration != event.old?.avatarDecoration
+						)
+					) {
+							    return@action
+							}
 					val newRoles = mutableListOf<String>()
 					val oldRoles = mutableListOf<String>()
 					event.member.roleBehaviors.forEach { newRoles.add(it.mention) }
@@ -278,12 +290,7 @@ class ModerationEvents : Extension() {
 								value = "Old: ${event.old?.nickname}\nNew: ${event.member.nickname}"
 							}
 						}
-						if (event.member.isOwner() != event.old?.isOwner()) {
-							field {
-								name = "Became server owner"
-							}
-						}
-						if (event.member.roles != event.old?.roles) {
+						if (event.member.roleBehaviors != event.old?.roleBehaviors) {
 							field {
 								name = "New Roles"
 								value = newRoles.joinToString(", ")

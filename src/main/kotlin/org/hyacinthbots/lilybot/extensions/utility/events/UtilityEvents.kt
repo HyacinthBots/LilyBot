@@ -455,6 +455,19 @@ class UtilityEvents : Extension() {
 			action {
 				// Do not log if role updates are disabled
 				if (UtilityConfigCollection().getConfig(event.guildId)?.logRoleUpdates == false) return@action
+				// FIXME this sucks how can i make it not suck
+				@Suppress("ComplexCondition") // Am i surprised? no.
+				if (event.old?.name == event.role.name && event.old?.hoisted == event.role.hoisted &&
+					event.old?.mentionable == event.role.mentionable && event.old?.getPosition() == event.role.getPosition() &&
+					event.old?.icon == event.role.icon && event.old?.unicodeEmoji == event.role.unicodeEmoji &&
+					event.old?.permissions == event.role.permissions && event.old?.color == event.role.color &&
+					(
+					    event.old?.managed != event.role.managed || event.old?.tags != event.role.tags ||
+						event.old?.flags != event.role.flags
+					)
+				) {
+						    return@action
+						}
 				val guild = GuildBehavior(event.guildId, kord)
 				val channel = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
 				channel?.createMessage {
