@@ -473,7 +473,7 @@ class UtilityEvents : Extension() {
 				channel?.createMessage {
 					embed {
 						title = "Updated a Role"
-						description = "A role has been updated"
+						description = event.role.mention + "has been updated"
 						oldNewEmbedField("Name changed", event.old?.name, event.role.name)
 						oldNewEmbedField("Display separately setting changed", event.old?.hoisted, event.role.hoisted)
 						oldNewEmbedField("Mentionable setting changed", event.old?.mentionable, event.role.mentionable)

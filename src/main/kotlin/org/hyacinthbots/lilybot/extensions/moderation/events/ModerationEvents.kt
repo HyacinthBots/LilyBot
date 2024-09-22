@@ -290,7 +290,7 @@ class ModerationEvents : Extension() {
 								value = "Old: ${event.old?.nickname}\nNew: ${event.member.nickname}"
 							}
 						}
-						if (event.member.roleBehaviors != event.old?.roleBehaviors) {
+						if (event.member.roleIds != event.old?.roleIds) {
 							field {
 								name = "New Roles"
 								value = newRoles.joinToString(", ")
