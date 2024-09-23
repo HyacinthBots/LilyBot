@@ -15,6 +15,7 @@ import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
 import dev.kordex.core.utils.timeoutUntil
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.LeftMemberFlagCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -188,6 +189,10 @@ class ModerationEvents : Extension() {
 		event<MemberUpdateEvent> {
 			check { anyGuild() }
 			action {
+				if (LeftMemberFlagCollection().getMemberFromTable(event.guildId, event.member.id) != null) {
+					LeftMemberFlagCollection().removeMemberFromLeft(event.guildId, event.member.id)
+					return@action
+				}
 				// Do not log if the moderation system is disabled
 				if (ModerationConfigCollection().getConfig(event.guildId)?.enabled != true) return@action
 				val channel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.guild)

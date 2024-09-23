@@ -22,6 +22,7 @@ import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
+import org.hyacinthbots.lilybot.database.collections.LeftMemberFlagCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
@@ -236,6 +237,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
 				single { GithubCollection() } bind GithubCollection::class
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
+				single { LeftMemberFlagCollection() } bind LeftMemberFlagCollection::class
 				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
 				single { ModerationActionCollection() } bind ModerationActionCollection::class

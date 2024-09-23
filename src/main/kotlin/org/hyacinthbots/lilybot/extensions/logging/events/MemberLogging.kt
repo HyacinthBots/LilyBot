@@ -16,6 +16,7 @@ import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.event
 import dev.kordex.core.utils.botHasPermissions
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.LeftMemberFlagCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -100,6 +101,7 @@ class MemberLogging : Extension() {
 				failIf { event.user.id == kord.selfId }
 			}
 			action {
+				LeftMemberFlagCollection().addMemberToLeft(event.guildId, event.user.id)
 				val memberLog = getLoggingChannelWithPerms(ConfigOptions.MEMBER_LOG, event.guild)
 				val config = LoggingConfigCollection().getConfig(event.guildId)
 
@@ -156,6 +158,10 @@ class MemberLogging : Extension() {
 						timestamp = Clock.System.now()
 						color = DISCORD_RED
 					}
+				}
+
+				if (LeftMemberFlagCollection().getMemberFromTable(event.guildId, event.user.id) == null) {
+					LeftMemberFlagCollection().removeMemberFromLeft(event.guildId, event.user.id)
 				}
 			}
 		}
