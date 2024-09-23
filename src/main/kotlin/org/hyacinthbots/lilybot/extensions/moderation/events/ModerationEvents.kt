@@ -23,6 +23,7 @@ import org.hyacinthbots.lilybot.extensions.moderation.utils.ModerationAction
 import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
 import org.hyacinthbots.lilybot.utils.interval
 
 class ModerationEvents : Extension() {
@@ -298,12 +299,12 @@ class ModerationEvents : Extension() {
 						if (event.member.roleIds != event.old?.roleIds) {
 							field {
 								name = "New Roles"
-								value = newRoles.joinToString(", ")
+								value = newRoles.joinToString(", ").ifNullOrEmpty { "None" }
 								inline = true
 							}
 							field {
 								name = "Old roles"
-								value = oldRoles.joinToString(", ")
+								value = oldRoles.joinToString(", ").ifNullOrEmpty { "None" }
 								inline = true
 							}
 						}
