@@ -1,9 +1,15 @@
 ## Slash Commands
 
-### Command name: `about`
-**Description**: Learn about this bot
+### Command name: `about copyright`
+**Description**: Library, licencing, and copyright information
 
-* Arguments:
+* **Arguments**:
+None
+---
+### Command name: `about general`
+**Description**: General information
+
+* **Arguments**:
 None
 ---
 ### Command name: `auto-threading enable`
@@ -136,8 +142,10 @@ None
 	* `quick-timeout-length` - The length of timeouts to use for quick timeouts - Coalescing Optional Duration
 	* `warn-auto-punishments` - Whether to automatically punish users for reach a certain threshold on warns - Optional Boolean
 	* `log-publicly` - Whether to log moderation publicly or not. - Optional Boolean
+	* `dm-default` - The default value for whether to DM a user in a ban action or not. - Optional Boolean
 	* `ban-dm-message` - A custom message to send to users when they are banned. - Optional String
 	* `auto-invite-moderator-role` - Silently ping moderators to invite them to new threads. - Optional Boolean
+	* `log-member-role-changes` - Whether to log changes to the roles members have in a guild. - Optional Boolean
 
 ---
 ### Command name: `config utility`
@@ -147,6 +155,10 @@ None
 
 * **Arguments**:
 	* `utility-log` - The channel to log various utility actions too. - Optional Channel
+	* `log-channel-updates` - Whether to log changes made to channels in this guild. - Defaulting Boolean
+	* `log-event-updates` - Whether to log changes made to scheduled events in this guild. - Defaulting Boolean
+	* `log-invite-updates` - Whether to log changes made to invites in this guild. - Defaulting Boolean
+	* `log-role-updates` - Whether to log changes made to roles in this guild. - Defaulting Boolean
 
 ---
 ### Command name: `config clear`
@@ -346,7 +358,7 @@ None
 	* `delete-message-days` - The number of days worth of messages to delete - Int
 	* `reason` - The reason for the ban - Defaulting String
 	* `soft-ban` - Weather to soft-ban this user (unban them once messages are deleted) - Defaulting Boolean
-	* `dm` - Whether to send a direct message to the user about the ban - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the ban - Optional Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -360,7 +372,7 @@ None
 	* `delete-message-days` - The number of days worth of messages to delete - Int
 	* `duration` - The duration of the temporary ban. - Coalescing Duration
 	* `reason` - The reason for the ban - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the ban - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the ban - Optional Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -390,7 +402,7 @@ None
 * Arguments:
 	* `user` - Person to kick - User
 	* `reason` - The reason for the Kick - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the kick - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the kick - Optional Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -403,7 +415,7 @@ None
 	* `user` - Person to timeout - User
 	* `duration` - Duration of timeout - Coalescing Optional Duration
 	* `reason` - Reason for timeout - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the timeout - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the timeout - Optional Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---
@@ -414,7 +426,7 @@ None
 
 * Arguments:
 	* `user` - Person to remove timeout from - User
-	* `dm` - Whether to dm the user about this or not - Defaulting Boolean
+	* `dm` - Whether to dm the user about this or not - Optional Boolean
 
 ---
 ### Command name: `warn`
@@ -425,7 +437,7 @@ None
 * Arguments:
 	* `user` - Person to warn - User
 	* `reason` - Reason for warning - Defaulting String
-	* `dm` - Whether to send a direct message to the user about the warning - Defaulting Boolean
+	* `dm` - Whether to send a direct message to the user about the warning - Optional Boolean
 	* `image` - An image you'd like to provide as extra context for the action - Optional Attachment
 
 ---

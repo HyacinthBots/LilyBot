@@ -53,4 +53,9 @@ class ModerationArgs : Arguments() {
 		name = "auto-invite-moderator-role"
 		description = "Silently ping moderators to invite them to new threads."
 	}
+
+	val logMemberRoleChanges by optionalBoolean {
+		name = "log-member-role-changes"
+		description = "Whether to log changes to the roles members have in a guild."
+	}
 }

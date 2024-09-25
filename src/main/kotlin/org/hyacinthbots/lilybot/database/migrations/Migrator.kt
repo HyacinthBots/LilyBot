@@ -18,24 +18,8 @@ import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
 import org.hyacinthbots.lilybot.database.entities.ConfigMetaData
 import org.hyacinthbots.lilybot.database.entities.MainMetaData
-import org.hyacinthbots.lilybot.database.migrations.config.configV1
-import org.hyacinthbots.lilybot.database.migrations.config.configV2
-import org.hyacinthbots.lilybot.database.migrations.config.configV3
-import org.hyacinthbots.lilybot.database.migrations.config.configV4
-import org.hyacinthbots.lilybot.database.migrations.config.configV5
-import org.hyacinthbots.lilybot.database.migrations.config.configV6
-import org.hyacinthbots.lilybot.database.migrations.config.configV7
-import org.hyacinthbots.lilybot.database.migrations.main.mainV1
-import org.hyacinthbots.lilybot.database.migrations.main.mainV10
-import org.hyacinthbots.lilybot.database.migrations.main.mainV11
-import org.hyacinthbots.lilybot.database.migrations.main.mainV2
-import org.hyacinthbots.lilybot.database.migrations.main.mainV3
-import org.hyacinthbots.lilybot.database.migrations.main.mainV4
-import org.hyacinthbots.lilybot.database.migrations.main.mainV5
-import org.hyacinthbots.lilybot.database.migrations.main.mainV6
-import org.hyacinthbots.lilybot.database.migrations.main.mainV7
-import org.hyacinthbots.lilybot.database.migrations.main.mainV8
-import org.hyacinthbots.lilybot.database.migrations.main.mainV9
+import org.hyacinthbots.lilybot.database.migrations.config.*
+import org.hyacinthbots.lilybot.database.migrations.main.*
 import org.koin.core.component.inject
 
 object Migrator : KordExKoinComponent {
@@ -127,6 +111,7 @@ object Migrator : KordExKoinComponent {
 					5 -> ::configV5
 					6 -> ::configV6
 					7 -> ::configV7
+					8 -> ::configV8
 					else -> break
 				}(db.configDatabase)
 

@@ -194,8 +194,8 @@ class ModerationEvents : Extension() {
 					LeftMemberFlagCollection().removeMemberFromLeft(event.guildId, event.member.id)
 					return@action
 				}
-				// Do not log if the moderation system is disabled
-				if (ModerationConfigCollection().getConfig(event.guildId)?.enabled != true) return@action
+				// Do not log if member role changes is not true
+				if (ModerationConfigCollection().getConfig(event.guildId)?.logMemberRoleChanges != true) return@action
 				val channel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.guild)
 				if (event.old?.timeoutUntil != event.member.timeoutUntil) {
 					var existingAction =

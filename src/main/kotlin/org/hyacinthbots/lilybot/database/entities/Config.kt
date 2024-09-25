@@ -44,6 +44,8 @@ data class LoggingConfigData(
  * @property autoPunishOnWarn Whether to automatically apply punishments for reaching certain warn strike counts
  * @property publicLogging Whether to log moderation actions publicly in the channel the command was run in
  * @property banDmMessage The message to send in a DM to a user when they are banned.
+ * @property autoInviteModeratorRole Whether to automatically add moderators to newly created threads
+ * @property logMemberRoleChanges Whether to log changes to the roles members have in the guild
  * @since 4.0.0
  */
 @Serializable
@@ -57,7 +59,8 @@ data class ModerationConfigData(
 	val publicLogging: Boolean?,
 	val dmDefault: Boolean?,
 	val banDmMessage: String?,
-	val autoInviteModeratorRole: Boolean?
+	val autoInviteModeratorRole: Boolean?,
+	val logMemberRoleChanges: Boolean?
 )
 
 /**

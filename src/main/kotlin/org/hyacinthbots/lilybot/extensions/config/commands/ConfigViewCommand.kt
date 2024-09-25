@@ -86,6 +86,14 @@ suspend fun SlashCommand<*, *, *>.configViewCommand() = ephemeralSubCommand(::Vi
 								null -> "Disabled"
 							}
 						}
+						field {
+							name = "Log member role changes"
+							value = when (config.logMemberRoleChanges) {
+								true -> "Enabled"
+								false -> "Disabled"
+								null -> "Disabled"
+							}
+						}
 						timestamp = Clock.System.now()
 					}
 				}
@@ -158,6 +166,22 @@ suspend fun SlashCommand<*, *, *>.configViewCommand() = ephemeralSubCommand(::Vi
 								"${
 									config.utilityLogChannel?.let { guild!!.getChannelOrNull(it)?.mention } ?: "None"
 								} ${config.utilityLogChannel?.let { guild!!.getChannelOrNull(it)?.name } ?: ""}"
+						}
+						field {
+							name = "Log Channel updates"
+							value = config.logChannelUpdates.toString()
+						}
+						field {
+							name = "Log Event updates"
+							value = config.logEventUpdates.toString()
+						}
+						field {
+							name = "Log Invite updates"
+							value = config.logInviteUpdates.toString()
+						}
+						field {
+							name = "Log Role updates"
+							value = config.logRoleUpdates.toString()
 						}
 						timestamp = Clock.System.now()
 					}

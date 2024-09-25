@@ -95,6 +95,14 @@ suspend fun EmbedBuilder.moderationEmbed(arguments: ModerationArgs, user: UserBe
 			null -> "Disabled"
 		}
 	}
+	field {
+		name = "Log member role changes"
+		value = when (arguments.logMemberRoleChanges) {
+			true -> "Enabled"
+			false -> "Disabled"
+			null -> "Disabled"
+		}
+	}
 	footer {
 		text = "Configured by ${user.asUserOrNull()?.username}"
 	}
