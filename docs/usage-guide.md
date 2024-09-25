@@ -17,11 +17,7 @@ The button will open new tab in your browser, where you can select the server yo
 Click `Authorize`.
 
 If all has gone successfully so far, you should see LilyBot in the sidebar of your server.
-You'll then need to run the `/config set` command, inputting all the necessary values.
-In order to get the `guildid` argument, you will need to have Discord's `Developer Mode` enabled.
-This is located in `User Settings/Advanced/Developer Mode`.
-Once that's enabled, simply right-click on your server's icon in the server list, select `Copy ID`,
-and paste that into the command argument.
+You'll then need to run the `/config xxx` commands, inputting all the necessary values.
 
 # Step 3 - Profit!
 Congrats! You now have the official instance of LilyBot running in your server!
