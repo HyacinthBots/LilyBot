@@ -7,6 +7,8 @@ import dev.kord.rest.request.KtorRequestException
 import dev.kordex.core.koin.KordExKoinComponent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.Clock
+import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
+import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.LockedChannelCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
@@ -63,6 +65,8 @@ object Cleanups : KordExKoinComponent {
 
 			if (leaveDuration.inWholeDays > 30) {
 				// If the bot has been out of the guild for more than 30 days, delete any related data.
+				AutoThreadingCollection().deleteGuildAutoThreads(it.guildId)
+				GalleryChannelCollection().removeAll(it.guildId)
 				GithubCollection().removeDefaultRepo(it.guildId)
 				LockedChannelCollection().removeAllLockedChannels(it.guildId)
 				LoggingConfigCollection().clearConfig(it.guildId)

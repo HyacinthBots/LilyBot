@@ -18,11 +18,13 @@ import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.hyacinthbots.lilybot.database.Database
+import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import org.hyacinthbots.lilybot.database.collections.LeftMemberFlagCollection
+import org.hyacinthbots.lilybot.database.collections.LockedChannelCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
@@ -33,6 +35,7 @@ import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.RoleSubscriptionCollection
 import org.hyacinthbots.lilybot.database.collections.StatusCollection
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
+import org.hyacinthbots.lilybot.database.collections.TemporaryBanCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -233,11 +236,13 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 			}
 
 			loadModule {
+				single { AutoThreadingCollection() } bind AutoThreadingCollection::class
 				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
 				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
 				single { GithubCollection() } bind GithubCollection::class
 				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
 				single { LeftMemberFlagCollection() } bind LeftMemberFlagCollection::class
+				single { LockedChannelCollection() } bind LockedChannelCollection::class
 				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
 				single { MainMetaCollection() } bind MainMetaCollection::class
 				single { ModerationActionCollection() } bind ModerationActionCollection::class
@@ -248,6 +253,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 				single { RoleSubscriptionCollection() } bind RoleSubscriptionCollection::class
 				single { StatusCollection() } bind StatusCollection::class
 				single { TagsCollection() } bind TagsCollection::class
+				single { TemporaryBanCollection() } bind TemporaryBanCollection::class
 				single { ThreadsCollection() } bind ThreadsCollection::class
 				single { UptimeCollection() } bind UptimeCollection::class
 				single { UtilityConfigCollection() } bind UtilityConfigCollection::class
