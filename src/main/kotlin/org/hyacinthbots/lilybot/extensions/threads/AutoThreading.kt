@@ -453,17 +453,17 @@ class AutoThreading : Extension() {
 				anyGuild()
 				failIf {
 					event.pkMessage.sender == kord.selfId ||
-							listOf(
-								MessageType.ChatInputCommand,
-								MessageType.ThreadCreated,
-								MessageType.ThreadStarterMessage
-							).contains(event.message.type) ||
-							listOf(
-								ChannelType.GuildNews,
-								ChannelType.GuildVoice,
-								ChannelType.PublicGuildThread,
-								ChannelType.PublicNewsThread
-							).contains(event.message.getChannelOrNull()?.type)
+						listOf(
+							MessageType.ChatInputCommand,
+							MessageType.ThreadCreated,
+							MessageType.ThreadStarterMessage
+						).contains(event.message.type) ||
+						listOf(
+							ChannelType.GuildNews,
+							ChannelType.GuildVoice,
+							ChannelType.PublicGuildThread,
+							ChannelType.PublicNewsThread
+						).contains(event.message.getChannelOrNull()?.type)
 				}
 			}
 
@@ -477,17 +477,17 @@ class AutoThreading : Extension() {
 				anyGuild()
 				failIf {
 					event.message.author?.id == kord.selfId ||
-							listOf(
-								MessageType.ChatInputCommand,
-								MessageType.ThreadCreated,
-								MessageType.ThreadStarterMessage
-							).contains(event.message.type) ||
-							listOf(
-								ChannelType.GuildNews,
-								ChannelType.GuildVoice,
-								ChannelType.PublicGuildThread,
-								ChannelType.PublicNewsThread
-							).contains(event.message.getChannelOrNull()?.type)
+						listOf(
+							MessageType.ChatInputCommand,
+							MessageType.ThreadCreated,
+							MessageType.ThreadStarterMessage
+						).contains(event.message.type) ||
+						listOf(
+							ChannelType.GuildNews,
+							ChannelType.GuildVoice,
+							ChannelType.PublicGuildThread,
+							ChannelType.PublicNewsThread
+						).contains(event.message.getChannelOrNull()?.type)
 				}
 			}
 
@@ -501,7 +501,7 @@ class AutoThreading : Extension() {
 				anyGuild()
 				failIf {
 					event.channel.ownerId == kord.selfId ||
-							event.channel.member != null
+						event.channel.member != null
 				}
 			}
 
@@ -617,7 +617,9 @@ class AutoThreading : Extension() {
 
 		val authorId: Snowflake = message?.author?.id ?: proxiedMessage?.sender ?: return
 
-		var threadName: String? = event.message.content.trim().split("\n").firstOrNull()?.take(75)
+		var threadName: String? = event.message.content.trim().split("\n").firstOrNull()?.take(75)?.replace(
+			"(<a?)?:\\w+:(\\d{18,19}>)?".toRegex(RegexOption.IGNORE_CASE), ""
+		)
 
 		if (!options.contentAwareNaming || threadName.isNullOrEmpty()) {
 			threadName = "Thread for ${
