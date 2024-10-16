@@ -47,7 +47,7 @@ Lily makes use of the following tools and frameworks.
 This repository is open to contributions by the community. If you plan on contributing, please check our
 [Contributor Guidelines](https://github.com/HyacinthBots/LilyBot/blob/main/CONTRIBUTING.md).
 
-These days, Lily is primarily developed by [NoComment](https://github.com/NoComment1105) and [tempest15](https://github.com/tempest15). To discuss development with us, join the Discord linked above.
+These days, Lily is primarily developed by [NoComment](https://github.com/NoComment1105). To discuss development with them, join the Discord linked above.
 
 ### Contributors
 ![GitHub contributors](https://img.shields.io/github/contributors/HyacinthBots/LilyBot?label=Total%20Contributors)
