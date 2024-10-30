@@ -10,6 +10,7 @@ import dev.kordex.core.checks.hasPermission
 import dev.kordex.core.commands.application.slash.SlashCommand
 import dev.kordex.core.commands.application.slash.ephemeralSubCommand
 import dev.kordex.core.utils.botHasPermissions
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.entities.ModerationConfigData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -19,8 +20,8 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 suspend fun SlashCommand<*, *, *>.moderationCommand() =
 		ephemeralSubCommand(::ModerationArgs) {
-			name = "moderation"
-			description = "Configure Lily's moderation system"
+			name = Translations.Config.Moderation.name
+			description = Translations.Config.Moderation.description
 
 			requirePermission(Permission.ManageGuild)
 
@@ -33,8 +34,7 @@ suspend fun SlashCommand<*, *, *>.moderationCommand() =
 				val moderationConfig = ModerationConfigCollection().getConfig(guild!!.id)
 				if (moderationConfig != null) {
 					respond {
-						content = "You already have a moderation configuration set. " +
-							"Please clear it before attempting to set a new one."
+						content = Translations.Config.configAlreadyExists.translate("moderation")
 					}
 					return@action
 				}
@@ -56,7 +56,7 @@ suspend fun SlashCommand<*, *, *>.moderationCommand() =
 						)
 					)
 					respond {
-						content = "Moderation system disabled."
+						content = Translations.Config.Moderation.systemDisabled.translate()
 					}
 					return@action
 				}
@@ -66,17 +66,14 @@ suspend fun SlashCommand<*, *, *>.moderationCommand() =
 					arguments.moderatorRole == null && arguments.modActionLog != null
 				) {
 					respond {
-						content =
-							"You must set both the moderator role and the action log channel to use the moderation configuration."
+						content = Translations.Config.Moderation.roleAndChannelRequired.translate()
 					}
 					return@action
 				}
 
 				if (!canPingRole(arguments.moderatorRole, guild!!.id, this@moderationCommand.kord)) {
 					respond {
-						content =
-							"I cannot use the role: ${arguments.moderatorRole!!.mention}, because it is not mentionable by " +
-								"regular users. Please enable this in the role settings, or use a different role."
+						content = Translations.Config.Moderation.roleNotPingable.translate(arguments.moderatorRole!!.mention)
 					}
 					return@action
 				}
@@ -86,8 +83,7 @@ suspend fun SlashCommand<*, *, *>.moderationCommand() =
 					modActionLog = guild!!.getChannelOfOrNull(arguments.modActionLog!!.id)
 					if (modActionLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
 						respond {
-							content = "The mod action log you've selected is invalid, or I can't view it. " +
-								"Please attempt to resolve this and try again."
+							content = Translations.Config.invalidChannel.translate("mod-action log")
 						}
 						return@action
 					}
@@ -119,7 +115,7 @@ suspend fun SlashCommand<*, *, *>.moderationCommand() =
 
 				if (utilityLog == null) {
 					respond {
-						content = "Consider setting a utility config to log changes to configurations."
+						content = Translations.Config.considerUtility.translate()
 					}
 					return@action
 				}

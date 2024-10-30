@@ -10,6 +10,7 @@ import dev.kordex.core.commands.application.slash.EphemeralSlashCommandContext
 import dev.kordex.core.commands.application.slash.SlashCommand
 import dev.kordex.core.commands.application.slash.converters.impl.stringChoice
 import dev.kordex.core.commands.application.slash.ephemeralSubCommand
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -18,8 +19,8 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 suspend fun SlashCommand<*, *, *>.configClearCommand() = ephemeralSubCommand(::ClearArgs) {
-	name = "clear"
-	description = "Clear a config type"
+	name = Translations.Config.Clear.name
+	description = Translations.Config.Clear.description
 
 	requirePermission(Permission.ManageGuild)
 
@@ -42,12 +43,12 @@ suspend fun SlashCommand<*, *, *>.configClearCommand() = ephemeralSubCommand(::C
 		respond {
 			embed {
 				title = if (arguments.config == ConfigType.ALL.name) {
-					"All configs cleared"
+					Translations.Config.Clear.all.translate()
 				} else {
-					"Config cleared: ${arguments.config}"
+					Translations.Config.Clear.Embed.title.translate(arguments.config)
 				}
 				footer {
-					text = "Config cleared by ${user.asUserOrNull()?.username}"
+					text = Translations.Config.configuredBy.translate(user.asUserOrNull()?.username)
 					icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 				}
 			}
@@ -64,11 +65,12 @@ suspend fun SlashCommand<*, *, *>.configClearCommand() = ephemeralSubCommand(::C
  * @since 5.0.0
  */
 private suspend fun EphemeralSlashCommandContext<*, *>.clearConfig(type: ConfigType, args: ClearArgs) {
+	val obj = Translations.Config.Clear
 	when (type) {
 		ConfigType.MODERATION -> {
 			ModerationConfigCollection().getConfig(guild!!.id) ?: run {
 				respond {
-					content = "No moderation configuration exists to clear"
+					content = obj.noConfigMod.translate()
 				}
 				return
 			}
@@ -79,7 +81,7 @@ private suspend fun EphemeralSlashCommandContext<*, *>.clearConfig(type: ConfigT
 		ConfigType.LOGGING -> {
 			LoggingConfigCollection().getConfig(guild!!.id) ?: run {
 				respond {
-					content = "No logging configuration exists to clear"
+					content = obj.noConfigLogging.translate()
 				}
 			}
 			logClear(args)
@@ -89,7 +91,7 @@ private suspend fun EphemeralSlashCommandContext<*, *>.clearConfig(type: ConfigT
 		ConfigType.UTILITY -> {
 			UtilityConfigCollection().getConfig(guild!!.id) ?: run {
 				respond {
-					content = "No utility configuration exists to clear"
+					content = obj.noConfigUtility.translate()
 				}
 			}
 			logClear(args)
@@ -118,18 +120,19 @@ suspend fun EphemeralSlashCommandContext<*, *>.logClear(arguments: ClearArgs) {
 
 	if (utilityLog == null) {
 		respond {
-			content = "Consider setting a utility config to log changes to configurations."
+			content = Translations.Config.considerUtility.translate()
 		}
 		return
 	}
 
 	utilityLog.createMessage {
 		embed {
-			title = "Configuration Cleared: ${arguments.config[0]}${
+			title = Translations.Config.Clear.Embed.title.translate(
+			    arguments.config[0] +
 				arguments.config.substring(1, arguments.config.length).lowercase()
-			}"
+			)
 			footer {
-				text = "Config cleared by ${user.asUserOrNull()?.username}"
+				text = Translations.Config.Clear.footer.translate(user.asUserOrNull()?.username)
 				icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 			}
 		}
@@ -137,14 +140,15 @@ suspend fun EphemeralSlashCommandContext<*, *>.logClear(arguments: ClearArgs) {
 }
 
 class ClearArgs : Arguments() {
+	private val choiceObj = Translations.Config.Arguments.Clear.Choice
 	val config by stringChoice {
-		name = "config-type"
-		description = "The type of config to clear"
+		name = Translations.Config.Arguments.Clear.name
+		description = Translations.Config.Arguments.Clear.description
 		choices = mutableMapOf(
-			"moderation" to ConfigType.MODERATION.name,
-			"logging" to ConfigType.LOGGING.name,
-			"utility" to ConfigType.UTILITY.name,
-			"all" to ConfigType.ALL.name
+			choiceObj.moderation to ConfigType.MODERATION.name,
+			choiceObj.logging to ConfigType.LOGGING.name,
+			choiceObj.utility to ConfigType.UTILITY.name,
+			choiceObj.all to ConfigType.ALL.name
 		)
 	}
 }

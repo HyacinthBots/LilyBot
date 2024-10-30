@@ -1,3 +1,4 @@
+import dev.kordex.gradle.plugins.kordex.DataCollection
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -12,6 +13,7 @@ plugins {
 	alias(libs.plugins.git.hooks)
 	alias(libs.plugins.grgit)
 	alias(libs.plugins.blossom)
+	alias(libs.plugins.kord.extensions.plugin)
 }
 
 group = "org.hyacinthbots.lilybot"
@@ -30,6 +32,11 @@ repositories {
 	maven {
 		name = "Sonatype Snapshots"
 		url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+	}
+
+	maven {
+		name = "Kord Extensions (Releases)"
+		url = uri("https://releases-repo.kordex.dev")
 	}
 
 	maven {
@@ -65,6 +72,21 @@ dependencies {
 	implementation(libs.kmongo)
 
 	implementation(libs.docgenerator)
+}
+
+kordEx {
+	addDependencies = false
+	addRepositories = false
+	kordExVersion = libs.versions.kord.extensions
+
+	bot {
+		dataCollection(DataCollection.None)
+	}
+
+	i18n {
+		classPackage = "lilybot.i18n"
+		translationBundle = "lilybot.strings"
+	}
 }
 
 application {

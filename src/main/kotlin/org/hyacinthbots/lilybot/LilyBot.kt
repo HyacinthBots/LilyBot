@@ -9,6 +9,7 @@ import dev.kord.rest.builder.message.actionRow
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.ExtensibleBot
 import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.i18n.SupportedLocales
 import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
 import dev.kordex.data.api.DataCollection
@@ -229,6 +230,11 @@ suspend fun main() {
 // 			sentry {
 // 				enableIfDSN(SENTRY_DSN) // Use the nullable sentry function to allow the bot to be used without a DSN
 // 			}
+		}
+
+		i18n {
+			interactionUserLocaleResolver()
+			applicationCommandLocale(SupportedLocales.ENGLISH, SupportedLocales.GERMAN)
 		}
 
 		docsGenerator {

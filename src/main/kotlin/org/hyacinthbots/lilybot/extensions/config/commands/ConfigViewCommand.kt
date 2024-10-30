@@ -9,6 +9,7 @@ import dev.kordex.core.commands.application.slash.SlashCommand
 import dev.kordex.core.commands.application.slash.converters.impl.stringChoice
 import dev.kordex.core.commands.application.slash.ephemeralSubCommand
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -16,8 +17,8 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.interval
 
 suspend fun SlashCommand<*, *, *>.configViewCommand() = ephemeralSubCommand(::ViewArgs) {
-	name = "view"
-	description = "View the current config that you have set"
+	name = Translations.Config.View.name
+	description = Translations.Config.View.description
 
 	requirePermission(Permission.ManageGuild)
 
@@ -32,67 +33,78 @@ suspend fun SlashCommand<*, *, *>.configViewCommand() = ephemeralSubCommand(::Vi
 				val config = ModerationConfigCollection().getConfig(guild!!.id)
 				if (config == null) {
 					respond {
-						content = "There is no moderation config for this guild"
+						content = Translations.Config.View.noModConfig.translate()
 					}
 					return@action
 				}
 
 				respond {
+					val obj = Translations.Config.Moderation.Embed
 					embed {
-						title = "Current moderation config"
-						description = "This is the current moderation config for this guild"
+						title = Translations.Config.View.CurrentConfig.modTitle.translate()
+						description = Translations.Config.View.CurrentConfig.modDescription.translate()
 						field {
-							name = "Enabled/Disabled"
-							value = if (config.enabled) "Enabled" else "Disabled"
-						}
-						field {
-							name = "Moderators"
-							value = config.role?.let { guild!!.getRoleOrNull(it)?.mention } ?: "Disabled"
-						}
-						field {
-							name = "Action log"
+							name =
+								Translations.Basic.enabled.translate() + "/" + Translations.Basic.disabled.translate()
 							value =
-								config.channel?.let { guild!!.getChannelOrNull(it)?.mention } ?: "Disabled"
+								if (config.enabled) {
+									Translations.Basic.enabled.translate()
+								} else {
+									Translations.Basic.disabled.translate()
+								}
 						}
 						field {
-							name = "Log publicly"
+							name = obj.moderatorsFieldName.translate()
+							value = config.role?.let { guild!!.getRoleOrNull(it)?.mention }
+								?: Translations.Basic.disabled.translate()
+						}
+						field {
+							name = obj.actionLogFieldName.translate()
+							value =
+								config.channel?.let { guild!!.getChannelOrNull(it)?.mention }
+									?: Translations.Basic.disabled.translate()
+						}
+						field {
+							name = obj.logPubliclyFieldName.translate()
 							value = when (config.publicLogging) {
-								true -> "Enabled"
-								false -> "Disabled"
-								null -> "Disabled"
-							}
+								true -> Translations.Basic.enabled
+								false -> Translations.Basic.disabled
+								null -> Translations.Basic.disabled
+							}.translate()
 						}
 						field {
-							name = "Quick timeout length"
-							value = config.quickTimeoutLength.interval() ?: "No quick timeout length set"
+							name = Translations.Config.Moderation.Embed.QuickTimeoutLength.name.translate()
+							value = config.quickTimeoutLength.interval()
+								?: Translations.Config.Moderation.Embed.QuickTimeoutLength.disabled.translate()
 						}
 						field {
-							name = "Warning Auto-punishments"
+							name = obj.warningAutoPunishmentsName.translate()
 							value = when (config.autoPunishOnWarn) {
-								true -> "Enabled"
-								false -> "Disabled"
-								null -> "Disabled"
-							}
+								true -> Translations.Basic.enabled
+								false -> Translations.Basic.disabled
+								null -> Translations.Basic.disabled
+							}.translate()
 						}
 						field {
-							name = "Ban DM Message"
-							value = config.banDmMessage ?: "No custom Ban DM message set"
+							name = Translations.Config.Moderation.Embed.BanDmMessage.name.translate()
+							value = config.banDmMessage
+								?: Translations.Config.Moderation.Embed.BanDmMessage.disabled.translate()
 						}
 						field {
-							name = "Auto-invite Moderator Role"
+							name = obj.autoInviteRoleName.translate()
 							value = when (config.autoInviteModeratorRole) {
-								true -> "Enabled"
-								false -> "Disabled"
-								null -> "Disabled"
-							}
+								true -> Translations.Basic.enabled
+								false -> Translations.Basic.disabled
+								null -> Translations.Basic.disabled
+							}.translate()
 						}
 						field {
-							name = "Log member role changes"
+							name = obj.memberRoleChangesName.translate()
 							value = when (config.logMemberRoleChanges) {
-								true -> "Enabled"
-								false -> "Disabled"
-								null -> "Disabled"
-							}
+								true -> Translations.Basic.enabled
+								false -> Translations.Basic.disabled
+								null -> Translations.Basic.disabled
+							}.translate()
 						}
 						timestamp = Clock.System.now()
 					}
@@ -103,43 +115,50 @@ suspend fun SlashCommand<*, *, *>.configViewCommand() = ephemeralSubCommand(::Vi
 				val config = LoggingConfigCollection().getConfig(guild!!.id)
 				if (config == null) {
 					respond {
-						content = "There is no logging config for this guild"
+						content = Translations.Config.Clear.noConfigLogging.translate()
 					}
 					return@action
 				}
 
 				respond {
+					val obj = Translations.Config.Logging.Embed
 					embed {
-						title = "Current logging config"
-						description = "This is the current logging config for this guild"
+						title = Translations.Config.View.CurrentConfig.loggingTitle.translate()
+						description = Translations.Config.View.CurrentConfig.loggingDescription.translate()
 						field {
-							name = "Message delete logs"
+							name = obj.messageDeleteFieldName.translate()
 							value = if (config.enableMessageDeleteLogs) {
-								"Enabled\n" +
-									"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
-									"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel name"})"
+								"${Translations.Basic.enabled.translate()}\n" +
+									"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention
+										?: Translations.Config.UnableTo.mention.translate()} (" +
+									"${guild!!.getChannelOrNull(config.messageChannel)?.name
+										?: Translations.Config.UnableTo.name.translate()})"
 							} else {
-								"Disabled"
+								Translations.Basic.disabled.translate()
 							}
 						}
 						field {
-							name = "Message edit logs"
+							name = obj.messageEditFieldName.translate()
 							value = if (config.enableMessageEditLogs) {
-								"Enabled\n" +
-									"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention ?: "Unable to get channel mention"} (" +
-									"${guild!!.getChannelOrNull(config.messageChannel)?.name ?: "Unable to get channel mention"})"
+								"${Translations.Basic.enabled.translate()}\n" +
+									"* ${guild!!.getChannelOrNull(config.messageChannel!!)?.mention
+										?: Translations.Config.UnableTo.mention.translate()} (" +
+									"${guild!!.getChannelOrNull(config.messageChannel)?.name
+										?: Translations.Config.UnableTo.name.translate()})"
 							} else {
-								"Disabled"
+								Translations.Basic.disabled.translate()
 							}
 						}
 						field {
-							name = "Member logs"
+							name = obj.memberFieldName.translate()
 							value = if (config.enableMemberLogs) {
-								"Enabled\n" +
-									"* ${guild!!.getChannelOrNull(config.memberLog!!)?.mention ?: "Unable to get channel mention"} (" +
-									"${guild!!.getChannelOrNull(config.memberLog)?.name ?: "Unable to get channel mention."})"
+								"${Translations.Basic.enabled.translate()}\n" +
+									"* ${guild!!.getChannelOrNull(config.memberLog!!)?.mention
+										?: Translations.Config.UnableTo.mention.translate()} (" +
+									"${guild!!.getChannelOrNull(config.memberLog)?.name
+										?: Translations.Config.UnableTo.name.translate()})"
 							} else {
-								"Disabled"
+								Translations.Basic.disabled.translate()
 							}
 						}
 						timestamp = Clock.System.now()
@@ -151,36 +170,38 @@ suspend fun SlashCommand<*, *, *>.configViewCommand() = ephemeralSubCommand(::Vi
 				val config = UtilityConfigCollection().getConfig(guild!!.id)
 				if (config == null) {
 					respond {
-						content = "There is no utility config for this guild"
+						content = Translations.Config.View.noUtilityConfig.translate()
 					}
 					return@action
 				}
 
 				respond {
+					val obj = Translations.Config.Utility.Embed
 					embed {
-						title = "Current utility config"
-						description = "This is the current utility config for this guild"
+						title = Translations.Config.View.CurrentConfig.utilityTitle.translate()
+						description = Translations.Config.View.CurrentConfig.utilityDescription.translate()
 						field {
-							name = "Channel"
+							name = obj.utilityFieldName.translate()
 							value =
 								"${
-									config.utilityLogChannel?.let { guild!!.getChannelOrNull(it)?.mention } ?: "None"
+									config.utilityLogChannel?.let { guild!!.getChannelOrNull(it)?.mention }
+										?: Translations.Basic.none.translate()
 								} ${config.utilityLogChannel?.let { guild!!.getChannelOrNull(it)?.name } ?: ""}"
 						}
 						field {
-							name = "Log Channel updates"
+							name = obj.channelUpdates.translate()
 							value = config.logChannelUpdates.toString()
 						}
 						field {
-							name = "Log Event updates"
+							name = obj.eventUpdates.translate()
 							value = config.logEventUpdates.toString()
 						}
 						field {
-							name = "Log Invite updates"
+							name = obj.inviteUpdates.translate()
 							value = config.logInviteUpdates.toString()
 						}
 						field {
-							name = "Log Role updates"
+							name = obj.roleUpdates.translate()
 							value = config.logRoleUpdates.toString()
 						}
 						timestamp = Clock.System.now()
@@ -193,12 +214,12 @@ suspend fun SlashCommand<*, *, *>.configViewCommand() = ephemeralSubCommand(::Vi
 
 class ViewArgs : Arguments() {
 	val config by stringChoice {
-		name = "config-type"
-		description = "The type of config to clear"
+		name = Translations.Config.Arguments.Clear.name
+		description = Translations.Config.Arguments.Clear.description
 		choices = mutableMapOf(
-			"moderation" to ConfigType.MODERATION.name,
-			"logging" to ConfigType.LOGGING.name,
-			"utility" to ConfigType.UTILITY.name,
+			Translations.Config.Arguments.Clear.Choice.moderation to ConfigType.MODERATION.name,
+			Translations.Config.Arguments.Clear.Choice.logging to ConfigType.LOGGING.name,
+			Translations.Config.Arguments.Clear.Choice.utility to ConfigType.UTILITY.name,
 		)
 	}
 }

@@ -1,7 +1,7 @@
 ## Slash Commands
 
 ### Command name: `about copyright`
-**Description**: Library, licencing, and copyright information
+**Description**: Library, licensing, and copyright information
 
 * **Arguments**:
 None
@@ -724,45 +724,45 @@ None
 None
 ---
 ### Command name: `blocks`
-**Description**: Get a list of the configured blocks
+**Description**: Get a list of the configured blocks.
 
 * Arguments:
-	* `channel` - Channel representing a welcome channel - Channel
+	* `channel` - Message channel representing a Welcome Channel. - Channel
 
 ---
 ### Command name: `welcome-channels delete`
-**Description**: Delete a welcome channel configuration
+**Description**: Delete a Welcome Channel configuration.
 
 * **Arguments**:
-	* `channel` - Channel representing a welcome channel - Channel
+	* `channel` - Message channel representing a Welcome Channel. - Channel
 
 ---
 ### Command name: `welcome-channels get`
-**Description**: Get the url for a welcome channel, if it's configured
+**Description**: Get the url for a configured Welcome Channel.
 
 * **Arguments**:
-	* `channel` - Channel representing a welcome channel - Channel
+	* `channel` - Message channel representing a Welcome Channel. - Channel
 
 ---
 ### Command name: `welcome-channels refresh`
-**Description**: Manually repopulate the given welcome channel
+**Description**: Manually repopulate the given Welcome Channel.
 
 * **Arguments**:
-	* `channel` - Channel representing a welcome channel - Channel
-	* `clear` - Whether to clear the channel before repopulating it - Defaulting Boolean
+	* `channel` - Message channel representing a Welcome Channel. - Channel
+	* `clear` - Whether to clear and repopulate the channel instead of updating it. - Defaulting Boolean
 
 ---
 ### Command name: `welcome-channels set`
-**Description**: Set the URL for a welcome channel, and populate it
+**Description**: Set the URL for a Welcome Channel and populate it.
 
 * **Arguments**:
-	* `channel` - Channel representing a welcome channel - Channel
-	* `url` - Public link to a YAML file used to configure a welcome channel - String
-	* `clear` - Whether to clear the channel before repopulating it - Defaulting Boolean
+	* `channel` - Message channel representing a Welcome Channel. - Channel
+	* `url` - Public link to a Welcome Channel configuration YAML file. - String
+	* `clear` - Whether to clear and repopulate the channel instead of updating it. - Defaulting Boolean
 
 ---
 ### Command name: `url-safety-check`
-**Description**: Check whether a given domain is a known unsafe domain.
+**Description**: Check whether a given domain is a known unsafe domain
 
 * Arguments:
 	* `domain` - Domain to check - String

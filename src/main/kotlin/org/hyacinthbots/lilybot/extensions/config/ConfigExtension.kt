@@ -3,6 +3,7 @@ package org.hyacinthbots.lilybot.extensions.config
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.kordex.modules.dev.unsafe.annotations.UnsafeAPI
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.extensions.config.commands.configClearCommand
 import org.hyacinthbots.lilybot.extensions.config.commands.configViewCommand
 import org.hyacinthbots.lilybot.extensions.logging.config.loggingCommand
@@ -15,8 +16,8 @@ class ConfigExtension : Extension() {
 	@OptIn(UnsafeAPI::class)
 	override suspend fun setup() {
 		ephemeralSlashCommand {
-			name = "config"
-			description = "Configure Lily's settings"
+			name = Translations.Config.name
+			description = Translations.Config.name
 
 			loggingCommand()
 
