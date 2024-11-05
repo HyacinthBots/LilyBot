@@ -13,6 +13,7 @@ import dev.kordex.core.utils.botHasPermissions
 import dev.kordex.modules.dev.unsafe.annotations.UnsafeAPI
 import dev.kordex.modules.dev.unsafe.commands.slash.InitialSlashCommandResponse
 import dev.kordex.modules.dev.unsafe.extensions.unsafeSubCommand
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.entities.LoggingConfigData
 import org.hyacinthbots.lilybot.database.entities.PublicMemberLogData
@@ -22,8 +23,8 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 @OptIn(UnsafeAPI::class)
 suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingArgs) {
-	name = "logging"
-	description = "Configure Lily's logging system"
+	name = Translations.Config.Logging.name
+	description = Translations.Config.Logging.description
 
 	initialResponse = InitialSlashCommandResponse.None
 
@@ -39,8 +40,7 @@ suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingA
 		if (loggingConfig != null) {
 			ackEphemeral()
 			respondEphemeral {
-				content = "You already have a logging configuration set. " +
-					"Please clear it before attempting to set a new one."
+				content = Translations.Config.configAlreadyExists.translate("Logging")
 			}
 			return@action
 		}
@@ -48,19 +48,19 @@ suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingA
 		if (arguments.enableMemberLogging && arguments.memberLog == null) {
 			ackEphemeral()
 			respondEphemeral {
-				content = "You must specify a channel to log members joining and leaving to!"
+				content = Translations.Config.Logging.memberMissing.translate()
 			}
 			return@action
 		} else if ((arguments.enableMessageDeleteLogs || arguments.enableMessageEditLogs) &&
 			arguments.messageLogs == null
 		) {
 			ackEphemeral()
-			respondEphemeral { content = "You must specify a channel to log deleted/edited messages to!" }
+			respondEphemeral { content = Translations.Config.Logging.editMissing.translate() }
 			return@action
 		} else if (arguments.enablePublicMemberLogging && arguments.publicMemberLog == null) {
 			ackEphemeral()
 			respondEphemeral {
-				content = "You must specify a channel to publicly log members joining and leaving to!"
+				content = Translations.Config.Logging.publicMemberMissing.translate()
 			}
 			return@action
 		}
@@ -71,8 +71,7 @@ suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingA
 			if (memberLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
 				ackEphemeral()
 				respondEphemeral {
-					content = "The member log you've selected is invalid, or I can't view it. " +
-						"Please attempt to resolve this and try again."
+					content = Translations.Config.invalidChannel.translate("member log")
 				}
 				return@action
 			}
@@ -84,8 +83,7 @@ suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingA
 			if (messageLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
 				ackEphemeral()
 				respondEphemeral {
-					content = "The message log you've selected is invalid, or I can't view it. " +
-						"Please attempt to resolve this and try again."
+					content = Translations.Config.invalidChannel.translate("message log")
 				}
 				return@action
 			}
@@ -101,8 +99,7 @@ suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingA
 			) {
 				ackEphemeral()
 				respondEphemeral {
-					content = "The public member log you've selected is invalid, or I can't view it. " +
-						"Please attempt to resolve this and try again."
+					content = Translations.Config.invalidChannel.translate("public memeber log")
 				}
 				return@action
 			}
@@ -115,10 +112,10 @@ suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingA
 			this@unsafeSubCommand.componentRegistry.register(modalObj)
 
 			event.interaction.modal(
-				modalObj.title,
+				modalObj.title.translate(),
 				modalObj.id
 			) {
-				modalObj.applyToBuilder(this, getLocale(), null)
+				modalObj.applyToBuilder(this, getLocale())
 			}
 
 			modalObj.awaitCompletion { modalSubmitInteraction ->
@@ -155,7 +152,7 @@ suspend fun SlashCommand<*, *, *>.loggingCommand() = unsafeSubCommand(::LoggingA
 
 		if (utilityLog == null) {
 			respondEphemeral {
-				content = "Consider setting a utility config to log changes to configurations."
+				content = Translations.Config.considerUtility.translate()
 			}
 			return@action
 		}

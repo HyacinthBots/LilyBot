@@ -17,6 +17,7 @@ import dev.kordex.modules.pluralkit.api.PKMessage
 import dev.kordex.modules.pluralkit.events.ProxiedMessageUpdateEvent
 import dev.kordex.modules.pluralkit.events.UnProxiedMessageUpdateEvent
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
@@ -86,30 +87,31 @@ class MessageEdit : Extension() {
 			embed {
 				color = DISCORD_YELLOW
 				author {
-					name = "Message Edited"
+					name = Translations.Events.MessageEdit.embedAuthor.translate()
 					icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.cdnUrl?.toUrl()
 				}
-				description =
-					"Location: ${message.channel.mention} " +
-							"(${message.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
-								?: "Could not get channel name"})"
+				description = Translations.Events.MessageEvent.location.translate(
+					message.channel.mention,
+					message.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
+						?: Translations.Events.MessageDelete.noChannelName.translate()
+				)
 				timestamp = Clock.System.now()
 
 				field {
-					name = "Previous contents"
-					value = old?.trimmedContents().ifNullOrEmpty { "Failed to retrieve previous message contents" }
+					name = Translations.Events.MessageEdit.embedPrevious.translate()
+					value = old?.trimmedContents().ifNullOrEmpty { Translations.Events.MessageEvent.failedContents.translate() }
 					inline = false
 				}
 				field {
-					name = "New contents"
-					value = message.trimmedContents().ifNullOrEmpty { "Failed to retrieve new message contents" }
+					name = Translations.Events.MessageEdit.embedNew.translate()
+					value = message.trimmedContents().ifNullOrEmpty { Translations.Events.MessageEdit.embedNewFail.translate() }
 					inline = false
 				}
 				attachmentsAndProxiedMessageInfo(guild, message, proxiedMessage)
 			}
 			components {
 				linkButton {
-					label = "Jump"
+					label = Translations.Events.MessageEdit.embedButton
 					url = message.getJumpUrl()
 				}
 			}
