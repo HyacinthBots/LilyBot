@@ -22,6 +22,4 @@ val SENTRY_DSN = envOrNull("SENTRY_DSN")
 /** The environment the bot is being run in. production or development. */
 val ENVIRONMENT = env("ENVIRONMENT")
 
-val STATUS_ENV = envOrNull("STATUS_URL")
-
 const val HYACINTH_GITHUB: String = "https://github.com/HyacinthBots"
