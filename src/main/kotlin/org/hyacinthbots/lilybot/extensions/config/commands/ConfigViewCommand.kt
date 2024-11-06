@@ -115,7 +115,7 @@ suspend fun SlashCommand<*, *, *>.configViewCommand() = ephemeralSubCommand(::Vi
 				val config = LoggingConfigCollection().getConfig(guild!!.id)
 				if (config == null) {
 					respond {
-						content = Translations.Config.Clear.noConfigLogging.translate()
+						content = Translations.Config.View.noLoggingConfig.translate()
 					}
 					return@action
 				}
@@ -215,7 +215,7 @@ suspend fun SlashCommand<*, *, *>.configViewCommand() = ephemeralSubCommand(::Vi
 class ViewArgs : Arguments() {
 	val config by stringChoice {
 		name = Translations.Config.Arguments.Clear.name
-		description = Translations.Config.Arguments.Clear.description
+		description = Translations.Config.Arguments.View.description
 		choices = mutableMapOf(
 			Translations.Config.Arguments.Clear.Choice.moderation to ConfigType.MODERATION.name,
 			Translations.Config.Arguments.Clear.Choice.logging to ConfigType.LOGGING.name,

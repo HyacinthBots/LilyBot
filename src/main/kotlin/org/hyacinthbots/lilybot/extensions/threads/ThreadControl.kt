@@ -441,7 +441,7 @@ class ThreadControl : Extension() {
 			return true
 		}
 
-		respond { content = "**Error:** This is not your thread!" }
+		respond { content = Translations.Threads.ThreadControl.notYours.translate() }
 		return false
 	}
 }

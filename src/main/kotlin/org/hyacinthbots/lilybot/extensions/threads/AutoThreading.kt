@@ -59,13 +59,13 @@ class AutoThreading : Extension() {
 
 	override suspend fun setup() {
 		ephemeralSlashCommand {
-			name = Translations.Threads.Autothreading.name
-			description = Translations.Threads.Autothreading.description
+			name = Translations.Threads.AutoThreading.name
+			description = Translations.Threads.AutoThreading.description
 
 			@OptIn(UnsafeAPI::class)
 			unsafeSubCommand(::AutoThreadingArgs) {
-				name = Translations.Threads.Autothreading.Enable.name
-				description = Translations.Threads.Autothreading.Enable.description
+				name = Translations.Threads.AutoThreading.Enable.name
+				description = Translations.Threads.AutoThreading.Enable.description
 
 				initialResponse = InitialSlashCommandResponse.None
 
@@ -83,7 +83,7 @@ class AutoThreading : Extension() {
 					if (AutoThreadingCollection().getSingleAutoThread(channel.id) != null) {
 						ackEphemeral()
 						respondEphemeral {
-							content = Translations.Threads.Autothreading.alreadyOn.translate()
+							content = Translations.Threads.AutoThreading.alreadyOn.translate()
 						}
 						return@action
 					}
@@ -92,7 +92,7 @@ class AutoThreading : Extension() {
 					if (!canPingRole(arguments.role, guild!!.id, this@unsafeSubCommand.kord)) {
 						ackEphemeral()
 						respondEphemeral {
-							content = Translations.Threads.Autothreading.Enable.noMention.translate()
+							content = Translations.Threads.AutoThreading.Enable.noMention.translate()
 						}
 						return@action
 					}
@@ -121,7 +121,7 @@ class AutoThreading : Extension() {
 					}
 
 					respondEphemeral {
-						content = Translations.Threads.Autothreading.Enable.enabled.translate()
+						content = Translations.Threads.AutoThreading.Enable.enabled.translate()
 					}
 
 					// Add the channel to the database as auto-threaded
@@ -144,7 +144,7 @@ class AutoThreading : Extension() {
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!) ?: return@action
 
 					utilityLog.createEmbed {
-						val obj = Translations.Threads.Autothreading.Enable.Embed
+						val obj = Translations.Threads.AutoThreading.Enable.Embed
 						title = obj.title.translate()
 						description = null
 						field {
@@ -193,8 +193,8 @@ class AutoThreading : Extension() {
 			}
 
 			ephemeralSubCommand {
-				name = Translations.Threads.Autothreading.Disable.name
-				description = Translations.Threads.Autothreading.Disable.description
+				name = Translations.Threads.AutoThreading.Disable.name
+				description = Translations.Threads.AutoThreading.Disable.description
 
 				requirePermission(Permission.ManageChannels)
 
@@ -209,7 +209,7 @@ class AutoThreading : Extension() {
 					// Check if auto-threading is enabled
 					if (AutoThreadingCollection().getSingleAutoThread(channel.id) == null) {
 						respond {
-							content = Translations.Threads.Autothreading.alreadyOff.translate()
+							content = Translations.Threads.AutoThreading.alreadyOff.translate()
 						}
 						return@action
 					}
@@ -219,18 +219,18 @@ class AutoThreading : Extension() {
 
 					// Respond to the user
 					respond {
-						content = Translations.Threads.Autothreading.Disable.disabled.translate()
+						content = Translations.Threads.AutoThreading.Disable.disabled.translate()
 					}
 
 					// Log the change
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!) ?: return@action
 
 					utilityLog.createEmbed {
-						title = Translations.Threads.Autothreading.Disable.Embed.title.translate()
+						title = Translations.Threads.AutoThreading.Disable.Embed.title.translate()
 						description = null
 
 						field {
-							name = Translations.Threads.Autothreading.Disable.Embed.channel.translate()
+							name = Translations.Threads.AutoThreading.Disable.Embed.channel.translate()
 							value = channel.mention
 							inline = true
 						}
@@ -245,8 +245,8 @@ class AutoThreading : Extension() {
 			}
 
 			ephemeralSubCommand {
-				name = Translations.Threads.Autothreading.List.name
-				description = Translations.Threads.Autothreading.List.description
+				name = Translations.Threads.AutoThreading.List.name
+				description = Translations.Threads.AutoThreading.List.description
 
 				check {
 					anyGuild()
@@ -260,7 +260,7 @@ class AutoThreading : Extension() {
 					autoThreads.forEach {
 						responseContent += "\n<#${it.channelId}>"
 						if (responseContent.length > 4080) {
-							responseContent += Translations.Threads.Autothreading.List.trimmed.translate()
+							responseContent += Translations.Threads.AutoThreading.List.trimmed.translate()
 							return@forEach
 						}
 					}
@@ -268,10 +268,10 @@ class AutoThreading : Extension() {
 					respond {
 						embed {
 							if (responseContent == null) {
-								title = Translations.Threads.Autothreading.List.noChannels.translate()
-								description = Translations.Threads.Autothreading.List.addNewChannels.translate()
+								title = Translations.Threads.AutoThreading.List.noChannels.translate()
+								description = Translations.Threads.AutoThreading.List.addNewChannels.translate()
 							} else {
-								title = Translations.Threads.Autothreading.List.channelList.translate()
+								title = Translations.Threads.AutoThreading.List.channelList.translate()
 								description = responseContent.replace("null", "")
 							}
 						}
@@ -280,8 +280,8 @@ class AutoThreading : Extension() {
 			}
 
 			ephemeralSubCommand(::AutoThreadingViewArgs) {
-				name = Translations.Threads.Autothreading.View.name
-				description = Translations.Threads.Autothreading.View.description
+				name = Translations.Threads.AutoThreading.View.name
+				description = Translations.Threads.AutoThreading.View.description
 
 				requirePermission(Permission.ManageChannels)
 
@@ -296,13 +296,13 @@ class AutoThreading : Extension() {
 					val autoThread = AutoThreadingCollection().getSingleAutoThread(arguments.channel.id)
 					if (autoThread == null) {
 						respond {
-							content = Translations.Threads.Autothreading.View.noThreaded.translate()
+							content = Translations.Threads.AutoThreading.View.noThreaded.translate()
 						}
 						return@action
 					}
 
 					respond {
-						val obj = Translations.Threads.Autothreading.View.Embed
+						val obj = Translations.Threads.AutoThreading.View.Embed
 						embed {
 							title = obj.title.translate()
 							description = obj.description.translate(arguments.channel.mention)
@@ -345,7 +345,7 @@ class AutoThreading : Extension() {
 								value = autoThread.creationMessage ?: Translations.Basic.default.translate()
 							}
 							field {
-								name = "Add mods and ping role"
+								name = obj.addMods.translate()
 								value = autoThread.addModsAndRole.toString()
 							}
 						}
@@ -354,11 +354,11 @@ class AutoThreading : Extension() {
 			}
 
 			ephemeralSubCommand(::ExtraRolesArgs) {
-				name = Translations.Threads.Autothreading.AddRoles.name
-				description = Translations.Threads.Autothreading.AddRoles.description
+				name = Translations.Threads.AutoThreading.AddRoles.name
+				description = Translations.Threads.AutoThreading.AddRoles.description
 
 				subCommandAdditionalDocumentation {
-					extraInformation = Translations.Threads.Autothreading.AddRoles.extraInfo.translate()
+					extraInformation = Translations.Threads.AutoThreading.AddRoles.extraInfo.translate()
 				}
 
 				requirePermission(Permission.ManageChannels)
@@ -374,21 +374,21 @@ class AutoThreading : Extension() {
 					val autoThread = AutoThreadingCollection().getSingleAutoThread(event.interaction.channelId)
 					if (autoThread == null) {
 						respond {
-							content = Translations.Threads.Autothreading.AddRoles.noThreaded.translate()
+							content = Translations.Threads.AutoThreading.AddRoles.noThreaded.translate()
 						}
 						return@action
 					}
 
 					if (!canPingRole(arguments.role, guild!!.id, this@ephemeralSubCommand.kord)) {
 						respond {
-							content = Translations.Threads.Autothreading.Enable.noMention.translate()
+							content = Translations.Threads.AutoThreading.Enable.noMention.translate()
 						}
 						return@action
 					}
 
 					if (autoThread.extraRoleIds.contains(arguments.role!!.id)) {
 						respond {
-							content = Translations.Threads.Autothreading.AddRoles.alreadyAdded.translate()
+							content = Translations.Threads.AutoThreading.AddRoles.alreadyAdded.translate()
 						}
 						return@action
 					}
@@ -399,17 +399,17 @@ class AutoThreading : Extension() {
 					AutoThreadingCollection().updateExtraRoles(event.interaction.channelId, updatedRoles)
 
 					respond {
-						content = Translations.Threads.Autothreading.AddRoles.added.translate(arguments.role!!.mention)
+						content = Translations.Threads.AutoThreading.AddRoles.added.translate(arguments.role!!.mention)
 					}
 				}
 			}
 
 			ephemeralSubCommand(::ExtraRolesArgs) {
-				name = Translations.Threads.Autothreading.RemoveRoles.name
-				description = Translations.Threads.Autothreading.RemoveRoles.description
+				name = Translations.Threads.AutoThreading.RemoveRoles.name
+				description = Translations.Threads.AutoThreading.RemoveRoles.description
 
 				subCommandAdditionalDocumentation {
-					extraInformation = Translations.Threads.Autothreading.RemoveRoles.extraInfo.translate()
+					extraInformation = Translations.Threads.AutoThreading.RemoveRoles.extraInfo.translate()
 				}
 
 				requirePermission(Permission.ManageChannels)
@@ -425,14 +425,14 @@ class AutoThreading : Extension() {
 					val autoThread = AutoThreadingCollection().getSingleAutoThread(event.interaction.channelId)
 					if (autoThread == null) {
 						respond {
-							content = Translations.Threads.Autothreading.AddRoles.noThreaded.translate()
+							content = Translations.Threads.AutoThreading.AddRoles.noThreaded.translate()
 						}
 						return@action
 					}
 
 					if (!autoThread.extraRoleIds.contains(arguments.role!!.id)) {
 						respond {
-							content = Translations.Threads.Autothreading.RemoveRoles.notAdded.translate()
+							content = Translations.Threads.AutoThreading.RemoveRoles.notAdded.translate()
 						}
 						return@action
 					}
@@ -444,7 +444,7 @@ class AutoThreading : Extension() {
 
 					respond {
 						content =
-							Translations.Threads.Autothreading.RemoveRoles.removed.translate(arguments.role!!.mention)
+							Translations.Threads.AutoThreading.RemoveRoles.removed.translate(arguments.role!!.mention)
 					}
 				}
 			}
@@ -524,67 +524,67 @@ class AutoThreading : Extension() {
 
 	inner class AutoThreadingArgs : Arguments() {
 		val role by optionalRole {
-			name = Translations.Threads.Autothreading.Arguments.Role.name
-			description = Translations.Threads.Autothreading.Arguments.Role.description
+			name = Translations.Threads.AutoThreading.Arguments.Role.name
+			description = Translations.Threads.AutoThreading.Arguments.Role.description
 		}
 
 		val addModsAndRole by defaultingBoolean {
-			name = Translations.Threads.Autothreading.Arguments.AddMods.name
-			description = Translations.Threads.Autothreading.Arguments.AddMods.description
+			name = Translations.Threads.AutoThreading.Arguments.AddMods.name
+			description = Translations.Threads.AutoThreading.Arguments.AddMods.description
 			defaultValue = false
 		}
 
 		val preventDuplicates by defaultingBoolean {
-			name = Translations.Threads.Autothreading.Arguments.PreventDuplicates.name
-			description = Translations.Threads.Autothreading.Arguments.PreventDuplicates.description
+			name = Translations.Threads.AutoThreading.Arguments.PreventDuplicates.name
+			description = Translations.Threads.AutoThreading.Arguments.PreventDuplicates.description
 			defaultValue = false
 		}
 
 		val archive by defaultingBoolean {
-			name = Translations.Threads.Autothreading.Arguments.Archive.name
-			description = Translations.Threads.Autothreading.Arguments.Archive.description
+			name = Translations.Threads.AutoThreading.Arguments.Archive.name
+			description = Translations.Threads.AutoThreading.Arguments.Archive.description
 			defaultValue = false
 		}
 
 		val contentAwareNaming by defaultingBoolean {
-			name = Translations.Threads.Autothreading.Arguments.ContentAware.name
-			description = Translations.Threads.Autothreading.Arguments.ContentAware.description
+			name = Translations.Threads.AutoThreading.Arguments.ContentAware.name
+			description = Translations.Threads.AutoThreading.Arguments.ContentAware.description
 			defaultValue = false
 		}
 
 		val mention by defaultingBoolean {
-			name = Translations.Threads.Autothreading.Arguments.Mention.name
-			description = Translations.Threads.Autothreading.Arguments.Mention.description
+			name = Translations.Threads.AutoThreading.Arguments.Mention.name
+			description = Translations.Threads.AutoThreading.Arguments.Mention.description
 			defaultValue = false
 		}
 
 		val message by defaultingBoolean {
-			name = Translations.Threads.Autothreading.Arguments.Message.name
-			description = Translations.Threads.Autothreading.Arguments.Message.description
+			name = Translations.Threads.AutoThreading.Arguments.Message.name
+			description = Translations.Threads.AutoThreading.Arguments.Message.description
 			defaultValue = false
 		}
 	}
 
 	inner class ExtraRolesArgs : Arguments() {
 		val role by optionalRole {
-			name = Translations.Threads.Autothreading.Arguments.Role.name
-			description = Translations.Threads.Autothreading.Arguments.ExtraRole.description
+			name = Translations.Threads.AutoThreading.Arguments.Role.name
+			description = Translations.Threads.AutoThreading.Arguments.ExtraRole.description
 		}
 	}
 
 	inner class AutoThreadingViewArgs : Arguments() {
 		val channel by channel {
-			name = Translations.Threads.Autothreading.Arguments.Channel.name
-			description = Translations.Threads.Autothreading.Arguments.Channel.description
+			name = Translations.Threads.AutoThreading.Arguments.Channel.name
+			description = Translations.Threads.AutoThreading.Arguments.Channel.description
 		}
 	}
 
 	inner class MessageModal : ModalForm() {
-		override var title = Translations.Threads.Autothreading.Modal.title
+		override var title = Translations.Threads.AutoThreading.Modal.title
 
 		val msgInput = paragraphText {
-			label = Translations.Threads.Autothreading.Modal.MsgInput.name
-			placeholder = Translations.Threads.Autothreading.Modal.MsgInput.placeholder
+			label = Translations.Threads.AutoThreading.Modal.MsgInput.name
+			placeholder = Translations.Threads.AutoThreading.Modal.MsgInput.placeholder
 			required = true
 		}
 	}
@@ -624,7 +624,7 @@ class AutoThreading : Extension() {
 		)
 
 		if (!options.contentAwareNaming || threadName.isNullOrEmpty()) {
-			threadName = Translations.Threads.Autothreading.threadFor.translate(
+			threadName = Translations.Threads.AutoThreading.threadFor.translate(
 				message?.author?.asUser()?.username ?: proxiedMessage?.member?.name?.take(75)
 			)
 		}
@@ -651,7 +651,7 @@ class AutoThreading : Extension() {
 			if (previousThreadExists) {
 				val response = event.message.respond {
 					// There is a not-null call because the compiler knows it's not null if the boolean is true.
-					content = Translations.Threads.Autothreading.existingThread.translate(previousUserThread!!.mention)
+					content = Translations.Threads.AutoThreading.existingThread.translate(previousUserThread!!.mention)
 				}
 				event.message.delete("User already has a thread")
 				response.delete(10000L, false)
