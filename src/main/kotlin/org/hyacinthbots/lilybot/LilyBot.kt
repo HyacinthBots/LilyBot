@@ -49,7 +49,6 @@ import org.hyacinthbots.lilybot.extensions.utility.commands.PublicUtilities
 import org.hyacinthbots.lilybot.extensions.utility.commands.Reminders
 import org.hyacinthbots.lilybot.extensions.utility.commands.RoleMenu
 import org.hyacinthbots.lilybot.extensions.utility.commands.StartupHooks
-import org.hyacinthbots.lilybot.extensions.utility.commands.StatusPing
 import org.hyacinthbots.lilybot.extensions.utility.commands.Tags
 import org.hyacinthbots.lilybot.extensions.utility.events.UtilityEvents
 import org.hyacinthbots.lilybot.internal.BuildInfo
@@ -189,7 +188,6 @@ suspend fun main() {
 			add(::Report)
 			add(::RoleMenu)
 			add(::StartupHooks)
-			add(::StatusPing)
 			add(::Tags)
 			add(::ThreadControl)
 			add(::UtilityEvents)
