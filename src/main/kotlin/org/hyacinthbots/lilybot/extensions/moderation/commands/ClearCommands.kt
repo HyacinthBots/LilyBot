@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toSet
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
@@ -37,12 +38,12 @@ class ClearCommands : Extension() {
 
 	override suspend fun setup() {
 		ephemeralSlashCommand {
-			name = "clear"
-			description = "Parent command for clear commands"
+			name = Translations.Moderation.ClearCommands.Clear.name
+			description = Translations.Moderation.ClearCommands.Clear.description
 
 			ephemeralSubCommand(ClearCommandArgs::Count) {
-				name = "count"
-				description = "Clear a specific count of messages"
+				name = Translations.Moderation.ClearCommands.Clear.Count.name
+				description = Translations.Moderation.ClearCommands.Clear.Count.description
 
 				requirePermission(Permission.ManageMessages)
 
@@ -58,8 +59,8 @@ class ClearCommands : Extension() {
 			}
 
 			ephemeralSubCommand(ClearCommandArgs::Before) {
-				name = "before"
-				description = "Clear messages before a given message ID"
+				name = Translations.Moderation.ClearCommands.Clear.Before.name
+				description = Translations.Moderation.ClearCommands.Clear.Before.description
 
 				requirePermission(Permission.ManageMessages)
 
@@ -75,8 +76,8 @@ class ClearCommands : Extension() {
 			}
 
 			ephemeralSubCommand(ClearCommandArgs::After) {
-				name = "after"
-				description = "Clear messages before a given message ID"
+				name = Translations.Moderation.ClearCommands.Clear.After.name
+				description = Translations.Moderation.ClearCommands.Clear.After.description
 
 				requirePermission(Permission.ManageMessages)
 
@@ -92,8 +93,8 @@ class ClearCommands : Extension() {
 			}
 
 			ephemeralSubCommand(ClearCommandArgs::Between) {
-				name = "between"
-				description = "Clear messages between 2 message IDs"
+				name = Translations.Moderation.ClearCommands.Clear.Between.name
+				description = Translations.Moderation.ClearCommands.Clear.Between.description
 
 				requirePermission(Permission.ManageMessages)
 
@@ -128,14 +129,14 @@ class ClearCommands : Extension() {
 		internal class Count : Arguments() {
 			/** The number of messages the user wants to remove. */
 			val count by int {
-				name = "messages"
-				description = "Number of messages to delete"
+				name = Translations.Moderation.ClearCommands.Arguments.Count.name
+				description = Translations.Moderation.ClearCommands.Arguments.Count.description
 			}
 
 			/** The author of the messages that need clearing. */
 			val author by optionalUser {
-				name = "author"
-				description = "The author of the messages to clear"
+				name = Translations.Moderation.ClearCommands.Arguments.Author.name
+				description = Translations.Moderation.ClearCommands.Arguments.Author.description
 			}
 		}
 
@@ -143,20 +144,20 @@ class ClearCommands : Extension() {
 		internal class After : Arguments() {
 			/** The ID of the message to start clearing from. */
 			val after by snowflake {
-				name = "after"
-				description = "The ID of the message to clear after"
+				name = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.name
+				description = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.description
 			}
 
 			/** The number of messages the user wants to remove. */
 			val count by optionalInt {
-				name = "message-count"
-				description = "The number of messages to clear"
+				name = Translations.Moderation.ClearCommands.Arguments.Count.name
+				description = Translations.Moderation.ClearCommands.Arguments.Count.description
 			}
 
 			/** The author of the messages that need clearing. */
 			val author by optionalUser {
-				name = "author"
-				description = "The author of the messages to clear"
+				name = Translations.Moderation.ClearCommands.Arguments.Author.name
+				description = Translations.Moderation.ClearCommands.Arguments.Author.description
 			}
 		}
 
@@ -164,20 +165,20 @@ class ClearCommands : Extension() {
 		internal class Before : Arguments() {
 			/** The ID of the message to start clearing before. */
 			val before by snowflake {
-				name = "before"
-				description = "The ID of the message to clear before"
+				name = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.name
+				description = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.description
 			}
 
 			/** The number of messages the user wants to remove. */
 			val count by optionalInt {
-				name = "message-count"
-				description = "The number of messages to clear"
+				name = Translations.Moderation.ClearCommands.Arguments.Count.name
+				description = Translations.Moderation.ClearCommands.Arguments.Count.description
 			}
 
 			/** The author of the messages that need clearing. */
 			val author by optionalUser {
-				name = "author"
-				description = "The author of the messages to clear"
+				name = Translations.Moderation.ClearCommands.Arguments.Author.name
+				description = Translations.Moderation.ClearCommands.Arguments.Author.description
 			}
 		}
 
@@ -185,20 +186,20 @@ class ClearCommands : Extension() {
 		internal class Between : Arguments() {
 			/** The ID of the message to start clearing from. */
 			val after by snowflake {
-				name = "after"
-				description = "The ID of the message to clear after"
+				name = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.name
+				description = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.description
 			}
 
 			/** The ID of the message to start clearing before. */
 			val before by snowflake {
-				name = "before"
-				description = "The ID of the message to clear before"
+				name = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.name
+				description = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.description
 			}
 
 			/** The author of the messages that need clearing. */
 			val author by optionalUser {
-				name = "author"
-				description = "The author of the messages to clear"
+				name = Translations.Moderation.ClearCommands.Arguments.Author.name
+				description = Translations.Moderation.ClearCommands.Arguments.Author.description
 			}
 		}
 	}
@@ -225,14 +226,14 @@ private suspend fun EphemeralSlashCommandContext<*, *>.clearMessages(
 
 	if (textChannel == null) {
 		respond {
-			content = "Could not get the channel to clear messages from."
+			content = Translations.Moderation.ClearCommands.Error.noChannel.translate()
 		}
 		return
 	}
 
 	if ((before != null && after != null) && (before < after)) {
 		respond {
-			content = "Before cannot be more recent than after!"
+			content = Translations.Moderation.ClearCommands.Error.beforeAfter.translate()
 		}
 		return
 	}
@@ -262,12 +263,12 @@ private suspend fun EphemeralSlashCommandContext<*, *>.clearMessages(
 	textChannel.bulkDelete(messages)
 
 	respond {
-		content = "Messages cleared."
+		content = Translations.Moderation.ClearCommands.cleared.translate()
 	}
 
 	if (config.publicLogging != null && config.publicLogging == true) {
 		channel.createEmbed {
-			title = "$count messages have been cleared."
+			title = Translations.Moderation.ClearCommands.numberCleared.translate(count)
 			color = DISCORD_BLACK
 		}
 	}
@@ -275,10 +276,10 @@ private suspend fun EphemeralSlashCommandContext<*, *>.clearMessages(
 	val actionLog =
 		getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return
 	actionLog.createEmbed {
-		title = "${count ?: messages.size} messages have been cleared."
-		description = "Action occurred in ${textChannel.mention}"
+		title = Translations.Moderation.ClearCommands.numberCleared.translate(count ?: messages.size)
+		description = Translations.Moderation.ClearCommands.occurredIn.translate()
 		footer {
-			text = user.asUserOrNull()?.username ?: "Unable to get username"
+			text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
 			icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 		}
 		color = DISCORD_BLACK

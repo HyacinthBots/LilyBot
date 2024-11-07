@@ -100,7 +100,7 @@ suspend fun EmbedBuilder.moderationEmbed(arguments: ModerationArgs, user: UserBe
 		}.translate()
 	}
 	field {
-		name = "Log member role changes"
+		name = obj.memberRoleChangesName.translate()
 		value = when (arguments.logMemberRoleChanges) {
 			true -> Translations.Basic.enabled
 			false -> Translations.Basic.disabled
