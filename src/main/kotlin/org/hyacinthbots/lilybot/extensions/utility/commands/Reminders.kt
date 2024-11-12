@@ -35,7 +35,6 @@ import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
 import dev.kordex.core.utils.botHasPermissions
 import dev.kordex.core.utils.dm
-import dev.kordex.core.utils.envOrNull
 import dev.kordex.core.utils.scheduling.Scheduler
 import dev.kordex.core.utils.scheduling.Task
 import dev.kordex.core.utils.toDuration
@@ -50,12 +49,10 @@ import org.hyacinthbots.lilybot.database.entities.ReminderData
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.fitsEmbedField
 import org.hyacinthbots.lilybot.utils.interval
+import org.hyacinthbots.lilybot.utils.statusEnv
 
 class Reminders : Extension() {
 	override val name = "reminders"
-
-	/** URL to ping to indicate uptime.*/
-	private val statusEnv = envOrNull("STATUS_URL")
 
 	/** Logger for status ping. */
 	private val statusLogger = KotlinLogging.logger("Status ping")
@@ -510,7 +507,7 @@ class Reminders : Extension() {
 		// Doing this status ping in here as this is an already running scheduler and can easily have this added
 		// to avoid duplicating the scheduler. This should always ping if the bots up too so why make another
 		statusLogger.debug { "Pinging!" }
-		statusClient.post(statusEnv!!)
+		statusClient.post(statusEnv)
 		// End status ping
 		val reminders = ReminderCollection().getAllReminders()
 		val dueReminders =
