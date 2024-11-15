@@ -54,6 +54,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.TemporaryBanCollection
@@ -75,8 +76,7 @@ import kotlin.time.Duration
 class ModerationCommands : Extension() {
 	override val name = "moderation"
 
-	private val warnSuffix = "Please consider your actions carefully.\n\n" +
-		"For more information about the warn system, please see [this document]" +
+	private val warnSuffix = Translations.Moderation.ModCommands.warnSuffix.translate() +
 		"($HYACINTH_GITHUB/LilyBot/blob/main/docs/commands.md#name-warn)"
 
 	/** The scheduler that will track the time for un-banning in temp bans. */
@@ -89,7 +89,7 @@ class ModerationCommands : Extension() {
 	override suspend fun setup() {
 		tempBanTask = tempBanScheduler.schedule(120, repeat = true, callback = ::removeTempBans)
 		ephemeralMessageCommand {
-			name = "Moderate"
+			name = Translations.Moderation.ModCommands.MessageCommand.name
 			locking = true
 
 			requirePermission(Permission.BanMembers, Permission.KickMembers, Permission.ModerateMembers)
@@ -100,13 +100,14 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
+				val messageTranslations = Translations.Moderation.ModCommands.MessageCommand
 				val messageEvent = event
 				val loggingChannel = getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild!!) ?: return@action
 				var menuMessage: EphemeralFollowupMessage? = null
 				val targetMessage = messageEvent.interaction.getTargetOrNull()
 				if (targetMessage == null) {
 					respond {
-						content = "The message this command was run on cannot be found! It may have been deleted."
+						content = messageTranslations.notFound.translate()
 					}
 					return@action
 				}
@@ -117,7 +118,7 @@ class ModerationCommands : Extension() {
 							targetMessage.id
 						)
 					proxiedMessage ?: run {
-						respond { content = "Unable to find user" }
+						respond { content = Translations.Basic.UnableTo.findUser.translate() }
 						return@action
 					}
 					senderId = proxiedMessage.sender
@@ -126,56 +127,53 @@ class ModerationCommands : Extension() {
 				}
 				val sender = guild!!.getMemberOrNull(senderId)
 					?: run {
-						respond { content = "Unable to find user" }
+						respond { content = Translations.Basic.UnableTo.findUser.translate() }
 						return@action
 					}
 
 				isBotOrModerator(event.kord, sender.asUserOrNull(), guild, "moderate") ?: return@action
 
 				menuMessage = respond {
-					content = "How would you like to moderate this message?"
+					content = messageTranslations.howMod.translate()
 					components {
 						ephemeralStringSelectMenu {
-							placeholder = "Select action..."
+							val selectTranslations = Translations.Moderation.ModCommands.MessageCommand.SelectMenu
+							placeholder = selectTranslations.placeholder
 							maximumChoices = 1 // Prevent selecting multiple options at once
 
-							option("Ban user", ModerationAction.BAN.name) {
-								description = "Ban the user that sent this message"
-							}
-
-							option("Soft-ban", ModerationAction.SOFT_BAN.name) {
-								description = "Soft-ban the user that sent this message"
-							}
-
-							option("Kick", ModerationAction.KICK.name) {
-								description = "Kick the user that sent this message"
-							}
-
-							option("Timeout", ModerationAction.TIMEOUT.name) {
-								description = "Timeout the user that sent this message"
-							}
-
-							option("Warn", ModerationAction.WARN.name) {
-								description = "Warn the user that sent this message"
-							}
+							option(selectTranslations.ban, ModerationAction.BAN.name)
+							option(selectTranslations.softBan, ModerationAction.SOFT_BAN.name)
+							option(selectTranslations.kick, ModerationAction.KICK.name)
+							option(selectTranslations.timeout, ModerationAction.TIMEOUT.name)
+							option(selectTranslations.warn, ModerationAction.WARN.name)
 
 							action SelectMenu@{
 								// Get the first because there can only be one
 								val option = event.interaction.values.firstOrNull()
 								if (option == null) {
-									respond { content = "You did not select an option!" }
+									respond {
+										content = selectTranslations.noOption.translate()
+									}
 									return@SelectMenu
 								}
 
-								val reasonSuffix = "for sending the following message: `${targetMessage.content}`"
+								val reasonSuffix =
+									messageTranslations.reasonSuffix.translate(
+										targetMessage.content
+									)
 								val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
 
 								when (option) {
 									ModerationAction.BAN.name -> {
+										val banTranslations = Translations.Moderation.ModCommands.Ban
+										val quickTranslations = Translations.Moderation.ModCommands.Ban.Quick
 										val dm = sender.dm {
 											embed {
-												title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
-												description = modConfig?.banDmMessage ?: "Quick banned $reasonSuffix"
+												title = banTranslations.dmTitle.translate(guild?.asGuildOrNull()?.name)
+												description =
+													modConfig?.banDmMessage ?: quickTranslations.defaultDesc.translate(
+														reasonSuffix
+													)
 
 												color = DISCORD_GREEN
 											}
@@ -186,7 +184,7 @@ class ModerationCommands : Extension() {
 												user.id,
 												null,
 												null,
-												"Quick banned $reasonSuffix",
+												quickTranslations.defaultDesc.translate(reasonSuffix),
 												dm != null,
 												true,
 												null
@@ -194,41 +192,41 @@ class ModerationCommands : Extension() {
 										)
 
 										sender.ban {
-											reason =
-												"Quick banned $reasonSuffix"
+											reason = quickTranslations.defaultDesc.translate(reasonSuffix)
 										}
 
 										if (modConfig?.publicLogging != null && modConfig.publicLogging == true) {
 											try {
 												targetMessage.reply {
 													embed {
-														title = "Banned."
-														description = "${sender.mention} user was banned " +
-															"for sending this message."
+														title = quickTranslations.embedTitle.translate()
+														description =
+															quickTranslations.embedDescMessage.translate(sender.mention)
 													}
 												}
 											} catch (_: KtorRequestException) {
 												channel.createEmbed {
-													title = "Banned."
-													description = "${sender.mention} user was banned " +
-														"for sending a deleted message."
+													title = quickTranslations.embedTitle.translate()
+													description =
+														quickTranslations.embedDescDeleted.translate(sender.mention)
 												}
 											}
 										}
 
 										menuMessage?.edit {
-											content = "Banned a user."
+											content = banTranslations.response.translate()
 											components { removeAll() }
 										}
 									}
 
 									ModerationAction.SOFT_BAN.name -> {
+										val softBanTranslations = Translations.Moderation.ModCommands.SoftBan
+										val quickTranslations = Translations.Moderation.ModCommands.SoftBan.Quick
 										val dm = sender.dm {
 											embed {
-												title = "You have been soft-banned from ${guild?.asGuildOrNull()?.name}"
-												description =
-													"Quick soft-banned $reasonSuffix. This is a soft-ban, you are " +
-														"free to rejoin at any time"
+												title =
+													softBanTranslations.dmTitle.translate(guild?.asGuildOrNull()?.name)
+												description = softBanTranslations.dmDesc.translate(reasonSuffix)
 											}
 										}
 
@@ -238,7 +236,9 @@ class ModerationCommands : Extension() {
 												user.id,
 												null,
 												null,
-												"Quick banned $reasonSuffix",
+												Translations.Moderation.ModCommands.Ban.Quick.defaultDesc.translate(
+													reasonSuffix
+												),
 												dm != null,
 												true,
 												null
@@ -247,7 +247,9 @@ class ModerationCommands : Extension() {
 
 										sender.ban {
 											reason =
-												"Quick soft-banned $reasonSuffix"
+												Translations.Moderation.ModCommands.Ban.Quick.defaultDesc.translate(
+													reasonSuffix
+												)
 										}
 
 										ModerationActionCollection().shouldIgnoreAction(
@@ -260,31 +262,33 @@ class ModerationCommands : Extension() {
 											try {
 												targetMessage.reply {
 													embed {
-														title = "Soft-banned."
-														description = "${sender.mention} user was soft-banned " +
-															"for sending this message."
+														title = quickTranslations.embedTitle.translate()
+														description =
+															quickTranslations.embedDescMessage.translate(sender.mention)
 													}
 												}
 											} catch (_: KtorRequestException) {
 												channel.createEmbed {
-													title = "Soft-Banned."
-													description = "${sender.mention} user was soft-banned " +
-														"for sending a deleted message."
+													title = quickTranslations.embedTitle.translate()
+													description =
+														quickTranslations.embedDescDeleted.translate(sender.mention)
 												}
 											}
 										}
 
 										menuMessage?.edit {
-											content = "Soft-Banned a user."
+											content = softBanTranslations.response.translate()
 											components { removeAll() }
 										}
 									}
 
 									ModerationAction.KICK.name -> {
+										val kickTranslations = Translations.Moderation.ModCommands.Kick
+										val quickTranslations = Translations.Moderation.ModCommands.Kick.Quick
 										val dm = sender.dm {
 											embed {
-												title = "You have been kicked from ${guild?.asGuildOrNull()?.name}"
-												description = "Quick kicked $reasonSuffix."
+												title = kickTranslations.dmTitle.translate(guild?.asGuildOrNull()?.name)
+												description = quickTranslations.dmDesc.translate(reasonSuffix)
 											}
 										}
 
@@ -294,16 +298,16 @@ class ModerationCommands : Extension() {
 											try {
 												targetMessage.reply {
 													embed {
-														title = "Kicked."
-														description = "${sender.mention} user was kicked " +
-															"for sending this message."
+														title = quickTranslations.embedTitle.translate()
+														description =
+															quickTranslations.embedDescMessage.translate(sender.mention)
 													}
 												}
 											} catch (_: KtorRequestException) {
 												channel.createEmbed {
-													title = "Kicked."
-													description = "${sender.mention} user was kicked " +
-														"for sending a deleted message."
+													title = quickTranslations.embedTitle.translate()
+													description =
+														quickTranslations.embedDescDeleted.translate(sender.mention)
 												}
 											}
 										}
@@ -314,7 +318,7 @@ class ModerationCommands : Extension() {
 												user.id,
 												null,
 												null,
-												"Quick kicked via moderate menu $reasonSuffix",
+												quickTranslations.actionDesc.translate(reasonSuffix),
 												dm != null,
 												true,
 												null
@@ -322,18 +326,19 @@ class ModerationCommands : Extension() {
 										)
 
 										menuMessage?.edit {
-											content = "Kicked a user."
+											content = kickTranslations.response.translate()
 											components { removeAll() }
 										}
 									}
 
 									ModerationAction.TIMEOUT.name -> {
+										val timeoutTranslations = Translations.Moderation.ModCommands.Timeout
+										val quickTranslations = Translations.Moderation.ModCommands.Timeout.Quick
 										val timeoutTime =
 											ModerationConfigCollection().getConfig(guild!!.id)?.quickTimeoutLength
 										if (timeoutTime == null) {
 											menuMessage?.edit {
-												content =
-													"No timeout length has been set in the moderation config, please set a length."
+												content = timeoutTranslations.noLength.translate()
 												components { removeAll() }
 											}
 											return@SelectMenu
@@ -341,9 +346,12 @@ class ModerationCommands : Extension() {
 
 										val dm = sender.dm {
 											embed {
-												title = "You have been timed-out in ${guild?.asGuildOrNull()?.name}"
-												description =
-													"Quick timed out for ${timeoutTime.interval()} $reasonSuffix."
+												title =
+													timeoutTranslations.dmTitle.translate(guild?.asGuildOrNull()?.name)
+												description = quickTranslations.dmDesc.translate(
+													timeoutTime.interval(),
+													reasonSuffix
+												)
 											}
 										}
 
@@ -353,16 +361,20 @@ class ModerationCommands : Extension() {
 											try {
 												targetMessage.reply {
 													embed {
-														title = "Timed-out."
-														description = "${sender.mention} user was timed-out for " +
-															"${timeoutTime.interval()} for sending this message."
+														title = quickTranslations.embedTitle.translate()
+														description = quickTranslations.embedDescMessage.translate(
+															sender.mention,
+															timeoutTime.interval()
+														)
 													}
 												}
 											} catch (_: KtorRequestException) {
 												channel.createEmbed {
-													title = "Timed-out."
-													description = "${sender.mention} user was timed-out for " +
-														"${timeoutTime.interval()} for sending a deleted message."
+													title = quickTranslations.embedTitle.translate()
+													description = quickTranslations.embedDescDeleted.translate(
+														sender.mention,
+														timeoutTime.interval()
+													)
 												}
 											}
 										}
@@ -373,7 +385,7 @@ class ModerationCommands : Extension() {
 												user.id,
 												null,
 												TimeData(timeoutTime, null, null, null),
-												"Quick timed-out via moderate menu $reasonSuffix",
+												quickTranslations.actionDesc.translate(reasonSuffix),
 												dm != null,
 												null,
 												null
@@ -381,20 +393,23 @@ class ModerationCommands : Extension() {
 										)
 
 										menuMessage?.edit {
-											content = "Timed-out a user."
+											content = timeoutTranslations.response.translate()
 											components { removeAll() }
 										}
 									}
 
 									ModerationAction.WARN.name -> {
+										val warnTranslations = Translations.Moderation.ModCommands.Warning
 										WarnCollection().setWarn(senderId, guild!!.id, false)
 										val strikes = WarnCollection().getWarn(senderId, guild!!.id)?.strikes
 
 										val dm = sender.dm {
 											embed {
-												title = "Warning $strikes in ${guild?.asGuildOrNull()?.name}"
+												title = warnTranslations.dmTitle.translate(
+													strikes, guild?.asGuildOrNull()?.name
+												)
 												description =
-													"Quick warned $reasonSuffix\n $warnSuffix"
+													warnTranslations.quickDmDesc.translate(reasonSuffix, warnSuffix)
 											}
 										}
 
@@ -411,16 +426,16 @@ class ModerationCommands : Extension() {
 
 										loggingChannel.createMessage {
 											embed {
-												title = "Warning"
+												title = warnTranslations.embedTitle.translate()
 												baseModerationEmbed(
-													"Quick warned via moderate menu $reasonSuffix",
+													warnTranslations.quickWarned.translate(),
 													sender,
 													user
 												)
 												dmNotificationStatusEmbedField(dm, true)
 												timestamp = Clock.System.now()
 												field {
-													name = "Total strikes"
+													name = warnTranslations.embedStrikeTot.translate()
 													value = strikes.toString()
 												}
 											}
@@ -430,14 +445,14 @@ class ModerationCommands : Extension() {
 														strikes!!,
 														event.interaction.user.asUserOrNull(),
 														sender.asUserOrNull(),
-														"Quick warned via moderate menu $reasonSuffix"
+														warnTranslations.quickWarned.translate()
 													)
 												}
 											}
 										}
 
 										menuMessage?.edit {
-											content = "Warned a user."
+											content = warnTranslations.response.translate()
 											components { removeAll() }
 										}
 
@@ -445,16 +460,16 @@ class ModerationCommands : Extension() {
 											try {
 												targetMessage.reply {
 													embed {
-														title = "Warned."
-														description = "${sender.mention} user was warned " +
-															"for sending this message."
+														title = warnTranslations.embedTitle.translate()
+														description =
+															warnTranslations.embedDescMessage.translate(sender.mention)
 													}
 												}
 											} catch (_: KtorRequestException) {
 												channel.createEmbed {
-													title = "Warned."
-													description = "${sender.mention} user was warned " +
-														"for sending a deleted message."
+													title = warnTranslations.embedTitle.translate()
+													description =
+														warnTranslations.embedDescDeleted.translate(sender.mention)
 												}
 											}
 										}
@@ -468,8 +483,8 @@ class ModerationCommands : Extension() {
 		}
 
 		ephemeralSlashCommand(::BanArgs) {
-			name = "ban"
-			description = "Bans a user."
+			name = Translations.Moderation.ModCommands.Ban.name
+			description = Translations.Moderation.ModCommands.Ban.description
 
 			requirePermission(Permission.BanMembers)
 
@@ -479,11 +494,12 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
+				val translations = Translations.Moderation.ModCommands.Ban
 				isBotOrModerator(event.kord, arguments.userArgument, guild, "ban") ?: return@action
 
 				// The discord limit for deleting days of messages in a ban is 7, so we should catch invalid inputs.
 				if (arguments.messages > 7 || arguments.messages < 0) {
-					respond { content = "Invalid `messages` parameter! This number must be between 0 and 7!" }
+					respond { content = translations.invalidMessages.translate() }
 					return@action
 				}
 
@@ -493,18 +509,18 @@ class ModerationCommands : Extension() {
 				if (dmControl) {
 					dmStatus = arguments.userArgument.dm {
 						embed {
-							title = "You have been banned from ${guild?.asGuildOrNull()?.name}"
-							description = "**Reason:**\n${
-								if (modConfig?.banDmMessage != null && arguments.reason == "No reason provided") {
+							title = translations.dmTitle.translate(guild?.asGuildOrNull()?.name)
+							description = "${translations.dmDesc.translate()}\n${
+								if (modConfig?.banDmMessage != null && arguments.reason == Translations.Basic.noReason.translate()) {
 									modConfig.banDmMessage
-								} else if (modConfig?.banDmMessage != null && arguments.reason != "No reason provided") {
+								} else if (modConfig?.banDmMessage != null && arguments.reason != Translations.Basic.noReason.translate()) {
 									"${arguments.reason}\n${modConfig.banDmMessage}"
 								} else {
 									arguments.reason
 								}
 							}\n${
 								if (arguments.softBan) {
-									"You were soft-banned. You are free to rejoin without the need to be unbanned"
+									translations.wasSoft.translate()
 								} else {
 									""
 								}
@@ -530,11 +546,11 @@ class ModerationCommands : Extension() {
 				if (modConfig?.publicLogging == true) {
 					event.interaction.channel.createEmbed {
 						if (arguments.softBan) {
-							title = "Soft-Banned a user"
-							description = "${arguments.userArgument.mention} has been soft-banned!"
+							title = Translations.Moderation.ModCommands.SoftBan.response.translate()
+							description = translations.publicSoftDesc.translate()
 						} else {
-							title = "Banned a user"
-							description = "${arguments.userArgument.mention} has been banned!"
+							title = translations.response.translate()
+							description = translations.publicDesc.translate()
 						}
 						color = DISCORD_BLACK
 					}
@@ -557,18 +573,23 @@ class ModerationCommands : Extension() {
 				}
 
 				respond {
-					content = if (arguments.softBan) "Soft-banned " else "Banned " + arguments.userArgument.mention
+					content =
+						if (arguments.softBan) {
+							Translations.Moderation.ModCommands.SoftBan.Quick.embedTitle.translate()
+						} else {
+							Translations.Moderation.ModCommands.Ban.Quick.embedTitle.translate()
+						} + " " + arguments.userArgument.mention
 				}
 			}
 		}
 
 		ephemeralSlashCommand {
-			name = "temp-ban"
-			description = "The parent command for temporary ban commands"
+			name = Translations.Moderation.ModCommands.TempBan.name
+			description = Translations.Moderation.ModCommands.TempBan.description
 
 			ephemeralSubCommand(::TempBanArgs) {
-				name = "add"
-				description = "Temporarily bans a user"
+				name = Translations.Moderation.ModCommands.TempBan.Add.name
+				description = Translations.Moderation.ModCommands.TempBan.Add.description
 
 				requirePermission(Permission.BanMembers)
 				check {
@@ -577,6 +598,7 @@ class ModerationCommands : Extension() {
 				}
 
 				action {
+					val translations = Translations.Moderation.ModCommands.TempBan.Add
 					isBotOrModerator(event.kord, arguments.userArgument, guild, "temp-ban add")
 					val now = Clock.System.now()
 					val duration = now.plus(arguments.duration, TimeZone.UTC)
@@ -586,9 +608,8 @@ class ModerationCommands : Extension() {
 					if (dmControl) {
 						dmStatus = arguments.userArgument.dm {
 							embed {
-								title = "You have been temporarily banned from ${guild?.fetchGuild()?.name}"
-								description = "**Reason:**\n${arguments.reason}\n\n" +
-									"You are banned until $duration"
+								title = translations.dmTitle.translate(guild?.asGuildOrNull()?.name)
+								description = translations.dmDesc.translate(arguments.reason, duration)
 							}
 						}
 					}
@@ -608,8 +629,8 @@ class ModerationCommands : Extension() {
 
 					if (modConfig?.publicLogging == true) {
 						event.interaction.channel.createEmbed {
-							title = "Temp Banned a user"
-							description = "${arguments.userArgument.mention} has been Temp Banned!"
+							title = translations.publicEmbedTitle.translate()
+							description = translations.publicEmbedDesc.translate(arguments.userArgument.mention)
 							color = DISCORD_BLACK
 						}
 					}
@@ -624,14 +645,14 @@ class ModerationCommands : Extension() {
 					}
 
 					respond {
-						content = "Temporarily banned ${arguments.userArgument.mention}"
+						content = translations.response.translate(arguments.userArgument.mention)
 					}
 				}
 			}
 
 			ephemeralSubCommand {
-				name = "view-all"
-				description = "View all temporary bans for this guild"
+				name = Translations.Moderation.ModCommands.TempBan.View.name
+				description = Translations.Moderation.ModCommands.TempBan.View.description
 
 				requirePermission(Permission.BanMembers)
 
@@ -641,12 +662,14 @@ class ModerationCommands : Extension() {
 				}
 
 				action {
+					val translations = Translations.Moderation.ModCommands.TempBan.View
+					val pageTranslations = Translations.Moderation.ModCommands.TempBan.View.Page
 					val pagesObj = Pages()
 					val tempBans = TemporaryBanCollection().getTempBansForGuild(guild!!.id)
 					if (tempBans.isEmpty()) {
 						pagesObj.addPage(
 							Page {
-								description = "There are no temporary bans in this guild."
+								description = translations.none.translate()
 							}
 						)
 					} else {
@@ -654,12 +677,12 @@ class ModerationCommands : Extension() {
 							var content = ""
 							tempBan.forEach {
 								content = """
-									User: ${this@ephemeralSubCommand.kord.getUser(it.bannedUserId)?.username}
-									Moderator: ${guild?.getMemberOrNull(it.moderatorUserId)?.username}
-									Start Time: ${it.startTime.toDiscord(TimestampType.ShortDateTime)} (${
+									${pageTranslations.user.translate(this@ephemeralSubCommand.kord.getUser(it.bannedUserId)?.username)}
+									${pageTranslations.mod.translate(guild?.getMemberOrNull(it.moderatorUserId)?.username)}
+									${pageTranslations.start.translate(it.startTime.toDiscord(TimestampType.ShortDateTime))} (${
 									it.startTime.toDiscord(TimestampType.RelativeTime)
 								})
-									End Time: ${it.endTime.toDiscord(TimestampType.ShortDateTime)} (${
+									${pageTranslations.end.translate(it.endTime.toDiscord(TimestampType.ShortDateTime))} (${
 									it.endTime.toDiscord(TimestampType.RelativeTime)
 								})
 									---
@@ -668,7 +691,7 @@ class ModerationCommands : Extension() {
 
 							pagesObj.addPage(
 								Page {
-									title = "Temporary bans for ${guild?.asGuildOrNull()?.name ?: "this guild"}"
+									title = pageTranslations.title.translate(guild?.asGuildOrNull()?.name)
 									description = content
 								}
 							)
@@ -688,8 +711,8 @@ class ModerationCommands : Extension() {
 		}
 
 		ephemeralSlashCommand(::UnbanArgs) {
-			name = "unban"
-			description = "Unbans a user."
+			name = Translations.Moderation.ModCommands.Unban.name
+			description = Translations.Moderation.ModCommands.Unban.description
 
 			requirePermission(Permission.BanMembers)
 
@@ -719,14 +742,14 @@ class ModerationCommands : Extension() {
 					TemporaryBanCollection().removeTempBan(guild!!.id, arguments.userArgument.id)
 				}
 				respond {
-					content = "Unbanned user."
+					content = Translations.Moderation.ModCommands.Unban.response.translate()
 				}
 			}
 		}
 
 		ephemeralSlashCommand(::KickArgs) {
-			name = "kick"
-			description = "Kicks a user."
+			name = Translations.Moderation.ModCommands.Kick.name
+			description = Translations.Moderation.ModCommands.Kick.description
 
 			requirePermission(Permission.KickMembers)
 
@@ -738,14 +761,15 @@ class ModerationCommands : Extension() {
 			action {
 				isBotOrModerator(event.kord, arguments.userArgument, guild, "kick") ?: return@action
 
+				val translations = Translations.Moderation.ModCommands.Kick
 				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
 				var dmStatus: Message? = null
 				val dmControl = if (arguments.dm != null) arguments.dm!! else modConfig?.dmDefault == true
 				if (dmControl) {
 					dmStatus = arguments.userArgument.dm {
 						embed {
-							title = "You have been kicked from ${guild?.fetchGuild()?.name}"
-							description = "**Reason:**\n${arguments.reason}"
+							title = translations.dmTitle.translate(guild?.fetchGuild()?.name)
+							description = translations.dmDesc.translate(arguments.reason)
 						}
 					}
 				}
@@ -758,8 +782,8 @@ class ModerationCommands : Extension() {
 
 				if (modConfig?.publicLogging == true) {
 					event.interaction.channel.createEmbed {
-						title = "Kicked a user"
-						description = "${arguments.userArgument.mention} has been kicked!"
+						title = translations.response.translate()
+						description = translations.embedDesc.translate(arguments.userArgument.mention)
 						color = DISCORD_BLACK
 					}
 				}
@@ -767,14 +791,14 @@ class ModerationCommands : Extension() {
 				guild?.kick(arguments.userArgument.id, arguments.reason)
 
 				respond {
-					content = "Kicked ${arguments.userArgument.mention}"
+					content = translations.response.translate()
 				}
 			}
 		}
 
 		ephemeralSlashCommand(::TimeoutArgs) {
-			name = "timeout"
-			description = "Times out a user."
+			name = Translations.Moderation.ModCommands.Timeout.name
+			description = Translations.Moderation.ModCommands.Timeout.description
 
 			requirePermission(Permission.ModerateMembers)
 
@@ -784,6 +808,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
+				val translations = Translations.Moderation.ModCommands.Timeout
 				val modConfig = ModerationConfigCollection().getConfig(guild!!.id)
 				val durationArg = arguments.duration ?: modConfig?.quickTimeoutLength ?: DateTimePeriod(hours = 6)
 				val duration = Clock.System.now().plus(durationArg, TimeZone.UTC)
@@ -795,17 +820,19 @@ class ModerationCommands : Extension() {
 				if (dmControl) {
 					dmStatus = arguments.userArgument.dm {
 						embed {
-							title = "You have been timed out in ${guild?.fetchGuild()?.name}"
-							description = "**Duration:**\n${
-								duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
-							}\n**Reason:**\n${arguments.reason}"
+							title = translations.dmTitle.translate(guild?.fetchGuild()?.name)
+							description = translations.dmDesc.translate(
+								duration.toDiscord(TimestampType.Default),
+								durationArg.interval(),
+								arguments.reason
+							)
 						}
 					}
 				}
 
 				ModerationActionCollection().addAction(
 					ModerationAction.TIMEOUT, guild!!.id, arguments.userArgument.id,
-					    ActionData(
+					ActionData(
 						user.id,
 						null,
 						TimeData(durationArg, duration, Clock.System.now(), duration),
@@ -818,11 +845,11 @@ class ModerationCommands : Extension() {
 
 				if (modConfig?.publicLogging == true) {
 					event.interaction.channel.createEmbed {
-						title = "Timeout"
-						description = "${arguments.userArgument.mention} was timed out by a moderator"
+						title = Translations.Moderation.ModCommands.Timeout.Quick.embedTitle.translate()
+						description = translations.embedDesc.translate(arguments.userArgument.mention)
 						color = DISCORD_BLACK
 						field {
-							name = "Duration:"
+							name = translations.duration.translate()
 							value = duration.toDiscord(TimestampType.Default) + " (${durationArg.interval()})"
 							inline = false
 						}
@@ -834,14 +861,14 @@ class ModerationCommands : Extension() {
 				}
 
 				respond {
-					content = "Timed-out ${arguments.userArgument.mention}."
+					content = translations.response.translate()
 				}
 			}
 		}
 
 		ephemeralSlashCommand(::RemoveTimeoutArgs) {
-			name = "remove-timeout"
-			description = "Removes a timeout from a user"
+			name = Translations.Moderation.ModCommands.RemoveTimeout.name
+			description = Translations.Moderation.ModCommands.RemoveTimeout.description
 
 			requirePermission(Permission.ModerateMembers)
 
@@ -851,21 +878,22 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
+				val translations = Translations.Moderation.ModCommands.RemoveTimeout
 				val config = ModerationConfigCollection().getConfig(guild!!.id)
 				var dmStatus: Message? = null
 				val dmControl = if (arguments.dm != null) arguments.dm!! else config?.dmDefault == true
 				if (dmControl) {
 					dmStatus = arguments.userArgument.dm {
 						embed {
-							title = "Timeout removed in ${guild!!.asGuildOrNull()?.name}"
-							description = "Your timeout has been manually removed in this guild."
+							title = translations.dmTitle.translate(guild?.fetchGuild()?.name)
+							description = translations.dmDesc.translate()
 						}
 					}
 				}
 
 				ModerationActionCollection().addAction(
 					ModerationAction.REMOVE_TIMEOUT, guild!!.id, arguments.userArgument.id,
-					    ActionData(
+					ActionData(
 						user.id, null, null, null, dmStatus != null, arguments.dm, null
 					)
 				)
@@ -875,14 +903,14 @@ class ModerationCommands : Extension() {
 				}
 
 				respond {
-					content = "Removed timeout from user."
+					content = translations.response.translate()
 				}
 			}
 		}
 
 		ephemeralSlashCommand(::WarnArgs) {
-			name = "warn"
-			description = "Warns a user."
+			name = Translations.Moderation.ModCommands.Warning.name
+			description = Translations.Moderation.ModCommands.Warning.description
 
 			requirePermission(Permission.ModerateMembers)
 
@@ -892,6 +920,7 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
+				val translations = Translations.Moderation.ModCommands.Warning
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val actionLog =
 					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
@@ -902,30 +931,26 @@ class ModerationCommands : Extension() {
 				WarnCollection().setWarn(arguments.userArgument.id, guild!!.id, false)
 				val strikes = WarnCollection().getWarn(arguments.userArgument.id, guild!!.id)?.strikes
 
-				respond {
-					content = "Warned user."
-				}
-
 				var dmStatus: Message? = null
 
 				val dmControl = if (arguments.dm != null) arguments.dm!! else config.dmDefault == true
 
 				if (dmControl) {
 					val warnText = if (config.autoPunishOnWarn == false) {
-						"No moderation action has been taken.\n $warnSuffix"
+						"${translations.noAction.translate()}\n $warnSuffix"
 					} else {
 						when (strikes) {
-							1 -> "No moderation action has been taken.\n $warnSuffix"
-							2 -> "You have been timed out for 3 hours.\n $warnSuffix"
-							3 -> "You have been timed out for 12 hours.\n $warnSuffix"
-							else -> "You have been timed out for 3 days.\n $warnSuffix"
+							1 -> "${translations.noAction.translate()}\n $warnSuffix"
+							2 -> "${translations.action3h.translate()}\n $warnSuffix"
+							3 -> "${translations.action12h.translate()}\n $warnSuffix"
+							else -> "${translations.action3d.translate()}\n $warnSuffix"
 						}
 					}
 
 					dmStatus = arguments.userArgument.dm {
 						embed {
-							title = "Warning $strikes in $guildName"
-							description = "**Reason:** ${arguments.reason}\n\n$warnText"
+							title = translations.dmTitle.translate(strikes, guildName)
+							description = translations.dmDesc.translate(arguments.reason, warnText)
 						}
 					}
 				}
@@ -943,13 +968,13 @@ class ModerationCommands : Extension() {
 
 				actionLog.createMessage {
 					embed {
-						title = "Warning"
+						title = translations.embedTitle.translate()
 						image = arguments.image?.url
 						baseModerationEmbed(arguments.reason, arguments.userArgument, user)
 						dmNotificationStatusEmbedField(dmStatus, dmControl)
 						timestamp = Clock.System.now()
 						field {
-							name = "Total strikes"
+							name = translations.embedStrikeTot.translate()
 							value = strikes.toString()
 						}
 						color = DISCORD_RED
@@ -968,17 +993,21 @@ class ModerationCommands : Extension() {
 
 				if (config.publicLogging != null && config.publicLogging == true) {
 					channel.createEmbed {
-						title = "Warning"
-						description = "${arguments.userArgument.mention} has been warned by a moderator"
+						title = translations.embedTitle.translate()
+						description = translations.embedDesc.translate(arguments.userArgument.mention)
 						color = DISCORD_RED
 					}
+				}
+
+				respond {
+					content = translations.response.translate()
 				}
 			}
 		}
 
 		ephemeralSlashCommand(::RemoveWarnArgs) {
-			name = "remove-warn"
-			description = "Removes a user's warnings"
+			name = Translations.Moderation.ModCommands.RemoveWarning.name
+			description = Translations.Moderation.ModCommands.RemoveWarning.description
 
 			requirePermission(Permission.ModerateMembers)
 
@@ -988,10 +1017,11 @@ class ModerationCommands : Extension() {
 			}
 
 			action {
+				val translations = Translations.Moderation.ModCommands.RemoveWarning
 				val config = ModerationConfigCollection().getConfig(guild!!.id)!!
 				val targetUser = guild?.getMemberOrNull(arguments.userArgument.id) ?: run {
 					respond {
-						content = "I was unable to find the member in this guild! Please try again!"
+						content = translations.unableToFind.translate()
 					}
 					return@action
 				}
@@ -999,7 +1029,7 @@ class ModerationCommands : Extension() {
 				var userStrikes = WarnCollection().getWarn(targetUser.id, guild!!.id)?.strikes
 				if (userStrikes == 0 || userStrikes == null) {
 					respond {
-						content = "This user does not have any warning strikes!"
+						content = translations.noStrikes.translate()
 					}
 					return@action
 				}
@@ -1007,16 +1037,12 @@ class ModerationCommands : Extension() {
 				WarnCollection().setWarn(targetUser.id, guild!!.id, true)
 				userStrikes = WarnCollection().getWarn(targetUser.id, guild!!.id)?.strikes
 
-				respond {
-					content = "Removed strike from user"
-				}
-
 				var dmStatus: Message? = null
 				if (arguments.dm) {
 					dmStatus = targetUser.dm {
 						embed {
-							title = "Warn strike removal in ${guild?.fetchGuild()?.name}"
-							description = "You have had a warn strike removed. You now have $userStrikes strikes."
+							title = translations.dmTitle.translate(guild?.fetchGuild()?.name)
+							description = translations.dmDesc.translate(userStrikes)
 							color = DISCORD_GREEN
 						}
 					}
@@ -1025,13 +1051,13 @@ class ModerationCommands : Extension() {
 				val actionLog =
 					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 				actionLog.createEmbed {
-					title = "Warning Removal"
+					title = translations.embedTitle.translate()
 					color = DISCORD_GREEN
 					timestamp = Clock.System.now()
 					baseModerationEmbed(null, targetUser, user)
 					dmNotificationStatusEmbedField(dmStatus, arguments.dm)
 					field {
-						name = "Total Strikes:"
+						name = Translations.Moderation.ModCommands.Warning.embedStrikeTot.translate()
 						value = userStrikes.toString()
 						inline = false
 					}
@@ -1039,10 +1065,14 @@ class ModerationCommands : Extension() {
 
 				if (config.publicLogging != null && config.publicLogging == true) {
 					channel.createEmbed {
-						title = "Warning Removal"
-						description = "${arguments.userArgument.mention} had a warn strike removed by a moderator."
+						title = translations.embedTitle.translate()
+						description = translations.embedDesc.translate(arguments.userArgument.mention)
 						color = DISCORD_GREEN
 					}
+				}
+
+				respond {
+					content = translations.response.translate()
 				}
 			}
 		}
@@ -1088,209 +1118,209 @@ class ModerationCommands : Extension() {
 	inner class BanArgs : Arguments() {
 		/** The user to ban. */
 		val userArgument by user {
-			name = "user"
-			description = "Person to ban"
+			name = Translations.Moderation.ModCommands.Arguments.User.name
+			description = Translations.Moderation.ModCommands.Arguments.User.description
 		}
 
 		/** The number of days worth of messages to delete. */
 		val messages by int {
-			name = "delete-message-days"
-			description = "The number of days worth of messages to delete"
+			name = Translations.Moderation.ModCommands.Arguments.Messages.name
+			description = Translations.Moderation.ModCommands.Arguments.Messages.description
 		}
 
 		/** The reason for the ban. */
 		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the ban"
-			defaultValue = "No reason provided"
+			name = Translations.Moderation.ModCommands.Arguments.Reason.name
+			description = Translations.Moderation.ModCommands.Arguments.Reason.description
+			defaultValue = Translations.Moderation.ModCommands.Arguments.Reason.default.translate()
 		}
 
 		/** Weather to softban this user or not. */
 		val softBan by defaultingBoolean {
-			name = "soft-ban"
-			description = "Weather to soft-ban this user (unban them once messages are deleted)"
+			name = Translations.Moderation.ModCommands.Arguments.Soft.name
+			description = Translations.Moderation.ModCommands.Arguments.Soft.description
 			defaultValue = false
 		}
 
 		/** Whether to DM the user or not. */
 		val dm by optionalBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the ban"
+			name = Translations.Moderation.ModCommands.Arguments.Dm.name
+			description = Translations.Moderation.ModCommands.Arguments.Dm.description
 		}
 
 		/** An image that the user wishes to provide for context to the ban. */
 		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
+			name = Translations.Moderation.ModCommands.Arguments.Image.name
+			description = Translations.Moderation.ModCommands.Arguments.Image.description
 		}
 	}
 
 	inner class TempBanArgs : Arguments() {
 		/** The user to ban. */
 		val userArgument by user {
-			name = "user"
-			description = "Person to ban"
+			name = Translations.Moderation.ModCommands.Arguments.User.name
+			description = Translations.Moderation.ModCommands.Arguments.User.description
 		}
 
 		/** The number of days worth of messages to delete. */
 		val messages by int {
-			name = "delete-message-days"
-			description = "The number of days worth of messages to delete"
+			name = Translations.Moderation.ModCommands.Arguments.Messages.name
+			description = Translations.Moderation.ModCommands.Arguments.Messages.description
 		}
 
 		/** The duration of the temporary ban. */
 		val duration by coalescingDuration {
-			name = "duration"
-			description = "The duration of the temporary ban."
+			name = Translations.Moderation.ModCommands.TempBan.Arguments.Duration.name
+			description = Translations.Moderation.ModCommands.TempBan.Arguments.Duration.description
 		}
 
 		/** The reason for the ban. */
 		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the ban"
-			defaultValue = "No reason provided"
+			name = Translations.Moderation.ModCommands.Arguments.Reason.name
+			description = Translations.Moderation.ModCommands.Arguments.Reason.description
+			defaultValue = Translations.Moderation.ModCommands.Arguments.Reason.default.translate()
 		}
 
 		/** Whether to DM the user or not. */
 		val dm by optionalBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the ban"
+			name = Translations.Moderation.ModCommands.Arguments.Dm.name
+			description = Translations.Moderation.ModCommands.Arguments.Dm.description
 		}
 
 		/** An image that the user wishes to provide for context to the ban. */
 		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
+			name = Translations.Moderation.ModCommands.Arguments.Image.name
+			description = Translations.Moderation.ModCommands.Arguments.Image.description
 		}
 	}
 
 	inner class UnbanArgs : Arguments() {
 		/** The ID of the user to unban. */
 		val userArgument by user {
-			name = "user"
-			description = "Person to un-ban"
+			name = Translations.Moderation.ModCommands.Arguments.User.name
+			description = Translations.Moderation.ModCommands.Arguments.User.description
 		}
 
 		/** The reason for the un-ban. */
 		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the un-ban"
-			defaultValue = "No reason provided"
+			name = Translations.Moderation.ModCommands.Arguments.Reason.name
+			description = Translations.Moderation.ModCommands.Arguments.Reason.description
+			defaultValue = Translations.Moderation.ModCommands.Arguments.Reason.default.translate()
 		}
 	}
 
 	inner class KickArgs : Arguments() {
 		/** The user to kick. */
 		val userArgument by user {
-			name = "user"
-			description = "Person to kick"
+			name = Translations.Moderation.ModCommands.Arguments.User.name
+			description = Translations.Moderation.ModCommands.Arguments.User.description
 		}
 
 		/** The reason for the kick. */
 		val reason by defaultingString {
-			name = "reason"
-			description = "The reason for the Kick"
-			defaultValue = "No reason provided"
+			name = Translations.Moderation.ModCommands.Arguments.Reason.name
+			description = Translations.Moderation.ModCommands.Arguments.Reason.description
+			defaultValue = Translations.Moderation.ModCommands.Arguments.Reason.default.translate()
 		}
 
 		/** Whether to DM the user or not. */
 		val dm by optionalBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the kick"
+			name = Translations.Moderation.ModCommands.Arguments.Dm.name
+			description = Translations.Moderation.ModCommands.Arguments.Dm.description
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
 		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
+			name = Translations.Moderation.ModCommands.Arguments.Image.name
+			description = Translations.Moderation.ModCommands.Arguments.Image.description
 		}
 	}
 
 	inner class TimeoutArgs : Arguments() {
 		/** The requested user to timeout. */
 		val userArgument by user {
-			name = "user"
-			description = "Person to timeout"
+			name = Translations.Moderation.ModCommands.Arguments.User.name
+			description = Translations.Moderation.ModCommands.Arguments.User.description
 		}
 
 		/** The time the timeout should last for. */
 		val duration by coalescingOptionalDuration {
-			name = "duration"
-			description = "Duration of timeout"
+			name = Translations.Moderation.ModCommands.TempBan.Arguments.Duration.name
+			description = Translations.Moderation.ModCommands.Timeout.Arguments.Duration.description
 		}
 
 		/** The reason for the timeout. */
 		val reason by defaultingString {
-			name = "reason"
-			description = "Reason for timeout"
-			defaultValue = "No reason provided"
+			name = Translations.Moderation.ModCommands.Arguments.Reason.name
+			description = Translations.Moderation.ModCommands.Arguments.Reason.description
+			defaultValue = Translations.Moderation.ModCommands.Arguments.Reason.default.translate()
 		}
 
 		/** Whether to DM the user or not. */
 		val dm by optionalBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the timeout"
+			name = Translations.Moderation.ModCommands.Arguments.Dm.name
+			description = Translations.Moderation.ModCommands.Arguments.Dm.description
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
 		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
+			name = Translations.Moderation.ModCommands.Arguments.Image.name
+			description = Translations.Moderation.ModCommands.Arguments.Image.description
 		}
 	}
 
 	inner class RemoveTimeoutArgs : Arguments() {
 		/** The requested user to remove the timeout from. */
 		val userArgument by user {
-			name = "user"
-			description = "Person to remove timeout from"
+			name = Translations.Moderation.ModCommands.Arguments.User.name
+			description = Translations.Moderation.ModCommands.Arguments.User.description
 		}
 
 		/** Whether to DM the user about the timeout removal or not. */
 		val dm by optionalBoolean {
-			name = "dm"
-			description = "Whether to dm the user about this or not"
+			name = Translations.Moderation.ModCommands.Arguments.Dm.name
+			description = Translations.Moderation.ModCommands.Arguments.Dm.description
 		}
 	}
 
 	inner class WarnArgs : Arguments() {
 		/** The requested user to warn. */
 		val userArgument by user {
-			name = "user"
-			description = "Person to warn"
+			name = Translations.Moderation.ModCommands.Arguments.User.name
+			description = Translations.Moderation.ModCommands.Arguments.User.description
 		}
 
 		/** The reason for the warning. */
 		val reason by defaultingString {
-			name = "reason"
-			description = "Reason for warning"
-			defaultValue = "No reason provided"
+			name = Translations.Moderation.ModCommands.Arguments.Reason.name
+			description = Translations.Moderation.ModCommands.Arguments.Reason.description
+			defaultValue = Translations.Moderation.ModCommands.Arguments.Reason.default.translate()
 		}
 
 		/** Whether to DM the user or not. */
 		val dm by optionalBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the warning"
+			name = Translations.Moderation.ModCommands.Arguments.Dm.name
+			description = Translations.Moderation.ModCommands.Arguments.Dm.description
 		}
 
 		/** An image that the user wishes to provide for context to the kick. */
 		val image by optionalAttachment {
-			name = "image"
-			description = "An image you'd like to provide as extra context for the action"
+			name = Translations.Moderation.ModCommands.Arguments.Image.name
+			description = Translations.Moderation.ModCommands.Arguments.Image.description
 		}
 	}
 
 	inner class RemoveWarnArgs : Arguments() {
 		/** The requested user to remove the warning from. */
 		val userArgument by user {
-			name = "user"
-			description = "Person to remove warn from"
+			name = Translations.Moderation.ModCommands.Arguments.User.name
+			description = Translations.Moderation.ModCommands.Arguments.User.description
 		}
 
 		/** Whether to DM the user or not. */
 		val dm by defaultingBoolean {
-			name = "dm"
-			description = "Whether to send a direct message to the user about the warning"
+			name = Translations.Moderation.ModCommands.Arguments.Dm.name
+			description = Translations.Moderation.ModCommands.Arguments.Dm.description
 			defaultValue = true
 		}
 	}
@@ -1307,25 +1337,25 @@ class ModerationCommands : Extension() {
  * @since 4.4.0
  */
 private fun EmbedBuilder.warnTimeoutLog(warningNumber: Int, moderator: User, targetUser: User, reason: String) {
+	val translations = Translations.Moderation.ModCommands.Warning.Log
 	when (warningNumber) {
 		1 -> {}
-		2 -> description = "${targetUser.mention} has been timed-out for 3 hours due to 2 warn strikes"
+		2 -> description = translations.action3h.translate(targetUser.mention)
 
-		3 -> description = "${targetUser.mention} has been timed-out for 12 hours due to 3 warn strikes"
+		3 -> description = translations.action12h.translate(targetUser.mention)
 
 		else ->
-			description = "${targetUser.mention} has been timed-out for 3 days due to $warningNumber warn " +
-				"strikes\nIt might be time to consider other action."
+			description = translations.action3d.translate(targetUser.mention, warningNumber)
 	}
 
 	if (warningNumber != 1) {
-		title = "Timeout"
+		title = Translations.Moderation.ModCommands.Timeout.Quick.embedTitle.translate()
 		field {
-			name = "User"
+			name = Translations.Basic.userField.translate()
 			value = "${targetUser.id} (${targetUser.username})"
 		}
 		field {
-			name = "Reason"
+			name = translations.reason.translate()
 			value = reason
 		}
 		footer {
