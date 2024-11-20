@@ -42,6 +42,7 @@ import dev.kordex.core.utils.scheduling.Scheduler
 import dev.kordex.core.utils.scheduling.Task
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
@@ -86,8 +87,8 @@ class ModUtilities : Extension() {
 		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::SayArgs) {
-			name = "say"
-			description = "Say something through Lily."
+			name = Translations.Moderation.ModUtilities.Say.name
+			description = Translations.Moderation.ModUtilities.Say.description
 
 			requirePermission(Permission.ModerateMembers)
 
@@ -104,6 +105,7 @@ class ModUtilities : Extension() {
 					channel.asChannelOfOrNull() ?: return@action
 				}
 				val createdMessage: Message
+				val translations = Translations.Moderation.ModUtilities.Say
 
 				try {
 					if (arguments.embed) {
@@ -119,38 +121,38 @@ class ModUtilities : Extension() {
 							content = arguments.message
 						}
 					}
-				} catch (e: KtorRequestException) {
-					respond { content = "Lily does not have permission to send messages in this channel." }
+				} catch (_: KtorRequestException) {
+					respond { content = translations.noSendPerms.translate() }
 					return@action
 				}
 
-				respond { content = "Message sent." }
+				respond { content = translations.response.translate() }
 
 				val utilityLog =
 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createMessage {
 					embed {
-						title = "Say command used"
+						title = translations.embedTitle.translate()
 						description = "```${arguments.message}```"
 						field {
-							name = "Channel:"
+							name = translations.channelField.translate()
 							value = targetChannel.mention
 							inline = true
 						}
 						field {
-							name = "Type:"
-							value = if (arguments.embed) "Embed" else "Message"
+							name = translations.typeField.translate()
+							value = if (arguments.embed) { translations.embedType } else { translations.messageType }.translate()
 							inline = true
 						}
 						footer {
-							text = user.asUserOrNull()?.username ?: "Unable to get user username"
+							text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
 						if (arguments.embed) {
 							color = arguments.color
 							field {
-								name = "Color:"
+								name = translations.colorField.translate()
 								value = arguments.color.toString()
 								inline = true
 							}
@@ -160,7 +162,7 @@ class ModUtilities : Extension() {
 					}
 					components {
 						linkButton {
-							label = "Jump to message"
+							label = translations.jumpButton
 							url = createdMessage.getJumpUrl()
 						}
 					}
@@ -174,8 +176,8 @@ class ModUtilities : Extension() {
 		 * @since 3.3.0
 		 */
 		ephemeralSlashCommand(::SayEditArgs) {
-			name = "edit-say"
-			description = "Edit a message created by /say"
+			name = Translations.Moderation.ModUtilities.EditSay.name
+			description = Translations.Moderation.ModUtilities.EditSay.description
 
 			requirePermission(Permission.ModerateMembers)
 
@@ -195,10 +197,10 @@ class ModUtilities : Extension() {
 				}
 				val message = channelOfMessage?.getMessageOrNull(arguments.messageToEdit)
 
+				val translations = Translations.Moderation.ModUtilities.EditSay
+
 				if (message == null) {
-					respond {
-						content = "I was unable to get the target message! Please check the message exists"
-					}
+					respond { content = translations.unableTo.translate() }
 					return@action
 				}
 
@@ -207,39 +209,35 @@ class ModUtilities : Extension() {
 				// it's not by LilyBot, it returns
 				if (message.embeds.isEmpty()) {
 					if (message.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
-						respond { content = "I did not send this message, I cannot edit this!" }
+						respond { content = translations.notAuthor.translate() }
 						return@action
 					} else if (arguments.newContent == null) {
-						respond { content = "Please specify a new message content" }
+						respond { content = translations.missingContent.translate() }
 						return@action
 					} else if (arguments.newContent != null && arguments.newContent!!.length > 1024) {
-						respond {
-							content =
-								"Maximum embed length reached! Your embed character length cannot be more than 1024 " +
-										"characters, due to Discord limitations"
-						}
+						respond { content = translations.maxLength.translate() }
 						return@action
 					}
 
 					message.edit { content = arguments.newContent }
 
-					respond { content = "Message edited" }
+					respond { content = translations.response.translate() }
 
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 						?: return@action
 					utilityLog.createMessage {
 						embed {
-							title = "Say message edited"
+							title = translations.embedTitle.translate()
 							field {
-								name = "Original Content"
+								name = translations.embedOriginal.translate()
 								value = "```${originalContent.trimmedContents(500)}```"
 							}
 							field {
-								name = "New Content"
+								name = translations.embedNew.translate()
 								value = "```${arguments.newContent.trimmedContents(500)}```"
 							}
 							footer {
-								text = "Edited by ${user.asUserOrNull()?.username}"
+								text = translations.editedBy.translate(user.asUserOrNull()?.username)
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							color = DISCORD_WHITE
@@ -247,14 +245,14 @@ class ModUtilities : Extension() {
 						}
 						components {
 							linkButton {
-								label = "Jump to message"
+								label = Translations.Moderation.ModUtilities.Say.jumpButton
 								url = message.getJumpUrl()
 							}
 						}
 					}
 				} else {
 					if (message.author!!.id != this@ephemeralSlashCommand.kord.selfId) {
-						respond { content = "I did not send this message, I cannot edit this!" }
+						respond { content = translations.notAuthor.translate() }
 						return@action
 					}
 
@@ -275,39 +273,39 @@ class ModUtilities : Extension() {
 						}
 					}
 
-					respond { content = "Embed updated" }
+					respond { content = translations.response.translate() }
 
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 						?: return@action
 					utilityLog.createMessage {
 						embed {
-							title = "Say message edited"
+							title = translations.embedTitle.translate()
 							field {
-								name = "Original content"
+								name = translations.embedOriginal.translate()
 								// The old content, if null none
-								value = "```${oldContent ?: "none"}```"
+								value = "```${oldContent ?: Translations.Basic.none.translate()}```"
 							}
 							field {
-								name = "New content"
+								name = translations.embedNew.translate()
 								// The new content, if null the old content, if null none
-								value = "```${arguments.newContent ?: oldContent ?: "none"}```"
+								value = "```${arguments.newContent ?: oldContent ?: Translations.Basic.none.translate()}```"
 							}
 							field {
-								name = "Old color"
+								name = translations.embedOldColor.translate()
 								value = oldColor.toString()
 							}
 							field {
-								name = "New color"
+								name = translations.embedNewColor.translate()
 								value =
 									if (arguments.newColor != null) arguments.newColor.toString() else oldColor.toString()
 							}
 							field {
-								name = "Has Timestamp"
+								name = translations.embedHasTime.translate()
 								value = when (arguments.timestamp) {
-									true -> "True"
-									false -> "False"
-									else -> "Original"
-								}
+									true -> Translations.Basic.`true`
+									false -> Translations.Basic.`false`
+									else -> Translations.Basic.original
+								}.translate()
 							}
 							footer {
 								text = "Edited by ${user.asUserOrNull()?.username}"
@@ -318,7 +316,7 @@ class ModUtilities : Extension() {
 						}
 						components {
 							linkButton {
-								label = "Jump to message"
+								label = Translations.Moderation.ModUtilities.Say.jumpButton
 								url = message.getJumpUrl()
 							}
 						}
@@ -333,14 +331,14 @@ class ModUtilities : Extension() {
 		 * @since 2.0
 		 */
 		ephemeralSlashCommand(::PresenceArgs) {
-			name = "status"
-			description = "Set Lily's current presence/status."
+			name = Translations.Moderation.ModUtilities.Status.name
+			description = Translations.Moderation.ModUtilities.Status.description
 
 			guild(TEST_GUILD_ID)
 
 			ephemeralSubCommand(::PresenceArgs) {
-				name = "set"
-				description = "Set a custom status for Lily."
+				name = Translations.Moderation.ModUtilities.Status.Set.name
+				description = Translations.Moderation.ModUtilities.Status.Set.description
 
 				guild(TEST_GUILD_ID)
 				requirePermission(Permission.Administrator)
@@ -354,6 +352,8 @@ class ModUtilities : Extension() {
 					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
 					val actionLog = guild!!.getChannelOfOrNull<GuildMessageChannel>(config.channel!!)
 
+					val translations = Translations.Moderation.ModUtilities.Status.Set
+
 					// Update the presence in the action
 					this@ephemeralSlashCommand.kord.editPresence {
 						status = PresenceStatus.Online
@@ -363,13 +363,13 @@ class ModUtilities : Extension() {
 					// Store the new presence in the database for if there is a restart
 					StatusCollection().setStatus(arguments.presenceArgument)
 
-					respond { content = "Presence set to `${arguments.presenceArgument}`" }
+					respond { content = translations.response.translate(arguments.presenceArgument) }
 
 					actionLog?.createEmbed {
-						title = "Presence changed"
-						description = "Lily's presence has been set to `${arguments.presenceArgument}`"
+						title = translations.embedTitle.translate()
+						description = translations.embedDesc.translate(arguments.presenceArgument)
 						footer {
-							text = user.asUserOrNull()?.username ?: "Unable to get user username"
+							text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						color = DISCORD_BLACK
@@ -378,8 +378,8 @@ class ModUtilities : Extension() {
 			}
 
 			ephemeralSubCommand {
-				name = "reset"
-				description = "Reset Lily's presence to the default status."
+				name = Translations.Moderation.ModUtilities.Status.Reset.name
+				description = Translations.Moderation.ModUtilities.Status.Reset.description
 
 				guild(TEST_GUILD_ID)
 				requirePermission(Permission.Administrator)
@@ -390,24 +390,26 @@ class ModUtilities : Extension() {
 				}
 
 				action {
+					val translations = Translations.Moderation.ModUtilities.Status.Reset
+
 					// Store the new presence in the database for if there is a restart
 					StatusCollection().setStatus(null)
 
 					updateDefaultPresence()
 					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size
 
-					respond { content = "Presence set to default" }
+					respond { content = translations.response.translate() }
 
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 						?: return@action
 					utilityLog.createEmbed {
-						title = "Presence changed"
-						description = "Lily's presence has been set to default."
+						title = Translations.Moderation.ModUtilities.Status.Set.embedTitle.translate()
+						description = translations.embedDesc.translate()
 						field {
-							value = "Watching over $guilds servers."
+							value = translations.embedValue.translate(guilds)
 						}
 						footer {
-							text = user.asUserOrNull()?.username ?: "Unable to get user username"
+							text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						color = DISCORD_BLACK
@@ -417,8 +419,8 @@ class ModUtilities : Extension() {
 		}
 
 		ephemeralSlashCommand(::ResetModal) {
-			name = "reset"
-			description = "'Resets' Lily for this guild by deleting all database information relating to this guild"
+			name = Translations.Moderation.ModUtilities.Reset.name
+			description = Translations.Moderation.ModUtilities.Reset.description
 
 			requirePermission(Permission.Administrator) // Hide this command from non-administrators
 
@@ -428,27 +430,25 @@ class ModUtilities : Extension() {
 			}
 
 			action { modal ->
+				val translations = Translations.Moderation.ModUtilities.Reset
 				if (modal?.confirmation?.value?.lowercase() != "yes") {
-					respond { content = "Confirmation failure. Reset cancelled" }
+					respond { content = translations.failResponse.translate() }
 					return@action
 				}
 
 				var response: EphemeralFollowupMessage? = null
 
 				response = respond {
-					content =
-						"Are you sure you want to reset the database? This will remove all data associated with " +
-								"this guild from Lily's database. This includes configs, user-set reminders, usernames and more." +
-								"This action is **irreversible** and the data **cannot** be recovered."
+					content = translations.tripleCheck.translate()
 
 					components {
 						ephemeralButton(0) {
-							label = "I'm sure"
+							label = translations.yesButton
 							style = ButtonStyle.Danger
 
 							action {
 								response?.edit {
-									content = "Database reset!"
+									content = translations.resetResponse.translate()
 									components { removeAll() }
 								}
 
@@ -458,8 +458,8 @@ class ModUtilities : Extension() {
 											?.getSystemChannel()!!.id
 								)?.createMessage {
 									embed {
-										title = "Database Reset!"
-										description = "All data associated with this guild has been removed."
+										title = translations.resetResponse.translate()
+										description = translations.embedDesc.translate()
 										timestamp = Clock.System.now()
 										color = DISCORD_BLACK
 									}
@@ -484,12 +484,12 @@ class ModUtilities : Extension() {
 						}
 
 						ephemeralButton(0) {
-							label = "Nevermind"
+							label = translations.noButton
 							style = ButtonStyle.Secondary
 
 							action {
 								response?.edit {
-									content = "Reset cancelled"
+									content = translations.cancelResponse.translate()
 									components { removeAll() }
 								}
 							}
@@ -503,8 +503,8 @@ class ModUtilities : Extension() {
 	inner class SayArgs : Arguments() {
 		/** The message the user wishes to send. */
 		val message by string {
-			name = "message"
-			description = "The text of the message to be sent."
+			name = Translations.Moderation.ModUtilities.Say.Arguments.Message.name
+			description = Translations.Moderation.ModUtilities.Say.Arguments.Message.description
 
 			// Fix newline escape characters
 			mutate {
@@ -516,29 +516,28 @@ class ModUtilities : Extension() {
 
 		/** The channel to aim the message at. */
 		val channel by optionalChannel {
-			name = "channel"
-			description = "The channel the message should be sent in."
+			name = Translations.Moderation.ModUtilities.Say.Arguments.Channel.name
+			description = Translations.Moderation.ModUtilities.Say.Arguments.Channel.description
 		}
 
 		/** Whether to embed the message or not. */
 		val embed by defaultingBoolean {
-			name = "embed"
-			description = "If the message should be sent as an embed."
+			name = Translations.Moderation.ModUtilities.Say.Arguments.Embed.name
+			description = Translations.Moderation.ModUtilities.Say.Arguments.Embed.description
 			defaultValue = false
 		}
 
 		/** If the embed should have a timestamp. */
 		val timestamp by defaultingBoolean {
-			name = "timestamp"
-			description = "If the message should be sent with a timestamp. Only works with embeds."
+			name = Translations.Moderation.ModUtilities.Say.Arguments.Timestamp.name
+			description = Translations.Moderation.ModUtilities.Say.Arguments.Timestamp.description
 			defaultValue = true
 		}
 
 		/** What color the embed should be. */
 		val color by defaultingColor {
-			name = "color"
-			description = "The color of the embed. Can be either a hex code or one of Discord's supported colors. " +
-					"Embeds only"
+			name = Translations.Moderation.ModUtilities.Say.Arguments.Color.name
+			description = Translations.Moderation.ModUtilities.Say.Arguments.Color.description
 			defaultValue = DISCORD_BLURPLE
 		}
 	}
@@ -546,14 +545,14 @@ class ModUtilities : Extension() {
 	inner class SayEditArgs : Arguments() {
 		/** The ID of the embed to edit. */
 		val messageToEdit by snowflake {
-			name = "message-to-edit"
-			description = "The ID of the message you'd like to edit"
+			name = Translations.Moderation.ModUtilities.EditSay.Arguments.MessageToEdit.name
+			description = Translations.Moderation.ModUtilities.EditSay.Arguments.MessageToEdit.description
 		}
 
 		/** The new content of the embed. */
 		val newContent by optionalString {
-			name = "new-content"
-			description = "The new content of the message"
+			name = Translations.Moderation.ModUtilities.EditSay.Arguments.NewContent.name
+			description = Translations.Moderation.ModUtilities.EditSay.Arguments.NewContent.description
 
 			mutate {
 				it?.replace("\\n", "\n")
@@ -564,37 +563,37 @@ class ModUtilities : Extension() {
 
 		/** The new color for the embed. */
 		val newColor by optionalColour {
-			name = "new-color"
-			description = "The new color of the embed. Embeds only"
+			name = Translations.Moderation.ModUtilities.EditSay.Arguments.NewColor.name
+			description = Translations.Moderation.ModUtilities.EditSay.Arguments.NewColor.description
 		}
 
 		/** The channel the embed was originally sent in. */
 		val channelOfMessage by optionalChannel {
-			name = "channel-of-message"
-			description = "The channel of the message"
+			name = Translations.Moderation.ModUtilities.EditSay.Arguments.ChannelOf.name
+			description = Translations.Moderation.ModUtilities.EditSay.Arguments.ChannelOf.description
 		}
 
 		/** Whether to add the timestamp of when the message was originally sent or not. */
 		val timestamp by optionalBoolean {
-			name = "timestamp"
-			description = "Whether to timestamp the embed or not. Embeds only"
+			name = Translations.Moderation.ModUtilities.EditSay.Arguments.Timestamp.name
+			description = Translations.Moderation.ModUtilities.EditSay.Arguments.Timestamp.description
 		}
 	}
 
 	inner class PresenceArgs : Arguments() {
 		/** The new presence set by the command user. */
 		val presenceArgument by string {
-			name = "presence"
-			description = "The new value Lily's presence should be set to"
+			name = Translations.Moderation.ModUtilities.Status.Arguments.Presence.name
+			description = Translations.Moderation.ModUtilities.Status.Arguments.Presence.description
 		}
 	}
 
 	inner class ResetModal : ModalForm() {
-		override var title = "Reset data for this guild"
+		override var title = Translations.Moderation.ModUtilities.Reset.Modal.title
 
 		val confirmation = lineText {
-			label = "Confirm Reset"
-			placeholder = "Type 'yes' to confirm"
+			label = Translations.Moderation.ModUtilities.Reset.Modal.Confirmation.label
+			placeholder = Translations.Moderation.ModUtilities.Reset.Modal.Confirmation.placeholder
 			required = true
 		}
 	}
