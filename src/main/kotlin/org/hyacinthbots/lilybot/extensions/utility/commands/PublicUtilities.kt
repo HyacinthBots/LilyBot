@@ -97,19 +97,21 @@ class PublicUtilities : Extension() {
 					val requesterAsMember = requester?.asMemberOrNull(guild!!.id)
 					val self = this@PublicUtilities.kord.getSelf().asMemberOrNull(guild!!.id)
 
+					val translations = Translations.Utility.PublicUtilities.Nickname.Request
+					val embedTranslations = Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed
+
 					if (requesterAsMember?.getTopRole()?.getPosition() != null &&
 						self?.getTopRole()?.getPosition() == null
 					) {
 						respond {
-							content = Translations.Utility.PublicUtilities.Nickname.Request.lilyNoRolePublic.translate()
+							content = translations.lilyNoRolePublic.translate()
 						}
 						return@action
 					} else if ((requesterAsMember?.getTopRole()?.getPosition() ?: 0) >
 						(self?.getTopRole()?.getPosition() ?: 0)
 					) {
 						respond {
-							content =
-								Translations.Utility.PublicUtilities.Nickname.Request.highestRolePublic.translate()
+							content = translations.highestRolePublic.translate()
 						}
 						return@action
 					}
@@ -117,7 +119,7 @@ class PublicUtilities : Extension() {
 					if (requesterAsMember?.hasPermission(Permission.ChangeNickname) == true) {
 						requesterAsMember.edit { nickname = arguments.newNick }
 						respond {
-							content = Translations.Utility.PublicUtilities.Nickname.Request.hasPermission.translate()
+							content = translations.hasPermission.translate()
 						}
 						return@action
 					}
@@ -125,14 +127,14 @@ class PublicUtilities : Extension() {
 					// Declare the embed outside the action to allow us to reference it inside the action
 					var actionLogEmbed: Message? = null
 
-					respond { content = Translations.Utility.PublicUtilities.Nickname.Request.sent.translate() }
+					respond { content = translations.sent.translate() }
 
 					try {
 						actionLogEmbed =
 							utilityLog?.createMessage {
 								embed {
 									color = DISCORD_YELLOW
-									title = Translations.Utility.PublicUtilities.Nickname.Request.embedTitle.translate()
+									title = translations.embedTitle.translate()
 									timestamp = Clock.System.now()
 
 									field {
@@ -143,15 +145,13 @@ class PublicUtilities : Extension() {
 									}
 
 									field {
-										name =
-											Translations.Utility.PublicUtilities.Nickname.Request.embedCurrentNick.translate()
+										name = translations.embedCurrentNick.translate()
 										value = "`${requesterAsMember?.nickname}`"
 										inline = false
 									}
 
 									field {
-										name =
-											Translations.Utility.PublicUtilities.Nickname.Request.embedRequestedNick.translate()
+										name = translations.embedRequestedNick.translate()
 										value = "`${arguments.newNick}`"
 										inline = false
 									}
@@ -166,16 +166,14 @@ class PublicUtilities : Extension() {
 												self?.getTopRole()?.getPosition() == null
 											) {
 												respond {
-													content =
-														Translations.Utility.PublicUtilities.Nickname.Request.lilyNoRolePrivate.translate()
+													content = translations.lilyNoRolePrivate.translate()
 												}
 												return@button
 											} else if ((requesterAsMember?.getTopRole()?.getPosition() ?: 0) >
 												(self?.getTopRole()?.getPosition() ?: 0)
 											) {
 												respond {
-													content =
-														Translations.Utility.PublicUtilities.Nickname.Request.highestRolePrivate.translate()
+													content = translations.highestRolePrivate.translate()
 												}
 												return@button
 											}
@@ -184,15 +182,13 @@ class PublicUtilities : Extension() {
 
 											requester?.dm {
 												embed {
-													title =
-														Translations.Utility.PublicUtilities.Nickname.Request.Dm.acceptTitle.translate(
-															guild!!.asGuildOrNull()?.name
-														)
-													description =
-														Translations.Utility.PublicUtilities.Nickname.Request.Dm.acceptDescription.translate(
-															requesterAsMember?.nickname,
-															arguments.newNick
-														)
+													title = translations.dmAcceptTitle.translate(
+														guild!!.asGuildOrNull()?.name
+													)
+													description = translations.dmAcceptDescription.translate(
+														requesterAsMember?.nickname,
+														arguments.newNick
+													)
 													color = DISCORD_GREEN
 												}
 											}
@@ -202,8 +198,7 @@ class PublicUtilities : Extension() {
 
 												embed {
 													color = DISCORD_GREEN
-													title =
-														Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed.acceptTitle.translate()
+													title = embedTranslations.acceptTitle.translate()
 
 													field {
 														name =
@@ -216,24 +211,21 @@ class PublicUtilities : Extension() {
 
 													// these two fields should be the same and exist as a sanity check
 													field {
-														name =
-															Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed.previousNick.translate()
+														name = embedTranslations.previousNick.translate()
 														value = "`${requesterAsMember?.nickname}`"
 														inline = false
 													}
 
 													field {
-														name =
-															Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed.acceptedNick.translate()
+														name = embedTranslations.acceptedNick.translate()
 														value = "`${arguments.newNick}`"
 														inline = false
 													}
 
 													footer {
-														text =
-															Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed.acceptedBy.translate(
-																user.asUserOrNull()?.username
-															)
+														text = embedTranslations.acceptedBy.translate(
+															user.asUserOrNull()?.username
+														)
 														icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 													}
 
@@ -250,20 +242,17 @@ class PublicUtilities : Extension() {
 										action {
 											requester?.dm {
 												embed {
-													title =
-														Translations.Utility.PublicUtilities.Nickname.Request.Dm.denyTitle.translate()
-													description =
-														Translations.Utility.PublicUtilities.Nickname.Request.Dm.denyDescription.translate(
-															arguments.newNick
-														)
+													title = translations.dmDenyTitle.translate()
+													description = translations.dmDenyDescription.translate(
+														arguments.newNick
+													)
 												}
 											}
 
 											actionLogEmbed!!.edit {
 												components { removeAll() }
 												embed {
-													title =
-														Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed.denyTitle.translate()
+													title = embedTranslations.denyTitle.translate()
 
 													field {
 														name =
@@ -274,24 +263,21 @@ class PublicUtilities : Extension() {
 													}
 
 													field {
-														name =
-															Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed.currentNick.translate()
+														name = embedTranslations.currentNick.translate()
 														value = "`${requesterAsMember?.nickname}`"
 														inline = false
 													}
 
 													field {
-														name =
-															Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed.rejectedNick.translate()
+														name = embedTranslations.rejectedNick.translate()
 														value = "`${arguments.newNick}`"
 														inline = false
 													}
 
 													footer {
-														text =
-															Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed.deniedBy.translate(
-																user.asUserOrNull()?.username
-															)
+														text = embedTranslations.deniedBy.translate(
+															user.asUserOrNull()?.username
+														)
 														icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 													}
 
@@ -325,20 +311,22 @@ class PublicUtilities : Extension() {
 				action {
 					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val utilityLog = guild?.getChannelOfOrNull<GuildMessageChannel>(config.utilityLogChannel!!)
+					val translations = Translations.Utility.PublicUtilities.Nickname.Clear
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {
 						respond {
-							content = Translations.Utility.PublicUtilities.Nickname.Clear.nothingToClear.translate()
+							content = translations.nothingToClear.translate()
 						}
 						return@action
 					}
 
-					respond { content = Translations.Utility.PublicUtilities.Nickname.Clear.cleared.translate() }
+					respond { content = translations.cleared.translate() }
 
 					try {
 						utilityLog?.createEmbed {
-							title = Translations.Utility.PublicUtilities.Nickname.Clear.LogEmbed.title.translate()
+							val embedTranslations = Translations.Utility.PublicUtilities.Nickname.Clear.LogEmbed
+							title = embedTranslations.title.translate()
 							color = DISCORD_YELLOW
 							timestamp = Clock.System.now()
 
@@ -349,12 +337,10 @@ class PublicUtilities : Extension() {
 							}
 
 							field {
-								name =
-									Translations.Utility.PublicUtilities.Nickname.Clear.LogEmbed.newNickTitle.translate()
-								value =
-									Translations.Utility.PublicUtilities.Nickname.Clear.LogEmbed.newNickValue.translate(
-										user.asMemberOrNull(guild!!.id)?.nickname
-									)
+								name = embedTranslations.newNickTitle.translate()
+								value = embedTranslations.newNickValue.translate(
+									user.asMemberOrNull(guild!!.id)?.nickname
+								)
 								inline = false
 							}
 						}

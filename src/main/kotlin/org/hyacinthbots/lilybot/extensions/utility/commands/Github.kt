@@ -13,8 +13,8 @@ import dev.kordex.core.commands.converters.impl.optionalString
 import dev.kordex.core.commands.converters.impl.string
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.publicSlashCommand
-import dev.kordex.core.sentry.BreadcrumbType
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.github
 import org.kohsuke.github.GHDirection
@@ -50,20 +50,19 @@ class Github : Extension() {
 		 * @since 2.0
 		 */
 		publicSlashCommand {
-			name = "github"
-			description = "The parent command for all /github commands"
+			name = Translations.Utility.Github.name
+			description = Translations.Utility.Github.description
 
 			publicSubCommand(::IssueArgs) {
-				name = "issue"
-				description = "Look up an issue on a specific repository"
+				name = Translations.Utility.Github.Issue.name
+				description = Translations.Utility.Github.Issue.description
 
 				action {
+					val translations = Translations.Utility.Github.Issue
 					val repository = arguments.repository ?: GithubCollection().getDefaultRepo(guild!!.id)
 					if (repository == null) {
 						respond {
-							content =
-								"There is no default repository set. Please specify a repository to search or set" +
-										"a default."
+							content = Translations.Utility.Github.noDefault.translate()
 						}
 						return@action
 					}
@@ -71,8 +70,8 @@ class Github : Extension() {
 					if (!repository.contains("/")) {
 						respond {
 							embed {
-								title = "Make sure your repository input is formatted like this:"
-								description = "Format: `User/Repo` or `Org/Repo` \nFor example: `HyacinthBots/LilyBot`"
+								title = Translations.Utility.Github.badFormatEmbedTitle.translate()
+								description = Translations.Utility.Github.badFormatEmbedDesc.translate()
 							}
 						}
 						return@action
@@ -84,7 +83,7 @@ class Github : Extension() {
 						issue = if (repository.contains("http", true)) {
 							github.getRepository(
 								"${repository.split("/")[3]}/" +
-										repository.split("/")[4]
+									repository.split("/")[4]
 							)?.getIssue(arguments.issue)
 						} else {
 							try {
@@ -92,7 +91,7 @@ class Github : Extension() {
 							} catch (_: GHFileNotFoundException) {
 								respond {
 									embed {
-										title = "Unable to find issue number! Make sure this issue exists"
+										title = translations.unableToFind.translate()
 									}
 								}
 								return@action
@@ -111,7 +110,7 @@ class Github : Extension() {
 						} catch (_: GHException) {
 							respond {
 								embed {
-									title = "Unable to access repository, make sure this repository exists!"
+									title = Translations.Utility.Github.unableToRepo.translate()
 								}
 							}
 							return@action
@@ -122,7 +121,7 @@ class Github : Extension() {
 						} else {
 							respond {
 								embed {
-									title = "Invalid issue number. Make sure this issue exists!"
+									title = translations.unableToFind.translate()
 								}
 							}
 							return@action
@@ -134,7 +133,7 @@ class Github : Extension() {
 						} catch (_: GHFileNotFoundException) {
 							respond {
 								embed {
-									title = "Unable to find issue number! Make sure this issue exists"
+									title = translations.unableToFind.translate()
 								}
 							}
 							return@action
@@ -150,8 +149,9 @@ class Github : Extension() {
 							if (issue!!.isPullRequest) {
 								title = issue.title
 								url = issue.htmlUrl.toString()
-								description =
-									"**Information for Pull request #${issue.number} in ${issue.repository.fullName}**"
+								description = translations.embedDescPr.translateNamed(
+									"number" to issue.number, "repo" to issue.repository.fullName
+								)
 
 								try {
 									val pull: GHPullRequest = issue.repository.getPullRequest(issue.number)
@@ -159,16 +159,17 @@ class Github : Extension() {
 									draft = pull.isDraft
 								} catch (ioException: IOException) {
 									ioException.printStackTrace()
-									title = "Error!"
-									description = "Error occurred initializing Pull Request. How did this happen?"
+									title = translations.errorTitle.translate()
+									description = translations.errorDesc.translate()
 									color = DISCORD_RED
 									return@respond
 								}
 							} else {
 								title = issue.title
 								url = issue.htmlUrl.toString()
-								description =
-									"**Information for issue #${issue.number} in ${issue.repository.fullName}**"
+								description = translations.embedDescIs.translateNamed(
+									"number" to issue.number, "repo" to issue.repository.fullName
+								)
 							}
 
 							field {
@@ -179,7 +180,7 @@ class Github : Extension() {
 									} else if (issue.body.isNotEmpty() && issue.body.length <= 399) {
 										issue.body
 									} else {
-										"No description Provided"
+										translations.noDesc.translate()
 									}
 								}
 							}
@@ -188,29 +189,29 @@ class Github : Extension() {
 							if (merged) {
 								color = dev.kord.common.Color(111, 66, 193)
 								field {
-									name = "Status:"
-									value = "Merged"
+									name = translations.statusField.translate()
+									value = translations.merged.translate()
 									inline = false
 								}
 							} else if (!open) {
 								color = dev.kord.common.Color(203, 36, 49)
 								field {
-									name = "Status:"
-									value = "Closed"
+									name = translations.statusField.translate()
+									value = translations.closed.translate()
 									inline = false
 								}
 							} else if (draft) {
 								color = dev.kord.common.Color(255, 255, 255)
 								field {
-									name = "Status:"
-									value = "Draft"
+									name = translations.statusField.translate()
+									value = translations.draft.translate()
 									inline = false
 								}
 							} else {
 								color = dev.kord.common.Color(44, 185, 78)
 								field {
-									name = "Status:"
-									value = "Open"
+									name = translations.statusField.translate()
+									value = translations.open.translate()
 									inline = false
 								}
 							}
@@ -219,31 +220,31 @@ class Github : Extension() {
 								val author: GHUser = issue.user
 								if (author.name != null) {
 									field {
-										name = "Author:"
+										name = translations.authorField.translate()
 										value =
 											"[" + author.login + " (" + author.name + ")](" +
-													"https://github.com/" + author.login + ")"
+												"https://github.com/" + author.login + ")"
 										inline = false
 									}
 								} else {
 									field {
-										name = "Author:"
+										name = translations.authorField.translate()
 										value = "[" + author.login + "](https://github.com/" + author.login + ")"
 										inline = false
 									}
 								}
 							} catch (_: IOException) {
 								field {
-									name = "Author:"
-									value = "Unknown Author"
+									name = translations.authorField.translate()
+									value = translations.unknownAuthor.translate()
 									inline = false
 								}
 							}
 
 							try {
 								field {
-									name = "Opened on:"
-									value = "${issue.createdAt}"
+									name = translations.openedField.translate()
+									value = issue.createdAt.toString()
 									inline = false
 								}
 
@@ -255,7 +256,7 @@ class Github : Extension() {
 
 								if (labels.isNotEmpty()) {
 									field {
-										name = "Labels:"
+										name = translations.labelsField.translate()
 										value = labels.joinToString(", ")
 										inline = false
 									}
@@ -269,16 +270,15 @@ class Github : Extension() {
 			}
 
 			publicSubCommand(::RepoArgs) {
-				name = "repo"
-				description = "Search GitHub for a specific repository"
+				name = Translations.Utility.Github.Repo.name
+				description = Translations.Utility.Github.Repo.description
 
 				action {
+					val translations = Translations.Utility.Github.Repo
 					val repository = arguments.repository ?: GithubCollection().getDefaultRepo(guild!!.id)
 					if (repository == null) {
 						respond {
-							content =
-								"There is no default repository set. Please specify a repository to search or set" +
-										"a default."
+							content = Translations.Utility.Github.unableToRepo.translate()
 						}
 						return@action
 					}
@@ -286,8 +286,8 @@ class Github : Extension() {
 					if (!repository.contains("/")) {
 						respond {
 							embed {
-								title = "Make sure your input is formatted like this:"
-								description = "Format: `User/Repo` or `Org/Repo`\nFor example: `HyacinthBots/LilyBot`"
+								title = Translations.Utility.Github.badFormatEmbedTitle.translate()
+								description = Translations.Utility.Github.badFormatEmbedDesc.translate()
 							}
 						}
 						return@action
@@ -299,19 +299,15 @@ class Github : Extension() {
 						repo = if (repository.contains("http", true)) {
 							github.getRepository(
 								"${repository.split("/")[3]}/" +
-										repository.split("/")[4]
+									repository.split("/")[4]
 							)
 						} else {
 							github.getRepository(repository)
 						}
 					} catch (_: IOException) {
-						sentry.breadcrumb(BreadcrumbType.Error) {
-							category = "extensions.util.Github.repository.getRepository"
-							message = "Repository not found"
-						}
 						respond {
 							embed {
-								title = "Invalid repository name. Make sure this repository exists"
+								title = Translations.Utility.Github.unableToRepo.translate()
 							}
 						}
 						repo = null
@@ -321,41 +317,41 @@ class Github : Extension() {
 					respond {
 						embed {
 							try {
-								title = "GitHub Repository Info for " + repo?.fullName
+								title = translations.embedTitle.translate(repo?.fullName)
 								url = repo?.htmlUrl.toString()
 								description = repo?.description
 
 								if (repo!!.license != null) {
 									field {
-										name = "License:"
+										name = translations.licenceField.translate()
 										value = repo.license.name
 										inline = false
 									}
 								}
 
 								field {
-									name = "Open Issues and PRs:"
+									name = translations.openIssues.translate()
 									value = repo.openIssueCount.toString()
 									inline = false
 								}
 								field {
-									name = "Forks:"
+									name = translations.forks.translate()
 									value = repo.forksCount.toString()
 									inline = false
 								}
 								field {
-									name = "Stars:"
+									name = translations.stars.translate()
 									value = repo.stargazersCount.toString()
 									inline = false
 								}
 								field {
-									name = "Size:"
+									name = translations.size.translate()
 									value = bytesToFriendly(repo.size)
 									inline = false
 								}
 								if (repo.language != null) {
 									field {
-										name = "Language:"
+										name = translations.language.translate()
 										value = repo.language.toString()
 										inline = false
 									}
@@ -369,10 +365,11 @@ class Github : Extension() {
 			}
 
 			publicSubCommand(::UserArgs) {
-				name = "user"
-				description = "Search GitHub for a User/Organisation"
+				name = Translations.Utility.Github.User.name
+				description = Translations.Utility.Github.User.description
 
 				action {
+					val translations = Translations.Utility.Github.User
 					val ghUser: GHUser?
 
 					try {
@@ -384,7 +381,7 @@ class Github : Extension() {
 					} catch (_: IOException) {
 						respond {
 							embed {
-								title = "Invalid Username. Make sure this user exists!"
+								title = translations.invalidName.translate()
 							}
 						}
 						return@action
@@ -394,32 +391,33 @@ class Github : Extension() {
 						val isOrg: Boolean = ghUser?.type.equals("Organization")
 
 						if (!isOrg) {
-// 							sentry.breadcrumb(BreadcrumbType.Info) {
-// 								category = "extensions.util.Github.user.isOrg"
-// 								message = "User is not Organisation"
-// 								data["isNotOrg"] = ghUser?.login
-// 							}
 							respond {
 								embed {
-									title = "GitHub profile for " + ghUser?.login
+									title = translations.embedTitle.translate(ghUser?.login)
 									url = "https://github.com/" + ghUser?.login
 									description = ghUser?.bio
 
 									field {
-										name = "Followers:"
+										name = translations.repositories.translate()
+										value = ghUser?.publicRepoCount.toString()
+										inline = false
+									}
+
+									field {
+										name = translations.followers.translate()
 										value = ghUser?.followersCount.toString()
 										inline = false
 									}
 
 									field {
-										name = "Following:"
+										name = translations.following.translate()
 										value = ghUser?.followingCount.toString()
 										inline = false
 									}
 
 									if (ghUser!!.company != null) {
 										field {
-											name = "Company"
+											name = translations.company.translate()
 											value = ghUser.company
 											inline = false
 										}
@@ -427,7 +425,7 @@ class Github : Extension() {
 
 									if (!ghUser.blog.equals("")) {
 										field {
-											name = "Website:"
+											name = translations.website.translate()
 											value = ghUser.blog
 											inline = false
 										}
@@ -435,10 +433,10 @@ class Github : Extension() {
 
 									if (ghUser.twitterUsername != null) {
 										field {
-											name = "Twitter:"
+											name = translations.twitter.translate()
 											value =
 												"[@" + ghUser.twitterUsername + "](" +
-														"https://twitter.com/" + ghUser.twitterUsername + ")"
+													"https://twitter.com/" + ghUser.twitterUsername + ")"
 											inline = false
 										}
 									}
@@ -450,32 +448,27 @@ class Github : Extension() {
 								}
 							}
 						} else {
-// 							sentry.breadcrumb(BreadcrumbType.Info) {
-// 								category = "extensions.util.Github.user.isOrg"
-// 								message = "User is Organisation"
-// 								data["isOrg"] = ghUser?.login
-// 							}
 							val org: GHOrganization? = github.getOrganization(ghUser?.login)
 
 							respond {
 								embed {
-									title = "GitHub profile for " + ghUser?.login
-									url = "https://github.com/" + ghUser?.login
+									title = translations.embedTitle.translate(org?.login)
+									url = "https://github.com/" + org?.login
 
 									field {
-										name = "Public Members:"
+										name = translations.publicMembers.translate()
 										value = org!!.listMembers().toArray().size.toString()
 										inline = false
 									}
 									field {
-										name = "Repositories:"
-										value = ghUser?.publicRepoCount.toString()
+										name = translations.repositories.translate()
+										value = org?.publicRepoCount.toString()
 										inline = false
 									}
 
 									footer {
-										text = ghUser?.login.toString()
-										icon = ghUser?.avatarUrl
+										text = org?.login.toString()
+										icon = org?.avatarUrl
 									}
 
 									timestamp = Clock.System.now()
@@ -489,8 +482,8 @@ class Github : Extension() {
 			}
 
 			ephemeralSubCommand(::DefaultArgs) {
-				name = "default-repo"
-				description = "Set the default repo to look up issues in."
+				name = Translations.Utility.Github.DefaultRepo.name
+				description = Translations.Utility.Github.DefaultRepo.description
 
 				requirePermission(Permission.ModerateMembers)
 
@@ -504,8 +497,8 @@ class Github : Extension() {
 					if (!arguments.defaultRepo.contains("/")) {
 						respond {
 							embed {
-								title = "Make sure your input is formatted like this:"
-								description = "Format: `User/Repo` or `Org/Repo`\nFor example: `HyacinthBots/LilyBot`"
+								title = Translations.Utility.Github.badFormatEmbedTitle.translate()
+								description = Translations.Utility.Github.badFormatEmbedDesc.translate()
 							}
 						}
 						return@action
@@ -514,7 +507,7 @@ class Github : Extension() {
 						if (arguments.defaultRepo.contains("http", true)) {
 							val urlParts = arguments.defaultRepo.split("/")
 							if (urlParts.size <= 4) {
-								respond { content = "Invalid repo URL, please try again" }
+								respond { content = Translations.Utility.Github.DefaultRepo.invalidUrl.translate() }
 								return@action
 							}
 							github.getRepository("${urlParts[3]}/${urlParts[4]}")
@@ -523,19 +516,19 @@ class Github : Extension() {
 						}
 					} catch (_: IOException) {
 						respond {
-							content = "GitHub repository not found! Please make sure this repository exists"
+							content = Translations.Utility.Github.unableToRepo.translate()
 						}
 						return@action
 					}
 
 					GithubCollection().setDefaultRepo(guild!!.id, arguments.defaultRepo)
-					respond { content = "Default repo set." }
+					respond { content = Translations.Utility.Github.DefaultRepo.response.translate() }
 				}
 			}
 
 			ephemeralSubCommand {
-				name = "remove-default-repo"
-				description = "Removes the default repo for this guild"
+				name = Translations.Utility.Github.RemoveDefaultRepo.name
+				description = Translations.Utility.Github.RemoveDefaultRepo.description
 
 				requirePermission(Permission.ModerateMembers)
 
@@ -547,14 +540,12 @@ class Github : Extension() {
 
 				action {
 					if (GithubCollection().getDefaultRepo(guild!!.id) == null) {
-						respond { content = "There is no default repo for this guild!" }
+						respond { content = Translations.Utility.Github.RemoveDefaultRepo.noDefault.translate() }
 						return@action
 					}
 
 					GithubCollection().removeDefaultRepo(guild!!.id)
-					respond {
-						content = "Default repo removed"
-					}
+					respond { content = Translations.Utility.Github.RemoveDefaultRepo.response.translate() }
 				}
 			}
 		}
@@ -587,38 +578,38 @@ class Github : Extension() {
 	inner class IssueArgs : Arguments() {
 		/** The issue number being searched for. */
 		val issue by int {
-			name = "issue-number"
-			description = "The issue number you would like to search for"
+			name = Translations.Utility.Github.Issue.Arguments.Issue.name
+			description = Translations.Utility.Github.Issue.Arguments.Issue.description
 		}
 
 		/** The repository being searched for, must contain a `/`. */
 		val repository by optionalString {
-			name = "repository"
-			description = "The GitHub repository you would like to search if no default is set"
+			name = Translations.Utility.Github.Issue.Arguments.Repo.name
+			description = Translations.Utility.Github.Issue.Arguments.Repo.description
 		}
 	}
 
 	inner class RepoArgs : Arguments() {
 		/** The repository being searched for, must contain a `/`. */
 		val repository by optionalString {
-			name = "repository"
-			description = "The GitHub repository you would like to search if no default is set"
+			name = Translations.Utility.Github.Issue.Arguments.Repo.name
+			description = Translations.Utility.Github.Issue.Arguments.Repo.description
 		}
 	}
 
 	inner class UserArgs : Arguments() {
 		/** The name of the User/Organisation being searched for. */
 		val username by string {
-			name = "username"
-			description = "The name of the User/Organisation you wish to search for"
+			name = Translations.Utility.Github.User.Arguments.Username.name
+			description = Translations.Utility.Github.User.Arguments.Username.description
 		}
 	}
 
 	inner class DefaultArgs : Arguments() {
 		/** The default repo for the GitHub commands. */
 		val defaultRepo by string {
-			name = "default-repo"
-			description = "The default repo to look up issues in"
+			name = Translations.Utility.Github.DefaultRepo.name
+			description = Translations.Utility.Github.DefaultRepo.description
 		}
 	}
 }
