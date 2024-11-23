@@ -24,6 +24,7 @@ import dev.kordex.core.pagination.EphemeralResponsePaginator
 import dev.kordex.core.pagination.pages.Page
 import dev.kordex.core.pagination.pages.Pages
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
@@ -54,11 +55,10 @@ class NewsChannelPublishing : Extension() {
 					val channel =
 						getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.getGuildOrNull()!!) ?: return@action
 					channel.createEmbed {
-						title = "Unable to Auto-publish news channel!"
-						description =
-							"Please ensure I have the `Send Messages`, `Manage Channel` or `Manage Messages` permission"
+						title = Translations.Utility.NewsChannel.NewsPublishing.errorTitle.translate()
+						description = Translations.Utility.NewsChannel.NewsPublishing.missingPerms.translate()
 						field {
-							name = "Channel:"
+							name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
 							value = event.message.channel.mention
 						}
 						color = DISCORD_RED
@@ -72,12 +72,12 @@ class NewsChannelPublishing : Extension() {
 		}
 
 		ephemeralSlashCommand {
-			name = "news-publishing"
-			description = "The parent command for news publishing channels"
+			name = Translations.Utility.NewsChannel.NewsPublishing.name
+			description = Translations.Utility.NewsChannel.NewsPublishing.description
 
 			ephemeralSubCommand(::PublishingSetArgs) {
-				name = "set"
-				description = "Set this channel to automatically publish messages."
+				name = Translations.Utility.NewsChannel.NewsPublishing.Set.name
+				description = Translations.Utility.NewsChannel.NewsPublishing.Set.description
 
 				requirePermission(Permission.ManageGuild)
 
@@ -87,12 +87,13 @@ class NewsChannelPublishing : Extension() {
 				}
 
 				action {
+					val translations = Translations.Utility.NewsChannel.NewsPublishing.Set
 					if (channel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(event.kord.selfId)
 							?.contains(Permissions(Permission.SendMessages, Permission.ManageChannels)) == false
 					) {
 						respond {
-							content = "I don't have permission for this channel; Please ensure I have the " +
-									"`Send Messages` or `Manage Channel` permission"
+							content =
+								translations.noPerms.translate() + Translations.Utility.NewsChannel.NewsPublishing.missingPerms.translate()
 						}
 						return@action
 					}
@@ -100,17 +101,17 @@ class NewsChannelPublishing : Extension() {
 					NewsChannelPublishingCollection().addAutoPublishingChannel(guild!!.id, arguments.channel.id)
 
 					respond {
-						content = "${arguments.channel.mention} has been set to automatically publish messages!"
+						content = translations.success.translate(arguments.channel.mention)
 					}
 
 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
-						title = "News Channel set to Auto-Publish"
+						title = translations.embedTitle.translate()
 						field {
-							name = "Channel:"
+							name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
 							value = arguments.channel.mention
 						}
 						footer {
-							text = "Set by ${user.asUserOrNull()?.username}"
+							text = translations.setBy.translate(user.asUserOrNull()?.username)
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -120,8 +121,8 @@ class NewsChannelPublishing : Extension() {
 			}
 
 			ephemeralSubCommand(::PublishingRemoveArgs) {
-				name = "remove"
-				description = "Stop a news channel from auto-publishing messages"
+				name = Translations.Utility.NewsChannel.NewsPublishing.Remove.name
+				description = Translations.Utility.NewsChannel.NewsPublishing.Remove.description
 
 				requirePermission(Permission.ManageGuild)
 
@@ -131,13 +132,14 @@ class NewsChannelPublishing : Extension() {
 				}
 
 				action {
+					val translations = Translations.Utility.NewsChannel.NewsPublishing.Remove
 					if (NewsChannelPublishingCollection().getAutoPublishingChannel(
 							guild!!.id,
 							arguments.channel.id
 						) == null
 					) {
 						respond {
-							content = "**Error:** ${arguments.channel.mention} does not automatically publish messages!"
+							content = translations.noAuto.translate(arguments.channel.mention)
 						}
 						return@action
 					}
@@ -145,17 +147,18 @@ class NewsChannelPublishing : Extension() {
 					NewsChannelPublishingCollection().removeAutoPublishingChannel(guild!!.id, arguments.channel.id)
 
 					respond {
-						content = "${arguments.channel.mention} will no longer automatically publish messages!"
+						content = translations.success.translate(arguments.channel.mention)
 					}
 
 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
-						title = "News Channel will no longer Auto-Publish"
+						title = translations.embedTitle.translate()
 						field {
-							name = "Channel:"
+							name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
 							value = arguments.channel.mention
 						}
 						footer {
-							text = "Removed by ${user.asUserOrNull()?.username}"
+							text = translations.removedBy.translate(user.asUserOrNull()?.username)
+								"Removed by ${user.asUserOrNull()?.username}"
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -165,8 +168,8 @@ class NewsChannelPublishing : Extension() {
 			}
 
 			ephemeralSubCommand {
-				name = "list"
-				description = "List Auto-publishing channels"
+				name = Translations.Utility.NewsChannel.NewsPublishing.List.name
+				description = Translations.Utility.NewsChannel.NewsPublishing.List.description
 
 				requirePermission(Permission.ManageGuild)
 
@@ -179,10 +182,12 @@ class NewsChannelPublishing : Extension() {
 					val pagesObj = Pages()
 					val channelsData = NewsChannelPublishingCollection().getAutoPublishingChannels(guild!!.id)
 
+					val translations = Translations.Utility.NewsChannel.NewsPublishing.List
+
 					if (channelsData.isEmpty()) {
 						pagesObj.addPage(
 							Page {
-								description = "There are no news channels set for this guild."
+								description = translations.none.translate()
 							}
 						)
 					} else {
@@ -190,12 +195,13 @@ class NewsChannelPublishing : Extension() {
 							var response = ""
 							channelDataChunk.forEach { data ->
 								val channel = guild!!.getChannelOrNull(data.channelId)
-								response += "${channel?.mention ?: "Unable to get channel!"} (${channel?.name ?: ""}"
+								response +=
+									"${channel?.mention ?: Translations.Basic.UnableTo.channel.translate()} (${channel?.name ?: ""}"
 							}
 							pagesObj.addPage(
 								Page {
-									title = "Auto-publishing channels for this guild"
-									description = "These are all news channels that automatically publish messages"
+									title = translations.title.translate()
+									description = translations.desc.translate()
 									field {
 										value = response
 									}
@@ -215,8 +221,8 @@ class NewsChannelPublishing : Extension() {
 			}
 
 			ephemeralSubCommand {
-				name = "remove-all"
-				description = "Remove all auto-publishing channels for this guild"
+				name = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.name
+				description = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.description
 
 				requirePermission(Permission.ManageGuild)
 
@@ -228,12 +234,12 @@ class NewsChannelPublishing : Extension() {
 				action {
 					if (NewsChannelPublishingCollection().getAutoPublishingChannels(guild!!.id).isEmpty()) {
 						respond {
-							content = "**Error**: There are no auto-publishing channels for this guild!"
+							content = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.noChannels.translate()
 						}
 					} else {
 						NewsChannelPublishingCollection().clearAutoPublishingForGuild(guild!!.id)
 						respond {
-							content = "Cleared all auto-publishing channels from this guild!"
+							content = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.success.translate()
 						}
 					}
 				}
@@ -243,16 +249,16 @@ class NewsChannelPublishing : Extension() {
 
 	inner class PublishingSetArgs : Arguments() {
 		val channel by channel {
-			name = "channel"
-			description = "The channel to set auto-publishing for"
+			name = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.name
+			description = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.description
 			requiredChannelTypes = mutableSetOf(ChannelType.GuildNews)
 		}
 	}
 
 	inner class PublishingRemoveArgs : Arguments() {
 		val channel by channel {
-			name = "channel"
-			description = "The channel to stop auto-publishing for"
+			name = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.name
+			description = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.description
 			requiredChannelTypes = mutableSetOf(ChannelType.GuildNews)
 		}
 	}
