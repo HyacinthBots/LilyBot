@@ -33,11 +33,13 @@ import dev.kordex.core.components.linkButton
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.kordex.core.extensions.event
+import dev.kordex.core.i18n.toKey
 import dev.kordex.core.utils.getJumpUrl
 import dev.kordex.core.utils.getTopRole
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
 import org.hyacinthbots.lilybot.database.collections.RoleSubscriptionCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -61,15 +63,15 @@ class RoleMenu : Extension() {
 		 * @since 3.4.0
 		 */
 		ephemeralSlashCommand {
-			name = "role-menu"
-			description = "The parent command for managing role menus."
+			name = Translations.Utility.RoleMenu.name
+			description = Translations.Utility.RoleMenu.description
 
 			/**
 			 * The command to create a new role menu.
 			 */
 			ephemeralSubCommand(::RoleMenuCreateArgs) {
-				name = "create"
-				description = "Create a new role menu in this channel. A channel can have any number of role menus."
+				name = Translations.Utility.RoleMenu.Create.name
+				description = Translations.Utility.RoleMenu.Create.description
 
 				requirePermission(Permission.ManageRoles)
 
@@ -84,6 +86,7 @@ class RoleMenu : Extension() {
 
 				var menuMessage: Message?
 				action {
+					val translations = Translations.Utility.RoleMenu.Create
 					val kord = this@ephemeralSlashCommand.kord
 
 					if (!botCanAssignRole(kord, arguments.initialRole)) return@action
@@ -103,7 +106,7 @@ class RoleMenu : Extension() {
 					menuMessage.edit {
 						val components = components {
 							ephemeralButton {
-								label = "Select roles"
+								label = translations.selectButton
 								style = ButtonStyle.Primary
 
 								id = "role-menu${menuMessage.id}"
@@ -127,40 +130,40 @@ class RoleMenu : Extension() {
 
 					utilityLog.createMessage {
 						embed {
-							title = "Role Menu Created"
-							description = "A role menu for the ${arguments.initialRole.mention} role was created in " +
-									"${channel.mention}."
+							title = translations.embedTitle.translate()
+							description =
+								translations.embedDesc.translate(arguments.initialRole.mention, channel.mention)
 
 							field {
-								name = "Content:"
+								name = translations.embedContent.translate()
 								value = "```${arguments.content}```"
 								inline = false
 							}
 							field {
-								name = "Color:"
+								name = translations.embedColor.translate()
 								value = arguments.color.toString()
 								inline = true
 							}
 							field {
-								name = "Embed:"
+								name = translations.embedEmbed.translate()
 								value = arguments.embed.toString()
 								inline = true
 							}
 							footer {
-								text = "Created by ${user.asUserOrNull()?.username}"
+								text = translations.createdBy.translate(user.asUserOrNull()?.username)
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
 						components {
 							linkButton {
-								label = "Jump to role menu"
+								label = Translations.Utility.RoleMenu.jumpButton
 								url = menuMessage.getJumpUrl()
 							}
 						}
 					}
 
 					respond {
-						content = "Role menu created. You can add more roles using the `/role-menu add` command."
+						content = translations.response.translate()
 					}
 				}
 			}
@@ -169,8 +172,8 @@ class RoleMenu : Extension() {
 			 * The command to add a role to an existing role menu.
 			 */
 			ephemeralSubCommand(::RoleMenuAddArgs) {
-				name = "add"
-				description = "Add a role to the existing role menu in this channel."
+				name = Translations.Utility.RoleMenu.Add.name
+				description = Translations.Utility.RoleMenu.Add.description
 
 				requirePermission(Permission.ManageRoles)
 
@@ -186,6 +189,8 @@ class RoleMenu : Extension() {
 				action {
 					val kord = this@ephemeralSlashCommand.kord
 
+					val translations = Translations.Utility.RoleMenu.Add
+
 					if (!botCanAssignRole(kord, arguments.role)) return@action
 
 					val message = channel.getMessageOrNull(arguments.messageId)
@@ -194,16 +199,12 @@ class RoleMenu : Extension() {
 					val data = RoleMenuCollection().getRoleData(arguments.messageId)!!
 
 					if (arguments.role.id in data.roles) {
-						respond {
-							content = "This menu already contains that role."
-						}
+						respond { content = translations.alreadyGot.translate() }
 						return@action
 					}
 
 					if (data.roles.size == 24) {
-						respond {
-							content = "You can't have more than 24 roles in a role menu. This is a Discord limitation."
-						}
+						respond { content = translations.max24.translate() }
 						return@action
 					}
 
@@ -219,24 +220,23 @@ class RoleMenu : Extension() {
 						?: return@action
 					utilityLog.createMessage {
 						embed {
-							title = "Role Added to Role Menu"
-							description = "The ${arguments.role.mention} role was added to a role menu in " +
-									"${channel.mention}."
+							title = translations.embedTitle.translate()
+							description = translations.embedDesc.translate(arguments.role.mention, channel.mention)
 							footer {
-								text = "Added by ${user.asUserOrNull()?.username}"
+								text = translations.addedBy.translate(user.asUserOrNull()?.username)
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
 						components {
 							linkButton {
-								label = "Jump to role menu"
+								label = Translations.Utility.RoleMenu.jumpButton
 								url = message!!.getJumpUrl()
 							}
 						}
 					}
 
 					respond {
-						content = "Added the ${arguments.role.mention} role to the specified role menu."
+						content = translations.response.translate(arguments.role.mention)
 					}
 				}
 			}
@@ -245,8 +245,8 @@ class RoleMenu : Extension() {
 			 * The command to remove a role from an existing role menu.
 			 */
 			ephemeralSubCommand(::RoleMenuRemoveArgs) {
-				name = "remove"
-				description = "Remove a role from the existing role menu in this channel."
+				name = Translations.Utility.RoleMenu.Remove.name
+				description = Translations.Utility.RoleMenu.Remove.description
 
 				requirePermission(Permission.ManageMessages)
 
@@ -263,19 +263,17 @@ class RoleMenu : Extension() {
 					val menuMessage = channel.getMessageOrNull(arguments.messageId)
 					if (!roleMenuExists(menuMessage, arguments.messageId)) return@action
 
+					val translations = Translations.Utility.RoleMenu.Remove
+
 					val data = RoleMenuCollection().getRoleData(arguments.messageId)!!
 
 					if (arguments.role.id !in data.roles) {
-						respond {
-							content = "You can't remove a role from a menu it's not in."
-						}
+						respond { content = translations.cantRemove.translate() }
 						return@action
 					}
 
 					if (data.roles.size == 1) {
-						respond {
-							content = "You can't remove the last role from a role menu."
-						}
+						respond { content = translations.cantRemoveLast.translate() }
 						return@action
 					}
 
@@ -285,24 +283,23 @@ class RoleMenu : Extension() {
 						?: return@action
 					utilityLog.createMessage {
 						embed {
-							title = "Role Removed from Role Menu"
-							description = "The ${arguments.role.mention} role was removed from a role menu in " +
-									"${channel.mention}."
+							title = translations.embedTitle.translate()
+							description = translations.embedDesc.translate(arguments.role.mention, channel.mention)
 							footer {
-								text = "Removed by ${user.asUserOrNull()?.username}"
+								text = translations.removedBy.translate(user.asUserOrNull()?.username)
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
 						components {
 							linkButton {
-								label = "Jump to role menu"
+								label = Translations.Utility.RoleMenu.jumpButton
 								url = menuMessage.getJumpUrl()
 							}
 						}
 					}
 
 					respond {
-						content = "Removed the ${arguments.role.mention} role from the specified role menu."
+						content = translations.response.translate(arguments.role.mention)
 					}
 				}
 			}
@@ -311,8 +308,8 @@ class RoleMenu : Extension() {
 			 * A command that creates a new role menu specifically for selecting pronouns.
 			 */
 			ephemeralSubCommand {
-				name = "pronouns"
-				description = "Create a pronoun selection role menu and the roles to go with it."
+				name = Translations.Utility.RoleMenu.Pronouns.name
+				description = Translations.Utility.RoleMenu.Pronouns.description
 
 				requirePermission(Permission.ManageMessages)
 
@@ -326,19 +323,20 @@ class RoleMenu : Extension() {
 				}
 
 				action {
+					val translations = Translations.Utility.RoleMenu.Pronouns
 					respond {
-						content = "Pronoun role menu created."
+						content = translations.response.translate()
 					}
 
 					val menuMessage = channel.createMessage {
-						content = "Select pronoun roles from the menu below!"
+						content = translations.message.translate()
 					}
 
 					// While we don't normally edit in components, in this case we need the message ID.
 					menuMessage.edit {
 						val components = components {
 							ephemeralButton {
-								label = "Select roles"
+								label = Translations.Utility.RoleMenu.Create.selectButton
 								style = ButtonStyle.Primary
 
 								this.id = "role-menu${menuMessage.id}"
@@ -397,16 +395,16 @@ class RoleMenu : Extension() {
 						?: return@action
 					utilityLog.createMessage {
 						embed {
-							title = "Pronoun Role Menu Created"
-							description = "A pronoun role menu was created in ${channel.mention}."
+							title = translations.embedTitle.translate()
+							description = translations.embedDesc.translate(channel.mention)
 							footer {
-								text = "Created by ${user.asUserOrNull()?.username}"
+								text = translations.createdBy.translate(user.asUserOrNull()?.username)
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 						}
 						components {
 							linkButton {
-								label = "Jump to role menu"
+								label = Translations.Utility.RoleMenu.jumpButton
 								url = menuMessage.getJumpUrl()
 							}
 						}
@@ -428,21 +426,18 @@ class RoleMenu : Extension() {
 
 			action Button@{
 				val data = RoleMenuCollection().getRoleData(event.interaction.message.id)
+				val translations = Translations.Utility.RoleMenu.Interaction
 
 				if (data == null) {
 					event.interaction.respondEphemeral {
-						content = "This role menu seems to be broken, please ask staff to recreate it. " +
-								"If this isn't a role menu, or if the issue persists, open a report at " +
-								"<$HYACINTH_GITHUB/LilyBot/issues>"
+						content = translations.broken.translate(HYACINTH_GITHUB)
 					}
 					return@Button
 				}
 
 				if (data.roles.isEmpty()) {
 					event.interaction.respondEphemeral {
-						content = "Could not find any roles associated with this menu. Please ask staff to add some. " +
-								"If this isn't a role menu, or if the issue persists, open a report at " +
-								"<$HYACINTH_GITHUB/LilyBot/issues>"
+						content = translations.noRoles.translate(HYACINTH_GITHUB)
 					}
 					return@Button
 				}
@@ -450,8 +445,7 @@ class RoleMenu : Extension() {
 				val guild = kord.getGuildOrNull(data.guildId)
 				if (guild == null) {
 					event.interaction.respondEphemeral {
-						content = "An error occurred getting when trying to get the server, please try again! If the " +
-								"problem persists, open a report at <$HYACINTH_GITHUB/LilyBot/issues>"
+						content = translations.serverError.translate(HYACINTH_GITHUB)
 					}
 					return@Button
 				}
@@ -468,9 +462,7 @@ class RoleMenu : Extension() {
 
 				if (roles.isEmpty()) {
 					event.interaction.respondEphemeral {
-						content = "Could not find any roles associated with this menu. Please ask staff to add some. " +
-								"If this isn't a role menu, or if the issue persists, open a report at " +
-								"<$HYACINTH_GITHUB/LilyBot/issues>"
+						content = translations.noRoles.translate(HYACINTH_GITHUB)
 					}
 					return@Button
 				}
@@ -483,17 +475,17 @@ class RoleMenu : Extension() {
 				val userRoles = member.roleIds.filter { it in guildRoles.keys }
 
 				event.interaction.respondEphemeral {
-					content = "Use the menu below to select roles."
+					content = translations.menuMessage.translate()
 					components {
 						// TODO Update to ephemeralRoleSelectMenu
 						ephemeralStringSelectMenu {
-							placeholder = "Select roles..."
+							placeholder = translations.placeholder
 							maximumChoices = roles.size
 							minimumChoices = 0
 
 							roles.forEach {
 								option(
-									label = "@${it.name}",
+									label = "@${it.name}".toKey(),
 									value = it.id.toString()
 								) {
 									default = it.id in userRoles
@@ -510,7 +502,7 @@ class RoleMenu : Extension() {
 											member.removeRole(it.id)
 										}
 									}
-									respond { content = "Your roles have been adjusted" }
+									respond { content = translations.response.translate() }
 									return@SelectMenu
 								}
 
@@ -518,9 +510,7 @@ class RoleMenu : Extension() {
 								val rolesToRemove = userRoles.filterNot { it in selectedRoles }
 
 								if (rolesToAdd.isEmpty() && rolesToRemove.isEmpty()) {
-									respond {
-										content = "You didn't select any different roles, so no changes were made."
-									}
+									respond { content = translations.noChanges.translate() }
 									return@SelectMenu
 								}
 
@@ -531,7 +521,7 @@ class RoleMenu : Extension() {
 									this@edit.roles!!.addAll(rolesToAdd.toSet())
 									this@edit.roles!!.removeAll(rolesToRemove.toSet())
 								}
-								respond { content = "Your roles have been adjusted." }
+								respond { content = translations.response.translate() }
 							}
 						}
 					}
@@ -540,12 +530,12 @@ class RoleMenu : Extension() {
 		}
 
 		ephemeralSlashCommand {
-			name = "role-subscription"
-			description = "The parent command for role-subscription commands"
+			name = Translations.Utility.RoleMenu.RoleSubscription.name
+			description = Translations.Utility.RoleMenu.RoleSubscription.description
 
 			ephemeralSubCommand {
-				name = "update"
-				description = "Update your role subscription"
+				name = Translations.Utility.RoleMenu.RoleSubscription.Update.name
+				description = Translations.Utility.RoleMenu.RoleSubscription.Update.description
 
 				check {
 					anyGuild()
@@ -553,11 +543,12 @@ class RoleMenu : Extension() {
 
 				action {
 					val guild = guild ?: return@action
+					val translations = Translations.Utility.RoleMenu.RoleSubscription.Update
 					val data = RoleSubscriptionCollection().getSubscribableRoles(guild.id)
 
 					if (data == null) {
 						respond {
-							content = "This guild does not have any subscribable roles."
+							content = translations.noSubs.translate()
 						}
 						return@action
 					}
@@ -580,17 +571,17 @@ class RoleMenu : Extension() {
 					val userRoles = member?.roleIds?.filter { it in guildRoles.keys }
 
 					respond {
-						content = "Use the menu below to subscribe to roles."
+						content = translations.useMenu.translate()
 						components {
 							// TODO Update to ephemeralRoleSelectMenu
 							ephemeralStringSelectMenu {
-								placeholder = "Select roles to subscribe to..."
+								placeholder = translations.placeholder
 								minimumChoices = 0
 								maximumChoices = subscribableRoles.size
 
 								subscribableRoles.forEach {
 									option(
-										label = "@${it.name}",
+										label = "@${it.name}".toKey(),
 										value = it.id.toString()
 									) {
 										if (userRoles != null) {
@@ -609,7 +600,7 @@ class RoleMenu : Extension() {
 												member.removeRole(it.id)
 											}
 										}
-										respond { content = "Your role subscription has been adjusted" }
+										respond { content = translations.adjusted.translate() }
 										return@SelectMenu
 									}
 
@@ -623,7 +614,7 @@ class RoleMenu : Extension() {
 
 									if (rolesToAdd.isEmpty() && rolesToRemove?.isEmpty() == true) {
 										respond {
-											content = "You didn't select any different roles, so no changes were made."
+											content = Translations.Utility.RoleMenu.Interaction.noChanges.translate()
 										}
 										return@SelectMenu
 									}
@@ -635,7 +626,7 @@ class RoleMenu : Extension() {
 										this@edit.roles!!.addAll(rolesToAdd.toSet())
 										rolesToRemove?.toSet()?.let { this@edit.roles!!.removeAll(it) }
 									}
-									respond { content = "Your role subscription has been adjusted." }
+									respond { content = translations.adjusted.translate() }
 								}
 							}
 						}
@@ -644,8 +635,8 @@ class RoleMenu : Extension() {
 			}
 
 			ephemeralSubCommand(::RoleSubscriptionRoleArgs) {
-				name = "add-role"
-				description = "Add a role that can be added through role subscription commands"
+				name = Translations.Utility.RoleMenu.RoleSubscription.Add.name
+				description = Translations.Utility.RoleMenu.RoleSubscription.Add.description
 
 				requirePermission(Permission.ManageRoles, Permission.ManageGuild)
 
@@ -667,18 +658,20 @@ class RoleMenu : Extension() {
 
 					val formattedRoleList = config.subscribableRoles.map { guild.getRoleOrNull(it)?.mention }
 
+					val translations = Translations.Utility.RoleMenu.RoleSubscription.Add
+
 					respond {
-						content =
-							"${arguments.role.mention} was added as a subscribable role. Current subscribable roles are:\n${
-								formattedRoleList.joinToString("\n")
-							}"
+						content = translations.response.translate(
+							arguments.role.mention,
+							formattedRoleList.joinToString("\n")
+						)
 					}
 
 					utilityConfig?.createEmbed {
-						title = "Subscribable Role added"
-						description = "${arguments.role.mention} was added as a subscribable role"
+						title = translations.embedTitle.translate()
+						description = translations.embedDesc.translate(arguments.role.mention)
 						footer {
-							text = "Added by ${user.asUserOrNull()?.username}"
+							text = translations.addedBy.translate(user.asUserOrNull()?.username)
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
@@ -686,8 +679,8 @@ class RoleMenu : Extension() {
 			}
 
 			ephemeralSubCommand(::RoleSubscriptionRoleArgs) {
-				name = "remove-role"
-				description = "Remove a role that can be added through role subscription commands"
+				name = Translations.Utility.RoleMenu.RoleSubscription.Remove.name
+				description = Translations.Utility.RoleMenu.RoleSubscription.Remove.description
 
 				requirePermission(Permission.ManageRoles, Permission.ManageGuild)
 
@@ -700,16 +693,19 @@ class RoleMenu : Extension() {
 					val guild = guild ?: return@action
 					var config = RoleSubscriptionCollection().getSubscribableRoles(guild.id)
 					val utilityConfig = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+
+					val translations = Translations.Utility.RoleMenu.RoleSubscription.Remove
+
 					if (config == null) {
 						respond {
-							content = "There are no subscribable roles for this guild."
+							content = Translations.Utility.RoleMenu.RoleSubscription.Update.noSubs.translate()
 						}
 						return@action
 					}
 
 					if (!config.subscribableRoles.contains(arguments.role.id)) {
 						respond {
-							content = "That is not a subscribable role."
+							content = translations.notSubable.translate()
 						}
 						return@action
 					}
@@ -720,21 +716,21 @@ class RoleMenu : Extension() {
 					val formattedRoleList = config!!.subscribableRoles.map { guild.getRoleOrNull(it)?.mention }
 
 					respond {
-						content =
-							"${arguments.role.mention} was removed as a subscribable role. Current subscribable roles are:\n${
-								if (formattedRoleList.isNotEmpty()) {
-									formattedRoleList.joinToString("\n")
-								} else {
-									"None"
-								}
-							}"
+						content = translations.response.translate(
+							arguments.role.mention,
+							    if (formattedRoleList.isNotEmpty()) {
+								formattedRoleList.joinToString("\n")
+							} else {
+								Translations.Basic.none.translate()
+							}
+						)
 					}
 
 					utilityConfig?.createEmbed {
-						title = "Subscribable Role Removed"
-						description = "${arguments.role.mention} was removed as a subscribable role"
+						title = translations.embedTitle.translate()
+						description = translations.embedDesc.translate(arguments.role.mention)
 						footer {
-							text = "Removed by ${user.asUserOrNull()?.username}"
+							text = translations.removedBy.translate(user.asUserOrNull()?.username)
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 					}
@@ -759,7 +755,7 @@ class RoleMenu : Extension() {
 	): Boolean {
 		if (inputMessage == null) {
 			respond {
-				content = "I couldn't find that message in this channel. Make sure it exists."
+				content = Translations.Utility.RoleMenu.Check.cantFind.translate()
 			}
 			return false
 		}
@@ -767,7 +763,7 @@ class RoleMenu : Extension() {
 		val data = RoleMenuCollection().getRoleData(argumentMessageId)
 		if (data == null) {
 			respond {
-				content = "That message doesn't seem to be a role menu."
+				content = Translations.Utility.RoleMenu.Check.notRole.translate()
 			}
 			return false
 		}
@@ -789,8 +785,7 @@ class RoleMenu : Extension() {
 		val self = guild?.getMemberOrNull(kord.selfId)!!
 		if (self.getTopRole()!! < role) {
 			respond {
-				content = "The selected role is higher than me in the role hierarchy. " +
-						"Please move it and try again."
+				content = Translations.Utility.RoleMenu.Check.higherRole.translate()
 			}
 			return false
 		}
@@ -800,14 +795,14 @@ class RoleMenu : Extension() {
 	inner class RoleMenuCreateArgs : Arguments() {
 		/** The initial role for a new role menu. */
 		val initialRole by role {
-			name = "role"
-			description = "The first role to start the menu with. Add more via `/role-menu add`"
+			name = Translations.Utility.RoleMenu.Create.Arguments.Role.name
+			description = Translations.Utility.RoleMenu.Create.Arguments.Role.description
 		}
 
 		/** The content of the embed or message to attach the role menu to. */
 		val content by string {
-			name = "content"
-			description = "The content of the embed or message."
+			name = Translations.Utility.RoleMenu.Create.Arguments.Content.name
+			description = Translations.Utility.RoleMenu.Create.Arguments.Content.description
 
 			// Fix newline escape characters
 			mutate {
@@ -818,15 +813,15 @@ class RoleMenu : Extension() {
 
 		/** If the message the role menu is attached to should be an embed. */
 		val embed by defaultingBoolean {
-			name = "embed"
-			description = "If the message containing the role menu should be sent as an embed."
+			name = Translations.Utility.RoleMenu.Create.Arguments.Embed.name
+			description = Translations.Utility.RoleMenu.Create.Arguments.Embed.description
 			defaultValue = true
 		}
 
 		/** If the message the role menu is attached to is an embed, the color that embed should be. */
 		val color by defaultingColor {
-			name = "color"
-			description = "The color for the message to be. Embed only."
+			name = Translations.Utility.RoleMenu.Create.Arguments.Color.name
+			description = Translations.Utility.RoleMenu.Create.Arguments.Color.description
 			defaultValue = DISCORD_BLACK
 		}
 	}
@@ -834,35 +829,35 @@ class RoleMenu : Extension() {
 	inner class RoleMenuAddArgs : Arguments() {
 		/** The message ID of the role menu being edited. */
 		val messageId by snowflake {
-			name = "menu-id"
-			description = "The message ID of the role menu you'd like to edit."
+			name = Translations.Utility.RoleMenu.Add.Arguments.Id.name
+			description = Translations.Utility.RoleMenu.Add.Arguments.Id.description
 		}
 
 		/** The role to add to the role menu. */
 		val role by role {
-			name = "role"
-			description = "The role you'd like to add to the selected role menu."
+			name = Translations.Utility.RoleMenu.Add.Arguments.Role.name
+			description = Translations.Utility.RoleMenu.Add.Arguments.Role.description
 		}
 	}
 
 	inner class RoleMenuRemoveArgs : Arguments() {
 		/** The message ID of the role menu being edited. */
 		val messageId by snowflake {
-			name = "menu-id"
-			description = "The message ID of the menu you'd like to edit."
+			name = Translations.Utility.RoleMenu.Add.Arguments.Id.name
+			description = Translations.Utility.RoleMenu.Add.Arguments.Id.description
 		}
 
 		/** The role to remove from the role menu. */
 		val role by role {
-			name = "role"
-			description = "The role you'd like to remove from the selected role menu."
+			name = Translations.Utility.RoleMenu.Add.Arguments.Role.name
+			description = Translations.Utility.RoleMenu.Remove.Arguments.Role.description
 		}
 	}
 
 	inner class RoleSubscriptionRoleArgs : Arguments() {
 		val role by role {
-			name = "role"
-			description = "A role to add or remove from the subscribable roles"
+			name = Translations.Utility.RoleMenu.Add.Arguments.Role.name
+			description = Translations.Utility.RoleMenu.RoleSubscription.Arguments.Role.description
 		}
 	}
 }

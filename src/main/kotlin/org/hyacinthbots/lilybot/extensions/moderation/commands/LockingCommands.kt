@@ -24,6 +24,7 @@ import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.kordex.core.types.EphemeralInteractionContext
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LockedChannelCollection
 import org.hyacinthbots.lilybot.database.entities.LockedChannelData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -42,12 +43,12 @@ class LockingCommands : Extension() {
 		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand {
-			name = "lock"
-			description = "The parent command for all locking commands"
+			name = Translations.Moderation.LockingCommands.Lock.name
+			description = Translations.Moderation.LockingCommands.Lock.description
 
 			ephemeralSubCommand(::LockChannelArgs) {
-				name = "channel"
-				description = "Lock a channel so those with default permissions cannot send messages"
+				name = Translations.Moderation.LockingCommands.Channel.name
+				description = Translations.Moderation.LockingCommands.Lock.Channel.description
 
 				requirePermission(Permission.ModerateMembers)
 
@@ -67,13 +68,13 @@ class LockingCommands : Extension() {
 					val currentChannelPerms = targetChannel?.getPermissionOverwritesForRole(guild!!.id)
 					if (currentChannelPerms == null) {
 						respond {
-							content = "There was an error getting the permissions for this channel. Please try again."
+							content = Translations.Moderation.LockingCommands.Lock.Channel.permsError.translate()
 						}
 						return@action
 					}
 
 					if (LockedChannelCollection().getLockedChannel(guild!!.id, targetChannel.id) != null) {
-						respond { content = "This channel is already locked" }
+						respond { content = Translations.Moderation.LockingCommands.Lock.Channel.already.translate() }
 						return@action
 					}
 
@@ -88,16 +89,18 @@ class LockingCommands : Extension() {
 
 					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
 					if (everyoneRole == null) {
-						respond { content = "I was unable to get the `@everyone` role. Please try again." }
+						respond { content = Translations.Moderation.LockingCommands.unableToEveryone.translate() }
 						return@action
 					} else if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
-						respond { content = "The server is locked, so I cannot lock this channel." }
+						respond {
+							content = Translations.Moderation.LockingCommands.Lock.Channel.serverLocked.translate()
+						}
 						return@action
 					}
 
 					targetChannel.createEmbed {
-						title = "Channel Locked"
-						description = "This channel has been locked by a moderator."
+						title = Translations.Moderation.LockingCommands.Lock.Channel.publicEmbedTitle.translate()
+						description = Translations.Moderation.LockingCommands.Lock.Channel.publicEmbedDesc.translate()
 						color = DISCORD_RED
 					}
 
@@ -113,15 +116,22 @@ class LockingCommands : Extension() {
 						allowed += Permission.SendMessages
 					}
 
-					respond { content = "${targetChannel.mention} has been locked." }
+					respond {
+						content = Translations.Moderation.LockingCommands.Lock.Channel.lockConfirmation.translate(
+							targetChannel.mention
+						)
+					}
 
 					val actionLog =
 						getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 					actionLog.createEmbed {
-						title = "Channel Locked"
-						description = "${targetChannel.mention} has been locked.\n\n**Reason:** ${arguments.reason}"
+						title = Translations.Moderation.LockingCommands.Lock.Channel.publicEmbedTitle.translate()
+						description = Translations.Moderation.LockingCommands.Lock.Channel.embedDesc.translateNamed(
+							"channel" to targetChannel.mention,
+							"reason" to arguments.reason
+						)
 						footer {
-							text = user.asUserOrNull()?.username ?: "Unable to get username"
+							text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -131,8 +141,8 @@ class LockingCommands : Extension() {
 			}
 
 			ephemeralSubCommand(::LockServerArgs) {
-				name = "server"
-				description = "Lock the server so those with default permissions cannot send messages"
+				name = Translations.Moderation.LockingCommands.Server.name
+				description = Translations.Moderation.LockingCommands.Lock.Server.description
 
 				requirePermission(Permission.ModerateMembers)
 
@@ -147,10 +157,10 @@ class LockingCommands : Extension() {
 					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
 
 					if (everyoneRole == null) {
-						respond { content = "I was unable to get the `@everyone` role. Please try again." }
+						respond { content = Translations.Moderation.LockingCommands.unableToEveryone.translate() }
 						return@action
 					} else if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
-						respond { content = "The server is already locked." }
+						respond { content = Translations.Moderation.LockingCommands.Lock.Server.already.translate() }
 						return@action
 					}
 
@@ -162,15 +172,17 @@ class LockingCommands : Extension() {
 							.minus(Permission.UseApplicationCommands)
 					}
 
-					respond { content = "Server locked." }
+					respond {
+						content = Translations.Moderation.LockingCommands.Lock.Server.lockConfirmation.translate()
+					}
 
 					val actionLog =
 						getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 					actionLog.createEmbed {
-						title = "Server locked"
-						description = "**Reason:** ${arguments.reason}"
+						title = Translations.Moderation.LockingCommands.Lock.Server.lockConfirmation.translate()
+						description = Translations.Moderation.LockingCommands.Lock.Server.embedDesc.translate()
 						footer {
-							text = user.asUserOrNull()?.username ?: "Unable to get user username"
+							text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -187,12 +199,12 @@ class LockingCommands : Extension() {
 		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand {
-			name = "unlock"
-			description = "The parent command for all unlocking commands"
+			name = Translations.Moderation.LockingCommands.Unlock.name
+			description = Translations.Moderation.LockingCommands.Unlock.description
 
 			ephemeralSubCommand(::UnlockChannelArgs) {
-				name = "channel"
-				description = "Unlock a channel so everyone can send messages again"
+				name = Translations.Moderation.LockingCommands.Channel.name
+				description = Translations.Moderation.LockingCommands.Unlock.Channel.description
 
 				requirePermission(Permission.ModerateMembers)
 
@@ -211,21 +223,28 @@ class LockingCommands : Extension() {
 
 					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
 					if (everyoneRole == null) {
-						respond { content = "Unable to get `@everyone` role. Please try again" }
+						respond { content = Translations.Moderation.LockingCommands.unableToEveryone.translate() }
 						return@action
 					} else if (!everyoneRole.permissions.contains(Permission.SendMessages)) {
-						respond { content = "Please unlock the server to unlock this channel." }
+						respond {
+							content =
+								Translations.Moderation.LockingCommands.Unlock.Channel.unlockServerToUnlock.translate()
+						}
 						return@action
 					}
 
 					val channelPerms = targetChannel?.getPermissionOverwritesForRole(guild!!.id)
 					if (channelPerms == null) {
-						respond { content = "This channel is not locked!" }
+						respond {
+							content = Translations.Moderation.LockingCommands.Unlock.Channel.notLocked.translate()
+						}
 						return@action
 					}
 					val lockedChannel = LockedChannelCollection().getLockedChannel(guild!!.id, targetChannel.id)
 					if (lockedChannel == null) {
-						respond { content = "This channel is not locked!" }
+						respond {
+							content = Translations.Moderation.LockingCommands.Unlock.Channel.notLocked.translate()
+						}
 						return@action
 					}
 
@@ -240,23 +259,28 @@ class LockingCommands : Extension() {
 					}
 
 					targetChannel.createEmbed {
-						title = "Channel Unlocked"
-						description = "This channel has been unlocked by a moderator.\n" +
-							"Please be aware of the rules when continuing discussion."
+						title = Translations.Moderation.LockingCommands.Unlock.Channel.publicEmbedTitle.translate()
+						description = Translations.Moderation.LockingCommands.Unlock.Channel.publicEmbedDesc.translate()
 						color = DISCORD_GREEN
 					}
 
 					LockedChannelCollection().removeLockedChannel(guild!!.id, targetChannel.id)
 
-					respond { content = "${targetChannel.mention} has been unlocked." }
+					respond {
+						content = Translations.Moderation.LockingCommands.Unlock.Channel.unlockConfirmation.translate(
+							targetChannel.mention
+						)
+					}
 
 					val actionLog =
 						getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 					actionLog.createEmbed {
-						title = "Channel Unlocked"
-						description = "${targetChannel.mention} has been unlocked."
+						title = Translations.Moderation.LockingCommands.Unlock.Channel.publicEmbedTitle.translate()
+						description = Translations.Moderation.LockingCommands.Unlock.Channel.unlockConfirmation.translate(
+							targetChannel.mention
+						)
 						footer {
-							text = user.asUserOrNull()?.username ?: "Unable to get user username"
+							text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -266,8 +290,8 @@ class LockingCommands : Extension() {
 			}
 
 			ephemeralSubCommand {
-				name = "server"
-				description = "Unlock the server so everyone can send messages again"
+				name = Translations.Moderation.LockingCommands.Server.name
+				description = Translations.Moderation.LockingCommands.Unlock.Server.description
 
 				requirePermission(Permission.ModerateMembers)
 
@@ -281,10 +305,10 @@ class LockingCommands : Extension() {
 				action {
 					val everyoneRole = guild!!.getRoleOrNull(guild!!.id)
 					if (everyoneRole == null) {
-						respond { content = "Unable to get `@everyone` role. Please try again" }
+						respond { content = Translations.Moderation.LockingCommands.unableToEveryone.translate() }
 						return@action
 					} else if (everyoneRole.permissions.contains(Permission.SendMessages)) {
-						respond { content = "The server isn't locked!" }
+						respond { content = Translations.Moderation.LockingCommands.Unlock.Server.notLocked.translate() }
 						return@action
 					}
 
@@ -296,14 +320,14 @@ class LockingCommands : Extension() {
 							.plus(Permission.UseApplicationCommands)
 					}
 
-					respond { content = "Server unlocked." }
+					respond { content = Translations.Moderation.LockingCommands.Unlock.Server.unlockConfirmation.translate() }
 
 					val actionLog =
 						getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return@action
 					actionLog.createEmbed {
-						title = "Server unlocked"
+						title = Translations.Moderation.LockingCommands.Unlock.Server.unlockConfirmation.translate()
 						footer {
-							text = user.asUserOrNull()?.username ?: "Unable to get user username"
+							text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -349,7 +373,7 @@ class LockingCommands : Extension() {
 		val targetChannel = channelParent ?: channelArg?.asChannelOfOrNull()
 		if (targetChannel == null) {
 			respond {
-				content = "I can't fetch the targeted channel properly."
+				content = Translations.Moderation.LockingCommands.unableToChannel.translate()
 			}
 			return null
 		}
@@ -360,32 +384,32 @@ class LockingCommands : Extension() {
 	inner class LockChannelArgs : Arguments() {
 		/** The channel that the user wants to lock. */
 		val channel by optionalChannel {
-			name = "channel"
-			description = "Channel to lock. Defaults to current channel"
+			name = Translations.Moderation.LockingCommands.Channel.name
+			description = Translations.Moderation.LockingCommands.Lock.Channel.Arguments.Channel.description
 		}
 
 		/** The reason for the locking. */
 		val reason by defaultingString {
-			name = "reason"
-			description = "Reason for locking the channel"
-			defaultValue = "No reason provided"
+			name = Translations.Moderation.LockingCommands.Lock.Channel.Arguments.Reason.name
+			description = Translations.Moderation.LockingCommands.Lock.Channel.Arguments.Reason.description
+			defaultValue = Translations.Moderation.LockingCommands.Lock.Channel.Arguments.Reason.default.translate()
 		}
 	}
 
 	inner class LockServerArgs : Arguments() {
 		/** The reason for the locking. */
 		val reason by defaultingString {
-			name = "reason"
-			description = "Reason for locking the server"
-			defaultValue = "No reason provided"
+			name = Translations.Moderation.LockingCommands.Lock.Channel.Arguments.Reason.name
+			description = Translations.Moderation.LockingCommands.Lock.Channel.Arguments.Reason.description
+			defaultValue = Translations.Moderation.LockingCommands.Lock.Channel.Arguments.Reason.default.translate()
 		}
 	}
 
 	inner class UnlockChannelArgs : Arguments() {
 		/** The channel to unlock. */
 		val channel by optionalChannel {
-			name = "channel"
-			description = "Channel to unlock. Defaults to current channel"
+			name = Translations.Moderation.LockingCommands.Channel.name
+			description = Translations.Moderation.LockingCommands.Unlock.Channel.Arguments.Channel.description
 		}
 	}
 }

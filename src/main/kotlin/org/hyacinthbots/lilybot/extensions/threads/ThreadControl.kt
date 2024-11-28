@@ -37,6 +37,7 @@ import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.kordex.core.extensions.event
 import dev.kordex.core.utils.hasPermission
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -49,12 +50,12 @@ class ThreadControl : Extension() {
 
 	override suspend fun setup() {
 		ephemeralSlashCommand {
-			name = "thread"
-			description = "The parent command for all /thread commands"
+			name = Translations.Threads.ThreadControl.name
+			description = Translations.Threads.ThreadControl.description
 
 			ephemeralSubCommand(::ThreadRenameArgs) {
-				name = "rename"
-				description = "Rename a thread!"
+				name = Translations.Threads.ThreadControl.Rename.name
+				description = Translations.Threads.ThreadControl.Rename.description
 
 				check {
 					isInThread()
@@ -70,18 +71,18 @@ class ThreadControl : Extension() {
 
 					threadChannel.edit {
 						name = arguments.newThreadName
-						reason = "Renamed by ${member.username}"
+						reason = Translations.Threads.ThreadControl.Rename.renamedBy.translate(member.username)
 					}
 
 					respond {
-						content = "Thread Renamed!"
+						content = Translations.Threads.ThreadControl.Rename.renamed.translate()
 					}
 				}
 			}
 
 			ephemeralSubCommand(::ThreadArchiveArgs) {
-				name = "archive"
-				description = "Archive this thread"
+				name = Translations.Threads.ThreadControl.Archive.name
+				description = Translations.Threads.ThreadControl.Archive.description
 
 				check {
 					isInThread()
@@ -104,17 +105,19 @@ class ThreadControl : Extension() {
 								guild!!.getChannelOfOrNull<GuildMessageChannel>(
 									ModerationConfigCollection().getConfig(guild!!.id)!!.channel!!
 								)?.createEmbed {
-									title = "Thread archive prevention disabled"
+									title =
+										Translations.Threads.ThreadControl.Archive.PreventionDisabled.title.translate()
 									description =
-										"Archive prevention has been disabled, as `/thread archive` was used."
+										Translations.Threads.ThreadControl.Archive.PreventionDisabled.description.translate()
 									color = DISCORD_FUCHSIA
 
 									field {
-										name = "User"
-										value = user.asUserOrNull()?.username ?: "Unable to get user tag"
+										name = Translations.Threads.ThreadControl.Archive.user.translate()
+										value = user.asUserOrNull()?.username
+											?: Translations.Threads.ThreadControl.Archive.user.translate()
 									}
 									field {
-										name = "Thread"
+										name = Translations.Threads.ThreadControl.Archive.thread.translate()
 										value = "${threadChannel.mention} ${threadChannel.name}"
 									}
 								}
@@ -123,7 +126,7 @@ class ThreadControl : Extension() {
 					}
 
 					if (threadChannel.isArchived) {
-						edit { content = "**Error:** This channel is already archived!" }
+						edit { content = Translations.Threads.ThreadControl.Archive.already.translate() }
 						return@action
 					}
 
@@ -131,13 +134,14 @@ class ThreadControl : Extension() {
 						this.archived = true
 						this.locked = arguments.lock && member.hasPermission(Permission.ModerateMembers)
 
-						reason = "Archived by ${user.asUserOrNull()?.username}"
+						reason =
+							Translations.Threads.ThreadControl.Archive.archivedBy.translate(user.asUserOrNull()?.username)
 					}
 
 					respond {
-						content = "Thread archived"
+						content = Translations.Threads.ThreadControl.Archive.response.translate()
 						if (arguments.lock && member.hasPermission(Permission.ModerateMembers)) {
-							content += " and locked"
+							content += Translations.Threads.ThreadControl.Archive.responseLock.translate()
 						}
 						content += "!"
 					}
@@ -145,8 +149,8 @@ class ThreadControl : Extension() {
 			}
 
 			ephemeralSubCommand(::ThreadTransferArgs) {
-				name = "transfer"
-				description = "Transfer ownership of this thread"
+				name = Translations.Threads.ThreadControl.Transfer.name
+				description = Translations.Threads.ThreadControl.Transfer.description
 
 				check {
 					isInThread()
@@ -164,42 +168,56 @@ class ThreadControl : Extension() {
 					if (!ownsThreadOrModerator(threadChannel, member)) return@action
 
 					if (arguments.newOwner.id == oldOwnerId) {
-						respond { content = "That person already owns the thread!" }
+						respond { content = Translations.Threads.ThreadControl.Transfer.alreadyOwns.translate() }
 						return@action
 					}
 
 					if (arguments.newOwner.isBot) {
-						respond { content = "You cannot transfer ownership of a thread to a bot." }
+						respond { content = Translations.Threads.ThreadControl.Transfer.cannotBot.translate() }
 						return@action
 					}
 
-					ThreadsCollection().setThreadOwner(guild!!.id, threadChannel.id, arguments.newOwner.id, threadChannel.parentId)
+					ThreadsCollection().setThreadOwner(
+						guild!!.id,
+						threadChannel.id,
+						arguments.newOwner.id,
+						threadChannel.parentId
+					)
 
-					respond { content = "Ownership transferred." }
+					respond { content = Translations.Threads.ThreadControl.Transfer.success.translate() }
 
-					var content = "Thread ownership transferred from ${oldOwner?.mention} " +
-							"to ${arguments.newOwner.mention}."
+					var content = Translations.Threads.ThreadControl.Transfer.fromTo.translateNamed(
+						"old" to oldOwner?.mention,
+						"new" to arguments.newOwner.mention
+					)
 
-					if (member != oldOwner) content += " Transferred by ${member.mention}"
+					if (member != oldOwner) {
+					    content += Translations.Threads.ThreadControl.Transfer.transferredBy.translate(
+						member.mention
+					)
+					}
 
 					threadChannel.createMessage(content)
 
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 						?: return@action
 					utilityLog.createMessage {
+						val obj = Translations.Threads.ThreadControl.Transfer.Embed
 						embed {
-							title = "Thread ownership transferred"
+							title = obj.title.translate()
 							field {
-								name = "Previous owner"
-								value = "${oldOwner?.mention ?: "Unable to find previous owner"} ${oldOwner?.username ?: ""}"
+								name = obj.prevOwner.translate()
+								value =
+									"${oldOwner?.mention ?: obj.cannotFind.translate()} ${oldOwner?.username ?: ""}"
 							}
 							field {
-								name = "New owner"
+								name = obj.newOwner.translate()
 								value = "${arguments.newOwner.mention} ${arguments.newOwner.username}"
 							}
 							if (member != oldOwner) {
 								footer {
-									text = "Transferred by ${member.mention}"
+									text =
+										Translations.Threads.ThreadControl.Transfer.transferredBy.translate(member.mention)
 									icon = member.avatar?.cdnUrl?.toUrl()
 								}
 							}
@@ -211,8 +229,8 @@ class ThreadControl : Extension() {
 			}
 
 			ephemeralSubCommand {
-				name = "prevent-archiving"
-				description = "Stop a thread from being archived"
+				name = Translations.Threads.ThreadControl.PreventArchiving.name
+				description = Translations.Threads.ThreadControl.PreventArchiving.description
 
 				check {
 					isInThread()
@@ -246,28 +264,39 @@ class ThreadControl : Extension() {
 					}
 					if (thread?.preventArchiving == true) {
 						message = edit {
-							content = "Thread archiving is already being prevented, would you like to remove this?"
+							content =
+								Translations.Threads.ThreadControl.PreventArchiving.alreadyPreventedWarning.translate()
 						}.edit {
 							components {
 								ephemeralButton {
-									label = "Yes"
+									label = Translations.Basic.yes
 									style = ButtonStyle.Primary
 
 									action button@{
-										ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, threadChannel.parentId)
-										edit { content = "Thread archiving will no longer be prevented" }
+										ThreadsCollection().setThreadOwner(
+											thread.guildId,
+											thread.threadId,
+											thread.ownerId,
+											threadChannel.parentId
+										)
+										edit {
+											content =
+												Translations.Threads.ThreadControl.PreventArchiving.noLongerPrevented.translate()
+										}
 										val utilityLog = getLoggingChannelWithPerms(
 											ConfigOptions.UTILITY_LOG,
 											this.getGuild()!!
 										) ?: return@button
 										utilityLog.createMessage {
 											embed {
-												title = "Thread archive prevention disabled"
+												title =
+													Translations.Threads.ThreadControl.Archive.PreventionDisabled.title.translate()
 												color = DISCORD_FUCHSIA
 
 												field {
-													name = "User"
-													value = user.asUserOrNull()?.username ?: "Unable to get user tag"
+													name = Translations.Threads.ThreadControl.Archive.user.translate()
+													value = user.asUserOrNull()?.username
+														?: Translations.Basic.UnableTo.tag.translate()
 												}
 												field {
 													name = "Thread"
@@ -279,11 +308,14 @@ class ThreadControl : Extension() {
 									}
 								}
 								ephemeralButton {
-									label = "No"
+									label = Translations.Basic.no
 									style = ButtonStyle.Secondary
 
 									action {
-										edit { content = "Thread archiving will remain prevented" }
+										edit {
+											content =
+												Translations.Threads.ThreadControl.PreventArchiving.stillPrevented.translate()
+										}
 										message!!.edit { components { removeAll() } }
 									}
 								}
@@ -291,31 +323,38 @@ class ThreadControl : Extension() {
 						}
 						return@action
 					} else if (thread?.preventArchiving == false) {
-						ThreadsCollection().setThreadOwner(thread.guildId, thread.threadId, thread.ownerId, threadChannel.parentId)
+						ThreadsCollection().setThreadOwner(
+							thread.guildId,
+							thread.threadId,
+							thread.ownerId,
+							threadChannel.parentId
+						)
 						try {
 							val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 								?: return@action
 							utilityLog.createMessage {
 								embed {
-									title = "Thread archive prevention enabled"
+									title = Translations.Threads.ThreadControl.PreventArchiving.Embed.title.translate()
 									color = DISCORD_FUCHSIA
 
 									field {
-										name = "User"
-										value = user.asUserOrNull()?.username ?: "Unable to get user tag"
+										name = Translations.Threads.ThreadControl.Archive.user.translate()
+										value =
+											user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
 									}
 									field {
-										name = "Thread"
+										name = Translations.Threads.ThreadControl.Archive.thread.translate()
 										value = threadChannel.mention
 									}
 								}
 							}
-							edit { content = "Thread archiving will now be prevented" }
-						} catch (e: EntityNotFoundException) {
 							edit {
-								content = "Thread archiving will now be prevented\nNote: Failed to send a log" +
-										"to your specified mod action log. Please check the channel exists and " +
-										"permissions are right"
+								content = Translations.Threads.ThreadControl.PreventArchiving.nowPrevented.translate()
+							}
+						} catch (_: EntityNotFoundException) {
+							edit {
+								content =
+									Translations.Threads.ThreadControl.PreventArchiving.nowPreventedNoLog.translate()
 							}
 						}
 					}
@@ -350,7 +389,7 @@ class ThreadControl : Extension() {
 		val threadChannel = channel.asChannelOfOrNull<ThreadChannel>()
 		if (threadChannel == null) {
 			respond {
-				content = "Are you sure this channel is a thread? If it is, I can't fetch it properly."
+				content = Translations.Threads.ThreadControl.fetchIssue.translate()
 			}
 			return null
 		}
@@ -361,16 +400,16 @@ class ThreadControl : Extension() {
 	inner class ThreadRenameArgs : Arguments() {
 		/** The new name for the thread. */
 		val newThreadName by string {
-			name = "new-name"
-			description = "The new name to give to the thread"
+			name = Translations.Threads.ThreadControl.Arguments.Rename.NewName.name
+			description = Translations.Threads.ThreadControl.Arguments.Rename.NewName.description
 		}
 	}
 
 	inner class ThreadArchiveArgs : Arguments() {
 		/** Whether to lock the thread or not. */
 		val lock by defaultingBoolean {
-			name = "lock"
-			description = "Whether to lock the thread if you are a moderator. Default is false"
+			name = Translations.Threads.ThreadControl.Arguments.Archive.Lock.name
+			description = Translations.Threads.ThreadControl.Arguments.Archive.Lock.description
 			defaultValue = false
 		}
 	}
@@ -378,8 +417,8 @@ class ThreadControl : Extension() {
 	inner class ThreadTransferArgs : Arguments() {
 		/** The new thread owner. */
 		val newOwner by member {
-			name = "new-owner"
-			description = "The user you want to transfer ownership of the thread to"
+			name = Translations.Threads.ThreadControl.Arguments.Transfer.NewOwner.name
+			description = Translations.Threads.ThreadControl.Arguments.Transfer.NewOwner.name
 		}
 	}
 
@@ -402,7 +441,7 @@ class ThreadControl : Extension() {
 			return true
 		}
 
-		respond { content = "**Error:** This is not your thread!" }
+		respond { content = Translations.Threads.ThreadControl.notYours.translate() }
 		return false
 	}
 }

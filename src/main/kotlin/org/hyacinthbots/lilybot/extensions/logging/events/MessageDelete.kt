@@ -18,6 +18,7 @@ import dev.kordex.modules.pluralkit.events.UnProxiedMessageDeleteEvent
 import io.ktor.client.request.forms.ChannelProvider
 import io.ktor.utils.io.jvm.javaio.toByteReadChannel
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
 import org.hyacinthbots.lilybot.utils.generateBulkDeleteFile
@@ -65,7 +66,7 @@ class MessageDelete : Extension() {
 				requiredConfigs(ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
 				failIf {
 					event.message?.author?.id == kord.selfId ||
-							event.message?.author?.isBot == true
+						event.message?.author?.isBot == true
 				}
 			}
 
@@ -82,7 +83,7 @@ class MessageDelete : Extension() {
 
 			action {
 				val messageLog =
-						getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, event.getGuildOrNull()!!) ?: return@action
+					getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, event.getGuildOrNull()!!) ?: return@action
 
 				val messages = generateBulkDeleteFile(event.messages)
 
@@ -101,16 +102,18 @@ class MessageDelete : Extension() {
 	 */
 	private suspend fun UserMessageCreateBuilder.bulkDeleteEmbed(event: MessageBulkDeleteEvent, messages: String?) {
 		embed {
-			title = "Bulk Message Delete"
-			description = "A Bulk delete of messages occurred"
+			title = Translations.Events.MessageDelete.Bulk.embedTitle.translate()
+			description = Translations.Events.MessageDelete.Bulk.embedDescription.translate()
 			field {
-				name = "Location"
+				name = Translations.Events.MessageDelete.Bulk.embedLocation.translate()
 				value = "${event.channel.mention} " +
-						"(${event.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
-							?: "Could not get channel name"})"
+					"(${
+						event.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
+							?: Translations.Events.MessageEvent.failedContents.translate()
+					})"
 			}
 			field {
-				name = "Number of messages"
+				name = Translations.Events.MessageDelete.Bulk.embedNumber.translate()
 				value = event.messages.size.toString()
 			}
 			color = DISCORD_PINK
@@ -122,7 +125,7 @@ class MessageDelete : Extension() {
 				ChannelProvider { messages.byteInputStream().toByteReadChannel() }
 			)
 		} else {
-			content = "The messages from this event could not be gathered and logged."
+			content = Translations.Events.MessageDelete.Bulk.embedFailedContent.translate()
 		}
 	}
 
@@ -144,18 +147,20 @@ class MessageDelete : Extension() {
 
 		messageLog.createEmbed {
 			author {
-				name = "Message deleted"
+				name = Translations.Events.MessageDelete.Single.embedAuthor.translate()
 				icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.cdnUrl?.toUrl()
 			}
-			description =
-				"Location: ${message.channel.mention} " +
-						"(${message.channel.asChannelOfOrNull<GuildMessageChannel>()?.name ?: "Could not get channel name"})"
+			description = Translations.Events.MessageEvent.location.translate(
+				message.channel.mention,
+				message.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
+					?: Translations.Events.MessageDelete.noChannelName.translate()
+			)
 			color = DISCORD_PINK
 			timestamp = Clock.System.now()
 
 			field {
-				name = "Message contents"
-				value = message.trimmedContents().ifNullOrEmpty { "Failed to retrieve previous message contents" }
+				name = Translations.Events.MessageDelete.Single.embedContents.translate()
+				value = message.trimmedContents().ifNullOrEmpty { Translations.Events.MessageEvent.failedContents.translate() }
 				inline = false
 			}
 			attachmentsAndProxiedMessageInfo(guild, message, proxiedMessage)

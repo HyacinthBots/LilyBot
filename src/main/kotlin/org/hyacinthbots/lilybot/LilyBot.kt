@@ -9,6 +9,7 @@ import dev.kord.rest.builder.message.actionRow
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.ExtensibleBot
 import dev.kordex.core.checks.hasPermission
+import dev.kordex.core.i18n.SupportedLocales
 import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
 import dev.kordex.data.api.DataCollection
@@ -19,6 +20,7 @@ import dev.kordex.modules.pluralkit.extPluralKit
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import lilybot.i18n.Translations
 import org.hyacinthbots.docgenerator.docsGenerator
 import org.hyacinthbots.docgenerator.enums.CommandTypes
 import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
@@ -91,39 +93,28 @@ suspend fun main() {
 			general {
 				message { locale ->
 					embed {
-						title = "Info about LilyBot"
+						title = Translations.About.embedTitle.translate()
 
 						thumbnail {
 							url =
 								"https://github.com/HyacinthBots/LilyBot/blob/main/docs/lily-logo-transparent.png?raw=true"
 						}
 
-						description =
-							"Lily is a FOSS multi-purpose bot for Discord created by the HyacinthBots organization. " +
-								"Use `/help` for support or `/invite` to get an invite link."
+						description = Translations.About.embedDesc.translate()
 						field {
-							name = "How can I support the continued development of Lily?"
-
-							value = "Lily is developed primarily by NoComment#6411 in their free time. Hyacinth " +
-								"doesn't have the resources to invest in hosting, so financial donations via " +
-								"[Buy Me a Coffee](https://buymeacoffee.com/Hyacinthbots) help keep Lily afloat. " +
-								"Currently, we run lily on a Hetzner cloud server, which we can afford in our " +
-								"current situation. We also have domain costs for our website.\n\nContributions of " +
-								"code & documentation are also incredibly appreciated, and you can read our " +
-								"[contributing guide]($HYACINTH_GITHUB/LilyBot/blob/main/CONTRIBUTING.md) or " +
-								"[development guide]($HYACINTH_GITHUB/LilyBot/blob/main/docs/development-guide.md) " +
-								"to get started."
+							name = Translations.About.howSupportTitle.translate()
+							value = Translations.About.howSupportValue.translate(HYACINTH_GITHUB)
 						}
 
 						field {
-							name = "Version"
+							name = Translations.About.version.translate()
 							// To avoid IntelliJ shouting about build errors, use https://plugins.jetbrains.com/plugin/9407-pebble
 							value = "${BuildInfo.LILY_VERSION} (${BuildInfo.BUILD_ID})"
 							inline = true
 						}
 
 						field {
-							name = "Up Since"
+							name = Translations.About.upSince.translate()
 							value = "${
 								UptimeCollection().get()?.onTime?.toLocalDateTime(TimeZone.UTC)
 									?.time.toString().split(".")[0]
@@ -133,14 +124,8 @@ suspend fun main() {
 						}
 
 						field {
-							name = "Useful links"
-							value =
-								"Website: Coming Soon™️\n" +
-									"GitHub: ${HYACINTH_GITHUB}\n" +
-									"Buy Me a Coffee: https://buymeacoffee.com/HyacinthBots\n" +
-									"Twitter: https://twitter.com/HyacinthBots\n" +
-									"Email: `hyacinthbots@outlook.com`\n" +
-									"Discord: https://discord.gg/hy2329fcTZ"
+							name = Translations.Utility.InfoCommands.Help.usefulFieldName.translate()
+							value = Translations.Utility.InfoCommands.Help.usefulFieldValue.translate(HYACINTH_GITHUB)
 						}
 					}
 
@@ -149,15 +134,15 @@ suspend fun main() {
 						    "https://discord.com/api/oauth2/authorize?client_id=876278900836139008&" +
 							"permissions=1151990787078&scope=bot%20applications.commands"
 						) {
-							label = "extensions.about.buttons.invite"
+							label = Translations.Utility.InfoCommands.Help.Button.invite.translate()
 						}
 
 						linkButton("$HYACINTH_GITHUB/LilyBot/blob/main/docs/privacy-policy.md") {
-							label = "Privacy Policy"
+							label = Translations.Utility.InfoCommands.Help.Button.privacy.translate()
 						}
 
 						linkButton("$HYACINTH_GITHUB/.github/blob/main/terms-of-service.md") {
-							label = "Terms of Service"
+							label = Translations.Utility.InfoCommands.Help.Button.tos.translate()
 						}
 					}
 				}
@@ -227,6 +212,13 @@ suspend fun main() {
 // 			sentry {
 // 				enableIfDSN(SENTRY_DSN) // Use the nullable sentry function to allow the bot to be used without a DSN
 // 			}
+		}
+
+		i18n {
+			interactionUserLocaleResolver()
+			interactionGuildLocaleResolver()
+
+			applicationCommandLocale(SupportedLocales.ENGLISH)
 		}
 
 		docsGenerator {

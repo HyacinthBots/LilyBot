@@ -23,6 +23,7 @@ import dev.kordex.core.utils.delete
 import dev.kordex.core.utils.permissionsForMember
 import dev.kordex.core.utils.respond
 import kotlinx.coroutines.delay
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
@@ -44,15 +45,15 @@ class GalleryChannel : Extension() {
 		 * @since 3.3.0
 		 */
 		ephemeralSlashCommand {
-			name = "gallery-channel"
-			description = "The parent command for image channel setting"
+			name = Translations.Utility.GalleryChannel.name
+			description = Translations.Utility.GalleryChannel.description
 
 			/**
 			 * The command that sets the gallery channel.
 			 */
 			ephemeralSubCommand {
-				name = "set"
-				description = "Set a channel as a gallery channel"
+				name = Translations.Utility.GalleryChannel.Set.name
+				description = Translations.Utility.GalleryChannel.Set.description
 
 				requirePermission(Permission.ManageGuild)
 
@@ -64,10 +65,11 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
+					val translations = Translations.Utility.GalleryChannel.Set
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
 						if (channel.asChannelOrNull()?.id == it.channelId) {
 							respond {
-								content = "This channel is already a gallery channel!"
+								content = translations.already.translate()
 							}
 							return@action
 						}
@@ -76,16 +78,16 @@ class GalleryChannel : Extension() {
 					GalleryChannelCollection().setChannel(guild!!.id, channel.asChannelOrNull()!!.id)
 
 					respond {
-						content = "Set channel as gallery channel."
+						content = translations.response.translate()
 					}
 
 					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 						?: return@action
 					utilityLog.createEmbed {
-						title = "New Gallery channel"
-						description = "${channel.mention} was added as a Gallery channel"
+						title = translations.embedTitle.translate()
+						description = translations.embedDesc.translate(channel.mention)
 						footer {
-							text = "Requested by ${user.asUserOrNull()?.username}"
+							text = translations.embedRequested.translate(user.asUserOrNull()?.username)
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						color = DISCORD_GREEN
@@ -97,8 +99,8 @@ class GalleryChannel : Extension() {
 			 * The command that unsets the gallery channel.
 			 */
 			ephemeralSubCommand {
-				name = "unset"
-				description = "Unset a channel as a gallery channel."
+				name = Translations.Utility.GalleryChannel.Unset.name
+				description = Translations.Utility.GalleryChannel.Unset.description
 
 				requirePermission(Permission.ManageGuild)
 
@@ -110,6 +112,7 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
+					val translations = Translations.Utility.GalleryChannel.Unset
 					var channelFound = false
 
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
@@ -121,23 +124,23 @@ class GalleryChannel : Extension() {
 
 					if (channelFound) {
 						respond {
-							content = "Unset channel as gallery channel."
+							content = translations.response.translate()
 						}
 
 						val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 							?: return@action
 						utilityLog.createEmbed {
-							title = "Removed Gallery channel"
-							description = "${channel.mention} was removed as a Gallery channel"
+							title = translations.embedTitle.translate()
+							description = translations.embedDesc.translate(channel.mention)
 							footer {
-								text = "Requested by ${user.asUserOrNull()?.username}"
+								text = translations.embedRequested.translate(user.asUserOrNull()?.username)
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							color = DISCORD_RED
 						}
 					} else {
 						respond {
-							content = "This channel is not a gallery channel!"
+							content = translations.notGallery.translate()
 						}
 					}
 				}
@@ -147,8 +150,8 @@ class GalleryChannel : Extension() {
 			 * The command that returns a list of all image channels for a particular guild.
 			 */
 			ephemeralSubCommand {
-				name = "list"
-				description = "List all gallery channels in the guild"
+				name = Translations.Utility.GalleryChannel.List.name
+				description = Translations.Utility.GalleryChannel.List.description
 
 				check {
 					anyGuild()
@@ -159,6 +162,7 @@ class GalleryChannel : Extension() {
 				}
 
 				action {
+					val translations = Translations.Utility.GalleryChannel.List
 					var channels = ""
 
 					GalleryChannelCollection().getChannels(guildFor(event)!!.id).forEach {
@@ -167,11 +171,11 @@ class GalleryChannel : Extension() {
 
 					respond {
 						embed {
-							title = "Gallery channels"
-							description = "Here are the gallery channels in this guild."
+							title = translations.embedTitle.translate()
+							description = translations.embedDesc.translate()
 							field {
-								name = "Channels:"
-								value = if (channels != "") channels.replace(" ", "\n") else "No channels found!"
+								name = translations.embedChannelsField.translate()
+								value = if (channels != "") channels.replace(" ", "\n") else translations.noneFound.translate()
 							}
 						}
 					}
@@ -197,9 +201,7 @@ class GalleryChannel : Extension() {
 								.contains(Permission.ManageMessages)
 						) {
 							event.message.channel.createMessage {
-								"Hi! This is a gallery channel, but I don't have Manage Messages for this " +
-									"channel, therefore I cannot delete messages that don't contain images! Could " +
-									"someone ask staff fix it please? Thanks!"
+								content = Translations.Utility.GalleryChannel.noPerms.translate()
 							}
 							return@forEach
 						}
@@ -213,7 +215,7 @@ class GalleryChannel : Extension() {
 							}
 
 							val response = event.message.respond {
-								content = "This channel is for images only!"
+								content = Translations.Utility.GalleryChannel.images.translate()
 							}
 
 							event.message.delete()

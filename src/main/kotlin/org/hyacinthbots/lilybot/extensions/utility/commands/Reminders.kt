@@ -44,6 +44,7 @@ import io.ktor.client.request.post
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.ReminderCollection
 import org.hyacinthbots.lilybot.database.entities.ReminderData
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
@@ -70,15 +71,15 @@ class Reminders : Extension() {
 		reminderTask = reminderScheduler.schedule(30, repeat = true, callback = ::postReminders)
 
 		publicSlashCommand {
-			name = "reminder"
-			description = "The parent command for all reminder commands"
+			name = Translations.Utility.Reminders.Reminder.name
+			description = Translations.Utility.Reminders.Reminder.description
 
 			/*
 			Reminder set
 			 */
 			publicSubCommand(::ReminderSetArgs) {
-				name = "set"
-				description = "Set a reminder for some time in the future!"
+				name = Translations.Utility.Reminders.Reminder.Set.name
+				description = Translations.Utility.Reminders.Reminder.Set.description
 
 				check {
 					anyGuild()
@@ -92,85 +93,70 @@ class Reminders : Extension() {
 				}
 
 				action {
+					val translations = Translations.Utility.Reminders.Reminder.Set
 					val setTime = Clock.System.now()
 					val remindTime = Clock.System.now().plus(arguments.time.toDuration(TimeZone.UTC))
 
 					if (arguments.customMessage != null && arguments.customMessage.fitsEmbedField() == false) {
-						respond { content = "Custom Message is too long. Message must be 1024 characters or fewer." }
+						respond { content = translations.messageTooLong.translate() }
 						return@action
 					}
 
 					if (arguments.repeating && arguments.repeatingInterval == null) {
-						respond {
-							content = "You must specify a repeating interval if you are setting a repeating reminder."
-						}
+						respond { content = translations.noRepeatingInt.translate() }
 						return@action
 					}
 
 					if (arguments.repeatingInterval != null && arguments.repeatingInterval!!.toDuration(TimeZone.UTC) <
 						DateTimePeriod(hours = 1).toDuration(TimeZone.UTC)
 					) {
-						respond {
-							content = "The Repeating interval cannot be less than one hour!\n\n" +
-									"This is to prevent spam and/or abuse of reminders."
-						}
+						respond { content = translations.tooShort.translate() }
 						return@action
 					}
 
 					val reminderEmbed = respond {
 						embed {
 							if (arguments.customMessage.isNullOrEmpty() && !arguments.repeating) {
-								title = "Reminder Set!"
-								description =
-									"I will remind you at ${remindTime.toDiscord(TimestampType.LongDateTime)} (${
-										remindTime.toDiscord(TimestampType.RelativeTime)
-									})"
+								title = translations.embedTitle.translate()
 							} else if (arguments.customMessage.isNullOrEmpty() && arguments.repeating) {
-								title = "Repeating Reminder Set!"
-								description =
-									"I will remind you at ${remindTime.toDiscord(TimestampType.LongDateTime)} (${
-										remindTime.toDiscord(TimestampType.RelativeTime)
-									})"
+								title = translations.repeatingEmbedTitle.translate()
 								field {
-									name = "Repeating Interval"
+									name = translations.embedRepeatingInt.translate()
 									value = arguments.repeatingInterval.toString().lowercase()
 										.replace("pt", "")
 										.replace("p", "")
 								}
 							} else if (arguments.customMessage != null && !arguments.repeating) {
-								title = "Reminder Set!"
-								description =
-									"I will remind you at ${remindTime.toDiscord(TimestampType.LongDateTime)} (${
-										remindTime.toDiscord(TimestampType.RelativeTime)
-									})"
+								title = translations.embedTitle.translate()
 								field {
-									name = "Custom Message"
+									name = translations.embedCustomMessage.translate()
 									value = arguments.customMessage!!
 								}
 							} else if (arguments.customMessage != null && arguments.repeating) {
-								title = "Repeating Reminder Set!"
-								description =
-									"I will remind you at ${remindTime.toDiscord(TimestampType.LongDateTime)} (${
-										remindTime.toDiscord(TimestampType.RelativeTime)
-									})"
+								title = translations.repeatingEmbedTitle.translate()
 								field {
-									name = "Custom Message"
+									name = translations.embedCustomMessage.translate()
 									value = arguments.customMessage!!
 								}
 								field {
-									name = "Repeating Interval"
+									name = translations.embedRepeatingInt.translate()
 									value = arguments.repeatingInterval.interval()!!
 								}
 							}
 
+							description = translations.embedDesc.translateNamed(
+								"long" to remindTime.toDiscord(TimestampType.LongDateTime),
+								"relative" to remindTime.toDiscord(TimestampType.RelativeTime)
+							)
+
 							if (arguments.dm) {
 								field {
-									value = "Reminder will be send via DM to all participants"
+									value = translations.reminderToAll.translate()
 								}
 							}
 
 							footer {
-								text = "Use `/reminder remove` to cancel"
+								text = Translations.Utility.Reminders.Reminder.Embed.footer.translate()
 							}
 						}
 					}
@@ -199,8 +185,8 @@ class Reminders : Extension() {
 			Reminder List
 			 */
 			ephemeralSubCommand {
-				name = "list"
-				description = "List your reminders for this guild"
+				name = Translations.Utility.Reminders.Reminder.List.name
+				description = Translations.Utility.Reminders.Reminder.List.description
 
 				check {
 					anyGuild()
@@ -224,31 +210,31 @@ class Reminders : Extension() {
 			Reminder Remove
 			 */
 			ephemeralSubCommand(::ReminderRemoveArgs) {
-				name = "remove"
-				description = "Remove a reminder you have set from this guild"
+				name = Translations.Utility.Reminders.Reminder.Remove.name
+				description = Translations.Utility.Reminders.Reminder.description
 
 				check {
 					anyGuild()
 				}
 
 				action {
+					val translations = Translations.Utility.Reminders.Reminder.Remove
 					val reminders = ReminderCollection().getRemindersForUser(user.id)
 
 					val reminder = reminders.find { it.id == arguments.reminder }
 
 					if (reminder == null) {
 						respond {
-							content = "Reminder not found. Please use `/reminder list` to find out the correct " +
-									"reminder number"
+							content = translations.notFound.translate()
 						}
 						return@action
 					}
 
 					respond {
 						embed {
-							title = "Reminder cancelled"
+							title = translations.embedTitle.translate()
 							field {
-								name = "Reminder"
+								name = translations.reminderField.translate()
 								value = reminder.getContent()!!
 							}
 						}
@@ -263,25 +249,26 @@ class Reminders : Extension() {
 			Reminder Remove all
 			 */
 			ephemeralSubCommand(::ReminderRemoveAllArgs) {
-				name = "remove-all"
-				description = "Remove all a specific type of reminder from this guild"
+				name = Translations.Utility.Reminders.Reminder.RemoveAll.name
+				description = Translations.Utility.Reminders.Reminder.RemoveAll.description
 
 				check {
 					anyGuild()
 				}
 
 				action {
+					val translations = Translations.Utility.Reminders.Reminder.RemoveAll
 					val reminders = ReminderCollection().getRemindersForUserInGuild(user.id, guild!!.id)
 
 					if (reminders.isEmpty()) {
 						respond {
 							content = when (arguments.type) {
-								"all" -> "You do not have any reminders for this guild!"
-								"repeating" -> "You do not have any repeating reminders for this guild"
-								"non-repeating" -> "You do not have any regular reminders for this guild"
+								"all" -> translations.noReminders
+								"repeating" -> translations.noRepeating
+								"non-repeating" -> translations.noNonRepeating
 								// This is impossible but the compiler complains otherwise
-								else -> "You do not have any reminders for this guild"
-							}
+								else -> translations.noReminders
+							}.translate()
 						}
 						return@action
 					}
@@ -294,7 +281,7 @@ class Reminders : Extension() {
 							}
 
 							respond {
-								content = "Removed all reminders for this guild."
+								content = translations.removedAll.translate()
 							}
 						}
 
@@ -307,7 +294,7 @@ class Reminders : Extension() {
 							}
 
 							respond {
-								content = "Removed all repeating reminders for this guild."
+								content = translations.removedRepeating.translate()
 							}
 						}
 
@@ -320,7 +307,7 @@ class Reminders : Extension() {
 							}
 
 							respond {
-								content = "Removed all non-repeating reminders for this guild."
+								content = translations.removedNonRepeating.translate()
 							}
 						}
 					}
@@ -331,8 +318,8 @@ class Reminders : Extension() {
 			Reminder Mod List
 			 */
 			ephemeralSubCommand(::ReminderModListArgs) {
-				name = "mod-list"
-				description = "List all reminders for a user, if you're a moderator"
+				name = Translations.Utility.Reminders.Reminder.ModList.name
+				description = Translations.Utility.Reminders.Reminder.ModList.description
 
 				requirePermission(Permission.ModerateMembers)
 
@@ -360,8 +347,8 @@ class Reminders : Extension() {
 			Reminder Mod Remove
 			 */
 			ephemeralSubCommand(::ReminderModRemoveArgs) {
-				name = "mod-remove"
-				description = "Remove a reminder for a user, if you're a moderator"
+				name = Translations.Utility.Reminders.Reminder.ModRemove.name
+				description = Translations.Utility.Reminders.Reminder.ModRemove.description
 
 				requirePermission(Permission.ModerateMembers)
 
@@ -372,23 +359,21 @@ class Reminders : Extension() {
 				}
 
 				action {
+					val translations = Translations.Utility.Reminders.Reminder.ModRemove
 					val reminders = ReminderCollection().getRemindersForUser(arguments.user.id)
 
 					val reminder = reminders.find { it.id == arguments.reminder }
 
 					if (reminder == null) {
-						respond {
-							content = "Reminder not found. Please use `/reminder mod-list` to find out the correct " +
-									"reminder number"
-						}
+						respond { content = translations.notFound.translate() }
 						return@action
 					}
 
 					respond {
 						embed {
-							title = "Reminder cancelled by moderator"
+							title = translations.embedTitle.translate()
 							field {
-								name = "Reminder"
+								name = Translations.Utility.Reminders.Reminder.Remove.reminderField.translate()
 								value = reminder.getContent()!!
 							}
 						}
@@ -407,8 +392,8 @@ class Reminders : Extension() {
 			Reminder Mod Remove All
 			 */
 			ephemeralSubCommand(::ReminderModRemoveAllArgs) {
-				name = "mod-remove-all"
-				description = "Remove all a specific type of reminder for a user, if you're a moderator"
+				name = Translations.Utility.Reminders.Reminder.ModRemoveAll.name
+				description = Translations.Utility.Reminders.Reminder.ModRemoveAll.description
 
 				requirePermission(Permission.ModerateMembers)
 
@@ -419,17 +404,19 @@ class Reminders : Extension() {
 				}
 
 				action {
+					val translations = Translations.Utility.Reminders.Reminder.ModRemoveAll
 					val reminders = ReminderCollection().getRemindersForUserInGuild(arguments.user.id, guild!!.id)
+					val target = guild!!.getMemberOrNull(arguments.user.id)?.username
 
 					if (reminders.isEmpty()) {
 						respond {
 							content = when (arguments.type) {
-								"all" -> "${user.asUserOrNull()?.username} does not have any reminders for this guild!"
-								"repeating" -> "${user.asUserOrNull()?.username} does not have any repeating reminders for this guild"
-								"non-repeating" -> "${user.asUserOrNull()?.username} does not have any regular reminders for this guild"
+								"all" -> translations.noReminders
+								"repeating" -> translations.noRepeating
+								"non-repeating" -> translations.noNonRepeating
 								// This is impossible but the compiler complains otherwise
-								else -> "You do not have any reminders for this guild"
-							}
+								else -> translations.noReminders
+							}.translate(target)
 						}
 						return@action
 					}
@@ -445,11 +432,7 @@ class Reminders : Extension() {
 								)
 							}
 
-							respond {
-								content = "Removed all ${
-									guild!!.getMemberOrNull(arguments.user.id)?.mention
-								}'s reminders for this guild."
-							}
+							respond { content = translations.removedAll.translate(target) }
 						}
 
 						"repeating" -> {
@@ -464,11 +447,7 @@ class Reminders : Extension() {
 								}
 							}
 
-							respond {
-								content = "Removed all ${
-									guild!!.getMemberOrNull(arguments.user.id)?.mention
-								}'s repeating reminders for this guild."
-							}
+							respond { content = translations.removedRepeating.translate(target) }
 						}
 
 						"non-repeating" -> {
@@ -483,11 +462,7 @@ class Reminders : Extension() {
 								}
 							}
 
-							respond {
-								content = "Removed all ${
-									guild!!.getMemberOrNull(arguments.user.id)?.mention
-								}'s non-repeating reminders for this guild."
-							}
+							respond { content = translations.removedNonRepeating.translate(target) }
 						}
 					}
 				}
@@ -539,9 +514,7 @@ class Reminders : Extension() {
 			if (it.dm || !hasPerms) {
 				guild.getMemberOrNull(it.userId)?.dm {
 					if (!it.dm) {
-						content =
-							"I was unable to find/access the channel from $guild that this" +
-									"reminder was set in."
+						content = Translations.Utility.Reminders.Reminder.unableToAccess.translate(guild)
 					}
 					reminderEmbed(it)
 				}
@@ -570,21 +543,22 @@ class Reminders : Extension() {
 	 * @since 4.2.0
 	 */
 	private fun MessageCreateBuilder.reminderEmbed(data: ReminderData) {
+		val translations = Translations.Utility.Reminders.Reminder.Embed
 		embed {
-			title = "Reminder"
+			title = translations.title.translate()
 			if (data.customMessage != null) description = data.customMessage
 			field {
-				name = "Set time"
+				name = translations.set.translate()
 				value = data.setTime.toDiscord(TimestampType.LongDateTime)
 			}
 			if (data.repeating) {
 				field {
-					name = "Repeating Interval"
-					value = "This reminder repeats every ${data.repeatingInterval.interval()}"
+					name = translations.repeatingTitle.translate()
+					value = translations.repeatingValue.translate(data.repeatingInterval.interval())
 				}
 
 				footer {
-					text = "Use `/reminder remove` to cancel this reminder"
+					text = translations.footer.translate()
 				}
 			}
 		}
@@ -617,14 +591,18 @@ class Reminders : Extension() {
 		val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return
 		val message = channel.getMessageOrNull(messageId) ?: return
 		message.edit {
-			content = "${message.content} **Reminder " +
-					"${
-						if (wasCancelled) {
-							"cancelled${if (byModerator) " by moderator" else ""}."
+			content = "${message.content} **${Translations.Utility.Reminders.Reminder.Embed.title.translate()} " +
+				if (wasCancelled) {
+					"${Translations.Utility.Reminders.Reminder.OriginalMessage.canc.translate()}${
+						if (byModerator) {
+							" ${Translations.Utility.Reminders.Reminder.OriginalMessage.byMod.translate()}"
 						} else {
-							"completed."
+						    ""
 						}
-					}**"
+					}."
+				} else {
+					Translations.Utility.Reminders.Reminder.OriginalMessage.complete.translate()
+				} + "**"
 		}
 	}
 
@@ -642,6 +620,7 @@ class Reminders : Extension() {
 		event: ChatInputCommandInteractionCreateEvent,
 		userId: Snowflake? = null
 	): Pages {
+		val translations = Translations.Utility.Reminders.Reminder.ListPage
 		val pagesObj = Pages()
 		val userReminders = ReminderCollection().getRemindersForUserInGuild(
 			userId ?: event.interaction.user.id,
@@ -652,10 +631,10 @@ class Reminders : Extension() {
 			pagesObj.addPage(
 				Page {
 					description = if (userId == null) {
-						"You have no reminders set for this guild."
+						translations.desc
 					} else {
-						"<@$userId> has no reminders set for this guild."
-					}
+						translations.modDesc
+					}.translate(userId)
 				}
 			)
 		} else {
@@ -667,7 +646,7 @@ class Reminders : Extension() {
 
 				pagesObj.addPage(
 					Page {
-						title = "Reminders for ${guildFor(event)?.asGuildOrNull()?.name ?: "this guild"}"
+						title = translations.title.translate(guildFor(event)?.asGuildOrNull()?.name)
 						description = response
 					}
 				)
@@ -685,68 +664,71 @@ class Reminders : Extension() {
 	 * @since 4.2.0
 	 */
 	private fun ReminderData?.getContent(): String? {
+		val translations = Translations.Utility.Reminders.Reminder.Content
 		this ?: return null
-		return "Reminder ID: ${this.id}\nTime set: ${this.setTime.toDiscord(TimestampType.ShortDateTime)},\n" +
-				"Time until reminder: ${this.remindTime.toDiscord(TimestampType.RelativeTime)} (${
-					this.remindTime.toDiscord(TimestampType.ShortDateTime)
-				}),\nCustom Message: ${
-					if (this.customMessage != null && this.customMessage.length >= 150) {
-						this.customMessage.substring(0..150)
-					} else {
-						this.customMessage ?: "none"
-					}
-				}\n---\n"
+		return "${translations.line1.translate()}: ${this.id}\n" +
+			"${translations.line2.translate()}: ${this.setTime.toDiscord(TimestampType.ShortDateTime)},\n" +
+			"${translations.line3.translate()}: ${this.remindTime.toDiscord(TimestampType.RelativeTime)} (${
+				this.remindTime.toDiscord(TimestampType.ShortDateTime)
+			}),\n" +
+			"${translations.line4.translate()}: ${
+				if (this.customMessage != null && this.customMessage.length >= 150) {
+					this.customMessage.substring(0..150)
+				} else {
+					this.customMessage ?: Translations.Basic.none
+				}
+			}\n---\n"
 	}
 
 	inner class ReminderSetArgs : Arguments() {
 		/** The time until the reminding should happen. */
 		val time by coalescingDuration {
-			name = "time"
-			description = "How long until reminding? Format: 1d12h30m / 3d / 26m30s"
+			name = Translations.Utility.Reminders.Reminder.Set.Arguments.Time.name
+			description = Translations.Utility.Reminders.Reminder.Set.Arguments.Time.description
 		}
 
 		val dm by boolean {
-			name = "remind-in-dm"
-			description = "Whether to remind in DMs or not"
+			name = Translations.Utility.Reminders.Reminder.Set.Arguments.Dm.name
+			description = Translations.Utility.Reminders.Reminder.Set.Arguments.Dm.description
 		}
 
 		/** An optional message to attach to the reminder. */
 		val customMessage by optionalString {
-			name = "custom-message"
-			description = "A message to attach to your reminder"
+			name = Translations.Utility.Reminders.Reminder.Set.Arguments.Message.name
+			description = Translations.Utility.Reminders.Reminder.Set.Arguments.Message.description
 		}
 
 		/** Whether to repeat the reminder or have it run once. */
 		val repeating by defaultingBoolean {
-			name = "repeat"
-			description = "Whether to repeat the reminder or not"
+			name = Translations.Utility.Reminders.Reminder.Set.Arguments.Repeating.name
+			description = Translations.Utility.Reminders.Reminder.Set.Arguments.Repeating.description
 			defaultValue = false
 		}
 
 		/** The interval for the repeating reminder to run at. */
 		val repeatingInterval by coalescingOptionalDuration {
-			name = "repeat-interval"
-			description = "The interval to repeat the reminder at. Format: 1d / 1h / 5d"
+			name = Translations.Utility.Reminders.Reminder.Set.Arguments.RepeatingInt.name
+			description = Translations.Utility.Reminders.Reminder.Set.Arguments.RepeatingInt.description
 		}
 	}
 
 	inner class ReminderRemoveArgs : Arguments() {
 		/** The number of the reminder to remove. */
 		val reminder by long {
-			name = "reminder-number"
-			description = "The number of the reminder to remove. Use '/reminder list' to get this"
+			name = Translations.Utility.Reminders.Reminder.Remove.Arguments.Reminder.name
+			description = Translations.Utility.Reminders.Reminder.Remove.Arguments.Reminder.description
 		}
 	}
 
 	inner class ReminderRemoveAllArgs : Arguments() {
 		/** The type of reminder to remove. */
 		val type by stringChoice {
-			name = "reminder-type"
-			description = "The type of reminder to remove"
+			name = Translations.Utility.Reminders.Reminder.RemoveAll.Arguments.Type.name
+			description = Translations.Utility.Reminders.Reminder.RemoveAll.Arguments.Type.description
 			choices = mutableMapOf(
-				"repeating" to "repeating",
-				"non-repeating" to "non-repeating",
-				"all" to "all"
+				Translations.Utility.Reminders.Reminder.RemoveAll.Arguments.Type.Choices.repeating to "repeating",
+				Translations.Utility.Reminders.Reminder.RemoveAll.Arguments.Type.Choices.nonRepeating to "non-repeating",
+				Translations.Utility.Reminders.Reminder.RemoveAll.Arguments.Type.Choices.all to "all"
 			)
 		}
 	}
@@ -754,40 +736,40 @@ class Reminders : Extension() {
 	inner class ReminderModListArgs : Arguments() {
 		/** The user whose reminders are being viewed. */
 		val user by user {
-			name = "user"
-			description = "The user to view reminders for"
+			name = Translations.Utility.Reminders.Reminder.ModList.Arguments.User.name
+			description = Translations.Utility.Reminders.Reminder.ModList.Arguments.User.description
 		}
 	}
 
 	inner class ReminderModRemoveArgs : Arguments() {
 		/** The user whose reminders need removing. */
 		val user by user {
-			name = "user"
-			description = "The user to remove the reminder for"
+			name = Translations.Utility.Reminders.Reminder.ModRemove.Arguments.User.name
+			description = Translations.Utility.Reminders.Reminder.ModRemove.Arguments.User.description
 		}
 
 		/** The number of the reminder to remove. */
 		val reminder by long {
-			name = "reminder-number"
-			description = "The number of the reminder to remove. Use '/reminder mod-list' to get this"
+			name = Translations.Utility.Reminders.Reminder.ModRemove.Arguments.Reminder.name
+			description = Translations.Utility.Reminders.Reminder.ModRemove.Arguments.Reminder.description
 		}
 	}
 
 	inner class ReminderModRemoveAllArgs : Arguments() {
 		/** The user whose reminders need removing. */
 		val user by user {
-			name = "user"
-			description = "The user to remove the reminders for"
+			name = Translations.Utility.Reminders.Reminder.ModRemoveAll.Arguments.User.name
+			description = Translations.Utility.Reminders.Reminder.ModRemoveAll.Arguments.User.description
 		}
 
 		/** The type of reminder to remove. */
 		val type by stringChoice {
-			name = "reminder-type"
-			description = "The type of reminder to remove"
+			name = Translations.Utility.Reminders.Reminder.RemoveAll.Arguments.Type.name
+			description = Translations.Utility.Reminders.Reminder.RemoveAll.Arguments.Type.description
 			choices = mutableMapOf(
-				"repeating" to "repeating",
-				"non-repeating" to "non-repeating",
-				"all" to "all"
+				Translations.Utility.Reminders.Reminder.RemoveAll.Arguments.Type.Choices.repeating to "repeating",
+				Translations.Utility.Reminders.Reminder.RemoveAll.Arguments.Type.Choices.nonRepeating to "non-repeating",
+				Translations.Utility.Reminders.Reminder.RemoveAll.Arguments.Type.Choices.all to "all"
 			)
 		}
 	}

@@ -31,6 +31,7 @@ import dev.kordex.core.pagination.pages.Page
 import dev.kordex.core.pagination.pages.Pages
 import dev.kordex.core.utils.suggestStringMap
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -46,6 +47,7 @@ import org.hyacinthbots.lilybot.utils.trimmedContents
 class Tags : Extension() {
 	override val name = "tags"
 
+	// TODO Rewrite to use modals?
 	override suspend fun setup() {
 		/**
 		 * The command that allows users to preview tag contents before sending it in public
@@ -54,8 +56,8 @@ class Tags : Extension() {
 		 * @since 3.4.3
 		 */
 		ephemeralSlashCommand(::DeleteTagArgs) {
-			name = "tag-preview"
-			description = "Preview a tag's contents without sending it publicly."
+			name = Translations.Utility.Tags.Preview.name
+			description = Translations.Utility.Tags.Preview.description
 
 			check {
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
@@ -64,19 +66,12 @@ class Tags : Extension() {
 
 			action {
 				val tagFromDatabase = TagsCollection().getTag(guild!!.id, arguments.tagName) ?: run {
-					respond {
-						content = "Unable to find tag `${arguments.tagName}` for preview. " +
-							"Be sure it exists and you've typed it correctly."
-					}
+					respond { content = Translations.Utility.Tags.unableToFind.translate(arguments.tagName) }
 					return@action
 				}
 
 				if (tagFromDatabase.tagValue.length > 4096) {
-					respond {
-						content =
-							"The body of this tag is too long! Somehow this tag has a body of 1024 characters or" +
-								"more, which is above the Discord limit. Please re-create this tag!"
-					}
+					respond { content = Translations.Utility.Tags.bodyTooLongSomehow.translate() }
 					return@action
 				}
 
@@ -86,7 +81,7 @@ class Tags : Extension() {
 							title = tagFromDatabase.tagTitle
 							description = tagFromDatabase.tagValue
 							footer {
-								text = "Tag preview"
+								text = Translations.Utility.Tags.Preview.footer.translate()
 							}
 							color = DISCORD_BLURPLE
 						}
@@ -104,8 +99,8 @@ class Tags : Extension() {
 		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand(::CallTagArgs) {
-			name = "tag"
-			description = "Call a tag from this guild! Use /tag-help for more info."
+			name = Translations.Utility.Tags.Tag.name
+			description = Translations.Utility.Tags.Tag.description
 
 			check {
 				anyGuild()
@@ -114,24 +109,18 @@ class Tags : Extension() {
 			}
 
 			action {
+				val translations = Translations.Utility.Tags.Tag
 				val tagFromDatabase = TagsCollection().getTag(guild!!.id, arguments.tagName) ?: run {
-					respond {
-						content = "Unable to find tag `${arguments.tagName}`. " +
-							"Be sure it exists and you've typed it correctly."
-					}
+					respond { content = Translations.Utility.Tags.unableToFind.translate(arguments.tagName) }
 					return@action
 				}
 
 				if (tagFromDatabase.tagValue.length > 4096) {
-					respond {
-						content =
-							"The body of this tag is too long! Somehow this tag has a body of 4096 characters or" +
-								"more, which is above the Discord limit. Please re-create this tag!"
-					}
+					respond { content = Translations.Utility.Tags.bodyTooLongSomehow.translate() }
 					return@action
 				}
 
-				respond { content = "Tag sent" }
+				respond { content = translations.response.translate() }
 
 				// This is not the best way to do this. Ideally the ping would be in the same message as the embed in
 				// a `respond` builder. A Discord limitation makes this not possible.
@@ -142,7 +131,7 @@ class Tags : Extension() {
 							title = tagFromDatabase.tagTitle
 							description = tagFromDatabase.tagValue
 							footer {
-								text = "Tag requested by ${user.asUserOrNull()?.username}"
+								text = translations.footer.translate(user.asUserOrNull()?.username)
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							color = DISCORD_BLURPLE
@@ -158,21 +147,21 @@ class Tags : Extension() {
 					val utilityLog = UtilityConfigCollection().getConfig(guild!!.id)?.utilityLogChannel ?: return@action
 					guild!!.getChannelOfOrNull<GuildMessageChannel>(utilityLog)?.createMessage {
 						embed {
-							title = "Message Tag used"
+							title = translations.embedTitle.translate()
 							field {
-								name = "User"
+								name = Translations.Basic.userField.translate()
 								value = "${user.asUserOrNull()?.mention} (${user.asUserOrNull()?.username})"
 							}
 							field {
-								name = "Tag name"
+								name = translations.embedName.translate()
 								value = "`${arguments.tagName}`"
 							}
 							field {
-								name = "Location"
+								name = translations.embedLocation.translate()
 								value = "${channel.mention} ${channel.asChannelOrNull()?.data?.name?.value}"
 							}
 							footer {
-								text = "User ID: ${user.asUserOrNull()?.id}"
+								text = translations.embedFooter.translate(user.asUserOrNull()?.id)
 								icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 							}
 							timestamp = Clock.System.now()
@@ -189,8 +178,8 @@ class Tags : Extension() {
 		 * @since 3.1.0
 		 */
 		publicSlashCommand {
-			name = "tag-help"
-			description = "Explains how the tag command works!"
+			name = Translations.Utility.Tags.TagHelp.name
+			description = Translations.Utility.Tags.TagHelp.description
 
 			check {
 				requireBotPermissions(Permission.SendMessages, Permission.EmbedLinks)
@@ -200,27 +189,8 @@ class Tags : Extension() {
 			action {
 				respond {
 					embed {
-						title = "How does the tag system work?"
-						description =
-							"The tag command allows users to add guild specific 'tag' commands at runtime to their " +
-								"guild. **Tags are like custom commands**, they can do say what ever you want " +
-								"them to say.\n\n**To create a tag**, if you have the Moderate Members " +
-								"permission, run the following command:\n`/tag-create <name> <title> <value>`\n " +
-								"You will be prompted to enter a name for the tag, a title for the tag, and the " +
-								"value for the  tag. This is what will appear in the embed of your tag. You can " +
-								"enter any character you like into all of these inputs.\n\n**To use a tag**, " +
-								"run the following command:\n`/tag <name>`\nYou will be prompted to enter a " +
-								"tag name, but will have an autocomplete window to aid you. The window will " +
-								"list all the tags that the guild has.\n\n**To delete a tag**, if you have " +
-								"the Moderate Members permission, run the following command:\n" +
-								"`/tag-delete <name>`\nYou will be prompted to enter the name of the tag, " +
-								"again aided by autocomplete.\n`/tag-edit`\nYou will be prompted to enter a " +
-								"tag name, but will have an autocomplete window to aid you. The window will " +
-								"list all the tags that the guild has. From there you can enter a new name, title " +
-								"or value. None of these are mandatory.\n`/tag-list`\nDisplays a paginated list " +
-								"of all tags for this guild. There are 10 tags on each page.\n\n**Guilds can " +
-								"have any number of tags they like.** The limit on `tagValue` for tags is 1024 " +
-								"characters, which is the embed description limit enforced by Discord."
+						title = Translations.Utility.Tags.TagHelp.title.translate()
+						description = Translations.Utility.Tags.TagHelp.content.translate()
 						color = DISCORD_BLURPLE
 						timestamp = Clock.System.now()
 					}
@@ -235,8 +205,8 @@ class Tags : Extension() {
 		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand(::CreateTagArgs) {
-			name = "tag-create"
-			description = "Create a tag for your guild! Use /tag-help for more info."
+			name = Translations.Utility.Tags.Create.name
+			description = Translations.Utility.Tags.Create.description
 
 			requirePermission(Permission.ModerateMembers)
 
@@ -248,23 +218,17 @@ class Tags : Extension() {
 			}
 
 			action {
+				val translations = Translations.Utility.Tags.Create
 				if (TagsCollection().getTag(guild!!.id, arguments.tagName) != null) {
-					respond { content = "A tag with that name already exists in this guild." }
+					respond { content = translations.already.translate() }
 					return@action
 				}
 
 				if (arguments.tagValue.length > 4096) {
-					respond {
-						content =
-							"That tag's body is too long! Due to Discord limitations tag bodies can only be " +
-								"4096 characters or less!"
-					}
+					respond { content = Translations.Utility.Tags.bodyTooLong.translate() }
 					return@action
 				} else if (arguments.tagTitle.length > 256) {
-					respond {
-						content = "That tag's title is too long! Due to Discord limitations tag titles can only be " +
-							"256 characters or less"
-					}
+					respond { content = Translations.Utility.Tags.tooLongTitle.translate() }
 				}
 
 				TagsCollection().setTag(
@@ -277,17 +241,18 @@ class Tags : Extension() {
 
 				val utilityLog =
 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
+				// TODO Do if inside builder to reduce duplication, not a translations PR thing
 				if (arguments.tagValue.length <= 1024) {
 					utilityLog.createEmbed {
-						title = "Tag created!"
-						description = "The tag `${arguments.tagName}` has been created"
+						title = translations.embedTitle.translate()
+						description = translations.embedDesc.translate(arguments.tagName)
 						field {
-							name = "Tag title:"
+							name = translations.embedTagTitle.translate()
 							value = "`${arguments.tagTitle}`"
 							inline = false
 						}
 						field {
-							name = "Tag value:"
+							name = translations.embedTagValue.translate()
 							value = "```${arguments.tagValue}```"
 							inline = false
 						}
@@ -296,15 +261,15 @@ class Tags : Extension() {
 				} else {
 					utilityLog.createMessage {
 						embed {
-							title = "Tag created!"
-							description = "The tag `${arguments.tagName}` has been created"
+							title = translations.embedTitle.translate()
+							description = translations.embedDesc.translate(arguments.tagName)
 							field {
-								name = "Tag title:"
+								name = translations.embedTagTitle.translate()
 								value = "`${arguments.tagTitle}`"
 								inline = false
 							}
 							field {
-								name = "Tag value:"
+								name = translations.embedTagValue.translate()
 								value = "${arguments.tagValue.trimmedContents(1024)}"
 								inline = false
 							}
@@ -318,7 +283,7 @@ class Tags : Extension() {
 				}
 
 				respond {
-					content = "Tag: `${arguments.tagName}` created"
+					content = translations.response.translate(arguments.tagName)
 				}
 			}
 		}
@@ -330,8 +295,8 @@ class Tags : Extension() {
 		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand(::DeleteTagArgs) {
-			name = "tag-delete"
-			description = "Delete a tag from your guild. Use /tag-help for more info."
+			name = Translations.Utility.Tags.Delete.name
+			description = Translations.Utility.Tags.Delete.description
 
 			requirePermission(Permission.ModerateMembers)
 
@@ -343,10 +308,11 @@ class Tags : Extension() {
 			}
 
 			action {
+				val translations = Translations.Utility.Tags.Delete
 				// Check to make sure the tag exists in the database
 				if (TagsCollection().getTag(guild!!.id, arguments.tagName)?.name == null) {
 					respond {
-						content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?"
+						content = Translations.Utility.Tags.unableToFind.translate(arguments.tagName)
 					}
 					return@action
 				}
@@ -356,23 +322,23 @@ class Tags : Extension() {
 				val utilityLog =
 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createEmbed {
-					title = "Tag deleted!"
-					description = "The tag ${arguments.tagName} was deleted"
+					title = translations.embedTitle.translate()
+					description = translations.embedDesc.translate()
 					footer {
-						text = user.asUserOrNull()?.username ?: "Unable to get user tag"
+						text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
 						icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 					}
 					color = DISCORD_RED
 				}
 				respond {
-					content = "Tag: `${arguments.tagName}` deleted"
+					content = translations.response.translate(arguments.tagName)
 				}
 			}
 		}
 
 		ephemeralSlashCommand(::EditTagArgs) {
-			name = "tag-edit"
-			description = "Edit a tag in your guild. Use /tag-help for more info."
+			name = Translations.Utility.Tags.Edit.name
+			description = Translations.Utility.Tags.Edit.description
 
 			requirePermission(Permission.ModerateMembers)
 
@@ -384,29 +350,24 @@ class Tags : Extension() {
 			}
 
 			action {
+				val translations = Translations.Utility.Tags.Edit
 				val originalTag = TagsCollection().getTag(guild!!.id, arguments.tagName)
 				if (originalTag == null) {
-					respond { content = "Unable to find tag `${arguments.tagName}`! Does this tag exist?" }
+					respond { content = Translations.Utility.Tags.unableToFind.translate() }
 					return@action
 				}
 
+				// TODO Why was this ever done, this can probably be yeeted
 				val originalName = originalTag.name
 				val originalTitle = originalTag.tagTitle
 				val originalValue = originalTag.tagValue
 				val originalAppearance = originalTag.tagAppearance
 
 				if (arguments.newValue != null && arguments.newValue!!.length > 4096) {
-					respond {
-						content =
-							"That tag's body is too long! Due to Discord limitations tag bodies can only be " +
-								"4096 characters or less!"
-					}
+					respond { content = Translations.Utility.Tags.bodyTooLong.translate() }
 					return@action
 				} else if (arguments.newTitle != null && arguments.newTitle!!.length > 256) {
-					respond {
-						content = "That tag's title is too long! Due to Discord limitations tag titles can only be " +
-							"256 characters or less"
-					}
+					respond { content = Translations.Utility.Tags.tooLongTitle.translate() }
 				}
 
 				TagsCollection().removeTag(guild!!.id, arguments.tagName)
@@ -420,16 +381,16 @@ class Tags : Extension() {
 				)
 
 				respond {
-					content = "Tag edited!"
+					content = translations.response.translate()
 				}
 
 				val utilityLog =
 					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!) ?: return@action
 				utilityLog.createEmbed {
-					title = "Tag Edited"
-					description = "The tag `${arguments.tagName}` was edited"
+					title = translations.response.translate()
+					description = translations.embedDesc.translate(arguments.tagName)
 					field {
-						name = "Name"
+						name = translations.embedName.translate()
 						value = if (arguments.newName.isNullOrEmpty()) {
 							originalName
 						} else {
@@ -437,7 +398,7 @@ class Tags : Extension() {
 						}
 					}
 					field {
-						name = "Title"
+						name = translations.embedTitleField.translate()
 						value = if (arguments.newTitle.isNullOrEmpty()) {
 							originalTitle
 						} else {
@@ -445,7 +406,7 @@ class Tags : Extension() {
 						}
 					}
 					field {
-						name = "Tag appearance"
+						name = Translations.Utility.Tags.tagAppearance.translate()
 						value = if (arguments.newAppearance.isNullOrEmpty()) {
 							originalAppearance
 						} else {
@@ -456,10 +417,10 @@ class Tags : Extension() {
 				}
 				if (arguments.newValue.isNullOrEmpty()) {
 					utilityLog.createEmbed {
-						title = "Value"
+						title = translations.embedValue.translate()
 						description = originalValue
 						footer {
-							text = "Edited by ${user.asUserOrNull()?.username}"
+							text = translations.editedBy.translate(user.asUserOrNull()?.username)
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -467,15 +428,15 @@ class Tags : Extension() {
 					}
 				} else {
 					utilityLog.createEmbed {
-						title = "Old value"
+						title = translations.oldValue.translate()
 						description = originalValue
 						color = DISCORD_YELLOW
 					}
 					utilityLog.createEmbed {
-						title = "New value"
+						title = translations.newValue.translate()
 						description = arguments.newValue
 						footer {
-							text = "Edited by ${user.asUserOrNull()?.username}"
+							text = translations.editedBy.translate(user.asUserOrNull()?.username)
 							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 						}
 						timestamp = Clock.System.now()
@@ -486,8 +447,8 @@ class Tags : Extension() {
 		}
 
 		ephemeralSlashCommand {
-			name = "tag-list"
-			description = "List all tags for this guild"
+			name = Translations.Utility.Tags.List.name
+			description = Translations.Utility.Tags.List.description
 
 			check {
 				anyGuild()
@@ -499,10 +460,12 @@ class Tags : Extension() {
 				val pagesObj = Pages()
 				val tags = TagsCollection().getAllTags(guild!!.id)
 
+				val translations = Translations.Utility.Tags.List
+
 				if (tags.isEmpty()) {
 					pagesObj.addPage(
 						Page {
-							description = "There are no tags for this guild."
+							description = translations.noTags.translate()
 						}
 					)
 				} else {
@@ -522,10 +485,10 @@ class Tags : Extension() {
 						}
 						pagesObj.addPage(
 							Page {
-								title = "Tags for this guild"
-								description = "Here are all the tags for this guild"
+								title = translations.pageTitle.translate()
+								description = translations.pageDesc.translate()
 								field {
-									name = "Name | Title"
+									name = translations.pageValue.translate()
 									value = response
 								}
 							}
@@ -548,12 +511,12 @@ class Tags : Extension() {
 
 	private suspend fun EmbedBuilder.appearanceFooter(tagAppearance: String, user: UserBehavior) {
 		field {
-			name = "Tag appearance"
+			name = Translations.Utility.Tags.tagAppearance.translate()
 			value = tagAppearance
 		}
 		footer {
 			icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-			text = "Requested by ${user.asUserOrNull()?.username}"
+			text = Translations.Basic.requestedBy.translate(user.asUserOrNull()?.username)
 		}
 		timestamp = Clock.System.now()
 		color = DISCORD_GREEN
@@ -562,8 +525,8 @@ class Tags : Extension() {
 	inner class CallTagArgs : Arguments() {
 		/** The named identifier of the tag the user would like. */
 		val tagName by string {
-			name = "name"
-			description = "The name of the tag you want to call"
+			name = Translations.Utility.Tags.Tag.Arguments.Name.name
+			description = Translations.Utility.Tags.Tag.Arguments.Name.description
 
 			autoComplete {
 				val tags = TagsCollection().getAllTags(data.guildId.value!!)
@@ -578,15 +541,15 @@ class Tags : Extension() {
 		}
 
 		val user by optionalUser {
-			name = "user"
-			description = "The user to mention with the tag (optional)"
+			name = Translations.Utility.Tags.Tag.Arguments.User.name
+			description = Translations.Utility.Tags.Tag.Arguments.User.description
 		}
 	}
 
 	inner class DeleteTagArgs : Arguments() {
 		val tagName by string {
-			name = "name"
-			description = "The name of the tag"
+			name = Translations.Utility.Tags.Tag.Arguments.Name.name
+			description = Translations.Utility.Tags.Tag.Arguments.Name.description
 
 			autoComplete {
 				val tags = TagsCollection().getAllTags(data.guildId.value!!)
@@ -606,20 +569,20 @@ class Tags : Extension() {
 	inner class CreateTagArgs : Arguments() {
 		/** The named identifier of the tag being created. */
 		val tagName by string {
-			name = "name"
-			description = "The name of the tag you're making"
+			name = Translations.Utility.Tags.Tag.Arguments.Name.name
+			description = Translations.Utility.Tags.Tag.Arguments.Name.description
 		}
 
 		/** The title of the tag being created. */
 		val tagTitle by string {
-			name = "title"
-			description = "The title of the tag embed you're making"
+			name = Translations.Utility.Tags.Create.Arguments.Title.name
+			description = Translations.Utility.Tags.Create.Arguments.Title.description
 		}
 
 		/** The value of the tag being created. */
 		val tagValue by string {
-			name = "value"
-			description = "The content of the tag embed you're making"
+			name = Translations.Utility.Tags.Create.Arguments.Content.name
+			description = Translations.Utility.Tags.Create.Arguments.Content.description
 
 			// Fix newline escape characters
 			mutate {
@@ -630,17 +593,20 @@ class Tags : Extension() {
 		}
 
 		val tagAppearance by stringChoice {
-			name = "appearance"
-			description = "The appearance of the tag embed you're making"
-			choices = mutableMapOf("embed" to "embed", "message" to "message")
+			name = Translations.Utility.Tags.Create.Arguments.Appearance.name
+			description = Translations.Utility.Tags.Create.Arguments.Appearance.description
+			choices = mutableMapOf(
+				Translations.Utility.Tags.Create.Arguments.Appearance.Choice.embed to "embed",
+				Translations.Utility.Tags.Create.Arguments.Appearance.Choice.message to "message"
+			)
 		}
 	}
 
 	inner class EditTagArgs : Arguments() {
 		/** The named identifier of the tag being edited. */
 		val tagName by string {
-			name = "name"
-			description = "The name of the tag you're editing"
+			name = Translations.Utility.Tags.Tag.Arguments.Name.name
+			description = Translations.Utility.Tags.Tag.Arguments.Name.description
 
 			autoComplete {
 				val tags = TagsCollection().getAllTags(data.guildId.value!!)
@@ -658,20 +624,20 @@ class Tags : Extension() {
 
 		/** The new name for the tag being edited. */
 		val newName by optionalString {
-			name = "new-name"
-			description = "The new name for the tag you're editing"
+			name = Translations.Utility.Tags.Edit.Arguments.NewName.name
+			description = Translations.Utility.Tags.Edit.Arguments.NewName.description
 		}
 
 		/** The new title for the tag being edited. */
 		val newTitle by optionalString {
-			name = "new-title"
-			description = "The new title for the tag you're editing"
+			name = Translations.Utility.Tags.Edit.Arguments.NewTitle.name
+			description = Translations.Utility.Tags.Edit.Arguments.NewTitle.description
 		}
 
 		/** The new value for the tag being edited. */
 		val newValue by optionalString {
-			name = "new-value"
-			description = "The new value for the tag you're editing"
+			name = Translations.Utility.Tags.Edit.Arguments.NewValue.name
+			description = Translations.Utility.Tags.Edit.Arguments.NewValue.description
 
 			mutate {
 				it?.replace("\\n", "\n")
@@ -682,9 +648,12 @@ class Tags : Extension() {
 
 		/** The new appearance for the tag being edited. */
 		val newAppearance by optionalStringChoice {
-			name = "new-appearance"
-			description = "The new appearance for the tag you're editing"
-			choices = mutableMapOf("embed" to "embed", "message" to "message")
+			name = Translations.Utility.Tags.Edit.Arguments.NewAppearance.name
+			description = Translations.Utility.Tags.Edit.Arguments.NewAppearance.description
+			choices = mutableMapOf(
+				Translations.Utility.Tags.Create.Arguments.Appearance.Choice.embed to "embed",
+				Translations.Utility.Tags.Create.Arguments.Appearance.Choice.message to "message"
+			)
 		}
 	}
 }

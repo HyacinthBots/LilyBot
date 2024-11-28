@@ -3,6 +3,7 @@ package org.hyacinthbots.lilybot.utils
 import dev.kord.common.entity.Snowflake
 import dev.kordex.core.checks.guildFor
 import dev.kordex.core.checks.types.CheckContext
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -21,28 +22,30 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 		return
 	}
 
+	val translations = Translations.Checks.RequiredConfigs
+
 	// Prevent commands being run in DMs, although [anyGuild] should still be used as backup
-	guildFor(event) ?: fail("Must be in a server")
+	guildFor(event) ?: fail(translations.inServer)
 
 	if (configOptions.isEmpty()) {
-		fail("There are no config options provided in the code. Please inform the developers immediately!")
+		fail(translations.noConfigInCode)
 	}
 
 	val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
 	if (moderationConfig == null) {
-		fail("Unable to access moderation config for this guild! Please inform a member of staff.")
+		fail(translations.cantModConfig)
 		return
 	}
 
 	val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
 	if (loggingConfig == null) {
-		fail("Unable to access logging config for this guild! Please inform a member of staff.")
+		fail(translations.cantLoggingConfig)
 		return
 	}
 
 	val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
 	if (utilityConfig == null) {
-		fail("Unable to access logging config for this guild! Please inform a member of staff.")
+		fail(translations.cantUtilityConfig)
 		return
 	}
 
@@ -51,7 +54,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 		when (option) {
 			ConfigOptions.MODERATION_ENABLED -> {
 				if (!moderationConfig.enabled) {
-					fail("Moderation is disabled for this guild!")
+					fail(translations.modDisabled)
 					break
 				} else {
 					pass()
@@ -60,7 +63,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 
 			ConfigOptions.MODERATOR_ROLE -> {
 				if (moderationConfig.role == null) {
-					fail("A moderator role has not been set for this guild!")
+					fail(translations.noModRole)
 					break
 				} else {
 					pass()
@@ -69,7 +72,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 
 			ConfigOptions.ACTION_LOG -> {
 				if (moderationConfig.channel == null) {
-					fail("An action log has not been set for this guild!")
+					fail(translations.noModLog)
 					break
 				} else {
 					pass()
@@ -78,7 +81,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 
 			ConfigOptions.LOG_PUBLICLY -> {
 				if (moderationConfig.publicLogging == null) {
-					fail("Public logging has not been enabled for this guild!")
+					fail(translations.logPubliclyOff)
 					break
 				} else {
 					pass()
@@ -87,7 +90,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 
 			ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED -> {
 				if (!loggingConfig.enableMessageDeleteLogs) {
-					fail("Message delete logging is disabled for this guild!")
+					fail(translations.noDeleteLogging)
 					break
 				} else {
 					pass()
@@ -96,7 +99,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 
 			ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED -> {
 				if (!loggingConfig.enableMessageEditLogs) {
-					fail("Message edit logging is disabled for this guild!")
+					fail(translations.noEditLogging)
 					break
 				} else {
 					pass()
@@ -105,7 +108,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 
 			ConfigOptions.MESSAGE_LOG -> {
 				if (loggingConfig.messageChannel == null) {
-					fail("A message log has not been set for this guild!")
+					fail(translations.noMessageLogging)
 					break
 				} else {
 					pass()
@@ -114,7 +117,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 
 			ConfigOptions.MEMBER_LOGGING_ENABLED -> {
 				if (!loggingConfig.enableMemberLogs) {
-					fail("Member logging is disabled for this guild!")
+					fail(translations.noMemberLogging)
 					break
 				} else {
 					pass()
@@ -123,7 +126,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 
 			ConfigOptions.MEMBER_LOG -> {
 				if (loggingConfig.memberLog == null) {
-					fail("A member log has not been set for this guild")
+					fail(translations.noMemberLogSet)
 					break
 				} else {
 					pass()
@@ -132,7 +135,7 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
 
 			ConfigOptions.UTILITY_LOG -> {
 				if (utilityConfig.utilityLogChannel == null) {
-					fail("A utility log has not been set for this guild")
+					fail(translations.noUtilityLog)
 					break
 				} else {
 					pass()

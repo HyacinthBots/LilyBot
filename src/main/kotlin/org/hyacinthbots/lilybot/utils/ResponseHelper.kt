@@ -6,6 +6,7 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kordex.modules.pluralkit.api.PKMessage
+import lilybot.i18n.Translations
 
 /**
  * This is the base moderation embed for all moderation actions. This should be posted to the action log of a guild.
@@ -19,18 +20,18 @@ import dev.kordex.modules.pluralkit.api.PKMessage
  */
 suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User?, commandUser: UserBehavior?) {
 	field {
-		name = "User:"
-		value = "${targetUser?.username ?: "Unable to get user"}\n${targetUser?.id ?: ""}"
+		name = Translations.Basic.userField.translate()
+		value = "${targetUser?.username ?: Translations.Basic.UnableTo.findUser}\n${targetUser?.id ?: ""}"
 		inline = false
 	}
 	field {
-		name = "Reason:"
-		value = reason ?: "No reason provided"
+		name = Translations.Moderation.ModCommands.Arguments.Reason.name.translate()
+		value = reason ?: Translations.Basic.noReason.translate()
 		inline = false
 	}
 	if (commandUser != null) {
 		footer {
-			text = "Requested by ${commandUser.asUserOrNull()?.username}"
+			text = Translations.Basic.requestedBy.translate(commandUser.asUserOrNull()?.username)
 			icon = commandUser.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 		}
 	}
@@ -47,13 +48,13 @@ suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser:
  */
 fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?, override: Boolean) {
 	field {
-		name = "User Notification:"
+		name = Translations.Utils.DmField.userNotif.translate()
 		value = if (dm != null) {
-			"User notified with direct message"
+			Translations.Utils.DmField.success.translate()
 		} else if (!override) {
-			"DM Notification Disabled"
+			Translations.Utils.DmField.disabled.translate()
 		} else {
-			"Failed to notify user with direct message"
+			Translations.Utils.DmField.failure.translate()
 		}
 		inline = false
 	}
@@ -69,13 +70,13 @@ fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?, override: Boolean)
  */
 fun EmbedBuilder.dmNotificationStatusEmbedField(success: Boolean?, override: Boolean?) {
 	field {
-		name = "User Notification:"
+		name = Translations.Utils.DmField.userNotif.translate()
 		value = if (success != null && success) {
-			"User notified with direct message"
+			Translations.Utils.DmField.success.translate()
 		} else if (override != null && !override) {
-			"DM Notification Disabled"
+			Translations.Utils.DmField.disabled.translate()
 		} else {
-			"Failed to notify user with direct message"
+			Translations.Utils.DmField.failure.translate()
 		}
 		inline = false
 	}
@@ -94,33 +95,37 @@ suspend inline fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
 ) {
 	if (message.attachments.isNotEmpty()) {
 		field {
-			name = "Attachments"
+			name = Translations.Utils.Attachments.attachments.translate()
 			value = message.attachments.joinToString(separator = "\n") { it.url }
 			inline = false
 		}
 	}
 	if (proxiedMessage != null) {
 		field {
-			name = "Message Author:"
-			value = "System Member: ${proxiedMessage.member?.name}\n" +
-					"Account: ${guild.getMemberOrNull(proxiedMessage.sender)?.username ?: "Unable to get account"} " +
-					guild.getMemberOrNull(proxiedMessage.sender)?.mention
+			name = Translations.Moderation.Report.Confirmation.embedAuthorField.translate()
+			value = "${Translations.Utils.Attachments.systemMember.translate()}: ${proxiedMessage.member?.name}\n" +
+				"${Translations.Utils.Attachments.account.translate()}: ${
+					guild.getMemberOrNull(proxiedMessage.sender)?.username
+					    ?: Translations.Utils.Attachments.unableToAccount.translate()
+				} " +
+				guild.getMemberOrNull(proxiedMessage.sender)?.mention
 			inline = true
 		}
 
 		field {
-			name = "Author ID:"
+			name = Translations.Utils.Attachments.authorId.translate()
 			value = proxiedMessage.sender.toString()
 		}
 	} else {
 		field {
-			name = "Message Author:"
-			value = "${message.author?.username ?: "Failed to get author of message"} ${message.author?.mention ?: ""}"
+			name = Translations.Moderation.Report.Confirmation.embedAuthorField.translate()
+			value =
+				"${message.author?.username ?: Translations.Basic.UnableTo.findUser.translate()} ${message.author?.mention ?: ""}"
 			inline = true
 		}
 
 		field {
-			name = "Author ID:"
+			name = Translations.Utils.Attachments.authorId.translate()
 			value = message.author?.id.toString()
 		}
 	}

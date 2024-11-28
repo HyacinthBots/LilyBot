@@ -3,41 +3,41 @@ package org.hyacinthbots.lilybot.extensions.logging.config
 import dev.kordex.core.commands.Arguments
 import dev.kordex.core.commands.converters.impl.boolean
 import dev.kordex.core.commands.converters.impl.optionalChannel
+import lilybot.i18n.Translations
 
 class LoggingArgs : Arguments() {
 	val enableMessageDeleteLogs by boolean {
-		name = "enable-delete-logs"
-		description = "Enable logging of message deletions"
+		name = Translations.Config.Arguments.Logging.EnableDelete.name
+		description = Translations.Config.Arguments.Logging.EnableDelete.description
 	}
 
 	val enableMessageEditLogs by boolean {
-		name = "enable-edit-logs"
-		description = "Enable logging of message edits"
+		name = Translations.Config.Arguments.Logging.EnableEdit.name
+		description = Translations.Config.Arguments.Logging.EnableEdit.description
 	}
 
 	val enableMemberLogging by boolean {
-		name = "enable-member-logging"
-		description = "Enable logging of members joining and leaving the guild"
+		name = Translations.Config.Arguments.Logging.EnableMember.name
+		description = Translations.Config.Arguments.Logging.EnableMember.description
 	}
 
 	val enablePublicMemberLogging by boolean {
-		name = "enable-public-member-logging"
-		description =
-			"Enable logging of members joining and leaving the guild with a public message and ping if enabled"
+		name = Translations.Config.Arguments.Logging.EnablePublicMember.name
+		description = Translations.Config.Arguments.Logging.EnablePublicMember.description
 	}
 
 	val messageLogs by optionalChannel {
-		name = "message-logs"
-		description = "The channel for logging message deletions"
+		name = Translations.Config.Arguments.Logging.MessageLog.name
+		description = Translations.Config.Arguments.Logging.MessageLog.description
 	}
 
 	val memberLog by optionalChannel {
-		name = "member-log"
-		description = "The channel for logging members joining and leaving the guild"
+		name = Translations.Config.Arguments.Logging.MemberLog.name
+		description = Translations.Config.Arguments.Logging.MemberLog.description
 	}
 
 	val publicMemberLog by optionalChannel {
-		name = "public-member-log"
-		description = "The channel for the public logging of members joining and leaving the guild"
+		name = Translations.Config.Arguments.Logging.PublicMemberLog.name
+		description = Translations.Config.Arguments.Logging.PublicMemberLog.description
 	}
 }

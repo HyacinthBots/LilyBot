@@ -27,6 +27,7 @@ import dev.kordex.core.utils.dm
 import dev.kordex.core.utils.getTopRole
 import dev.kordex.core.utils.hasPermission
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.requiredConfigs
@@ -47,8 +48,8 @@ class PublicUtilities : Extension() {
 		 * @since 2.0
 		 */
 		publicSlashCommand {
-			name = "ping"
-			description = "Am I alive?"
+			name = Translations.Utility.PublicUtilities.Ping.name
+			description = Translations.Utility.PublicUtilities.Ping.description
 
 			action {
 				val averagePing = this@PublicUtilities.kord.gateway.averagePing
@@ -56,12 +57,12 @@ class PublicUtilities : Extension() {
 				respond {
 					embed {
 						color = DISCORD_YELLOW
-						title = "Pong!"
+						title = Translations.Utility.PublicUtilities.Ping.title.translate()
 
 						timestamp = Clock.System.now()
 
 						field {
-							name = "Lily's Ping to Discord is:"
+							name = Translations.Utility.PublicUtilities.Ping.pingValue.translate()
 							value = "**$averagePing**"
 							inline = true
 						}
@@ -76,12 +77,12 @@ class PublicUtilities : Extension() {
 		 * @since 3.1.0
 		 */
 		ephemeralSlashCommand {
-			name = "nickname"
-			description = "The parent command for all nickname commands"
+			name = Translations.Utility.PublicUtilities.Nickname.name
+			description = Translations.Utility.PublicUtilities.Nickname.description
 
 			ephemeralSubCommand(::NickRequestArgs) {
-				name = "request"
-				description = "Request a new nickname for the server!"
+				name = Translations.Utility.PublicUtilities.Nickname.Request.name
+				description = Translations.Utility.PublicUtilities.Nickname.Request.description
 
 				check {
 					anyGuild()
@@ -96,18 +97,21 @@ class PublicUtilities : Extension() {
 					val requesterAsMember = requester?.asMemberOrNull(guild!!.id)
 					val self = this@PublicUtilities.kord.getSelf().asMemberOrNull(guild!!.id)
 
+					val translations = Translations.Utility.PublicUtilities.Nickname.Request
+					val embedTranslations = Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed
+
 					if (requesterAsMember?.getTopRole()?.getPosition() != null &&
 						self?.getTopRole()?.getPosition() == null
 					) {
 						respond {
-							content = "You have a role and Lily does not, so she cannot change your nickname."
+							content = translations.lilyNoRolePublic.translate()
 						}
 						return@action
 					} else if ((requesterAsMember?.getTopRole()?.getPosition() ?: 0) >
 						(self?.getTopRole()?.getPosition() ?: 0)
 					) {
 						respond {
-							content = "Your highest role is above Lily's, so she cannot change your nickname."
+							content = translations.highestRolePublic.translate()
 						}
 						return@action
 					}
@@ -115,7 +119,7 @@ class PublicUtilities : Extension() {
 					if (requesterAsMember?.hasPermission(Permission.ChangeNickname) == true) {
 						requesterAsMember.edit { nickname = arguments.newNick }
 						respond {
-							content = "You have permission to change your own nickname, so I've just made the change."
+							content = translations.hasPermission.translate()
 						}
 						return@action
 					}
@@ -123,38 +127,38 @@ class PublicUtilities : Extension() {
 					// Declare the embed outside the action to allow us to reference it inside the action
 					var actionLogEmbed: Message? = null
 
-					respond { content = "Nickname request sent!" }
+					respond { content = translations.sent.translate() }
 
 					try {
 						actionLogEmbed =
 							utilityLog?.createMessage {
 								embed {
 									color = DISCORD_YELLOW
-									title = "Nickname Request"
+									title = translations.embedTitle.translate()
 									timestamp = Clock.System.now()
 
 									field {
-										name = "User:"
+										name = Translations.Utility.PublicUtilities.Nickname.userField.translate()
 										value =
 											"${requester?.mention}\n${requester?.asUserOrNull()?.username}\n${requester?.id}"
 										inline = false
 									}
 
 									field {
-										name = "Current Nickname:"
+										name = translations.embedCurrentNick.translate()
 										value = "`${requesterAsMember?.nickname}`"
 										inline = false
 									}
 
 									field {
-										name = "Requested Nickname:"
+										name = translations.embedRequestedNick.translate()
 										value = "`${arguments.newNick}`"
 										inline = false
 									}
 								}
 								components {
 									ephemeralButton(row = 0) {
-										label = "Accept"
+										label = Translations.Utility.PublicUtilities.Nickname.Request.Button.accept
 										style = ButtonStyle.Success
 
 										action button@{
@@ -162,18 +166,14 @@ class PublicUtilities : Extension() {
 												self?.getTopRole()?.getPosition() == null
 											) {
 												respond {
-													content = "This user has a role and Lily does not, " +
-															"so she cannot change their nickname. " +
-															"Please fix Lily's permissions and try again"
+													content = translations.lilyNoRolePrivate.translate()
 												}
 												return@button
 											} else if ((requesterAsMember?.getTopRole()?.getPosition() ?: 0) >
 												(self?.getTopRole()?.getPosition() ?: 0)
 											) {
 												respond {
-													content = "This user's highest role is above Lily's, " +
-															"so she cannot change their nickname. " +
-															"Please fix Lily's permissions and try again."
+													content = translations.highestRolePrivate.translate()
 												}
 												return@button
 											}
@@ -182,11 +182,13 @@ class PublicUtilities : Extension() {
 
 											requester?.dm {
 												embed {
-													title =
-														"Nickname Change Accepted in ${guild!!.asGuildOrNull()?.name}"
-													description =
-														"Nickname updated from `${requesterAsMember?.nickname}` to " +
-																"`${arguments.newNick}`"
+													title = translations.dmAcceptTitle.translate(
+														guild!!.asGuildOrNull()?.name
+													)
+													description = translations.dmAcceptDescription.translate(
+														requesterAsMember?.nickname,
+														arguments.newNick
+													)
 													color = DISCORD_GREEN
 												}
 											}
@@ -196,31 +198,34 @@ class PublicUtilities : Extension() {
 
 												embed {
 													color = DISCORD_GREEN
-													title = "Nickname Request Accepted"
+													title = embedTranslations.acceptTitle.translate()
 
 													field {
-														name = "User:"
+														name =
+															Translations.Utility.PublicUtilities.Nickname.userField.translate()
 														value =
 															"${requester?.mention}\n${requester?.asUserOrNull()?.username}\n" +
-																	"${requester?.id}"
+																"${requester?.id}"
 														inline = false
 													}
 
 													// these two fields should be the same and exist as a sanity check
 													field {
-														name = "Previous Nickname:"
+														name = embedTranslations.previousNick.translate()
 														value = "`${requesterAsMember?.nickname}`"
 														inline = false
 													}
 
 													field {
-														name = "Accepted Nickname:"
+														name = embedTranslations.acceptedNick.translate()
 														value = "`${arguments.newNick}`"
 														inline = false
 													}
 
 													footer {
-														text = "Nickname accepted by ${user.asUserOrNull()?.username}"
+														text = embedTranslations.acceptedBy.translate(
+															user.asUserOrNull()?.username
+														)
 														icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 													}
 
@@ -231,45 +236,48 @@ class PublicUtilities : Extension() {
 									}
 
 									ephemeralButton(row = 0) {
-										label = "Deny"
+										label = Translations.Utility.PublicUtilities.Nickname.Request.Button.deny
 										style = ButtonStyle.Danger
 
 										action {
 											requester?.dm {
 												embed {
-													title = "Nickname Request Denied"
-													description = "Moderators have reviewed your nickname request (`${
+													title = translations.dmDenyTitle.translate()
+													description = translations.dmDenyDescription.translate(
 														arguments.newNick
-													}`) and rejected it.\nPlease try a different nickname"
+													)
 												}
 											}
 
 											actionLogEmbed!!.edit {
 												components { removeAll() }
 												embed {
-													title = "Nickname Request Denied"
+													title = embedTranslations.denyTitle.translate()
 
 													field {
-														name = "User:"
+														name =
+															Translations.Utility.PublicUtilities.Nickname.userField.translate()
 														value = "${requester?.mention}\n" +
-																"${requester?.asUserOrNull()?.username}\n${requester?.id}"
+															"${requester?.asUserOrNull()?.username}\n${requester?.id}"
 														inline = false
 													}
 
 													field {
-														name = "Current Nickname:"
+														name = embedTranslations.currentNick.translate()
 														value = "`${requesterAsMember?.nickname}`"
 														inline = false
 													}
 
 													field {
-														name = "Rejected Nickname:"
+														name = embedTranslations.rejectedNick.translate()
 														value = "`${arguments.newNick}`"
 														inline = false
 													}
 
 													footer {
-														text = "Nickname denied by ${user.asUserOrNull()?.username}"
+														text = embedTranslations.deniedBy.translate(
+															user.asUserOrNull()?.username
+														)
 														icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 													}
 
@@ -284,8 +292,7 @@ class PublicUtilities : Extension() {
 					} catch (_: KtorRequestException) {
 						// Avoid hard failing on permission error, since the public won't know what it means
 						respond {
-							content = "Error sending message to moderators. Please ask the moderators to check" +
-									"the `UTILITY` config."
+							content = Translations.Utility.PublicUtilities.Nickname.failToSend.translate()
 						}
 						return@action
 					}
@@ -293,8 +300,8 @@ class PublicUtilities : Extension() {
 			}
 
 			ephemeralSubCommand {
-				name = "clear"
-				description = "Clear your current nickname"
+				name = Translations.Utility.PublicUtilities.Nickname.Clear.name
+				description = Translations.Utility.PublicUtilities.Nickname.Clear.description
 
 				check {
 					anyGuild()
@@ -304,38 +311,43 @@ class PublicUtilities : Extension() {
 				action {
 					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
 					val utilityLog = guild?.getChannelOfOrNull<GuildMessageChannel>(config.utilityLogChannel!!)
+					val translations = Translations.Utility.PublicUtilities.Nickname.Clear
 
 					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
 					if (user.fetchMember(guild!!.id).nickname == null) {
-						respond { content = "You have no nickname to clear!" }
+						respond {
+							content = translations.nothingToClear.translate()
+						}
 						return@action
 					}
 
-					respond { content = "Nickname cleared" }
+					respond { content = translations.cleared.translate() }
 
 					try {
 						utilityLog?.createEmbed {
-							title = "Nickname Cleared"
+							val embedTranslations = Translations.Utility.PublicUtilities.Nickname.Clear.LogEmbed
+							title = embedTranslations.title.translate()
 							color = DISCORD_YELLOW
 							timestamp = Clock.System.now()
 
 							field {
-								name = "User:"
+								name = Translations.Utility.PublicUtilities.Nickname.userField.translate()
 								value = "${user.mention}\n${user.asUserOrNull()?.username}\n${user.id}"
 								inline = false
 							}
 
 							field {
-								name = "New Nickname:"
-								value = "Nickname changed from `${user.asMemberOrNull(guild!!.id)?.nickname}` to `null`"
+								name = embedTranslations.newNickTitle.translate()
+								value = embedTranslations.newNickValue.translate(
+									user.asMemberOrNull(guild!!.id)?.nickname
+								)
 								inline = false
 							}
 						}
 					} catch (_: KtorRequestException) {
 						// Avoid hard failing on permission error, since the public won't know what it means
 						respond {
-							content = "Error sending message to moderators. Please " +
-									"ask the moderators to check the `UTILITY` config."
+							content = Translations.Utility.PublicUtilities.Nickname.failToSend.translate()
 						}
 						return@action
 					}
@@ -348,8 +360,8 @@ class PublicUtilities : Extension() {
 	inner class NickRequestArgs : Arguments() {
 		/** The new nickname that the command user requested. */
 		val newNick by string {
-			name = "nickname"
-			description = "The new nickname you would like"
+			name = Translations.Utility.PublicUtilities.Nickname.Request.Args.NewNick.name
+			description = Translations.Utility.PublicUtilities.Nickname.Request.Args.NewNick.description
 
 			minLength = 1
 			maxLength = 32

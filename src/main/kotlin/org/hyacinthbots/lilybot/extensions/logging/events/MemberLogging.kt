@@ -16,6 +16,7 @@ import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.event
 import dev.kordex.core.utils.botHasPermissions
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LeftMemberFlagCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
@@ -49,16 +50,16 @@ class MemberLogging : Extension() {
 
 				memberLog?.createEmbed {
 					author {
-						name = "User joined the server!"
+						name = Translations.Events.MemberLogging.MemberJoin.embedAuthor.translate()
 						icon = event.member.avatar?.cdnUrl?.toUrl()
 					}
 					field {
-						name = "Welcome:"
+						name = Translations.Events.MemberLogging.MemberJoin.embedWelcome.translate()
 						value = "${event.member.mention} (${event.member.username})"
 						inline = true
 					}
 					field {
-						name = "ID:"
+						name = Translations.Events.MemberLogging.MemberEvent.embedId.translate()
 						value = event.member.id.toString()
 						inline = false
 					}
@@ -77,13 +78,13 @@ class MemberLogging : Extension() {
 						if (config.publicMemberLogData?.pingNewUsers == true) content = event.member.mention
 						embed {
 							author {
-								name = "Welcome ${event.member.username}"
+								name = Translations.Events.MemberLogging.MemberJoin.publicEmbedAuthor.translate(event.member.username)
 								icon = event.member.avatar?.cdnUrl?.toUrl()
 							}
 							description = if (config.publicMemberLogData?.joinMessage != null) {
 								config.publicMemberLogData.joinMessage
 							} else {
-								"Welcome to the server!"
+								Translations.Events.MemberLogging.MemberJoin.publicEmbedWelcomeMessage.translate()
 							}
 							timestamp = Clock.System.now()
 							color = DISCORD_GREEN
@@ -107,16 +108,16 @@ class MemberLogging : Extension() {
 
 				memberLog?.createEmbed {
 					author {
-						name = "User left the server!"
+						name = Translations.Events.MemberLogging.MemberLeave.embedAuthor.translate()
 						icon = event.user.avatar?.cdnUrl?.toUrl()
 					}
 					field {
-						name = "Goodbye:"
+						name = Translations.Events.MemberLogging.MemberLeave.embedGoodbye.translate()
 						value = event.user.username
 						inline = true
 					}
 					field {
-						name = "ID:"
+						name = Translations.Events.MemberLogging.MemberEvent.embedId.translate()
 						value = event.user.id.toString()
 					}
 					timestamp = Clock.System.now()
@@ -129,8 +130,8 @@ class MemberLogging : Extension() {
 					val targetUser = event.kord.getUser(kickData.targetUserId)!!
 					val actioner = kickData.data.actioner?.let { event.kord.getUser(it) }!!
 					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.guild)?.createEmbed {
-						title = "Kicked a user"
-						description = "${targetUser.mention} has been kicked"
+						title = Translations.Moderation.ModCommands.Kick.response.translate()
+						description = Translations.Moderation.ModCommands.Kick.embedDesc.translate(targetUser.mention)
 						image = kickData.data.imageUrl
 						baseModerationEmbed(kickData.data.reason, targetUser, actioner)
 						dmNotificationStatusEmbedField(kickData.data.dmOutcome != null, kickData.data.dmOutcome)
@@ -147,13 +148,13 @@ class MemberLogging : Extension() {
 
 					publicLog?.createEmbed {
 						author {
-							name = "Goodbye ${event.user.username}"
+							name = Translations.Events.MemberLogging.MemberLeave.publicEmbedAuthor.translate(event.user.username)
 							icon = event.user.avatar?.cdnUrl?.toUrl()
 						}
 						description = if (config.publicMemberLogData?.leaveMessage != null) {
 							config.publicMemberLogData.leaveMessage
 						} else {
-							"Farewell!"
+							Translations.Events.MemberLogging.MemberLeave.publicEmbedGoodbyeMessage.translate()
 						}
 						timestamp = Clock.System.now()
 						color = DISCORD_RED

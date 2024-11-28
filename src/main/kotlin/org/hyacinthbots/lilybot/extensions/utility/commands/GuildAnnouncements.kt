@@ -16,6 +16,7 @@ import dev.kordex.core.components.forms.ModalForm
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.ephemeralSlashCommand
 import kotlinx.coroutines.flow.toList
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.TEST_GUILD_ID
 import org.hyacinthbots.lilybot.utils.getFirstUsableChannel
@@ -27,8 +28,8 @@ class GuildAnnouncements : Extension() {
 
 	override suspend fun setup() {
 		ephemeralSlashCommand(::GuildAnnouncementArgs, ::GuildAnnouncementModal) {
-			name = "announcement"
-			description = "Send an announcement to all guilds Lily is in"
+			name = Translations.Utility.GuildAnnouncements.name
+			description = Translations.Utility.GuildAnnouncements.description
 
 			guild(TEST_GUILD_ID)
 			requirePermission(Permission.Administrator)
@@ -38,29 +39,30 @@ class GuildAnnouncements : Extension() {
 			}
 
 			action { modal ->
+				val translations = Translations.Utility.GuildAnnouncements
 				var response: EphemeralFollowupMessage? = null
 				response = respond {
-					content = "Would you like to send this message? " +
+					content = translations.sendConfirm.translate() +
 							if (arguments.targetGuild == null) {
-								"It will be delivered to all servers this bot is in."
+								translations.deliverAll
 							} else {
-								"It will be delivered to your specified target guild: ${arguments.targetGuild}"
-							}
+								translations.deliverSpecific
+							}.translate(arguments.targetGuild)
 					components {
 						ephemeralButton {
-							label = "Yes"
+							label = Translations.Basic.yes
 							style = ButtonStyle.Success
 
 							action ButtonAction@{
 								response?.edit {
-									content = "Message sent!"
+									content = translations.sent.translate()
 									components { removeAll() }
 								}
 
 								if (arguments.targetGuild != null) {
 									val guild = event.kord.getGuildOrNull(arguments.targetGuild!!)
 									if (guild == null) {
-										respond { content = "Target guild not found" }
+										respond { content = translations.targetNotFound.translate() }
 										return@ButtonAction
 									}
 
@@ -70,7 +72,7 @@ class GuildAnnouncements : Extension() {
 										?: getFirstUsableChannel(guild)
 
 									if (channel == null) {
-										respond { content = "Couldn't find an available channel to send a message in" }
+										respond { content = translations.noAvailableChannel.translate() }
 										return@ButtonAction
 									}
 
@@ -79,7 +81,7 @@ class GuildAnnouncements : Extension() {
 										description = modal?.body?.value
 										color = Color(0x7B52AE)
 										footer {
-											text = "This message was delivered to this server alone"
+											text = translations.deliveredToOne.translate()
 										}
 									}
 								} else {
@@ -98,7 +100,7 @@ class GuildAnnouncements : Extension() {
 													description = modal?.body?.value
 													color = Color(0x7B52AE)
 													footer {
-														text = "Sent by ${user.asUserOrNull()?.username}"
+														text = translations.sentBy.translate(user.asUserOrNull()?.username)
 													}
 												}
 											} catch (_: KtorRequestException) {
@@ -111,12 +113,12 @@ class GuildAnnouncements : Extension() {
 						}
 
 						ephemeralButton {
-							label = "No"
+							label = Translations.Basic.no
 							style = ButtonStyle.Danger
 
 							action {
 								response?.edit {
-									content = "Message not sent."
+									content = translations.notSent.translate()
 									components { removeAll() }
 								}
 							}
@@ -129,24 +131,24 @@ class GuildAnnouncements : Extension() {
 
 	inner class GuildAnnouncementArgs : Arguments() {
 		val targetGuild by optionalSnowflake {
-			name = "target-guild"
-			description = "The guild to send the announcement too"
+			name = Translations.Utility.GuildAnnouncements.Arguments.Target.name
+			description = Translations.Utility.GuildAnnouncements.Arguments.Target.description
 		}
 	}
 
 	inner class GuildAnnouncementModal : ModalForm() {
-		override var title = "Send an announcement"
+		override var title = Translations.Utility.GuildAnnouncements.Modal.title
 
 		val header = lineText {
-			label = "Announcement Header"
-			placeholder = "Version 7.6.5!"
+			label = Translations.Utility.GuildAnnouncements.Modal.Header.label
+			placeholder = Translations.Utility.GuildAnnouncements.Modal.Header.placeholder
 			maxLength = 250
 			required = false
 		}
 
 		val body = paragraphText {
-			label = "Announcement Body"
-			placeholder = "We're happy to announce Lily is now written in Rust! It turns out we really like crabs"
+			label = Translations.Utility.GuildAnnouncements.Modal.Body.label
+			placeholder = Translations.Utility.GuildAnnouncements.Modal.Body.placeholder
 			maxLength = 1750
 			required = true
 		}

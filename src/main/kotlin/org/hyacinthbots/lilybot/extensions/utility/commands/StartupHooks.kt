@@ -12,6 +12,7 @@ import dev.kordex.core.time.toDiscord
 import dev.kordex.core.utils.scheduling.Scheduler
 import dev.kordex.core.utils.scheduling.Task
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.Cleanups
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.utils.ONLINE_STATUS_CHANNEL
@@ -51,7 +52,7 @@ class StartupHooks : Extension() {
 				val homeGuild = kord.getGuildOrNull(TEST_GUILD_ID) ?: return@action
 				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
 				onlineLog.createEmbed {
-					title = "Lily is now online!"
+					title = Translations.Utility.StartupHooks.onlineTitle.translate()
 					description =
 						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
 					color = DISCORD_GREEN

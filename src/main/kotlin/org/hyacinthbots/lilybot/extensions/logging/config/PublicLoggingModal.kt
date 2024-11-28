@@ -1,24 +1,25 @@
 package org.hyacinthbots.lilybot.extensions.logging.config
 
 import dev.kordex.core.components.forms.ModalForm
+import lilybot.i18n.Translations
 
 class PublicLoggingModal : ModalForm() {
-	override var title = "Public logging configuration"
+	override var title = Translations.Config.Logging.Modal.title
 
 	val joinMessage = paragraphText {
-		label = "What would you like sent when a user joins"
-		placeholder = "Welcome to the server!"
+		label = Translations.Config.Logging.Modal.JoinMessage.label
+		placeholder = Translations.Config.Logging.Modal.JoinMessage.placeholder
 		required = true
 	}
 
 	val leaveMessage = paragraphText {
-		label = "What would you like sent when a user leaves"
-		placeholder = "Adiós amigo!"
+		label = Translations.Config.Logging.Modal.LeaveMessage.label
+		placeholder = Translations.Config.Logging.Modal.LeaveMessage.placeholder
 		required = true
 	}
 
 	val ping = lineText {
-		label = "Type `yes` to ping new users when they join"
-		placeholder = "Defaults to false if input is invalid or not `yes`"
+		label = Translations.Config.Logging.Modal.Ping.label
+		placeholder = Translations.Config.Logging.Modal.Ping.placeholder
 	}
 }

@@ -15,6 +15,7 @@ import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
 import dev.kordex.core.utils.timeoutUntil
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LeftMemberFlagCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
@@ -59,18 +60,18 @@ class ModerationEvents : Extension() {
 				if (existingAction != null) {
 					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.getGuild())?.createEmbed {
 						title = when (existingAction.actionType) {
-							ModerationAction.BAN -> "Banned a user"
-							ModerationAction.SOFT_BAN -> "Soft-banned a user"
-							ModerationAction.TEMP_BAN -> "Temp-banned a user"
+							ModerationAction.BAN -> Translations.Events.Moderation.Ban.banned.translate()
+							ModerationAction.SOFT_BAN -> Translations.Events.Moderation.Ban.softBanned.translate()
+							ModerationAction.TEMP_BAN -> Translations.Events.Moderation.Ban.tempBanned.translate()
 							else -> null // Theoretically this should never occur but the compiler cries otherwise
-						}
+						} + Translations.Events.Moderation.Ban.aUser.translate()
 
-						description = "${event.user.mention} has been ${
+						description = Translations.Events.Moderation.Ban.banDescription.translate(event.user.mention) +
 							if (existingAction.data.reason?.contains("quick ban", true) == false) {
 								when (existingAction.actionType) {
-									ModerationAction.BAN -> "banned"
-									ModerationAction.SOFT_BAN -> "soft-banned"
-									ModerationAction.TEMP_BAN -> "temporarily banned"
+									ModerationAction.BAN -> Translations.Events.Moderation.Ban.banned.translate()
+									ModerationAction.SOFT_BAN -> Translations.Events.Moderation.Ban.softBanned.translate()
+									ModerationAction.TEMP_BAN -> Translations.Events.Moderation.Ban.tempBanned.translate()
 									else -> null // Again should theoretically never occur, but compiler
 								}
 							} else {
@@ -80,7 +81,6 @@ class ModerationEvents : Extension() {
 									else -> null
 								}
 							}
-						}"
 						baseModerationEmbed(
 							existingAction.data.reason,
 							event.user,
@@ -91,7 +91,7 @@ class ModerationEvents : Extension() {
 						timestamp = Clock.System.now()
 						if (existingAction.data.deletedMessages != null) {
 							field {
-								name = "Days of messages deleted"
+								name = Translations.Events.Moderation.Ban.deleteDays.translate()
 								value =
 									if (existingAction.actionType == ModerationAction.SOFT_BAN &&
 										existingAction.data.deletedMessages == 0
@@ -105,7 +105,7 @@ class ModerationEvents : Extension() {
 						}
 						if (existingAction.data.timeData != null) {
 							field {
-								name = "Duration:"
+								name = Translations.Events.Moderation.Ban.duration.translate()
 								value =
 									existingAction.data.timeData.durationInst?.toDiscord(TimestampType.Default) +
 										" (${existingAction.data.timeData.durationDtp?.interval()})"
@@ -120,8 +120,10 @@ class ModerationEvents : Extension() {
 					)
 				} else {
 					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.getGuild())?.createEmbed {
-						title = "Banned a User"
-						description = "${event.user.mention} has been banned!"
+						title =
+							Translations.Events.Moderation.Ban.banned.translate() + Translations.Events.Moderation.Ban.aUser.translate()
+						description =
+							Translations.Events.Moderation.Ban.defaultBanDescription.translate(event.user.mention)
 						baseModerationEmbed(event.getBan().reason, event.user, null)
 						timestamp = Clock.System.now()
 					}
@@ -152,18 +154,28 @@ class ModerationEvents : Extension() {
 					val isTempUnban = existingAction.data.reason?.contains("**temporary-ban**", true) == true
 
 					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.getGuild())?.createEmbed {
-						title = if (isTempUnban) "Temporary ban removed" else "Unbanned a user"
-						description = "${event.user.mention} has " +
-							"${if (isTempUnban) "had their temporary ban removed!" else "been unbanned!"}\n" +
+						title = if (isTempUnban) {
+							Translations.Events.Moderation.Unban.tempRemoved
+						} else {
+							Translations.Events.Moderation.Unban.unbanned
+						}.translate()
+						description = Translations.Events.Moderation.Unban.unbannedDesc.translate(event.user.mention) +
+							"${
+								if (isTempUnban) {
+									Translations.Events.Moderation.Unban.tempRemovedDesc
+								} else {
+									Translations.Events.Moderation.Unban.unbanned
+								}.translate()
+							}\n" +
 							"${event.user.id} (${event.user.username})"
 						if (existingAction.data.reason?.contains("**temporary-ban-expire**") == false) {
 							field {
-								name = "Reason:"
+								name = Translations.Events.Moderation.Unban.reason.translate()
 								value = existingAction.data.reason.toString()
 							}
 						} else {
 							field {
-								name = "Initial Ban date:"
+								name = Translations.Events.Moderation.Unban.initialDate.translate()
 								value = existingAction.data.timeData?.start?.toDiscord(TimestampType.ShortDateTime)
 									.toString()
 							}
@@ -172,7 +184,7 @@ class ModerationEvents : Extension() {
 						if (existingAction.data.actioner != null) {
 							val user = UserBehavior(existingAction.data.actioner, kord).asUserOrNull()
 							footer {
-								text = user?.username ?: "Unable to get username"
+								text = user?.username ?: Translations.Basic.UnableTo.tag.translate()
 								icon = user?.avatar?.cdnUrl?.toUrl()
 							}
 						}
@@ -217,27 +229,27 @@ class ModerationEvents : Extension() {
 						val actioner = data.actioner?.let { UserBehavior(it, kord) }?.asUserOrNull()
 						channel?.createEmbed {
 							if (isRemove) {
-								title = "Timeout removed"
+								title = Translations.Events.Moderation.MemberUpdate.timeoutRemoved.translate()
 								dmNotificationStatusEmbedField(data.dmOutcome, data.dmOverride)
 								field {
-									name = "User:"
+									name = Translations.Basic.userField.translate()
 									value = "${user?.username} (${user?.id})"
 								}
 								footer {
-									text = "Requested by ${actioner?.username}"
+									text = Translations.Basic.requestedBy.translate(actioner?.username)
 									icon = user?.avatar?.cdnUrl?.toUrl()
 								}
 								timestamp = Clock.System.now()
 								color = DISCORD_GREEN
 							} else {
-								title = "Timeout"
+								title = Translations.Events.Moderation.MemberUpdate.timeoutAdded.translate()
 								image = data.imageUrl
 								baseModerationEmbed(data.reason, event.member, user)
 								dmNotificationStatusEmbedField(data.dmOutcome, data.dmOverride)
 								timestamp = data.timeData?.start
 								color = DISCORD_RED
 								field {
-									name = "Duration"
+									name = Translations.Events.Moderation.Ban.duration.translate()
 									value = data.timeData?.durationInst?.toDiscord(TimestampType.Default) +
 										" (${data.timeData?.durationDtp.interval()})"
 								}
@@ -252,21 +264,21 @@ class ModerationEvents : Extension() {
 					} else {
 						channel?.createEmbed {
 							if (event.member.timeoutUntil != null) {
-								title = "Timeout"
+								title = Translations.Events.Moderation.MemberUpdate.timeoutAdded.translate()
 								color = DISCORD_RED
 								field {
-									name = "Duration"
+									name = Translations.Events.Moderation.Ban.duration.translate()
 									value = event.member.timeoutUntil?.toDiscord(TimestampType.Default) ?: "0"
 								}
 							} else {
-								title = "Removed timeout"
+								title = Translations.Events.Moderation.MemberUpdate.timeoutRemoved.translate()
 								color = DISCORD_GREEN
 							}
 							field {
-								name = "User"
+								name = Translations.Basic.userField.translate()
 								value = event.member.mention + "(${event.member.id})"
 							}
-							description = "via Discord menus"
+							description = Translations.Events.Moderation.MemberUpdate.viaMenu.translate()
 							timestamp = Clock.System.now()
 						}
 					}
@@ -275,36 +287,41 @@ class ModerationEvents : Extension() {
 					if (event.member.nickname == event.old?.nickname &&
 						event.member.roleBehaviors == event.old?.roleBehaviors &&
 						(
-						    event.member.data != event.old?.data || event.member.avatar != event.old?.avatar ||
-							event.member.premiumSince != event.old?.premiumSince ||
-							event.member.isPending != event.old?.isPending || event.member.flags != event.old?.flags ||
-							event.member.avatarDecoration != event.old?.avatarDecoration
-						)
+							event.member.data != event.old?.data || event.member.avatar != event.old?.avatar ||
+								event.member.premiumSince != event.old?.premiumSince ||
+								event.member.isPending != event.old?.isPending || event.member.flags != event.old?.flags ||
+								event.member.avatarDecoration != event.old?.avatarDecoration
+							)
 					) {
-							    return@action
-							}
+						return@action
+					}
 					val newRoles = mutableListOf<String>()
 					val oldRoles = mutableListOf<String>()
 					event.member.roleBehaviors.forEach { newRoles.add(it.mention) }
 					event.old?.roleBehaviors?.forEach { oldRoles.add(it.mention) }
 					channel?.createEmbed {
-						title = "Member updated"
-						description = "${event.member.username} has been updated"
+						title = Translations.Events.Moderation.MemberUpdate.updatedTitle.translate()
+						description =
+							Translations.Events.Moderation.MemberUpdate.updatedDesc.translate(event.member.username)
 						if (event.member.nickname != event.old?.nickname) {
 							field {
-								name = "Nickname change"
-								value = "Old: ${event.old?.nickname}\nNew: ${event.member.nickname}"
+								name = Translations.Events.Moderation.MemberUpdate.nickChange.translate()
+								value = Translations.Events.Moderation.MemberUpdate.nickChangeVal.translateNamed(
+									"old" to event.old?.nickname, "new" to event.member.nickname
+								)
 							}
 						}
 						if (event.member.roleIds != event.old?.roleIds) {
 							field {
-								name = "New Roles"
-								value = newRoles.joinToString(", ").ifNullOrEmpty { "None" }
+								name = Translations.Events.Moderation.MemberUpdate.newRoles.translate()
+								value =
+									newRoles.joinToString(", ").ifNullOrEmpty { Translations.Basic.none.translate() }
 								inline = true
 							}
 							field {
-								name = "Old roles"
-								value = oldRoles.joinToString(", ").ifNullOrEmpty { "None" }
+								name = Translations.Events.Moderation.MemberUpdate.oldRoles.translate()
+								value =
+									oldRoles.joinToString(", ").ifNullOrEmpty { Translations.Basic.none.translate() }
 								inline = true
 							}
 						}

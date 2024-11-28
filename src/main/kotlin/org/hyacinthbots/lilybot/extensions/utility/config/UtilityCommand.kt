@@ -10,13 +10,14 @@ import dev.kordex.core.checks.hasPermission
 import dev.kordex.core.commands.application.slash.SlashCommand
 import dev.kordex.core.commands.application.slash.ephemeralSubCommand
 import dev.kordex.core.utils.botHasPermissions
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.hyacinthbots.lilybot.extensions.config.utils.utilityEmbed
 
 suspend fun SlashCommand<*, *, *>.utilityCommand() = ephemeralSubCommand(::UtilityArgs) {
-	name = "utility"
-	description = "Configure Lily's utility settings"
+	name = Translations.Config.Utility.name
+	description = Translations.Config.Utility.description
 
 	requirePermission(Permission.ManageGuild)
 
@@ -30,8 +31,7 @@ suspend fun SlashCommand<*, *, *>.utilityCommand() = ephemeralSubCommand(::Utili
 
 		if (utilityConfig != null) {
 			respond {
-				content = "You already have a utility configuration set. " +
-					"Please clear it before attempting to set a new one."
+				content = Translations.Config.configAlreadyExists.translate("utility")
 			}
 			return@action
 		}
@@ -41,8 +41,7 @@ suspend fun SlashCommand<*, *, *>.utilityCommand() = ephemeralSubCommand(::Utili
 			utilityLog = guild!!.getChannelOfOrNull(arguments.utilityLogChannel!!.id)
 			if (utilityLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
 				respond {
-					content = "The utility log you've selected is invalid, or I can't view it. " +
-						"Please attempt to resolve this and try again."
+					content = Translations.Config.invalidChannel.translate("utility")
 				}
 				return@action
 			}

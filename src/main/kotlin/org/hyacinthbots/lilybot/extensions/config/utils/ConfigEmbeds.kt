@@ -5,6 +5,7 @@ package org.hyacinthbots.lilybot.extensions.config.utils
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.rest.builder.message.EmbedBuilder
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.extensions.logging.config.LoggingArgs
 import org.hyacinthbots.lilybot.extensions.moderation.config.ModerationArgs
@@ -13,156 +14,161 @@ import org.hyacinthbots.lilybot.utils.interval
 import org.hyacinthbots.lilybot.utils.trimmedContents
 
 suspend fun EmbedBuilder.utilityEmbed(arguments: UtilityArgs, user: UserBehavior) {
-	title = "Configuration: Utility"
+	val obj = Translations.Config.Utility.Embed
+	title = obj.title.translate()
 	field {
-		name = "Utility Log"
+		name = obj.utilityFieldName.translate()
 		value = if (arguments.utilityLogChannel != null) {
 			"${arguments.utilityLogChannel!!.mention} ${arguments.utilityLogChannel!!.data.name.value}"
 		} else {
-			"Disabled"
+			Translations.Basic.disabled.translate()
 		}
 	}
 	field {
-		name = "Log Channel updates"
-		value = if (arguments.logChannelUpdates) "Yes" else "No"
+		name = obj.channelUpdates.translate()
+		value = if (arguments.logChannelUpdates) Translations.Basic.yes.translate() else Translations.Basic.no.translate()
 	}
 	field {
-		name = "Log Event updates"
-		value = if (arguments.logEventUpdates) "Yes" else "No"
+		name = obj.eventUpdates.translate()
+		value = if (arguments.logEventUpdates) Translations.Basic.yes.translate() else Translations.Basic.no.translate()
 	}
 	field {
-		name = "Log Invite updates"
-		value = if (arguments.logInviteUpdates) "Yes" else "No"
+		name = obj.inviteUpdates.translate()
+		value = if (arguments.logInviteUpdates) Translations.Basic.yes.translate() else Translations.Basic.no.translate()
 	}
 	field {
-		name = "Log Role updates"
-		value = if (arguments.logRoleUpdates) "Yes" else "No"
+		name = obj.roleUpdates.translate()
+		value = if (arguments.logRoleUpdates) Translations.Basic.yes.translate() else Translations.Basic.no.translate()
 	}
 
 	footer {
-		text = "Configured by ${user.asUserOrNull()?.username}"
+		text = Translations.Config.configuredBy.translate(user.asUserOrNull()?.username)
 		icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 	}
 }
 
 suspend fun EmbedBuilder.moderationEmbed(arguments: ModerationArgs, user: UserBehavior) {
-	title = "Configuration: Moderation"
+	val obj = Translations.Config.Moderation.Embed
+	title = obj.title.translate()
 	field {
-		name = "Moderators"
-		value = arguments.moderatorRole?.mention ?: "Disabled"
+		name = obj.moderatorsFieldName.translate()
+		value = arguments.moderatorRole?.mention ?: Translations.Basic.disabled.translate()
 	}
 	field {
-		name = "Action log"
-		value = arguments.modActionLog?.mention ?: "Disabled"
+		name = obj.actionLogFieldName.translate()
+		value = arguments.modActionLog?.mention ?: Translations.Basic.disabled.translate()
 	}
 	field {
-		name = "Log publicly"
+		name = obj.logPubliclyFieldName.translate()
 		value = when (arguments.logPublicly) {
-			true -> "Enabled"
-			false -> "Disabled"
-			null -> "Disabled"
-		}
+			true -> Translations.Basic.enabled
+			false -> Translations.Basic.disabled
+			null -> Translations.Basic.disabled
+		}.translate()
 	}
 	field {
-		name = "Quick timeout length"
-		value = arguments.quickTimeoutLength.interval() ?: "No quick timeout length set"
+		name = Translations.Config.Moderation.Embed.QuickTimeoutLength.name.translate()
+		value = arguments.quickTimeoutLength.interval()
+			?: Translations.Config.Moderation.Embed.QuickTimeoutLength.disabled.translate()
 	}
 	field {
-		name = "Warning Auto-punishments"
+		name = obj.warningAutoPunishmentsName.translate()
 		value = when (arguments.warnAutoPunishments) {
-			true -> "Enabled"
-			false -> "Disabled"
-			null -> "Disabled"
-		}
+			true -> Translations.Basic.enabled
+			false -> Translations.Basic.disabled
+			null -> Translations.Basic.disabled
+		}.translate()
 	}
 	field {
-		name = "DM Default"
+		name = Translations.Config.Moderation.Embed.DmDefault.name.translate()
 		value = when (arguments.dmDefault) {
-			true -> "DM argument will default to true"
-			false -> "DM argument will default to false"
-			null -> "DM argument will default to false"
-		}
+			true -> Translations.Config.Moderation.Embed.DmDefault.`true`
+			false -> Translations.Config.Moderation.Embed.DmDefault.`false`
+			null -> Translations.Config.Moderation.Embed.DmDefault.`false`
+		}.translate()
 	}
 	field {
-		name = "Ban DM Message"
-		value = arguments.banDmMessage ?: "No custom Ban DM message set"
+		name = Translations.Config.Moderation.Embed.BanDmMessage.name.translate()
+		value = arguments.banDmMessage ?: Translations.Config.Moderation.Embed.BanDmMessage.disabled.translate()
 	}
 	field {
-		name = "Auto-invite Moderator Role"
+		name = obj.autoInviteRoleName.translate()
 		value = when (arguments.autoInviteModeratorRole) {
-			true -> "Enabled"
-			false -> "Disabled"
-			null -> "Disabled"
-		}
+			true -> Translations.Basic.enabled
+			false -> Translations.Basic.disabled
+			null -> Translations.Basic.disabled
+		}.translate()
 	}
 	field {
-		name = "Log member role changes"
+		name = obj.memberRoleChangesName.translate()
 		value = when (arguments.logMemberRoleChanges) {
-			true -> "Enabled"
-			false -> "Disabled"
-			null -> "Disabled"
-		}
+			true -> Translations.Basic.enabled
+			false -> Translations.Basic.disabled
+			null -> Translations.Basic.disabled
+		}.translate()
 	}
 	footer {
-		text = "Configured by ${user.asUserOrNull()?.username}"
+		text = Translations.Config.configuredBy.translate(user.asUserOrNull()?.username)
+		icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 	}
 }
 
 suspend fun EmbedBuilder.loggingEmbed(arguments: LoggingArgs, guild: GuildBehavior?, user: UserBehavior) {
-	title = "Configuration: Logging"
+	val obj = Translations.Config.Logging.Embed
+	title = obj.title.translate()
 	field {
-		name = "Message Delete Logs"
+		name = obj.messageDeleteFieldName.translate()
 		value = if (arguments.enableMessageDeleteLogs && arguments.messageLogs != null) {
 			arguments.messageLogs!!.mention
 		} else {
-			"Disabled"
+			Translations.Basic.disabled.translate()
 		}
 	}
 	field {
-		name = "Message Edit Logs"
+		name = obj.messageEditFieldName.translate()
 		value = if (arguments.enableMessageEditLogs && arguments.messageLogs != null) {
 			arguments.messageLogs!!.mention
 		} else {
-			"Disabled"
+			Translations.Basic.disabled.translate()
 		}
 	}
 	field {
-		name = "Member Logs"
+		name = obj.memberFieldName.translate()
 		value = if (arguments.enableMemberLogging && arguments.memberLog != null) {
 			arguments.memberLog!!.mention
 		} else {
-			"Disabled"
+			Translations.Basic.disabled.translate()
 		}
 	}
 
 	field {
-		name = "Public Member logs"
+		name = Translations.Config.Logging.Embed.PublicMemberField.name.translate()
 		value = if (arguments.enablePublicMemberLogging && arguments.publicMemberLog != null) {
 			arguments.publicMemberLog!!.mention
 		} else {
-			"Disabled"
+			Translations.Basic.disabled.translate()
 		}
 	}
 	if (arguments.enableMemberLogging && arguments.publicMemberLog != null) {
 		val config = LoggingConfigCollection().getConfig(guild!!.id)
 		if (config != null) {
 			field {
-				name = "Join Message"
+				name = Translations.Config.Logging.Embed.PublicMemberField.joinMessage.translate()
 				value = config.publicMemberLogData?.joinMessage.trimmedContents(256)!!
 			}
 			field {
-				name = "Leave Message"
+				name = Translations.Config.Logging.Embed.PublicMemberField.leaveMessage.translate()
 				value = config.publicMemberLogData?.leaveMessage.trimmedContents(256)!!
 			}
 			field {
-				name = "Ping on join"
+				name = Translations.Config.Logging.Embed.PublicMemberField.pingOnJoin.translate()
 				value = config.publicMemberLogData?.pingNewUsers.toString()
 			}
 		}
 	}
 
 	footer {
-		text = "Configured by ${user.asUserOrNull()?.username}"
+		text = Translations.Config.configuredBy.translate(user.asUserOrNull()?.username)
 		icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 	}
 }

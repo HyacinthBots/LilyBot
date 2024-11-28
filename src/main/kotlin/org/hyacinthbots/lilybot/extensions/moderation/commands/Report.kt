@@ -22,10 +22,15 @@ import dev.kordex.core.extensions.ephemeralMessageCommand
 import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.kordex.core.utils.getJumpUrl
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
+
+private val noAccess = Translations.Moderation.Report.noAccess.translate()
+
+private val ownMessage = Translations.Moderation.Report.ownMessage.translate()
 
 /**
  * The message reporting feature in the bot.
@@ -37,7 +42,7 @@ class Report : Extension() {
 
 	override suspend fun setup() {
 		ephemeralMessageCommand(::ReportModal) {
-			name = "Report"
+			name = Translations.Moderation.Report.MessageCommand.name
 			locking = true // To prevent the command from being run more than once concurrently
 
 			check {
@@ -50,16 +55,12 @@ class Report : Extension() {
 			action { modal ->
 				val reportedMessage = event.interaction.getTargetOrNull()
 				if (reportedMessage == null) {
-					respond {
-						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
-					}
+					respond { content = noAccess }
 					return@action
 				}
 
 				if (reportedMessage.author == event.interaction.user) {
-					respond {
-						content = "You may not report your own message."
-					}
+					respond { content = ownMessage }
 					return@action
 				}
 
@@ -72,15 +73,15 @@ class Report : Extension() {
 						config.role!!,
 						actionLog,
 						reportedMessage,
-						modal?.reason?.value ?: "No reason provided"
+						modal?.reason?.value ?: Translations.Basic.noReason.translate()
 					)
 				}
 			}
 		}
 
 		ephemeralSlashCommand(::ManualReportArgs, ::ReportModal) {
-			name = "manual-report"
-			description = "Report a message, using a link instead of the message command"
+			name = Translations.Moderation.Report.SlashCommand.name
+			description = Translations.Moderation.Report.SlashCommand.description
 			locking = true // To prevent the command from being run more than once concurrently
 
 			check {
@@ -96,7 +97,7 @@ class Report : Extension() {
 
 				if (arguments.message.contains("/").not()) {
 					respond {
-						content = "The URL provided was malformed and the message could not be found!"
+						content = Translations.Moderation.Report.SlashCommand.malformedLink.translate()
 					}
 					return@action
 				}
@@ -105,25 +106,19 @@ class Report : Extension() {
 					guild!!.getChannelOfOrNull<GuildMessageChannel>(Snowflake(arguments.message.split("/")[5]))
 
 				if (channel == null) {
-					respond {
-						content = "Sorry, I can't properly access this message. Please ping the moderators instead."
-					}
+					respond { content = noAccess }
 					return@action
 				}
 
 				val reportedMessage = channel.getMessageOrNull(Snowflake(arguments.message.split("/")[6]))
 
 				if (reportedMessage == null) {
-					respond {
-						content = "Sorry, I can't find this message. Please ping the moderators instead."
-					}
+					respond { content = noAccess }
 					return@action
 				}
 
 				if (reportedMessage.author == event.interaction.user) {
-					respond {
-						content = "You may not report your own message."
-					}
+					respond { content = ownMessage }
 					return@action
 				}
 
@@ -133,7 +128,7 @@ class Report : Extension() {
 						moderationConfig.role!!,
 						modLog,
 						reportedMessage,
-						modal?.reason?.value ?: "No reason provided"
+						modal?.reason?.value ?: Translations.Basic.noReason.translate()
 					)
 				}
 			}
@@ -158,45 +153,47 @@ class Report : Extension() {
 		reportedMessage: Message,
 		reason: String
 	) {
-		content = "Would you like to report this message? This will ping moderators, and false reporting will be " +
-				"treated as spam and punished accordingly"
+		val translations = Translations.Moderation.Report.Confirmation
+		content = translations.content.translate()
 		components {
 			ephemeralButton(0) {
-				label = "Yes"
+				label = Translations.Basic.yes
 				style = ButtonStyle.Success
 
 				action {
 					this.edit {
-						content = "Message reported to staff"
+						content = translations.response.translate()
 						components { removeAll() }
 
 						modLog?.createMessage { content = "<@&$moderatorRoleId>" }
 
 						modLog?.createMessage {
 							embed {
-								title = "Message reported"
-								description = "A message was reported in ${
-									reportedMessage.getChannelOrNull()?.mention ?: "`Unable to get channel`"
-								}"
+								title = translations.embedTitle.translate()
+								description = translations.embedDesc.translate(
+									reportedMessage.getChannelOrNull()?.mention
+										?: Translations.Basic.UnableTo.channel.translate()
+								)
+
 								field {
-									name = "Message Content:"
+									name = translations.embedContentField.translate()
 									value =
 										reportedMessage.content.ifEmpty {
-											"Failed to get content of message"
+											Translations.Basic.UnableTo.getContents.translate()
 										}
 									inline = true
 								}
 								field {
-									name = "Message Author:"
+									name = translations.embedAuthorField.translate()
 									value =
-										reportedMessage.author?.mention ?: "Failed to get author of message"
+										reportedMessage.author?.mention ?: Translations.Basic.UnableTo.author.translate()
 								}
 								field {
-									name = "Report reason:"
+									name = translations.embedReasonField.translate()
 									value = reason
 								}
 								footer {
-									text = "Reported by: ${user.asUserOrNull()?.username}"
+									text = translations.embedReportedBy.translate(user.asUserOrNull()?.username)
 									icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
 								}
 								timestamp = Clock.System.now()
@@ -204,7 +201,7 @@ class Report : Extension() {
 							}
 							components {
 								linkButton {
-									label = "Jump to message"
+									label = translations.jumpButton
 									url = reportedMessage.getJumpUrl()
 								}
 							}
@@ -213,12 +210,12 @@ class Report : Extension() {
 				}
 			}
 			ephemeralButton(0) {
-				label = "No"
+				label = Translations.Basic.no
 				style = ButtonStyle.Danger
 
 				action {
 					this.edit {
-						content = "Message not reported."
+						content = translations.notReported.translate()
 						components { removeAll() }
 					}
 				}
@@ -229,17 +226,17 @@ class Report : Extension() {
 	inner class ManualReportArgs : Arguments() {
 		/** The link to the message being reported. */
 		val message by string {
-			name = "message-link"
-			description = "Link to the message to report"
+			name = Translations.Moderation.Report.SlashCommand.Arguments.Message.name
+			description = Translations.Moderation.Report.SlashCommand.Arguments.Message.description
 		}
 	}
 
 	inner class ReportModal : ModalForm() {
-		override var title = "Report a message"
+		override var title = Translations.Moderation.Report.Modal.title
 
 		val reason = paragraphText {
-			label = "Why are you reporting this message"
-			placeholder = "It violates rule X!"
+			label = Translations.Moderation.Report.Modal.label
+			placeholder = Translations.Moderation.Report.Modal.placeholder
 		}
 	}
 }
