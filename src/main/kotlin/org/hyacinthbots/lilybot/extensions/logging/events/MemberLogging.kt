@@ -130,9 +130,8 @@ class MemberLogging : Extension() {
 					val targetUser = event.kord.getUser(kickData.targetUserId)!!
 					val actioner = kickData.data.actioner?.let { event.kord.getUser(it) }!!
 					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.guild)?.createEmbed {
-						// TODO translate these with the moderation events
-						title = "Kicked a user"
-						description = "${targetUser.mention} has been kicked"
+						title = Translations.Moderation.ModCommands.Kick.response.translate()
+						description = Translations.Moderation.ModCommands.Kick.embedDesc.translate(targetUser.mention)
 						image = kickData.data.imageUrl
 						baseModerationEmbed(kickData.data.reason, targetUser, actioner)
 						dmNotificationStatusEmbedField(kickData.data.dmOutcome != null, kickData.data.dmOutcome)
