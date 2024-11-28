@@ -38,6 +38,9 @@ import dev.kordex.core.utils.dm
 import dev.kordex.core.utils.scheduling.Scheduler
 import dev.kordex.core.utils.scheduling.Task
 import dev.kordex.core.utils.toDuration
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.client.HttpClient
+import io.ktor.client.request.post
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
@@ -47,9 +50,16 @@ import org.hyacinthbots.lilybot.database.entities.ReminderData
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.fitsEmbedField
 import org.hyacinthbots.lilybot.utils.interval
+import org.hyacinthbots.lilybot.utils.statusEnv
 
 class Reminders : Extension() {
 	override val name = "reminders"
+
+	/** Logger for status ping. */
+	private val statusLogger = KotlinLogging.logger("Status ping")
+
+	/** Client for status ping. */
+	private val statusClient = HttpClient {}
 
 	/** The scheduler that will track the time for reminder posting. */
 	private val reminderScheduler = Scheduler()
@@ -467,6 +477,13 @@ class Reminders : Extension() {
 	 * @since 4.2.0
 	 */
 	private suspend fun postReminders() {
+		// Start status ping
+
+		// Doing this status ping in here as this is an already running scheduler and can easily have this added
+		// to avoid duplicating the scheduler. This should always ping if the bots up too so why make another
+		statusLogger.debug { "Pinging!" }
+		statusClient.post(statusEnv)
+		// End status ping
 		val reminders = ReminderCollection().getAllReminders()
 		val dueReminders =
 			reminders.filter { it.remindTime.toEpochMilliseconds() - Clock.System.now().toEpochMilliseconds() <= 0 }
