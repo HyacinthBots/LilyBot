@@ -190,7 +190,7 @@ class Tags : Extension() {
 				respond {
 					embed {
 						title = Translations.Utility.Tags.TagHelp.title.translate()
-						description = Translations.Utility.Tags.TagHelp.description.translate()
+						description = Translations.Utility.Tags.TagHelp.content.translate()
 						color = DISCORD_BLURPLE
 						timestamp = Clock.System.now()
 					}

@@ -218,7 +218,9 @@ suspend fun main() {
 
 		i18n {
 			interactionUserLocaleResolver()
-			applicationCommandLocale(SupportedLocales.ENGLISH, SupportedLocales.GERMAN)
+			interactionGuildLocaleResolver()
+
+			applicationCommandLocale(SupportedLocales.ENGLISH)
 		}
 
 		docsGenerator {
