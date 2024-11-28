@@ -33,9 +33,11 @@ import dev.kordex.core.DISCORD_YELLOW
 import dev.kordex.core.checks.anyGuild
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.event
+import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
 import kotlinx.datetime.Clock
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.afterDot
@@ -54,6 +56,8 @@ class UtilityEvents : Extension() {
 	override val name: String = "utility-events"
 
 	override suspend fun setup() {
+		val translations = Translations.Utility.UtilityEvents
+
 		event<ChannelCreateEvent> {
 			check {
 				failIf {
@@ -70,19 +74,20 @@ class UtilityEvents : Extension() {
 				var allowed = perms.getValue(ALLOWED)
 				var denied = perms.getValue(DENIED)
 
-				if (allowed.isBlank()) allowed = "None overrides set"
-				if (denied.isBlank()) denied = "None overrides set"
+				if (allowed.isBlank()) allowed = translations.noOverrides.translate()
+				if (denied.isBlank()) denied = translations.noOverrides.translate()
 
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)?.createEmbed {
-					title = "${writeChannelType(event.channel.type)} Created"
-					description = "${event.channel.mention} (${event.channel.data.name.value}) was created."
+					title = translations.createTitle.translate(writeChannelType(event.channel.type))
+					description =
+						translations.createDesc.translate(event.channel.mention, event.channel.data.name.value)
 					field {
-						name = "Allowed Permissions"
+						name = translations.allowed.translate()
 						value = allowed
 						inline = true
 					}
 					field {
-						name = "Denied Permissions"
+						name = translations.denied.translate()
 						value = denied
 						inline = true
 					}
@@ -98,8 +103,8 @@ class UtilityEvents : Extension() {
 				if (guildId?.let { UtilityConfigCollection().getConfig(it)?.logChannelUpdates } == false) return@action
 				val guild = guildId?.let { GuildBehavior(it, event.kord) }
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)?.createEmbed {
-					title = "${writeChannelType(event.channel.type)} Deleted"
-					description = "`${event.channel.data.name.value}` was deleted."
+					title = translations.deleteTitle.translate(writeChannelType(event.channel.type))
+					description = translations.deleteDesc.translate(event.channel.data.name.value)
 					timestamp = Clock.System.now()
 					color = DISCORD_RED
 				}
@@ -137,96 +142,100 @@ class UtilityEvents : Extension() {
 				}
 
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild!!)?.createEmbed {
-					title = "${writeChannelType(event.channel.type)} Updated"
+					title = translations.updateTitle.translate(writeChannelType(event.channel.type))
 					oldNewEmbedField(
-						"Type Change", writeChannelType(event.old?.type), writeChannelType(event.channel.type)
+						translations.typeChange, writeChannelType(event.old?.type), writeChannelType(event.channel.type)
 					)
-					oldNewEmbedField("Name Change", oldData?.name?.value, newData.name.value)
-					oldNewEmbedField("Topic Changed", oldData?.topic?.value, newData.topic.value)
+					oldNewEmbedField(translations.nameChange, oldData?.name?.value, newData.name.value)
+					oldNewEmbedField(translations.topicChange, oldData?.topic?.value, newData.topic.value)
 					oldNewEmbedField(
-						"Parent Category Change",
+						translations.parentChange,
 						kord.getChannelOf<Category>(oldData?.parentId.value!!)?.mention,
 						kord.getChannelOf<Category>(newData.parentId.value!!)?.mention
 					)
 					if (event.channel.data.nsfw != event.old?.data?.nsfw) {
 						field {
-							name = "NSFW Setting"
+							name = translations.nsfwChange.translate()
 							value = event.channel.data.nsfw.discordBoolean.toString()
 						}
 					}
-					oldNewEmbedField("Position Changed", oldData?.position.value, newData.position.value)
+					oldNewEmbedField(translations.positionChanged, oldData?.position.value, newData.position.value)
 					oldNewEmbedField(
-						"Slowmode time changed",
+						translations.slowmodeChange,
 						oldData?.rateLimitPerUser?.value?.toString() ?: "0",
 						newData.rateLimitPerUser.value?.toString() ?: "0"
 					)
-					oldNewEmbedField("Bitrate changed", oldData?.bitrate.value, newData.bitrate.value)
-					oldNewEmbedField("User limit changed", oldData?.userLimit.value ?: 0, newData.userLimit.value ?: 0)
+					oldNewEmbedField(translations.bitrateChange, oldData?.bitrate.value, newData.bitrate.value)
 					oldNewEmbedField(
-						"Region Changed",
+						translations.userlimitChange,
+						oldData?.userLimit.value ?: 0,
+						newData.userLimit.value ?: 0
+					)
+					oldNewEmbedField(
+						translations.regionChanged,
 						oldData?.rtcRegion?.value ?: "Automatic",
 						newData.rtcRegion.value ?: "Automatic"
 					)
 					oldNewEmbedField(
-						"Video Quality Changed",
+						translations.videoQualityChanged,
 						oldData?.videoQualityMode?.value.afterDot(),
 						newData.videoQualityMode.value.afterDot()
 					)
 					oldNewEmbedField(
-						"Default Auto-Archive Duration",
+						translations.defaultAutoChanged,
 						oldData?.defaultAutoArchiveDuration?.value?.duration.toString(),
 						newData.defaultAutoArchiveDuration.value?.duration.toString()
 					)
 					oldNewEmbedField(
-						"Default Sort Changed",
+						translations.defaultSortChanged,
 						oldData?.defaultSortOrder?.value.afterDot(),
 						newData.defaultSortOrder.value.afterDot()
 					)
 					oldNewEmbedField(
-						"Default Layout Changed",
+						translations.defaultLayoutChanged,
 						oldData?.defaultForumLayout?.value.afterDot(),
 						newData.defaultForumLayout.value.afterDot()
 					)
 					oldNewEmbedField(
-						"Available tags Changed",
+						translations.availableTagsChanged,
 						formatAvailableTags(oldData?.availableTags?.value),
 						formatAvailableTags(newData.availableTags.value)
 					)
 					oldNewEmbedField(
-						"Applied tags Changed",
+						translations.appliedTagsChanged,
 						oldAppliedTags.joinToString(", "),
 						newAppliedTags.joinToString(", ")
 					)
 					oldNewEmbedField(
-						"Default Reaction Emoji Changed",
+						translations.defaultReactionChanged,
 						oldData?.defaultReactionEmoji?.value?.emojiName,
 						newData.defaultReactionEmoji.value?.emojiName
 					)
 					oldNewEmbedField(
-						"Default Thread Slowmode Changed",
+						translations.defaultThreadChanged,
 						oldData?.defaultThreadRateLimitPerUser?.value.toString(),
 						newData.defaultThreadRateLimitPerUser.value.toString()
 					)
 					if (oldAllowed != newAllowed) {
 						field {
-							name = "New Allowed Permissions"
+							name = translations.newAllowed.translate()
 							value = newAllowed
 							inline = true
 						}
 						field {
-							name = "Old Allowed Permissions"
+							name = translations.oldAllowed.translate()
 							value = oldAllowed
 							inline = true
 						}
 					}
 					if (oldDenied != newDenied) {
 						field {
-							name = "New Denied Permissions"
+							name = translations.newDenied.translate()
 							value = newDenied
 							inline = false
 						}
 						field {
-							name = "Old Denied Permissions"
+							name = translations.oldDenied.translate()
 							value = oldDenied
 							inline = true
 						}
@@ -243,8 +252,8 @@ class UtilityEvents : Extension() {
 				if (UtilityConfigCollection().getConfig(event.guildId)?.logEventUpdates == false) return@action
 				val guild = GuildBehavior(event.guildId, kord)
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
-					title = "Scheduled Event Created!"
-					description = "An event has been created!"
+					title = translations.scheduledCreateTitle.translate()
+					description = translations.scheduledCreateDesc.translate()
 					guildEventEmbed(event, guild)
 					// This appears to exist in the front end but the api doesn't have it anywhere, api payloads contain
 					// a recurrence field that would fill this but the api doesn't mention it
@@ -253,12 +262,12 @@ class UtilityEvents : Extension() {
 // 						value = event.scheduledEvent.
 // 					}
 					field {
-						name = "Guild Members only"
+						name = translations.guildMembersOnly.translate()
 						value = if (event.scheduledEvent.privacyLevel == GuildScheduledEventPrivacyLevel.GuildOnly) {
-							"True"
+							Translations.Basic.`true`
 						} else {
-							"False"
-						}
+							Translations.Basic.`false`
+						}.translate()
 					}
 					color = DISCORD_GREEN
 					footer {
@@ -277,8 +286,8 @@ class UtilityEvents : Extension() {
 				if (UtilityConfigCollection().getConfig(event.guildId)?.logEventUpdates == false) return@action
 				val guild = GuildBehavior(event.guildId, kord)
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
-					title = "Scheduled Event Deleted!"
-					description = "An event has been deleted"
+					title = translations.scheduledDeleteTitle.translate()
+					description = translations.scheduledDeleteDesc.translate()
 					guildEventEmbed(event, guild)
 					color = DISCORD_RED
 					footer {
@@ -299,17 +308,19 @@ class UtilityEvents : Extension() {
 				val oldEvent = event.oldEvent
 				val newEvent = event.scheduledEvent
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
-					title = "Scheduled Event Updated!"
-					description = "An event has been updated"
-					oldNewEmbedField("Name Changed", oldEvent?.name, newEvent.name)
-					oldNewEmbedField("Description Changed", oldEvent?.description, newEvent.description)
+					title = translations.scheduledUpdateTitle.translate()
+					description = translations.scheduledUpdateDesc.translate()
+					oldNewEmbedField(translations.nameChange, oldEvent?.name, newEvent.name)
+					oldNewEmbedField(translations.descriptionChange, oldEvent?.description, newEvent.description)
 					oldNewEmbedField(
-						"Location Changed",
-						oldEvent?.channelId?.let { guild.getChannelOrNull(it) }?.mention ?: "Unable to get channel",
-						newEvent.channelId?.let { guild.getChannelOrNull(it) }?.mention ?: "Unable to get channel"
+						translations.locationChange,
+						oldEvent?.channelId?.let { guild.getChannelOrNull(it) }?.mention
+							?: Translations.Basic.UnableTo.channel.translate(),
+						newEvent.channelId?.let { guild.getChannelOrNull(it) }?.mention
+							?: Translations.Basic.UnableTo.channel.translate()
 					)
 					oldNewEmbedField(
-						"Start time changed",
+						translations.startChanged,
 						oldEvent?.scheduledStartTime?.toDiscord(TimestampType.ShortDateTime),
 						newEvent.scheduledStartTime.toDiscord(TimestampType.ShortDateTime)
 					)
@@ -324,30 +335,30 @@ class UtilityEvents : Extension() {
 				if (event.guildId?.let { UtilityConfigCollection().getConfig(it) }?.logInviteUpdates == false) return@action
 				val guild = event.guildId?.let { GuildBehavior(it, kord) } ?: return@action
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
-					title = "Invite link created"
-					description = "An invite has been created"
+					title = translations.inviteCreateTitle.translate()
+					description = translations.inviteCreateDesc.translate()
 					field {
-						name = "Code"
+						name = translations.code.translate()
 						value = event.code
 					}
 					field {
-						name = "Target Channel"
+						name = translations.targetChannel.translate()
 						value = event.channel.mention
 					}
 					field {
-						name = "Max uses"
+						name = translations.maxUses.translate()
 						value = event.maxUses.toString()
 					}
 					field {
-						name = "Duration of Invite"
+						name = translations.duration.translate()
 						value = event.maxAge.toIsoString()
 					}
 					field {
-						name = "Temporary Membership invite"
+						name = translations.tempMembershipInvite.translate()
 						value = event.isTemporary.toString()
 					}
 					footer {
-						text = "Created by ${event.getInviterAsMemberOrNull()?.mention}"
+						text = Translations.Basic.createdBy.translate(event.getInviterAsMemberOrNull()?.mention)
 						icon = event.getInviterAsMemberOrNull()?.avatar?.cdnUrl?.toUrl()
 					}
 					timestamp = Clock.System.now()
@@ -362,14 +373,14 @@ class UtilityEvents : Extension() {
 				if (event.guildId?.let { UtilityConfigCollection().getConfig(it) }?.logInviteUpdates == false) return@action
 				val guild = event.guildId?.let { GuildBehavior(it, kord) } ?: return@action
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
-					title = "Invite link deleted"
-					description = "An invite has been deleted"
+					title = translations.inviteDeleteTitle.translate()
+					description = translations.inviteDeleteDesc.translate()
 					field {
-						name = "Code"
+						name = translations.code.translate()
 						value = event.code
 					}
 					field {
-						name = "Target Channel"
+						name = translations.targetChannel.translate()
 						value = event.channel.mention
 					}
 					timestamp = Clock.System.now()
@@ -383,50 +394,50 @@ class UtilityEvents : Extension() {
 				if (UtilityConfigCollection().getConfig(event.guildId)?.logRoleUpdates == false) return@action
 				val guild = GuildBehavior(event.guildId, kord)
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
-					title = "Created a Role"
-					description = "A new role has been created"
+					title = translations.createdRoleTitle.translate()
+					description = translations.createdRoleDesc.translate()
 					field {
-						name = "Role name"
+						name = translations.roleName.translate()
 						value = event.role.name
 						inline = true
 					}
 					field {
-						name = "Role Color"
+						name = translations.roleColor.translate()
 						value = event.role.color.rgb.toString()
 						inline = true
 					}
 					field {
-						name = "Position"
+						name = translations.rolePosition.translate()
 						value = event.role.rawPosition.toString()
 						inline = true
 					}
 					field {
-						name = "Display separately?"
+						name = translations.roleDisplaySep.translate()
 						value = event.role.hoisted.toString()
 						inline = true
 					}
 					field {
-						name = "Mentionable"
+						name = translations.roleMention.translate()
 						value = event.role.mentionable.toString()
 						inline = true
 					}
 					field {
-						name = "Icon"
-						value = event.role.icon?.cdnUrl?.toUrl() ?: "No icon"
+						name = translations.roleIcon.translate()
+						value = event.role.icon?.cdnUrl?.toUrl() ?: translations.noRoleIcon.translate()
 						inline = true
 					}
 					field {
-						name = "Emoji"
-						value = event.role.unicodeEmoji ?: "No emoji"
+						name = translations.emoji.translate()
+						value = event.role.unicodeEmoji ?: translations.noEmoji.translate()
 						inline = true
 					}
 					field {
-						name = "Managed by integration?"
+						name = translations.managed.translate()
 						value = event.role.managed.toString()
 						inline = true
 					}
 					field {
-						name = "Permissions"
+						name = translations.permissions.translate()
 						value = formatPermissionSet(event.role.permissions)
 					}
 					color = DISCORD_GREEN
@@ -440,11 +451,11 @@ class UtilityEvents : Extension() {
 				if (UtilityConfigCollection().getConfig(event.guildId)?.logRoleUpdates == false) return@action
 				val guild = GuildBehavior(event.guildId, kord)
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)?.createEmbed {
-					title = "Role deleted"
-					description = "A role has been deleted"
+					title = translations.deletedRoleTitle.translate()
+					description = translations.deletedRoleDesc.translate()
 					field {
-						name = "Role name"
-						value = event.role?.name ?: "Unable to get name"
+						name = translations.roleName.translate()
+						value = event.role?.name ?: translations.unableToName.translate()
 					}
 					color = DISCORD_RED
 					timestamp = Clock.System.now()
@@ -462,32 +473,38 @@ class UtilityEvents : Extension() {
 					event.old?.icon == event.role.icon && event.old?.unicodeEmoji == event.role.unicodeEmoji &&
 					event.old?.permissions == event.role.permissions && event.old?.color == event.role.color &&
 					(
-					    event.old?.managed != event.role.managed || event.old?.tags != event.role.tags ||
-						event.old?.flags != event.role.flags
-					)
+						event.old?.managed != event.role.managed || event.old?.tags != event.role.tags ||
+							event.old?.flags != event.role.flags
+						)
 				) {
-						    return@action
-						}
+					return@action
+				}
 				val guild = GuildBehavior(event.guildId, kord)
 				val channel = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
 				channel?.createMessage {
 					embed {
-						title = "Updated a Role"
-						description = event.role.mention + "has been updated"
-						oldNewEmbedField("Name changed", event.old?.name, event.role.name)
-						oldNewEmbedField("Display separately setting changed", event.old?.hoisted, event.role.hoisted)
-						oldNewEmbedField("Mentionable setting changed", event.old?.mentionable, event.role.mentionable)
-						oldNewEmbedField("Position changed", event.old?.getPosition(), event.role.getPosition())
+						title = translations.updatedRoleTitle.translate()
+						description = event.role.mention + translations.updatedRoleDesc.translate()
+						oldNewEmbedField(translations.nameChange, event.old?.name, event.role.name)
+						oldNewEmbedField(translations.displaySepChanged, event.old?.hoisted, event.role.hoisted)
+						oldNewEmbedField(translations.mentionChanged, event.old?.mentionable, event.role.mentionable)
 						oldNewEmbedField(
-							"Icon changed",
-							event.old?.icon?.cdnUrl?.toUrl() ?: "No icon",
-							event.role.icon?.cdnUrl?.toUrl() ?: "No icon"
+							translations.positionChanged,
+							event.old?.getPosition(),
+							event.role.getPosition()
 						)
 						oldNewEmbedField(
-							"Emoji changed", event.old?.unicodeEmoji ?: "No icon", event.role.unicodeEmoji ?: "No icon"
+							translations.iconChanged,
+							event.old?.icon?.cdnUrl?.toUrl() ?: translations.noRoleIcon.translate(),
+							event.role.icon?.cdnUrl?.toUrl() ?: translations.noRoleIcon.translate()
 						)
 						oldNewEmbedField(
-							"Permissions changed",
+							translations.emojiChanged,
+							event.old?.unicodeEmoji ?: translations.noRoleIcon.translate(),
+							event.role.unicodeEmoji ?: translations.noRoleIcon.translate()
+						)
+						oldNewEmbedField(
+							translations.permissionsChanged,
 							event.old?.permissions?.let { formatPermissionSet(it) } ?: "Unable to get permissions",
 							formatPermissionSet(event.role.permissions)
 						)
@@ -496,11 +513,11 @@ class UtilityEvents : Extension() {
 					}
 					if (event.old?.color != event.role.color) {
 						embed {
-							description = "Old color"
+							description = translations.oldColor.translate()
 							color = if (event.old?.color?.rgb != 0) event.old?.color else null
 						}
 						embed {
-							description = "New color"
+							description = translations.newColor.translate()
 							color = event.role.color
 						}
 					}
@@ -519,19 +536,20 @@ class UtilityEvents : Extension() {
 				}
 
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.channel.guild)?.createEmbed {
-					title = "${writeChannelType(event.channel.type)} Created"
-					description = "${event.channel.mention} (${event.channel.data.name.value}) was created."
+					title = translations.createTitle.translate(writeChannelType(event.channel.type))
+					description =
+						translations.createDesc.translate(event.channel.mention, event.channel.data.name.value)
 					field {
-						name = "Parent Channel"
+						name = translations.parentChannel.translate()
 						value = "${event.channel.parent.mention} (`${event.channel.parent.asChannelOrNull()?.name}`)"
 					}
 					field {
-						name = "Archive duration"
+						name = translations.archiveDuration.translate()
 						value = event.channel.autoArchiveDuration.duration.toString()
 					}
 					if (appliedTags.isNotEmpty()) {
 						field {
-							name = "Applied tags"
+							name = translations.appliedTags.translate()
 							value = appliedTags.joinToString(", ")
 						}
 					}
@@ -546,8 +564,8 @@ class UtilityEvents : Extension() {
 				// Do not log if the channel logging option is false
 				if (UtilityConfigCollection().getConfig(event.channel.guild.id)?.logChannelUpdates == false) return@action
 				getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.channel.guild)?.createEmbed {
-					title = "${writeChannelType(event.channel.type)} Deleted"
-					description = "`${event.channel.data.name.value}` was deleted."
+					title = translations.deleteTitle.translate(writeChannelType(event.channel.type))
+					description = translations.deleteDesc.translate(event.channel.data.name.value)
 					timestamp = Clock.System.now()
 					color = DISCORD_RED
 				}
@@ -567,11 +585,12 @@ class UtilityEvents : Extension() {
 	 * @author NoComment1105
 	 * @since 5.0.0
 	 */
-	private fun EmbedBuilder.oldNewEmbedField(detailName: String, oldValue: String?, newValue: String?) {
+	private fun EmbedBuilder.oldNewEmbedField(detailName: Key, oldValue: String?, newValue: String?) {
 		if (newValue != oldValue) {
 			field {
-				name = detailName
-				value = "Old: $oldValue\nNew: $newValue"
+				name = detailName.translate()
+				value =
+					"${Translations.Basic.old.translate()}: $oldValue\n${Translations.Basic.new.translate()}: $newValue"
 			}
 		}
 	}
@@ -583,7 +602,7 @@ class UtilityEvents : Extension() {
 	 * @author NoComment1105
 	 * @since 5.0.0
 	 */
-	private fun EmbedBuilder.oldNewEmbedField(detailName: String, oldValue: Int?, newValue: Int?) =
+	private fun EmbedBuilder.oldNewEmbedField(detailName: Key, oldValue: Int?, newValue: Int?) =
 		oldNewEmbedField(detailName, oldValue.toString(), newValue.toString())
 
 	/**
@@ -593,7 +612,7 @@ class UtilityEvents : Extension() {
 	 * @author NoComment1105
 	 * @since 5.0.0
 	 */
-	private fun EmbedBuilder.oldNewEmbedField(detailName: String, oldValue: Boolean?, newValue: Boolean?) =
+	private fun EmbedBuilder.oldNewEmbedField(detailName: Key, oldValue: Boolean?, newValue: Boolean?) =
 		oldNewEmbedField(detailName, oldValue.toString(), newValue.toString())
 
 	/**
@@ -605,16 +624,16 @@ class UtilityEvents : Extension() {
 	 * @since 5.0.0
 	 */
 	private fun writeChannelType(type: ChannelType?): String? = when (type) {
-		ChannelType.GuildCategory -> "Category"
-		ChannelType.GuildNews -> "Announcement Channel"
-		ChannelType.GuildForum -> "Forum Channel"
-		ChannelType.GuildStageVoice -> "Stage Channel"
-		ChannelType.GuildText -> "Text Channel"
-		ChannelType.GuildVoice -> "Voice Channel"
-		ChannelType.PublicGuildThread -> "Thread"
-		ChannelType.PrivateThread -> "Private Thread"
+		ChannelType.GuildCategory -> Translations.Utility.UtilityEvents.Channel.category
+		ChannelType.GuildNews -> Translations.Utility.UtilityEvents.Channel.announcement
+		ChannelType.GuildForum -> Translations.Utility.UtilityEvents.Channel.forum
+		ChannelType.GuildStageVoice -> Translations.Utility.UtilityEvents.Channel.stage
+		ChannelType.GuildText -> Translations.Utility.UtilityEvents.Channel.text
+		ChannelType.GuildVoice -> Translations.Utility.UtilityEvents.Channel.voice
+		ChannelType.PublicGuildThread -> Translations.Utility.UtilityEvents.Channel.thread
+		ChannelType.PrivateThread -> Translations.Utility.UtilityEvents.Channel.privateThread
 		else -> null
-	}
+	}?.translate()
 
 	/**
 	 * Formats the permission overwrites for a [channel] to a string map of allowed and denied permissions.
@@ -650,10 +669,12 @@ class UtilityEvents : Extension() {
 	private fun formatAvailableTags(tagList: List<ForumTag>?): String {
 		var tagString = ""
 		tagList?.forEach {
-			tagString += "\n* Name: ${it.name}\n* Moderated: ${it.moderated}\n" +
-				"* Emoji: ${if (it.emojiId != null) "<!${it.emojiId}>" else it.emojiName}\n---"
+			tagString += "\n* ${Translations.Utility.UtilityEvents.name.translate()}: ${it.name}\n" +
+				"* ${Translations.Utility.UtilityEvents.moderated.translate()}: ${it.moderated}\n" +
+				"* ${Translations.Utility.UtilityEvents.emoji.translate()}: " +
+				"${if (it.emojiId != null) "<!${it.emojiId}>" else it.emojiName}\n---"
 		}
-		return tagString.ifNullOrEmpty { "None" }
+		return tagString.ifNullOrEmpty { Translations.Basic.none.translate() }
 	}
 
 	/**
@@ -665,26 +686,27 @@ class UtilityEvents : Extension() {
 	 * @since 5.0.0
 	 */
 	private suspend fun EmbedBuilder.guildEventEmbed(event: GuildScheduledEventEvent, guild: GuildBehavior) {
+		val translations = Translations.Utility.UtilityEvents
 		field {
-			name = "Event Name"
+			name = translations.eventName.translate()
 			value = event.scheduledEvent.name
 		}
 		field {
-			name = "Event Description"
-			value = event.scheduledEvent.description ?: "No description provided"
+			name = translations.eventDesc.translate()
+			value = event.scheduledEvent.description ?: translations.eventDescNone.translate()
 		}
 		field {
-			name = "Event location"
+			name = translations.eventLocation.translate()
 			value = if (event.scheduledEvent.channelId != null) {
-				guild.getChannelOrNull(event.scheduledEvent.channelId!!)?.mention ?: "Unable to get channel"
+				guild.getChannelOrNull(event.scheduledEvent.channelId!!)?.mention ?: Translations.Basic.UnableTo.channel.translate()
 			} else {
-				"External event, no channel."
+				translations.externalChannel.translate()
 			}
 		}
 		field {
-			name = "Start time"
+			name = translations.startTime.translate()
 			value = event.scheduledEvent.scheduledStartTime.toDiscord(TimestampType.ShortDateTime)
 		}
-		image = event.scheduledEvent.image?.cdnUrl?.toUrl().ifNullOrEmpty { "No image" }
+		image = event.scheduledEvent.image?.cdnUrl?.toUrl().ifNullOrEmpty { translations.noImage.translate() }
 	}
 }

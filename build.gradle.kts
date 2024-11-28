@@ -35,6 +35,11 @@ repositories {
 	}
 
 	maven {
+		name = "Kord Snapshots"
+		url = uri("https://repo.kord.dev/snapshots")
+	}
+
+	maven {
 		name = "Kord Extensions (Releases)"
 		url = uri("https://releases-repo.kordex.dev")
 	}

@@ -648,8 +648,8 @@ class Tags : Extension() {
 
 		/** The new appearance for the tag being edited. */
 		val newAppearance by optionalStringChoice {
-			name = Translations.Utility.Tags.Create.Arguments.Appearance.name
-			description = Translations.Utility.Tags.Create.Arguments.Appearance.description
+			name = Translations.Utility.Tags.Edit.Arguments.NewAppearance.name
+			description = Translations.Utility.Tags.Edit.Arguments.NewAppearance.description
 			choices = mutableMapOf(
 				Translations.Utility.Tags.Create.Arguments.Appearance.Choice.embed to "embed",
 				Translations.Utility.Tags.Create.Arguments.Appearance.Choice.message to "message"

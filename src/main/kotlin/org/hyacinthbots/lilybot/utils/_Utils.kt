@@ -17,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
@@ -210,7 +211,8 @@ suspend inline fun Extension.updateDefaultPresence() {
  */
 fun generateBulkDeleteFile(messages: Set<Message>): String? =
 	if (messages.isNotEmpty()) {
-		"# Messages\n\n**Total:** ${messages.size}\n\n" +
+		"# ${Translations.Utils.GenerateBulkDelete.message.translate()}:\n\n" +
+			"**${Translations.Utils.GenerateBulkDelete.total.translate()}:** ${messages.size}\n\n" +
 			messages.reversed().joinToString("\n") { // Reversed for chronology
 				"*  [${
 					it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")

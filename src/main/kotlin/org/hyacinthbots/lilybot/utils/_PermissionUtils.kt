@@ -21,6 +21,7 @@ import dev.kordex.core.types.EphemeralInteractionContext
 import dev.kordex.core.utils.botHasPermissions
 import dev.kordex.core.utils.getTopRole
 import kotlinx.coroutines.flow.toList
+import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
@@ -66,11 +67,7 @@ suspend inline fun getLoggingChannelWithPerms(
 			}
 			val informChannel = getSystemChannelWithPerms(guild as Guild) ?: getFirstUsableChannel(guild)
 			informChannel?.createMessage(
-				"Lily is unable to send messages in the configured " +
-						"${channelType.toString().lowercase()} for this guild. " +
-						"As a result, the corresponding config has been reset. \n\n" +
-						"*Note:* this channel has been used to send this message because it's the first channel " +
-						"in the guild Lily could use. Please inform this guild's staff about this message."
+				Translations.Checks.LoggingChannelPerms.cannotGet.translate(channelType.toString().lowercase())
 			)
 		}
 		return null
@@ -140,9 +137,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		) {
 			pass()
 		} else {
-			fail(
-				"Incorrect permissions!\nI do not have the $permissionsSet permissions for ${eventChannel.mention}"
-			)
+			fail(Translations.Checks.ChannelPerms.incorrectPerms.withOrdinalPlaceholders(permissionsSet, eventChannel.mention))
 		}
 	} else if (eventChannel is NewsChannel) {
 		if (eventChannel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(event.kord.selfId)
@@ -150,9 +145,7 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		) {
 			pass()
 		} else {
-			fail(
-				"Incorrect permissions!\nI do not have the $permissionsSet permissions for ${eventChannel.mention}"
-			)
+			fail(Translations.Checks.ChannelPerms.incorrectPerms.withOrdinalPlaceholders(permissionsSet, eventChannel.mention))
 		}
 	} else if (eventChannel is ThreadChannel) {
 		if (eventChannel.asChannelOfOrNull<ThreadChannel>()?.getParent()?.getEffectivePermissions(event.kord.selfId)
@@ -160,12 +153,10 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
 		) {
 			pass()
 		} else {
-			fail(
-				"Incorrect permissions!\nI do not have the $permissionsSet permissions for ${eventChannel.mention}"
-			)
+			fail(Translations.Checks.ChannelPerms.incorrectPerms.withOrdinalPlaceholders(permissionsSet, eventChannel.mention))
 		}
 	} else {
-		fail("Unable to get permissions for channel! Please report this to the developers!")
+		fail(Translations.Checks.ChannelPerms.unableToPerms)
 	}
 }
 
@@ -190,19 +181,16 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 	guild: GuildBehavior?,
 	commandName: String
 ): String? {
+	val translations = Translations.Checks.BotOrMod
 	if (guild == null) {
-		respond {
-			content = "**Error:** Unable to access this guild. Please try again"
-		}
+		respond { content = translations.noGuild.translate() }
 		return null
 	}
 
 	val moderationConfig = ModerationConfigCollection().getConfig(guild.id)
 
 	moderationConfig ?: run {
-		respond {
-			content = "**Error:** Unable to access configuration for this guild! Is your configuration set?"
-		}
+		respond { content = translations.unableToAccess.translate() }
 		return null
 	}
 
@@ -211,34 +199,24 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
 		return "skip"
 	}
 	val self = kord.getSelf().asMemberOrNull(guild.id) ?: run {
-		respond {
-			content = "There was an error getting Lily as a member of this server, please try again!"
-		}
+		respond { content = translations.lilyError.translate() }
 		return null
 	}
 	// Get the users roles into a List of Snowflakes
 	val roles = member.roles.toList().map { it.id }
 	// If the user is a bot, return
 	if (member.isBot) {
-		respond {
-			content = "You cannot $commandName bot users!"
-		}
+		respond { content = translations.cantBot.translate(commandName) }
 		return null
 		// If the moderator ping role is in roles, return
 	} else if (moderationConfig.role in roles) {
-		respond {
-			content = "You cannot $commandName moderators!"
-		}
+		respond { content = translations.cantMod.translate(commandName) }
 		return null
 	} else if (member.getTopRole()?.getPosition() != null && self.getTopRole()?.getPosition() == null) {
-		respond {
-			content = "This user has a role and Lily does not, therefore she cannot $commandName them."
-		}
+		respond { content = translations.lilyNoRole.translate(commandName) }
 		return null
 	} else if ((member.getTopRole()?.getPosition() ?: 0) > (self.getTopRole()?.getPosition() ?: 0)) {
-		respond {
-			content = "This users highest role is above Lily's, therefore she cannot $commandName them."
-		}
+		respond { content = translations.userHigher.translate(commandName) }
 		return null
 	}
 
