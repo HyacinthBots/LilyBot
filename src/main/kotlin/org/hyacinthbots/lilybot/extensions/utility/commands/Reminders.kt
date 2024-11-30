@@ -482,7 +482,7 @@ class Reminders : Extension() {
 		// Doing this status ping in here as this is an already running scheduler and can easily have this added
 		// to avoid duplicating the scheduler. This should always ping if the bots up too so why make another
 		statusLogger.debug { "Pinging!" }
-		statusClient.post(statusEnv)
+		statusEnv?.let { statusClient.post(it) }
 		// End status ping
 		val reminders = ReminderCollection().getAllReminders()
 		val dueReminders =

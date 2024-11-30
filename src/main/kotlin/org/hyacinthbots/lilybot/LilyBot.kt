@@ -78,6 +78,10 @@ suspend fun main() {
 		database(true)
 		dataAdapter(::MongoDBDataAdapter)
 
+		kord {
+			stackTraceRecovery = true
+		}
+
 		members {
 			lockMemberRequests = true // Collect members one at a time to avoid hitting rate limits
 			all()

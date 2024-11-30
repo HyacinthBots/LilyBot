@@ -23,6 +23,6 @@ val SENTRY_DSN = envOrNull("SENTRY_DSN")
 val ENVIRONMENT = env("ENVIRONMENT")
 
 /** URL to ping to indicate uptime.*/
-val statusEnv = env("STATUS_URL")
+val statusEnv = envOrNull("STATUS_URL")
 
 const val HYACINTH_GITHUB: String = "https://github.com/HyacinthBots"
