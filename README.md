@@ -11,6 +11,20 @@
 
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/HyacinthBots/LilyBot/latest/develop?include_prereleases) ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/HyacinthBots/LilyBot/develop?label=Commit%20Activity)
 
+---
+
+### Translation Status
+
+<a href="https://hosted.weblate.org/engage/lilybot/">
+<img src="https://hosted.weblate.org/widget/lilybot/287x66-black.png" alt="Translation status" />
+</a>
+
+You can contribute to the translations via [this link](https://hosted.weblate.org/engage/lilybot/)
+
+Translations are hosted on [weblate](https://hosted.weblate.org)
+
+---
+
 ## About
 LilyBot, or Lily, is a multipurpose Discord bot. Lily handles moderation, utility, link filtering, and much, much more. Lily is canonically transfem and uses she/her or it/its pronouns.
 
@@ -52,3 +66,9 @@ These days, Lily is primarily developed by [NoComment](https://github.com/NoComm
 ### Contributors
 ![GitHub contributors](https://img.shields.io/github/contributors/HyacinthBots/LilyBot?label=Total%20Contributors)
 ![contributors](https://contrib.rocks/image?repo=HyacinthBots/LilyBot)
+
+### Translation Status
+
+<a href="https://hosted.weblate.org/engage/lilybot/">
+<img src="https://hosted.weblate.org/widget/lilybot/287x66-black.png" alt="Translation status" />
+</a>
