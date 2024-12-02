@@ -16,7 +16,7 @@
 ### Translation Status
 
 <a href="https://hosted.weblate.org/engage/lilybot/">
-<img src="https://hosted.weblate.org/widget/lilybot/287x66-black.png" alt="Translation status" />
+<img src="https://hosted.weblate.org/widget/lilybot/lilybot-translations/287x66-black.png" alt="Translation status" />
 </a>
 
 You can contribute to the translations via [this link](https://hosted.weblate.org/engage/lilybot/)
