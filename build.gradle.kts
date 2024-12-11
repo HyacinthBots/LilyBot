@@ -83,6 +83,7 @@ kordEx {
 	addDependencies = false
 	addRepositories = false
 	kordExVersion = libs.versions.kord.extensions
+	ignoreIncompatibleKotlinVersion = true
 
 	bot {
 		dataCollection(DataCollection.None)
