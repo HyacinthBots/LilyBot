@@ -82,6 +82,8 @@ class MessageDelete : Extension() {
 			}
 
 			action {
+				if (event.messages.isEmpty()) return@action
+
 				val messageLog =
 					getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, event.getGuildOrNull()!!) ?: return@action
 
