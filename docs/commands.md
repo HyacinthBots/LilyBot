@@ -18,6 +18,7 @@ None
 **Required Member Permissions**: Manage Channels
 
 * **Arguments**:
+	* `channel` - The target channel for auto-threading - Optional Channel
 	* `role` - The role, if any, to invite to threads created in this channel. - Optional Role
 	* `add-mods-and-role` - Whether to add moderators to the thread alongside the role - Defaulting Boolean
 	* `prevent-duplicates` - If users should be stopped from having multiple open threads in this channel. Default false. - Defaulting Boolean
@@ -58,6 +59,7 @@ None
 **Required Member Permissions**: Manage Channels
 
 * **Arguments**:
+	* `channel` - The target channel for auto-threading - Optional Channel
 	* `role` - A role to invite to threads in this channel - Optional Role
 
 ---
@@ -69,6 +71,7 @@ None
 **Required Member Permissions**: Manage Channels
 
 * **Arguments**:
+	* `channel` - The target channel for auto-threading - Optional Channel
 	* `role` - A role to invite to threads in this channel - Optional Role
 
 ---

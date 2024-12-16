@@ -8,18 +8,12 @@ import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
-import dev.kord.core.behavior.channel.threads.edit
-import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.Role
-import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.TextChannel
-import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.entity.channel.thread.ThreadChannel
-import dev.kord.core.event.channel.thread.ThreadChannelCreateEvent
-import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.DISCORD_BLACK
 import dev.kordex.core.checks.anyGuild
@@ -28,6 +22,7 @@ import dev.kordex.core.commands.Arguments
 import dev.kordex.core.commands.application.slash.ephemeralSubCommand
 import dev.kordex.core.commands.converters.impl.channel
 import dev.kordex.core.commands.converters.impl.defaultingBoolean
+import dev.kordex.core.commands.converters.impl.optionalChannel
 import dev.kordex.core.commands.converters.impl.optionalRole
 import dev.kordex.core.components.forms.ModalForm
 import dev.kordex.core.extensions.Extension
@@ -46,7 +41,6 @@ import kotlinx.datetime.Clock
 import lilybot.i18n.Translations
 import org.hyacinthbots.docgenerator.subCommandAdditionalDocumentation
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
 import org.hyacinthbots.lilybot.database.entities.AutoThreadingData
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -128,7 +122,7 @@ class AutoThreading : Extension() {
 					AutoThreadingCollection().setAutoThread(
 						AutoThreadingData(
 							guildId = guild!!.id,
-							channelId = channel.id,
+							channelId = arguments.targetChannel?.id ?: channel.id,
 							roleId = arguments.role?.id,
 							preventDuplicates = arguments.preventDuplicates,
 							archive = arguments.archive,
@@ -149,7 +143,7 @@ class AutoThreading : Extension() {
 						description = null
 						field {
 							name = obj.channel.translate()
-							value = channel.mention
+							value = arguments.targetChannel?.mention ?: channel.mention
 							inline = true
 						}
 						field {
@@ -371,7 +365,9 @@ class AutoThreading : Extension() {
 				}
 
 				action {
-					val autoThread = AutoThreadingCollection().getSingleAutoThread(event.interaction.channelId)
+					val autoThread = AutoThreadingCollection().getSingleAutoThread(
+						arguments.targetChannel?.id ?: event.interaction.channelId
+					)
 					if (autoThread == null) {
 						respond {
 							content = Translations.Threads.AutoThreading.AddRoles.noThreaded.translate()
@@ -396,7 +392,9 @@ class AutoThreading : Extension() {
 					val updatedRoles = autoThread.extraRoleIds
 					updatedRoles.add(arguments.role!!.id)
 
-					AutoThreadingCollection().updateExtraRoles(event.interaction.channelId, updatedRoles)
+					AutoThreadingCollection().updateExtraRoles(
+						arguments.targetChannel?.id ?: event.interaction.channelId, updatedRoles
+					)
 
 					respond {
 						content = Translations.Threads.AutoThreading.AddRoles.added.translate(arguments.role!!.mention)
@@ -422,7 +420,9 @@ class AutoThreading : Extension() {
 				}
 
 				action {
-					val autoThread = AutoThreadingCollection().getSingleAutoThread(event.interaction.channelId)
+					val autoThread = AutoThreadingCollection().getSingleAutoThread(
+						arguments.targetChannel?.id ?: event.interaction.channelId
+					)
 					if (autoThread == null) {
 						respond {
 							content = Translations.Threads.AutoThreading.AddRoles.noThreaded.translate()
@@ -440,7 +440,9 @@ class AutoThreading : Extension() {
 					val updatedRoles = autoThread.extraRoleIds
 					updatedRoles.remove(arguments.role!!.id)
 
-					AutoThreadingCollection().updateExtraRoles(event.interaction.channelId, updatedRoles)
+					AutoThreadingCollection().updateExtraRoles(
+						arguments.targetChannel?.id ?: event.interaction.channelId, updatedRoles
+					)
 
 					respond {
 						content =
@@ -497,32 +499,14 @@ class AutoThreading : Extension() {
 				onMessageSend(event, event.channel.id, event.getMessageOrNull())
 			}
 		}
-
-		event<ThreadChannelCreateEvent> {
-			check {
-				anyGuild()
-				failIf {
-					event.channel.ownerId == kord.selfId ||
-						event.channel.member != null
-				}
-			}
-
-			action {
-				if (event.channel.getLastMessage()?.withStrategy(EntitySupplyStrategy.rest) != null) return@action
-
-				val thread = event.channel.asChannelOfOrNull<TextChannelThread>() ?: return@action
-				val options = AutoThreadingCollection().getSingleAutoThread(thread.parentId) ?: return@action
-
-				handleThreadCreation(
-					options,
-					thread,
-					event.channel.owner.asUser()
-				)
-			}
-		}
 	}
 
 	inner class AutoThreadingArgs : Arguments() {
+		val targetChannel by optionalChannel {
+			name = Translations.Threads.AutoThreading.Arguments.Channel.name
+			description = Translations.Threads.AutoThreading.Arguments.TargetChannel.description
+		}
+
 		val role by optionalRole {
 			name = Translations.Threads.AutoThreading.Arguments.Role.name
 			description = Translations.Threads.AutoThreading.Arguments.Role.description
@@ -566,6 +550,11 @@ class AutoThreading : Extension() {
 	}
 
 	inner class ExtraRolesArgs : Arguments() {
+		val targetChannel by optionalChannel {
+			name = Translations.Threads.AutoThreading.Arguments.Channel.name
+			description = Translations.Threads.AutoThreading.Arguments.TargetChannel.description
+		}
+
 		val role by optionalRole {
 			name = Translations.Threads.AutoThreading.Arguments.Role.name
 			description = Translations.Threads.AutoThreading.Arguments.ExtraRole.description
@@ -668,61 +657,10 @@ class AutoThreading : Extension() {
 
 		ThreadsCollection().setThreadOwner(event.getGuild().id, thread.id, event.member!!.id, channel.id)
 
-		handleThreadCreation(
+		ModThreadInviting().handleThreadCreation(
 			options,
 			thread,
 			message?.author ?: memberFromPk!!.asUser()
 		)
-	}
-
-	private suspend inline fun handleThreadCreation(
-		inputOptions: AutoThreadingData,
-		inputThread: TextChannelThread,
-		inputUser: User
-	) {
-		val threadMessage = inputThread.createMessage(if (inputOptions.mention) inputUser.mention else "Placeholder")
-
-		if (inputOptions.roleId != null) {
-			val role = inputThread.guild.getRole(inputOptions.roleId)
-			val moderatorRoleId = ModerationConfigCollection().getConfig(inputThread.guildId)?.role
-			var moderatorRole: Role? = null
-			if (moderatorRoleId != null) {
-				moderatorRole = inputThread.guild.getRole(moderatorRoleId)
-			}
-			var mentions = ""
-			inputOptions.extraRoleIds.forEach {
-				mentions += inputThread.guild.getRole(it).mention
-			}
-
-			if (moderatorRole != null && moderatorRole.mentionable && inputOptions.addModsAndRole) {
-				threadMessage.edit {
-					content = role.mention + mentions + moderatorRole.mention
-				}
-			} else {
-				threadMessage.edit {
-					content = role.mention + mentions
-				}
-			}
-		}
-
-		if (inputOptions.creationMessage != null) {
-			threadMessage.edit {
-				content =
-					if (inputOptions.mention) {
-						inputUser.mention + " " + inputOptions.creationMessage
-					} else {
-						inputOptions.creationMessage
-					}
-			}
-		} else {
-			threadMessage.delete()
-		}
-
-		if (inputOptions.archive) {
-			inputThread.edit {
-				archived = true
-				reason = "Initial thread creation"
-			}
-		}
 	}
 }

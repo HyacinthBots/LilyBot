@@ -20,6 +20,7 @@ group = "org.hyacinthbots.lilybot"
 version = "5.0.0"
 
 val className = "org.hyacinthbots.lilybot.LilyBotKt"
+val javaVersion = "21"
 
 repositories {
 	mavenCentral()
@@ -108,7 +109,7 @@ gitHooks {
 tasks {
 	withType<KotlinCompile> {
 		compilerOptions {
-			jvmTarget.set(JvmTarget.fromTarget("21"))
+			jvmTarget.set(JvmTarget.fromTarget(javaVersion))
 			languageVersion.set(KotlinVersion.fromVersion(libs.plugins.kotlin.get().version.requiredVersion.substringBeforeLast(".")))
 			incremental = true
 			freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
@@ -116,8 +117,8 @@ tasks {
 	}
 
 	java {  // Should match the Kotlin compiler options ideally
-		sourceCompatibility = JavaVersion.toVersion("21")
-		targetCompatibility = JavaVersion.toVersion("21")
+		sourceCompatibility = JavaVersion.toVersion(javaVersion)
+		targetCompatibility = JavaVersion.toVersion(javaVersion)
 	}
 
 	jar {
