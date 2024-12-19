@@ -64,23 +64,24 @@ class ModerationEvents : Extension() {
 							ModerationAction.SOFT_BAN -> Translations.Events.Moderation.Ban.softBanned.translate()
 							ModerationAction.TEMP_BAN -> Translations.Events.Moderation.Ban.tempBanned.translate()
 							else -> null // Theoretically this should never occur but the compiler cries otherwise
-						} + Translations.Events.Moderation.Ban.aUser.translate()
+						} + " " + Translations.Events.Moderation.Ban.aUser.translate()
 
-						description = Translations.Events.Moderation.Ban.banDescription.translate(event.user.mention) +
-							if (existingAction.data.reason?.contains("quick ban", true) == false) {
-								when (existingAction.actionType) {
-									ModerationAction.BAN -> Translations.Events.Moderation.Ban.banned.translate()
-									ModerationAction.SOFT_BAN -> Translations.Events.Moderation.Ban.softBanned.translate()
-									ModerationAction.TEMP_BAN -> Translations.Events.Moderation.Ban.tempBanned.translate()
-									else -> null // Again should theoretically never occur, but compiler
+						description =
+							Translations.Events.Moderation.Ban.banDescription.translate(event.user.mention) + " " +
+								if (existingAction.data.reason?.contains("quick ban", true) == false) {
+									when (existingAction.actionType) {
+										ModerationAction.BAN -> Translations.Events.Moderation.Ban.banned.translate()
+										ModerationAction.SOFT_BAN -> Translations.Events.Moderation.Ban.softBanned.translate()
+										ModerationAction.TEMP_BAN -> Translations.Events.Moderation.Ban.tempBanned.translate()
+										else -> null // Again should theoretically never occur, but compiler
+									}?.lowercase()
+								} else {
+									when (existingAction.actionType) {
+										ModerationAction.BAN -> existingAction.data.reason
+										ModerationAction.SOFT_BAN -> existingAction.data.reason
+										else -> null
+									}
 								}
-							} else {
-								when (existingAction.actionType) {
-									ModerationAction.BAN -> existingAction.data.reason
-									ModerationAction.SOFT_BAN -> existingAction.data.reason
-									else -> null
-								}
-							}
 						baseModerationEmbed(
 							existingAction.data.reason,
 							event.user,
@@ -121,7 +122,8 @@ class ModerationEvents : Extension() {
 				} else {
 					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.getGuild())?.createEmbed {
 						title =
-							Translations.Events.Moderation.Ban.banned.translate() + Translations.Events.Moderation.Ban.aUser.translate()
+							Translations.Events.Moderation.Ban.banned.translate() + " " +
+								Translations.Events.Moderation.Ban.aUser.translate()
 						description =
 							Translations.Events.Moderation.Ban.defaultBanDescription.translate(event.user.mention)
 						baseModerationEmbed(event.getBan().reason, event.user, null)
@@ -159,12 +161,12 @@ class ModerationEvents : Extension() {
 						} else {
 							Translations.Events.Moderation.Unban.unbanned
 						}.translate()
-						description = Translations.Events.Moderation.Unban.unbannedDesc.translate(event.user.mention) +
+						description = Translations.Events.Moderation.Unban.description.translate(event.user.mention) +
 							"${
 								if (isTempUnban) {
 									Translations.Events.Moderation.Unban.tempRemovedDesc
 								} else {
-									Translations.Events.Moderation.Unban.unbanned
+									Translations.Events.Moderation.Unban.unbannedDesc
 								}.translate()
 							}\n" +
 							"${event.user.id} (${event.user.username})"
@@ -196,6 +198,15 @@ class ModerationEvents : Extension() {
 						event.guildId,
 						event.user.id
 					)
+				} else {
+					getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, event.getGuild())?.createEmbed {
+						title = Translations.Events.Moderation.Unban.unbanned.translate()
+						description = Translations.Events.Moderation.Unban.description.translate(event.user.mention) +
+							Translations.Events.Moderation.Unban.unbannedDesc.translate() +
+							"\n${event.user.id} (${event.user.username})"
+						timestamp = Clock.System.now()
+						color = DISCORD_GREEN
+					}
 				}
 			}
 		}
