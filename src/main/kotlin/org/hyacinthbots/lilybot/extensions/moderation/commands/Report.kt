@@ -27,6 +27,7 @@ import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
+import org.hyacinthbots.lilybot.utils.trimmedContents
 
 private val noAccess = Translations.Moderation.Report.noAccess.translate()
 
@@ -180,7 +181,7 @@ class Report : Extension() {
 									value =
 										reportedMessage.content.ifEmpty {
 											Translations.Basic.UnableTo.getContents.translate()
-										}
+										}.trimmedContents()!!
 									inline = true
 								}
 								field {
@@ -190,7 +191,7 @@ class Report : Extension() {
 								}
 								field {
 									name = translations.embedReasonField.translate()
-									value = reason
+									value = reason.trimmedContents()!!
 								}
 								footer {
 									text = translations.embedReportedBy.translate(user.asUserOrNull()?.username)
