@@ -68,7 +68,10 @@ dependencies {
 	implementation(libs.kotlin.stdlib)
 
 	// Logging dependencies
+	implementation(libs.groovy)
+	implementation(libs.jansi)
 	implementation(libs.logback)
+	implementation(libs.logback.groovy)
 	implementation(libs.logging)
 
 	// Github API
