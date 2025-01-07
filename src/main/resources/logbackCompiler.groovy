@@ -1,4 +1,10 @@
+tokensAcceptList = [
+        280, // LEFT_SHIFT
+]
+
 importsAcceptList = [
+        'org.hyacinthbots.lilybot.utils.DiscordLogAppender',
+
         'ch.qos.logback.core.testUtil.SampleConverter',
 
         'ch.qos.logback.core.testUtil.StringListAppender',
@@ -448,5 +454,9 @@ importsAcceptList = [
         'java.lang.System.getProperty',
         'java.lang.System.getenv',
         'java.util.Map.getOrDefault',
-        'com.kotlindiscord.kord.extensions.utils._EnvironmentKt.envOrNull',
+        'java.util.ArrayList',
+        'java.util.ArrayList.add',
+        'dev.kordex.core.utils._EnvironmentKt.envOrNull',
+        'org.hyacinthbots.lilybot.utils._ConstantsKt.getLOGGING_ENV',
+        'org.hyacinthbots.lilybot.utils._ConstantsKt.getLOGGING_URL'
 ]

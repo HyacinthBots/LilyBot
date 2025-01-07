@@ -25,4 +25,6 @@ val ENVIRONMENT = env("ENVIRONMENT")
 /** URL to ping to indicate uptime.*/
 val statusEnv = envOrNull("STATUS_URL")
 
+val DEV_ID = envOrNull("DEV_ID")
+
 const val HYACINTH_GITHUB: String = "https://github.com/HyacinthBots"
