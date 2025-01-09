@@ -333,6 +333,7 @@ None
 
 * **Arguments**:
 	* `presence` - The new value Lily's presence should be set to - String
+	* `presence-type` - The type of presence to use. E.G.: Playing / Watching / Listening to - Defaulting Listening
 
 ---
 ### Command name: `status reset`

@@ -19,9 +19,10 @@ import dev.kordex.core.DISCORD_BLACK
 import dev.kordex.core.DISCORD_BLURPLE
 import dev.kordex.core.DISCORD_WHITE
 import dev.kordex.core.checks.anyGuild
-import dev.kordex.core.checks.guildFor
 import dev.kordex.core.checks.hasPermission
 import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.application.slash.converters.ChoiceEnum
+import dev.kordex.core.commands.application.slash.converters.impl.defaultingEnumChoice
 import dev.kordex.core.commands.application.slash.ephemeralSubCommand
 import dev.kordex.core.commands.converters.impl.defaultingBoolean
 import dev.kordex.core.commands.converters.impl.defaultingColor
@@ -37,6 +38,7 @@ import dev.kordex.core.components.forms.ModalForm
 import dev.kordex.core.components.linkButton
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.ephemeralSlashCommand
+import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.utils.getJumpUrl
 import dev.kordex.core.utils.scheduling.Scheduler
 import dev.kordex.core.utils.scheduling.Task
@@ -356,23 +358,29 @@ class ModUtilities : Extension() {
 				}
 
 				action {
-					val config = ModerationConfigCollection().getConfig(guildFor(event)!!.id)!!
-					val actionLog = guild!!.getChannelOfOrNull<GuildMessageChannel>(config.channel!!)
+					val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 
 					val translations = Translations.Moderation.ModUtilities.Status.Set
 
 					// Update the presence in the action
 					this@ephemeralSlashCommand.kord.editPresence {
 						status = PresenceStatus.Online
-						playing(arguments.presenceArgument)
+						when (arguments.presenceType) {
+							PresenceType.Nothing -> state = arguments.presenceArgument
+							PresenceType.Playing -> playing(arguments.presenceArgument)
+							PresenceType.Listening -> listening(arguments.presenceArgument)
+							PresenceType.Streaming -> streaming(arguments.presenceArgument, "")
+							PresenceType.Watching -> watching(arguments.presenceArgument)
+							PresenceType.Competing -> competing(arguments.presenceArgument)
+						}
 					}
 
 					// Store the new presence in the database for if there is a restart
-					StatusCollection().setStatus(arguments.presenceArgument)
+					StatusCollection().setStatus(arguments.presenceType, arguments.presenceArgument)
 
 					respond { content = translations.response.translate(arguments.presenceArgument) }
 
-					actionLog?.createEmbed {
+					utilityLog?.createEmbed {
 						title = translations.embedTitle.translate()
 						description = translations.embedDesc.translate(arguments.presenceArgument)
 						footer {
@@ -400,7 +408,7 @@ class ModUtilities : Extension() {
 					val translations = Translations.Moderation.ModUtilities.Status.Reset
 
 					// Store the new presence in the database for if there is a restart
-					StatusCollection().setStatus(null)
+					StatusCollection().setStatus(null, null)
 
 					updateDefaultPresence()
 					val guilds = this@ephemeralSlashCommand.kord.guilds.toList().size
@@ -593,6 +601,21 @@ class ModUtilities : Extension() {
 			name = Translations.Moderation.ModUtilities.Status.Arguments.Presence.name
 			description = Translations.Moderation.ModUtilities.Status.Arguments.Presence.description
 		}
+
+		val presenceType by defaultingEnumChoice<PresenceType> {
+			name = Translations.Moderation.ModUtilities.Status.Arguments.PresenceType.name
+			description = Translations.Moderation.ModUtilities.Status.Arguments.PresenceType.description
+			typeName = PresenceType.Listening.readableName
+			defaultValue = PresenceType.Listening
+			choices = mutableMapOf(
+				PresenceType.Nothing.readableName to PresenceType.Nothing,
+				PresenceType.Playing.readableName to PresenceType.Playing,
+				PresenceType.Listening.readableName to PresenceType.Listening,
+				PresenceType.Streaming.readableName to PresenceType.Streaming,
+				PresenceType.Watching.readableName to PresenceType.Watching,
+				PresenceType.Competing.readableName to PresenceType.Competing
+			)
+		}
 	}
 
 	inner class ResetModal : ModalForm() {
@@ -603,5 +626,14 @@ class ModUtilities : Extension() {
 			placeholder = Translations.Moderation.ModUtilities.Reset.Modal.Confirmation.placeholder
 			required = true
 		}
+	}
+
+	enum class PresenceType(override val readableName: Key) : ChoiceEnum {
+		Nothing(Translations.Moderation.ModUtilities.Status.Arguments.PresenceType.nothing),
+		Playing(Translations.Moderation.ModUtilities.Status.Arguments.PresenceType.playing),
+		Listening(Translations.Moderation.ModUtilities.Status.Arguments.PresenceType.listening),
+		Streaming(Translations.Moderation.ModUtilities.Status.Arguments.PresenceType.streaming),
+		Watching(Translations.Moderation.ModUtilities.Status.Arguments.PresenceType.watching),
+		Competing(Translations.Moderation.ModUtilities.Status.Arguments.PresenceType.competing)
 	}
 }

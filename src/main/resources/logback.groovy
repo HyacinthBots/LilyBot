@@ -4,6 +4,7 @@
 * A copy of this license can be found at https://mozilla.org/MPL/2.0/.
 */
 
+// I'd love to optimise imports but these are actually used, shush idea
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.core.joran.spi.ConsoleTarget
 import java.util.ArrayList
@@ -15,7 +16,7 @@ def logUrl = System.getenv().getOrDefault("DISCORD_LOGGER_URL", null)
 def defaultLevel = INFO
 def defaultTarget = ConsoleTarget.SystemOut
 
-if (environment == "dev") {
+if (environment == "development") {
     defaultLevel = DEBUG
     defaultTarget = ConsoleTarget.SystemErr
 

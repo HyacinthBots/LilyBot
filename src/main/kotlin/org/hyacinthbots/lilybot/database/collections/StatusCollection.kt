@@ -3,6 +3,7 @@ package org.hyacinthbots.lilybot.database.collections
 import dev.kordex.core.koin.KordExKoinComponent
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.StatusData
+import org.hyacinthbots.lilybot.extensions.moderation.commands.ModUtilities
 import org.koin.core.component.inject
 
 /**
@@ -26,18 +27,18 @@ class StatusCollection : KordExKoinComponent {
 	 * @author NoComment1105
 	 * @since 3.0.0
 	 */
-	suspend inline fun getStatus(): String? =
-		collection.findOne()?.status
+	suspend inline fun getStatus(): StatusData? = collection.findOne()
 
 	/**
 	 * Add the given [newStatus] to the database.
 	 *
+	 * @param statusType The [ModUtilities.PresenceType] for the new presence
 	 * @param newStatus The new status you wish to set
 	 * @author NoComment1105
 	 * @since 3.0.0
 	 */
-	suspend inline fun setStatus(newStatus: String?) {
+	suspend inline fun setStatus(statusType: ModUtilities.PresenceType?, newStatus: String?) {
 		collection.deleteOne()
-		collection.insertOne(StatusData(newStatus))
+		collection.insertOne(StatusData(statusType?.readableName?.key, newStatus))
 	}
 }

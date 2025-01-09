@@ -1,6 +1,7 @@
 package org.hyacinthbots.lilybot.utils
 
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
@@ -42,6 +43,7 @@ import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.database.collections.WarnCollection
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
+import org.hyacinthbots.lilybot.extensions.moderation.commands.ModUtilities.PresenceType
 import org.koin.dsl.bind
 
 @PublishedApi
@@ -191,7 +193,19 @@ fun String?.trimmedContents(desiredLength: Int): String? {
  * @since 3.4.5
  */
 suspend inline fun Extension.updateDefaultPresence() {
-	if (StatusCollection().getStatus() != null) {
+	val dbStatus = StatusCollection().getStatus()
+	if (dbStatus?.status != null) {
+		kord.editPresence {
+			status = PresenceStatus.Online
+			when (dbStatus.statusType) {
+				PresenceType.Nothing.readableName.key -> state = dbStatus.status
+				PresenceType.Playing.readableName.key -> playing(dbStatus.status)
+				PresenceType.Listening.readableName.key -> listening(dbStatus.status)
+				PresenceType.Streaming.readableName.key -> streaming(dbStatus.status, "")
+				PresenceType.Watching.readableName.key -> watching(dbStatus.status)
+				PresenceType.Competing.readableName.key -> competing(dbStatus.status)
+			}
+		}
 		return
 	}
 
