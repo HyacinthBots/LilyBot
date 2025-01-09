@@ -87,7 +87,7 @@ class ModerationCommands : Extension() {
 
 	@OptIn(DoNotChain::class)
 	override suspend fun setup() {
-		tempBanTask = tempBanScheduler.schedule(120, repeat = true, callback = ::removeTempBans)
+		tempBanTask = tempBanScheduler.schedule(120, repeat = true, callback = ::removeTempBans, name = "Temp ban task")
 		ephemeralMessageCommand {
 			name = Translations.Moderation.ModCommands.MessageCommand.name
 			locking = true

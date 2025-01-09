@@ -68,7 +68,7 @@ class Reminders : Extension() {
 	private lateinit var reminderTask: Task
 
 	override suspend fun setup() {
-		reminderTask = reminderScheduler.schedule(30, repeat = true, callback = ::postReminders)
+		reminderTask = reminderScheduler.schedule(30, repeat = true, callback = ::postReminders, name = "Reminders task")
 
 		publicSlashCommand {
 			name = Translations.Utility.Reminders.Reminder.name

@@ -35,7 +35,7 @@ class StartupHooks : Extension() {
 	private lateinit var cleanupTask: Task
 
 	override suspend fun setup() {
-		cleanupTask = cleanupScheduler.schedule(1.days, repeat = true, callback = ::cleanup)
+		cleanupTask = cleanupScheduler.schedule(1.days, repeat = true, callback = ::cleanup, name = "Cleanup task")
 
 		event<ReadyEvent> {
 			action {

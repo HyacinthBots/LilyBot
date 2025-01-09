@@ -79,7 +79,9 @@ class ModUtilities : Extension() {
 	private lateinit var presenceTask: Task
 
 	override suspend fun setup() {
-		presenceTask = presenceScheduler.schedule(15.minutes, repeat = true, callback = ::updateDefaultPresence)
+		presenceTask = presenceScheduler.schedule(
+			15.minutes, repeat = true, callback = ::updateDefaultPresence, name = "Presence task"
+		)
 
 		/**
 		 * Say Command
@@ -141,7 +143,11 @@ class ModUtilities : Extension() {
 						}
 						field {
 							name = translations.typeField.translate()
-							value = if (arguments.embed) { translations.embedType } else { translations.messageType }.translate()
+							value = if (arguments.embed) {
+								translations.embedType
+							} else {
+								translations.messageType
+							}.translate()
 							inline = true
 						}
 						footer {
@@ -288,7 +294,8 @@ class ModUtilities : Extension() {
 							field {
 								name = translations.embedNew.translate()
 								// The new content, if null the old content, if null none
-								value = "```${arguments.newContent ?: oldContent ?: Translations.Basic.none.translate()}```"
+								value =
+									"```${arguments.newContent ?: oldContent ?: Translations.Basic.none.translate()}```"
 							}
 							field {
 								name = translations.embedOldColor.translate()
