@@ -186,7 +186,7 @@ class AutoThreading : Extension() {
 				}
 			}
 
-			ephemeralSubCommand {
+			ephemeralSubCommand(::AutoThreadingRemoveArgs) {
 				name = Translations.Threads.AutoThreading.Disable.name
 				description = Translations.Threads.AutoThreading.Disable.description
 
@@ -209,7 +209,7 @@ class AutoThreading : Extension() {
 					}
 
 					// Remove the channel from the database as auto-threaded
-					AutoThreadingCollection().deleteAutoThread(channel.id)
+					AutoThreadingCollection().deleteAutoThread(arguments.targetChannel?.id ?: channel.id)
 
 					// Respond to the user
 					respond {
@@ -225,7 +225,7 @@ class AutoThreading : Extension() {
 
 						field {
 							name = Translations.Threads.AutoThreading.Disable.Embed.channel.translate()
-							value = channel.mention
+							value = arguments.targetChannel?.mention ?: channel.mention
 							inline = true
 						}
 						footer {
@@ -546,6 +546,13 @@ class AutoThreading : Extension() {
 			name = Translations.Threads.AutoThreading.Arguments.Message.name
 			description = Translations.Threads.AutoThreading.Arguments.Message.description
 			defaultValue = false
+		}
+	}
+
+	inner class AutoThreadingRemoveArgs : Arguments() {
+		val targetChannel by optionalChannel {
+			name = Translations.Threads.AutoThreading.Arguments.Channel.name
+			description = Translations.Threads.AutoThreading.Arguments.TargetChannel.description
 		}
 	}
 
