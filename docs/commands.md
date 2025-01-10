@@ -34,7 +34,8 @@ None
 **Required Member Permissions**: Manage Channels
 
 * **Arguments**:
-None
+	* `channel` - The target channel for auto-threading - Optional Channel
+
 ---
 ### Command name: `auto-threading list`
 **Description**: List all the auto-threaded channels in this server, if any.

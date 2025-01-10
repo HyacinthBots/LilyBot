@@ -3,8 +3,10 @@
 package org.hyacinthbots.lilybot
 
 import dev.kord.common.entity.Permission
+import dev.kord.gateway.DefaultGateway
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import dev.kord.gateway.ratelimit.IdentifyRateLimiter
 import dev.kord.rest.builder.message.actionRow
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.ExtensibleBot
@@ -18,6 +20,9 @@ import dev.kordex.modules.func.phishing.extPhishing
 import dev.kordex.modules.func.welcome.welcomeChannel
 import dev.kordex.modules.pluralkit.extPluralKit
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.java.Java
+import io.ktor.client.plugins.websocket.WebSockets
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import lilybot.i18n.Translations
@@ -71,6 +76,10 @@ private val gitHubLogger = KotlinLogging.logger("GitHub Logger")
 
 val docFile = Path("./docs/commands.md")
 
+val javaClient = HttpClient(Java) {
+	install(WebSockets)
+}
+
 suspend fun main() {
 	val bot = ExtensibleBot(BOT_TOKEN) {
 		dataCollectionMode = DataCollection.None
@@ -80,6 +89,16 @@ suspend fun main() {
 
 		kord {
 			stackTraceRecovery = true
+
+			gateways { resources, shards ->
+				val rateLimiter = IdentifyRateLimiter(resources.maxConcurrency, defaultDispatcher)
+				shards.map {
+					DefaultGateway {
+						identifyRateLimiter = rateLimiter
+						client = javaClient
+					}
+				}
+			}
 		}
 
 		members {

@@ -13,7 +13,7 @@ import org.hyacinthbots.lilybot.utils.DiscordLogAppender
 def environment = System.getenv().getOrDefault("ENVIRONMENT", "production")
 def logUrl = System.getenv().getOrDefault("DISCORD_LOGGER_URL", null)
 
-def defaultLevel = TRACE
+def defaultLevel = INFO
 def defaultTarget = ConsoleTarget.SystemOut
 
 if (environment == "development") {

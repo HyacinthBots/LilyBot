@@ -81,6 +81,8 @@ dependencies {
 	implementation(libs.kmongo)
 
 	implementation(libs.docgenerator)
+
+	implementation(libs.ktor.java)
 }
 
 kordEx {

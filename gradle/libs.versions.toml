@@ -18,6 +18,7 @@ kmongo = "5.2.0"
 docgenerator = "0.3.0-rc.2"
 groovy = "3.0.22"
 jansi = "2.4.1"
+ktor = "3.0.3"
 
 [libraries]
 kord-extensions-core = { module = "dev.kordex:kord-extensions", version.ref = "kord-extensions" }
@@ -36,6 +37,7 @@ github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
 kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
 detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
 docgenerator = { module = "org.hyacinthbots:doc-generator", version.ref = "docgenerator" }
+ktor-java = { module = "io.ktor:ktor-client-java", version.ref = "ktor" }
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
