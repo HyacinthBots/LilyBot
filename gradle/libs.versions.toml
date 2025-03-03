@@ -16,7 +16,7 @@ logback-groovy = "1.14.5"
 github-api = "1.326"
 kmongo = "5.2.0"
 docgenerator = "0.3.0-rc.2"
-groovy = "3.0.22"
+groovy = "3.0.24"
 jansi = "2.4.1"
 
 [libraries]
