@@ -664,12 +664,13 @@ None
 ### Command name: `tag-create`
 **Description**: Create a tag for your guild! Use /tag-help for more info.
 
+**Additional Information**: This command creates a modal for you to enter the tag value into
+
 **Required Member Permissions**: Moderate Members
 
 * Arguments:
 	* `name` - The name of the tag - String
 	* `title` - The title of the tag embed - String
-	* `value` - The content of the tag embed you're making - String
 	* `appearance` - The appearance of the tag embed you're making - String Choice
 
 ---
@@ -685,13 +686,14 @@ None
 ### Command name: `tag-edit`
 **Description**: Edit a tag in your guild. Use /tag-help for more info.
 
+**Additional Information**: This command creates a modal with the original value in to allow you to edit it directly.
+
 **Required Member Permissions**: Moderate Members
 
 * Arguments:
 	* `name` - The name of the tag - String
 	* `new-name` - The new name for the tag - Optional String
 	* `new-title` - The new title for the tag - Optional String
-	* `new-value` - The new value for the tag - Optional String
 	* `new-appearance` - The new appearance for the tag you're editing - Optional String
 
 ---
