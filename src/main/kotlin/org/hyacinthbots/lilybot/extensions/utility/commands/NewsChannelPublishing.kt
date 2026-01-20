@@ -23,11 +23,11 @@ import dev.kordex.core.extensions.event
 import dev.kordex.core.pagination.EphemeralResponsePaginator
 import dev.kordex.core.pagination.pages.Page
 import dev.kordex.core.pagination.pages.Pages
-import kotlinx.datetime.Clock
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import kotlin.time.Clock
 
 class NewsChannelPublishing : Extension() {
 	override val name = "news-channel-publishing"

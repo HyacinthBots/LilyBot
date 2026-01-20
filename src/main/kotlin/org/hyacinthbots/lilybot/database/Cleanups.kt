@@ -6,7 +6,6 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.request.KtorRequestException
 import dev.kordex.core.koin.KordExKoinComponent
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
 import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
@@ -26,6 +25,7 @@ import org.hyacinthbots.lilybot.database.entities.GuildLeaveTimeData
 import org.hyacinthbots.lilybot.database.entities.ThreadData
 import org.koin.core.component.inject
 import org.litote.kmongo.eq
+import kotlin.time.Clock
 
 /**
  * This object contains the Database clean up functions, for removing old data from the database that Lily no longer

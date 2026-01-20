@@ -15,7 +15,6 @@ import dev.kordex.core.checks.guildFor
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.event
 import dev.kordex.core.utils.botHasPermissions
-import kotlinx.datetime.Clock
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LeftMemberFlagCollection
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
@@ -26,6 +25,7 @@ import org.hyacinthbots.lilybot.utils.baseModerationEmbed
 import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
+import kotlin.time.Clock
 
 /**
  * Logs members joining and leaving a guild to the member log channel designated in the config for that guild.

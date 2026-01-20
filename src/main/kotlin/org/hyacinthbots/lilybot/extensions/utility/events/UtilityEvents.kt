@@ -33,10 +33,9 @@ import dev.kordex.core.DISCORD_YELLOW
 import dev.kordex.core.checks.anyGuild
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.event
-import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
-import kotlinx.datetime.Clock
+import dev.kordex.i18n.Key
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -45,6 +44,7 @@ import org.hyacinthbots.lilybot.utils.formatPermissionSet
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
 import kotlin.collections.forEach
+import kotlin.time.Clock
 
 /** A String identifier to use for the permission map to get allowed permissions. */
 private const val ALLOWED = "Allowed"
@@ -358,7 +358,7 @@ class UtilityEvents : Extension() {
 						value = event.isTemporary.toString()
 					}
 					footer {
-						text = Translations.Basic.createdBy.translate(event.getInviterAsMemberOrNull()?.mention)
+						text = Translations.Basic.createdBy.translate(event.getInviterAsMemberOrNull()?.username)
 						icon = event.getInviterAsMemberOrNull()?.avatar?.cdnUrl?.toUrl()
 					}
 					timestamp = Clock.System.now()
@@ -525,7 +525,11 @@ class UtilityEvents : Extension() {
 			}
 		}
 		event<ThreadChannelCreateEvent> {
-			check { anyGuild() }
+			check {
+				anyGuild()
+				// Prevent sending the event a second time when the bot is added to the thread
+				failIf { event.channel.member != null }
+			}
 			action {
 				// Do not log if the channel logging option is false
 				if (UtilityConfigCollection().getConfig(event.channel.guild.id)?.logChannelUpdates == false) return@action

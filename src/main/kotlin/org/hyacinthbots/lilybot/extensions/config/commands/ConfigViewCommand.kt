@@ -8,13 +8,13 @@ import dev.kordex.core.commands.Arguments
 import dev.kordex.core.commands.application.slash.SlashCommand
 import dev.kordex.core.commands.application.slash.converters.impl.stringChoice
 import dev.kordex.core.commands.application.slash.ephemeralSubCommand
-import kotlinx.datetime.Clock
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
 import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.interval
+import kotlin.time.Clock
 
 suspend fun SlashCommand<*, *, *>.configViewCommand() = ephemeralSubCommand(::ViewArgs) {
 	name = Translations.Config.View.name

@@ -41,7 +41,6 @@ import dev.kordex.core.utils.toDuration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import lilybot.i18n.Translations
@@ -51,6 +50,7 @@ import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.fitsEmbedField
 import org.hyacinthbots.lilybot.utils.interval
 import org.hyacinthbots.lilybot.utils.statusEnv
+import kotlin.time.Clock
 
 class Reminders : Extension() {
 	override val name = "reminders"

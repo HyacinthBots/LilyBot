@@ -50,7 +50,6 @@ import dev.kordex.core.utils.timeout
 import dev.kordex.core.utils.timeoutUntil
 import dev.kordex.core.utils.toDuration
 import dev.kordex.modules.pluralkit.api.PluralKit
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
@@ -71,6 +70,7 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.interval
 import org.hyacinthbots.lilybot.utils.isBotOrModerator
 import org.hyacinthbots.lilybot.utils.modCommandChecks
+import kotlin.time.Clock
 import kotlin.time.Duration
 
 class ModerationCommands : Extension() {

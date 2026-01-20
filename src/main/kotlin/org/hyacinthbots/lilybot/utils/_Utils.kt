@@ -14,7 +14,6 @@ import dev.kordex.core.utils.hasPermission
 import dev.kordex.core.utils.loadModule
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.count
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -278,9 +277,7 @@ suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
 			}
 
 			if (migrate) {
-				runBlocking {
-					db.migrate()
-				}
+				db.migrate()
 			}
 		}
 	}

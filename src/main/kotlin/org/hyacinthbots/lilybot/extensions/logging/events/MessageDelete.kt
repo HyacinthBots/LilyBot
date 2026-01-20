@@ -17,7 +17,6 @@ import dev.kordex.modules.pluralkit.events.ProxiedMessageDeleteEvent
 import dev.kordex.modules.pluralkit.events.UnProxiedMessageDeleteEvent
 import io.ktor.client.request.forms.ChannelProvider
 import io.ktor.utils.io.jvm.javaio.toByteReadChannel
-import kotlinx.datetime.Clock
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
@@ -26,6 +25,7 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
 import org.hyacinthbots.lilybot.utils.requiredConfigs
 import org.hyacinthbots.lilybot.utils.trimmedContents
+import kotlin.time.Clock
 
 /**
  * The class for logging deletion of messages to the guild message log.

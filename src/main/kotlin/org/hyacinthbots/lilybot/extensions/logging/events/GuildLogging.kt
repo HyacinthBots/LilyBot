@@ -5,9 +5,9 @@ import dev.kord.core.event.guild.GuildDeleteEvent
 import dev.kord.rest.request.KtorRequestException
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.event
-import kotlinx.datetime.Clock
 import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
 import java.util.concurrent.CancellationException
+import kotlin.time.Clock
 
 /**
  * This class is used to detect when Lily leaves or joins a guild, allowing us to delete old guild data, if Lily has

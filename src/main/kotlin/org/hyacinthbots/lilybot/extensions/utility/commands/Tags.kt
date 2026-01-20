@@ -32,16 +32,15 @@ import dev.kordex.core.components.forms.ModalForm
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.kordex.core.extensions.publicSlashCommand
-import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.pagination.EphemeralResponsePaginator
 import dev.kordex.core.pagination.pages.Page
 import dev.kordex.core.pagination.pages.Pages
 import dev.kordex.core.utils.suggestStringMap
 import dev.kordex.core.utils.waitFor
+import dev.kordex.i18n.Key
 import dev.kordex.modules.dev.unsafe.annotations.UnsafeAPI
 import dev.kordex.modules.dev.unsafe.commands.slash.InitialSlashCommandResponse
 import dev.kordex.modules.dev.unsafe.extensions.unsafeSlashCommand
-import kotlinx.datetime.Clock
 import lilybot.i18n.Translations
 import org.hyacinthbots.docgenerator.additionalDocumentation
 import org.hyacinthbots.lilybot.database.collections.TagsCollection
@@ -50,6 +49,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.trimmedContents
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 /**

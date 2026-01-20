@@ -13,7 +13,6 @@ import dev.kordex.core.commands.converters.impl.optionalString
 import dev.kordex.core.commands.converters.impl.string
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.publicSlashCommand
-import kotlinx.datetime.Clock
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.GithubCollection
 import org.hyacinthbots.lilybot.github
@@ -33,6 +32,7 @@ import java.text.DecimalFormat
 import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.pow
+import kotlin.time.Clock
 
 /**
  * This class contains the GitHub commands that allow users to look up Issues, Repositories and Users on GitHub through

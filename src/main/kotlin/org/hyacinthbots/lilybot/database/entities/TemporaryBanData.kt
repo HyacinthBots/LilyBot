@@ -1,8 +1,8 @@
 package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 /**
  * The data for temporary bans in a guild.

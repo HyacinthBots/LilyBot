@@ -63,7 +63,6 @@ suspend inline fun getLoggingChannelWithPerms(
 				ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().clearConfig(guildId)
 				ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().clearConfig(guildId)
 				ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().clearConfig(guildId)
-				else -> throw IllegalArgumentException("$channelType does not point to a channel.")
 			}
 			val informChannel = getSystemChannelWithPerms(guild as Guild) ?: getFirstUsableChannel(guild)
 			informChannel?.createMessage(

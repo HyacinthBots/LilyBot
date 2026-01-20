@@ -23,7 +23,6 @@ import dev.kordex.core.commands.converters.impl.optionalChannel
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.kordex.core.types.EphemeralInteractionContext
-import kotlinx.datetime.Clock
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LockedChannelCollection
 import org.hyacinthbots.lilybot.database.entities.LockedChannelData
@@ -31,6 +30,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.requiredConfigs
+import kotlin.time.Clock
 
 class LockingCommands : Extension() {
 	override val name = "locking-commands"

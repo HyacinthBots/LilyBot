@@ -1,7 +1,7 @@
 package org.hyacinthbots.lilybot.database.entities
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 /**
  * The data to help calculate bot uptime.

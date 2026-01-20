@@ -37,7 +37,6 @@ import dev.kordex.modules.pluralkit.api.PKMessage
 import dev.kordex.modules.pluralkit.events.PKMessageCreateEvent
 import dev.kordex.modules.pluralkit.events.ProxiedMessageCreateEvent
 import dev.kordex.modules.pluralkit.events.UnProxiedMessageCreateEvent
-import kotlinx.datetime.Clock
 import lilybot.i18n.Translations
 import org.hyacinthbots.docgenerator.subCommandAdditionalDocumentation
 import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
@@ -47,6 +46,7 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
 import org.hyacinthbots.lilybot.utils.botHasChannelPerms
 import org.hyacinthbots.lilybot.utils.canPingRole
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import kotlin.time.Clock
 
 class AutoThreading : Extension() {
 	override val name = "auto-threading"

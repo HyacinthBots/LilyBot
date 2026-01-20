@@ -1,10 +1,10 @@
 package org.hyacinthbots.lilybot.database.collections
 
 import dev.kordex.core.koin.KordExKoinComponent
-import kotlinx.datetime.Instant
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.entities.UptimeData
 import org.koin.core.component.inject
+import kotlin.time.Instant
 
 /**
  * Stores the functions for interacting with [the uptime database][UptimeData]. This class contains the functions for

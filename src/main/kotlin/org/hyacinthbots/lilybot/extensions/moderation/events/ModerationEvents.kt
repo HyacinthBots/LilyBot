@@ -14,7 +14,6 @@ import dev.kordex.core.extensions.event
 import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
 import dev.kordex.core.utils.timeoutUntil
-import kotlinx.datetime.Clock
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.LeftMemberFlagCollection
 import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
@@ -26,6 +25,7 @@ import org.hyacinthbots.lilybot.utils.dmNotificationStatusEmbedField
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
 import org.hyacinthbots.lilybot.utils.interval
+import kotlin.time.Clock
 
 class ModerationEvents : Extension() {
 	override val name: String = "moderation-events"
@@ -162,7 +162,7 @@ class ModerationEvents : Extension() {
 							Translations.Events.Moderation.Unban.unbanned
 						}.translate()
 						description = Translations.Events.Moderation.Unban.description.translate(event.user.mention) +
-							"${
+							" ${
 								if (isTempUnban) {
 									Translations.Events.Moderation.Unban.tempRemovedDesc
 								} else {
@@ -173,7 +173,7 @@ class ModerationEvents : Extension() {
 						if (existingAction.data.reason?.contains("**temporary-ban-expire**") == false) {
 							field {
 								name = Translations.Events.Moderation.Unban.reason.translate()
-								value = existingAction.data.reason.toString()
+								value = existingAction.data.reason
 							}
 						} else {
 							field {

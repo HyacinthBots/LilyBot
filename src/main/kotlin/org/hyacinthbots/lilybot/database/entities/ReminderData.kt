@@ -2,8 +2,8 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.DateTimePeriod
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 /**
  * THe data for reminders in a guild.

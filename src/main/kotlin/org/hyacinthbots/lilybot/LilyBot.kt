@@ -109,6 +109,11 @@ suspend fun main() {
 		// Enable the members intent to allow us to get accurate member counts for join logging
 		intents {
 			+Intent.GuildMembers
+			// Deny the following intents because Lily doesn't need to receive the events (yet:tm:)
+			-Intent.GuildVoiceStates
+			-Intent.GuildMessageTyping
+			-Intent.DirectMessageTyping
+			// End denied intents
 		}
 
 		about {

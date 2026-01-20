@@ -27,12 +27,12 @@ import dev.kordex.core.DISCORD_YELLOW
 import dev.kordex.core.koin.KordExKoinComponent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
 import org.koin.core.component.inject
+import kotlin.time.Instant
 
 class DiscordLogAppender : AppenderBase<ILoggingEvent>(), KordExKoinComponent {
 	lateinit var url: String
-	var level: Level = Level.ALL
+	var level: Int = Level.ALL_INT
 
 	private val webhookId: Snowflake by lazy {
 		val parts = url.split("/").toMutableList()
@@ -55,7 +55,7 @@ class DiscordLogAppender : AppenderBase<ILoggingEvent>(), KordExKoinComponent {
 
 	@Suppress("TooGenericExceptionCaught")
 	override fun append(eventObject: ILoggingEvent) {
-		if (!eventObject.level.isGreaterOrEqual(level)) {
+		if (!eventObject.level.isGreaterOrEqual(Level.toLevel(level))) {
 			return
 		}
 

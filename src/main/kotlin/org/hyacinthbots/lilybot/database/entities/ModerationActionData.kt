@@ -2,9 +2,9 @@ package org.hyacinthbots.lilybot.database.entities
 
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.DateTimePeriod
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import org.hyacinthbots.lilybot.extensions.moderation.utils.ModerationAction
+import kotlin.time.Instant
 
 /**
  * The data for Moderation action.
