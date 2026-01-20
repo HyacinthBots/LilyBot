@@ -1,9 +1,17 @@
 FROM eclipse-temurin:21-jdk
 
-RUN mkdir /bot
-RUN mkdir /data
+RUN mkdir -p /bot
+RUN mkdir -p /data
+RUN mkdir -p /dist/out
 
-COPY build/libs/LilyBot-*-all.jar /usr/local/lib/LilyBot.jar
+COPY [ "build/distributions/LilyBot-*.tar", "/dist" ]
+
+RUN tar -xf /dist/LilyBot-*.tar -C /dist/out
+RUN chmod +x /dist/out/LilyBot-*/bin/LilyBot
+
+RUN rm /dist/LilyBot*.tar
+
+WORKDIR /bot
 
 # Only place env vars below that are fine to be publicised. Private stuff needs to be
 # applied deployment-side.
@@ -15,4 +23,4 @@ ENV ENVIRONMENT=production
 
 WORKDIR /bot
 
-ENTRYPOINT ["java", "-Xms2048M", "-Xmx3072M", "-XX:+DisableExplicitGC", "-jar", "/usr/local/lib/LilyBot.jar"]
+ENTRYPOINT [ "/dist/out/LilyBot-*/bin/LilyBot" ]
