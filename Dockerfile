@@ -15,4 +15,4 @@ ENV ENVIRONMENT=production
 
 WORKDIR /bot
 
-ENTRYPOINT ["java", "-Xms1536M", "-Xmx2560M", "-XX:+DisableExplicitGC", "-jar", "/usr/local/lib/LilyBot.jar"]
+ENTRYPOINT ["java", "-Xms2048M", "-Xmx3072M", "-XX:+DisableExplicitGC", "-jar", "/usr/local/lib/LilyBot.jar"]

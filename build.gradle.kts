@@ -5,15 +5,16 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
 	application
+	distribution
 
 	alias(libs.plugins.kotlin)
 	alias(libs.plugins.kotlinx.serialization)
-	alias(libs.plugins.shadow)
 	alias(libs.plugins.detekt)
 	alias(libs.plugins.git.hooks)
 	alias(libs.plugins.grgit)
 	alias(libs.plugins.blossom)
 	alias(libs.plugins.kord.extensions.plugin)
+	alias(libs.plugins.kord.extensions.i18n)
 }
 
 group = "org.hyacinthbots.lilybot"
@@ -26,11 +27,6 @@ repositories {
 	mavenCentral()
 
 	maven {
-		name = "Kord Snapshots"
-		url = uri("https://repo.kord.dev/snapshots")
-	}
-
-	maven {
 		name = "Kord Extensions (Releases)"
 		url = uri("https://releases-repo.kordex.dev")
 	}
@@ -41,18 +37,28 @@ repositories {
 	}
 
 	maven {
+		name = "Kord Extensions External (Releases)"
+		url = uri("https://repo.kordex.dev/external-releases")
+	}
+
+	maven {
+		name = "Kord Extensions External (Snapshots)"
+		url = uri("https://repo.kordex.dev/external-releases")
+	}
+
+	maven {
+		name = "Kord Snapshots"
+		url = uri("https://repo.kordex.dev/snapshots")
+	}
+
+	maven {
+		name = "Kord Mirror"
+		url = uri("https://mirror-repo.kordex.dev")
+	}
+
+	maven {
 		name = "JitPack"
 		url = uri("https://jitpack.io")
-	}
-
-	maven {
-		name = "Sonatype Snapshots (Legacy)"
-		url = uri("https://oss.sonatype.org/content/repositories/snapshots")
-	}
-
-	maven {
-		name = "Sonatype Snapshots"
-		url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
 	}
 }
 
@@ -85,6 +91,17 @@ dependencies {
 	implementation(libs.ktor.java)
 }
 
+distributions {
+	main {
+		distributionBaseName = project.name
+
+		contents {
+			from("LICENSE")
+			exclude("README.md")
+		}
+	}
+}
+
 kordEx {
 	addDependencies = false
 	addRepositories = false
@@ -94,11 +111,10 @@ kordEx {
 	bot {
 		dataCollection(DataCollection.None)
 	}
+}
 
-	i18n {
-		classPackage = "lilybot.i18n"
-		translationBundle = "lilybot.strings"
-	}
+i18n {
+	bundle("lilybot.strings", "lilybot.i18n")
 }
 
 application {
@@ -115,7 +131,11 @@ tasks {
 	withType<KotlinCompile> {
 		compilerOptions {
 			jvmTarget.set(JvmTarget.fromTarget(javaVersion))
-			languageVersion.set(KotlinVersion.fromVersion(libs.plugins.kotlin.get().version.requiredVersion.substringBeforeLast(".")))
+			languageVersion.set(
+				KotlinVersion.fromVersion(
+					libs.plugins.kotlin.get().version.requiredVersion.substringBeforeLast(".")
+				)
+			)
 			incremental = true
 			freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
 		}
