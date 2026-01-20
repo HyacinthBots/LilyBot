@@ -4,12 +4,12 @@ RUN mkdir -p /bot
 RUN mkdir -p /data
 RUN mkdir -p /dist/out
 
-COPY [ "build/distributions/LilyBot-*.tar", "/dist" ]
+COPY [ "build/distributions/LilyBot-5.0.0.tar", "/dist" ]
 
-RUN tar -xf /dist/LilyBot-*.tar -C /dist/out
-RUN chmod +x /dist/out/LilyBot-*/bin/LilyBot
+RUN tar -xf /dist/LilyBot-5.0.0.tar -C /dist/out
+RUN chmod +x /dist/out/LilyBot-5.0.0/bin/LilyBot
 
-RUN rm /dist/LilyBot*.tar
+RUN rm /dist/LilyBot-5.0.0.tar
 
 WORKDIR /bot
 
@@ -23,4 +23,4 @@ ENV ENVIRONMENT=production
 
 WORKDIR /bot
 
-ENTRYPOINT [ "/dist/out/LilyBot-*/bin/LilyBot" ]
+ENTRYPOINT [ "/dist/out/LilyBot-5.0.0/bin/LilyBot" ]
