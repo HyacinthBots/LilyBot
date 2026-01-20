@@ -32,7 +32,7 @@ import kotlin.time.Instant
 
 class DiscordLogAppender : AppenderBase<ILoggingEvent>(), KordExKoinComponent {
 	lateinit var url: String
-	var level: Int = Level.ALL_INT
+	var level: Level = Level.ALL
 
 	private val webhookId: Snowflake by lazy {
 		val parts = url.split("/").toMutableList()
@@ -55,7 +55,7 @@ class DiscordLogAppender : AppenderBase<ILoggingEvent>(), KordExKoinComponent {
 
 	@Suppress("TooGenericExceptionCaught")
 	override fun append(eventObject: ILoggingEvent) {
-		if (!eventObject.level.isGreaterOrEqual(Level.toLevel(level))) {
+		if (!eventObject.level.isGreaterOrEqual(level)) {
 			return
 		}
 
