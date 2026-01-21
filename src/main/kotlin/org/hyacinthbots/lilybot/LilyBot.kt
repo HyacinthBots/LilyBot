@@ -15,8 +15,6 @@ import dev.kordex.core.i18n.SupportedLocales
 import dev.kordex.core.time.TimestampType
 import dev.kordex.core.time.toDiscord
 import dev.kordex.data.api.DataCollection
-import dev.kordex.modules.func.phishing.DetectionAction
-import dev.kordex.modules.func.phishing.extPhishing
 import dev.kordex.modules.func.welcome.welcomeChannel
 import dev.kordex.modules.pluralkit.extPluralKit
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -38,32 +36,15 @@ import org.hyacinthbots.lilybot.extensions.logging.events.GuildLogging
 import org.hyacinthbots.lilybot.extensions.logging.events.MemberLogging
 import org.hyacinthbots.lilybot.extensions.logging.events.MessageDelete
 import org.hyacinthbots.lilybot.extensions.logging.events.MessageEdit
-import org.hyacinthbots.lilybot.extensions.moderation.commands.ClearCommands
-import org.hyacinthbots.lilybot.extensions.moderation.commands.LockingCommands
-import org.hyacinthbots.lilybot.extensions.moderation.commands.ModUtilities
-import org.hyacinthbots.lilybot.extensions.moderation.commands.ModerationCommands
-import org.hyacinthbots.lilybot.extensions.moderation.commands.Report
+import org.hyacinthbots.lilybot.extensions.moderation.commands.*
 import org.hyacinthbots.lilybot.extensions.moderation.events.ModerationEvents
 import org.hyacinthbots.lilybot.extensions.threads.AutoThreading
 import org.hyacinthbots.lilybot.extensions.threads.ModThreadInviting
 import org.hyacinthbots.lilybot.extensions.threads.ThreadControl
-import org.hyacinthbots.lilybot.extensions.utility.commands.GalleryChannel
-import org.hyacinthbots.lilybot.extensions.utility.commands.Github
-import org.hyacinthbots.lilybot.extensions.utility.commands.GuildAnnouncements
-import org.hyacinthbots.lilybot.extensions.utility.commands.InfoCommands
-import org.hyacinthbots.lilybot.extensions.utility.commands.NewsChannelPublishing
-import org.hyacinthbots.lilybot.extensions.utility.commands.PublicUtilities
-import org.hyacinthbots.lilybot.extensions.utility.commands.Reminders
-import org.hyacinthbots.lilybot.extensions.utility.commands.RoleMenu
-import org.hyacinthbots.lilybot.extensions.utility.commands.StartupHooks
-import org.hyacinthbots.lilybot.extensions.utility.commands.Tags
+import org.hyacinthbots.lilybot.extensions.utility.commands.*
 import org.hyacinthbots.lilybot.extensions.utility.events.UtilityEvents
 import org.hyacinthbots.lilybot.internal.BuildInfo
-import org.hyacinthbots.lilybot.utils.BOT_TOKEN
-import org.hyacinthbots.lilybot.utils.ENVIRONMENT
-import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
-import org.hyacinthbots.lilybot.utils.database
-import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
+import org.hyacinthbots.lilybot.utils.*
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import java.io.IOException
@@ -119,7 +100,7 @@ suspend fun main() {
 		about {
 			ephemeral = false
 			general {
-				message { locale ->
+				message {
 					embed {
 						title = Translations.About.embedTitle.translate()
 
@@ -226,11 +207,12 @@ suspend fun main() {
 			with a command. It kicks users who send scam links, rather than ban, to allow them to rejoin if they regain
 			control of their account
 			 */
-			extPhishing {
-				detectionAction = DetectionAction.Kick
-				logChannelName = "anti-phishing-logs"
-				requiredCommandPermission = null
-			}
+			// TODO evaluate if the copious amounts of errors this throws is worth it or not
+// 			extPhishing {
+// 				detectionAction = DetectionAction.Kick
+// 				logChannelName = "anti-phishing-logs"
+// 				requiredCommandPermission = null
+// 			}
 
 			extPluralKit {
 				defaultLimit(4, 1.seconds)
