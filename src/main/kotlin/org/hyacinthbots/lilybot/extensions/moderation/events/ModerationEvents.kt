@@ -37,7 +37,7 @@ class ModerationEvents : Extension() {
 				// Do not log if the moderation system is disabled
 				if (ModerationConfigCollection().getConfig(event.guildId)?.enabled != true) return@action
 				// If the ban doesn't exist then... ????
-				event.getBanOrNull() ?: return@action
+				val ban = event.getBanOrNull() ?: return@action
 				var existingAction = ModerationActionCollection().getAction(
 					ModerationAction.BAN, event.guildId, event.user.id
 				)
@@ -126,7 +126,7 @@ class ModerationEvents : Extension() {
 								Translations.Events.Moderation.Ban.aUser.translate()
 						description =
 							Translations.Events.Moderation.Ban.defaultBanDescription.translate(event.user.mention)
-						baseModerationEmbed(event.getBan().reason, event.user, null)
+						baseModerationEmbed(ban.reason, event.user, null)
 						timestamp = Clock.System.now()
 					}
 				}

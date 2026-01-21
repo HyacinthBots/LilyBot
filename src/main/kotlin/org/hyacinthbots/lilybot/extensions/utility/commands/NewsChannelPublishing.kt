@@ -9,6 +9,7 @@ import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.entity.channel.NewsChannel
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.rest.request.KtorRequestException
 import dev.kordex.core.DISCORD_RED
 import dev.kordex.core.DISCORD_YELLOW
 import dev.kordex.core.checks.anyGuild
@@ -23,6 +24,7 @@ import dev.kordex.core.extensions.event
 import dev.kordex.core.pagination.EphemeralResponsePaginator
 import dev.kordex.core.pagination.pages.Page
 import dev.kordex.core.pagination.pages.Pages
+import dev.kordex.i18n.Key
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
@@ -52,22 +54,15 @@ class NewsChannelPublishing : Extension() {
 						Permissions(Permission.SendMessages, Permission.ManageChannels, Permission.ManageMessages)
 					) == false
 				) {
-					val channel =
-						getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.getGuildOrNull()!!) ?: return@action
-					channel.createEmbed {
-						title = Translations.Utility.NewsChannel.NewsPublishing.errorTitle.translate()
-						description = Translations.Utility.NewsChannel.NewsPublishing.missingPerms.translate()
-						field {
-							name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
-							value = event.message.channel.mention
-						}
-						color = DISCORD_RED
-						timestamp = Clock.System.now()
-					}
+					cannotPublishEmbed(event, Translations.Utility.NewsChannel.NewsPublishing.missingPerms)
 					return@action
 				}
 
-				event.message.publish()
+				try {
+					event.message.publish()
+				} catch (_: KtorRequestException) {
+					cannotPublishEmbed(event, Translations.Utility.NewsChannel.NewsPublishing.publishError)
+				}
 			}
 		}
 
@@ -260,6 +255,21 @@ class NewsChannelPublishing : Extension() {
 			name = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.name
 			description = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.description
 			requiredChannelTypes = mutableSetOf(ChannelType.GuildNews)
+		}
+	}
+
+	private suspend fun cannotPublishEmbed(event: MessageCreateEvent, reason: Key) {
+		val channel =
+			getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.getGuildOrNull()!!) ?: return
+		channel.createEmbed {
+			title = Translations.Utility.NewsChannel.NewsPublishing.errorTitle.translate()
+			description = reason.translate()
+			field {
+				name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
+				value = event.message.channel.mention
+			}
+			color = DISCORD_RED
+			timestamp = Clock.System.now()
 		}
 	}
 }

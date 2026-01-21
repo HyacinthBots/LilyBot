@@ -13,6 +13,7 @@ import dev.kord.core.behavior.interaction.modal
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.Role
 import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.thread.TextChannelThread
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.DISCORD_BLACK
@@ -655,19 +656,33 @@ class AutoThreading : Extension() {
 			}
 		}
 
-		val thread = channel.startPublicThreadWithMessage(
-			message?.id ?: proxiedMessage!!.channel,
-			threadName
-		) {
-			autoArchiveDuration = channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
+		// See if there is already a thread created with from the message id to avoid errors when trying to make another
+		var thread: TextChannelThread? = message?.let { event.getGuild().getChannelOfOrNull<TextChannelThread>(it.id) }
+
+		/** Flag to decide confirm whether the thread exists already. */
+		var existing = false
+
+		// If there was no thread, proceed as normal
+		if (thread == null) {
+			thread = channel.startPublicThreadWithMessage(
+				message?.id ?: proxiedMessage!!.channel,
+				threadName
+			) {
+				autoArchiveDuration = channel.data.defaultAutoArchiveDuration.value ?: ArchiveDuration.Day
+			}
+		} else {
+		    existing = true
 		}
 
 		ThreadsCollection().setThreadOwner(event.getGuild().id, thread.id, event.member!!.id, channel.id)
 
-		ModThreadInviting().handleThreadCreation(
-			options,
-			thread,
-			message?.author ?: memberFromPk!!.asUser()
-		)
+		// If the thread didn't exist prior to trying to make one, proceed with the mod-inviting
+		if (!existing) {
+			ModThreadInviting().handleThreadCreation(
+				options,
+				thread,
+				message?.author ?: memberFromPk!!.asUser()
+			)
+		}
 	}
 }
