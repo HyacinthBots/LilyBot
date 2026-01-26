@@ -18,7 +18,7 @@ kmongo = "5.5.1"
 docgenerator = "0.3.2"
 groovy = "3.0.25"
 jansi = "2.4.2"
-ktor = "3.3.3"
+ktor = "3.4.0"
 
 [libraries]
 kord-extensions-core = { module = "dev.kordex:kord-extensions", version.ref = "kord-extensions" }
