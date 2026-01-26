@@ -3,7 +3,7 @@
 kotlin = "2.3.0"
 detekt = "1.23.8"
 git-hooks = "0.0.2"
-grgit = "5.3.0"
+grgit = "5.3.3"
 blossom = "2.1.0"
 
 # Libraries
