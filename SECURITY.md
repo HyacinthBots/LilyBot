@@ -3,6 +3,7 @@
 This policy details how to report vulnerabilities and the steps taken to ensure vulnerabilities are mitigated.
 
 ## Supported Versions
+
 We only support the latest version of LilyBot, as this is the version used in our production bot environment. If you are using an outdated version, please update and see if the vulnerability is still present.
 
 ## Reporting a Vulnerability

@@ -19,29 +19,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.Database
-import org.hyacinthbots.lilybot.database.collections.AutoThreadingCollection
-import org.hyacinthbots.lilybot.database.collections.ConfigMetaCollection
-import org.hyacinthbots.lilybot.database.collections.GalleryChannelCollection
-import org.hyacinthbots.lilybot.database.collections.GithubCollection
-import org.hyacinthbots.lilybot.database.collections.GuildLeaveTimeCollection
-import org.hyacinthbots.lilybot.database.collections.LeftMemberFlagCollection
-import org.hyacinthbots.lilybot.database.collections.LockedChannelCollection
-import org.hyacinthbots.lilybot.database.collections.LoggingConfigCollection
-import org.hyacinthbots.lilybot.database.collections.MainMetaCollection
-import org.hyacinthbots.lilybot.database.collections.ModerationActionCollection
-import org.hyacinthbots.lilybot.database.collections.ModerationConfigCollection
-import org.hyacinthbots.lilybot.database.collections.NewsChannelPublishingCollection
-import org.hyacinthbots.lilybot.database.collections.ReminderCollection
-import org.hyacinthbots.lilybot.database.collections.RoleMenuCollection
-import org.hyacinthbots.lilybot.database.collections.RoleSubscriptionCollection
-import org.hyacinthbots.lilybot.database.collections.StatusCollection
-import org.hyacinthbots.lilybot.database.collections.TagsCollection
-import org.hyacinthbots.lilybot.database.collections.TemporaryBanCollection
-import org.hyacinthbots.lilybot.database.collections.ThreadsCollection
-import org.hyacinthbots.lilybot.database.collections.UptimeCollection
-import org.hyacinthbots.lilybot.database.collections.UtilityConfigCollection
-import org.hyacinthbots.lilybot.database.collections.WarnCollection
-import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
+import org.hyacinthbots.lilybot.database.collections.*
 import org.hyacinthbots.lilybot.extensions.moderation.commands.ModUtilities.PresenceType
 import org.koin.dsl.bind
 
@@ -58,11 +36,11 @@ internal val utilsLogger = KotlinLogging.logger("Checks Logger")
  * @since 4.1.0
  */
 suspend inline fun canPingRole(role: RoleBehavior?, guildId: Snowflake, kord: Kord) =
-	if (kord.getSelf().asMemberOrNull(guildId)?.hasPermission(Permission.MentionEveryone) == true) {
-		true
-	} else {
-		role != null && role.guild.getRoleOrNull(role.id)?.mentionable == true
-	}
+    if (kord.getSelf().asMemberOrNull(guildId)?.hasPermission(Permission.MentionEveryone) == true) {
+        true
+    } else {
+        role != null && role.guild.getRoleOrNull(role.id)?.mentionable == true
+    }
 
 /**
  * Get the number of guilds the bot is in.
@@ -81,7 +59,7 @@ suspend inline fun Extension.getGuildCount() = kord.with(EntitySupplyStrategy.ca
  * @since 4.4.3
  */
 suspend inline fun <T : GuildBehavior> T.getMemberCount() =
-	kord.getGuildOrNull(this.id)!!.withStrategy(EntitySupplyStrategy.rest).members.count()
+    kord.getGuildOrNull(this.id)!!.withStrategy(EntitySupplyStrategy.rest).members.count()
 
 /**
  * Checks a string to see if it fits the in a discord embed field.
@@ -91,8 +69,8 @@ suspend inline fun <T : GuildBehavior> T.getMemberCount() =
  * @since 4.2.0
  */
 fun String?.fitsEmbedField(): Boolean? {
-	this ?: return null
-	return this.length <= 1024
+    this ?: return null
+    return this.length <= 1024
 }
 
 /**
@@ -105,11 +83,11 @@ fun String?.fitsEmbedField(): Boolean? {
  * @see String.ifEmpty
  */
 fun String?.ifNullOrEmpty(defaultValue: () -> String): String =
-	if (this.isNullOrEmpty()) {
-		defaultValue()
-	} else {
-		this
-	}
+    if (this.isNullOrEmpty()) {
+        defaultValue()
+    } else {
+        this
+    }
 
 /**
  * Get this message's contents, trimmed to 1024 characters.
@@ -118,12 +96,12 @@ fun String?.ifNullOrEmpty(defaultValue: () -> String): String =
  * @since 4.1.0
  */
 fun Message?.trimmedContents(): String? {
-	this ?: return null
-	return if (this.content.length > 1024) {
-		this.content.substring(0, 1021) + "..."
-	} else {
-		this.content
-	}
+    this ?: return null
+    return if (this.content.length >= 1024) {
+        this.content.substring(0, 1021) + "..."
+    } else {
+        this.content
+    }
 }
 
 /**
@@ -132,12 +110,12 @@ fun Message?.trimmedContents(): String? {
  * @since 4.2.0
  */
 fun String?.trimmedContents(): String? {
-	this ?: return null
-	return if (this.length > 1024) {
-		this.substring(0, 1021) + "..."
-	} else {
-		this
-	}
+    this ?: return null
+    return if (this.length >= 1024) {
+        this.substring(0, 1021) + "..."
+    } else {
+        this
+    }
 }
 
 /**
@@ -148,8 +126,8 @@ fun String?.trimmedContents(): String? {
  * @since 4.2.0
  */
 fun DateTimePeriod?.interval(): String? {
-	this ?: return null
-	return this.toString().lowercase().replace("pt", "").replace("p", "")
+    this ?: return null
+    return this.toString().lowercase().replace("pt", "").replace("p", "")
 }
 
 /**
@@ -162,13 +140,13 @@ fun DateTimePeriod?.interval(): String? {
  * @since 4.2.0
  */
 fun Message?.trimmedContents(desiredLength: Int): String? {
-	this ?: return null
-	val useRegularLength = this.content.length < desiredLength.coerceIn(1, 1020)
-	return if (this.content.length > desiredLength.coerceIn(1, 1020)) {
-		this.content.substring(0, if (useRegularLength) this.content.length else desiredLength.minus(3)) + "..."
-	} else {
-		this.content
-	}
+    this ?: return null
+    val useRegularLength = this.content.length < desiredLength.coerceIn(1, 1020)
+    return if (this.content.length > desiredLength.coerceIn(1, 1020)) {
+        this.content.substring(0, if (useRegularLength) this.content.length else desiredLength.minus(3)) + "..."
+    } else {
+        this.content
+    }
 }
 
 /**
@@ -177,13 +155,13 @@ fun Message?.trimmedContents(desiredLength: Int): String? {
  * @since 4.2.0
  */
 fun String?.trimmedContents(desiredLength: Int): String? {
-	this ?: return null
-	val useRegularLength = this.length < desiredLength.coerceIn(1, 1020)
-	return if (this.length > desiredLength.coerceIn(1, 1020)) {
-		this.substring(0, if (useRegularLength) this.length else desiredLength.minus(3)) + "..."
-	} else {
-		this
-	}
+    this ?: return null
+    val useRegularLength = this.length < desiredLength.coerceIn(1, 1020)
+    return if (this.length > desiredLength.coerceIn(1, 1020)) {
+        this.substring(0, if (useRegularLength) this.length else desiredLength.minus(3)) + "..."
+    } else {
+        this
+    }
 }
 
 /**
@@ -192,25 +170,25 @@ fun String?.trimmedContents(desiredLength: Int): String? {
  * @since 3.4.5
  */
 suspend inline fun Extension.updateDefaultPresence() {
-	val dbStatus = StatusCollection().getStatus()
-	if (dbStatus?.status != null) {
-		kord.editPresence {
-			status = PresenceStatus.Online
-			when (dbStatus.statusType) {
-				PresenceType.Nothing.readableName.key -> state = dbStatus.status
-				PresenceType.Playing.readableName.key -> playing(dbStatus.status)
-				PresenceType.Listening.readableName.key -> listening(dbStatus.status)
-				PresenceType.Streaming.readableName.key -> streaming(dbStatus.status, "")
-				PresenceType.Watching.readableName.key -> watching(dbStatus.status)
-				PresenceType.Competing.readableName.key -> competing(dbStatus.status)
-			}
-		}
-		return
-	}
+    val dbStatus = StatusCollection().getStatus()
+    if (dbStatus?.status != null) {
+        kord.editPresence {
+            status = PresenceStatus.Online
+            when (dbStatus.statusType) {
+                PresenceType.Nothing.readableName.key -> state = dbStatus.status
+                PresenceType.Playing.readableName.key -> playing(dbStatus.status)
+                PresenceType.Listening.readableName.key -> listening(dbStatus.status)
+                PresenceType.Streaming.readableName.key -> streaming(dbStatus.status, "")
+                PresenceType.Watching.readableName.key -> watching(dbStatus.status)
+                PresenceType.Competing.readableName.key -> competing(dbStatus.status)
+            }
+        }
+        return
+    }
 
-	kord.editPresence {
-		watching("${getGuildCount()} servers")
-	}
+    kord.editPresence {
+        watching("${getGuildCount()} servers")
+    }
 }
 
 /**
@@ -223,17 +201,17 @@ suspend inline fun Extension.updateDefaultPresence() {
  * @since 4.7.0
  */
 fun generateBulkDeleteFile(messages: Set<Message>): String? =
-	if (messages.isNotEmpty()) {
-		"# ${Translations.Utils.GenerateBulkDelete.message.translate()}:\n\n" +
-			"**${Translations.Utils.GenerateBulkDelete.total.translate()}:** ${messages.size}\n\n" +
-			messages.reversed().joinToString("\n") { // Reversed for chronology
-				"*  [${
-					it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
-				} UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
-			}
-	} else {
-		null
-	}
+    if (messages.isNotEmpty()) {
+        "# ${Translations.Utils.GenerateBulkDelete.message.translate()}:\n\n" +
+            "**${Translations.Utils.GenerateBulkDelete.total.translate()}:** ${messages.size}\n\n" +
+            messages.reversed().joinToString("\n") { // Reversed for chronology
+                "*  [${
+                    it.timestamp.toLocalDateTime(TimeZone.UTC).toString().replace("T", " @ ")
+                } UTC]  **${it.author?.username}**  (${it.author?.id})  »  ${it.content}"
+            }
+    } else {
+        null
+    }
 
 /**
  * This function loads the database and checks if it is up-to-date. If it isn't, it will update the database via
@@ -242,45 +220,45 @@ fun generateBulkDeleteFile(messages: Set<Message>): String? =
  * @since 4.0.0
  */
 suspend inline fun ExtensibleBotBuilder.database(migrate: Boolean) {
-	val db = Database()
+    val db = Database()
 
-	hooks {
-		beforeKoinSetup {
-			loadModule {
-				single { db } bind Database::class
-			}
+    hooks {
+        beforeKoinSetup {
+            loadModule {
+                single { db } bind Database::class
+            }
 
-			loadModule {
-				single { AutoThreadingCollection() } bind AutoThreadingCollection::class
-				single { ConfigMetaCollection() } bind ConfigMetaCollection::class
-				single { GalleryChannelCollection() } bind GalleryChannelCollection::class
-				single { GithubCollection() } bind GithubCollection::class
-				single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
-				single { LeftMemberFlagCollection() } bind LeftMemberFlagCollection::class
-				single { LockedChannelCollection() } bind LockedChannelCollection::class
-				single { LoggingConfigCollection() } bind LoggingConfigCollection::class
-				single { MainMetaCollection() } bind MainMetaCollection::class
-				single { ModerationActionCollection() } bind ModerationActionCollection::class
-				single { ModerationConfigCollection() } bind ModerationConfigCollection::class
-				single { NewsChannelPublishingCollection() } bind NewsChannelPublishingCollection::class
-				single { ReminderCollection() } bind ReminderCollection::class
-				single { RoleMenuCollection() } bind RoleMenuCollection::class
-				single { RoleSubscriptionCollection() } bind RoleSubscriptionCollection::class
-				single { StatusCollection() } bind StatusCollection::class
-				single { TagsCollection() } bind TagsCollection::class
-				single { TemporaryBanCollection() } bind TemporaryBanCollection::class
-				single { ThreadsCollection() } bind ThreadsCollection::class
-				single { UptimeCollection() } bind UptimeCollection::class
-				single { UtilityConfigCollection() } bind UtilityConfigCollection::class
-				single { WarnCollection() } bind WarnCollection::class
-				single { WelcomeChannelCollection() } bind WelcomeChannelCollection::class
-			}
+            loadModule {
+                single { AutoThreadingCollection() } bind AutoThreadingCollection::class
+                single { ConfigMetaCollection() } bind ConfigMetaCollection::class
+                single { GalleryChannelCollection() } bind GalleryChannelCollection::class
+                single { GithubCollection() } bind GithubCollection::class
+                single { GuildLeaveTimeCollection() } bind GuildLeaveTimeCollection::class
+                single { LeftMemberFlagCollection() } bind LeftMemberFlagCollection::class
+                single { LockedChannelCollection() } bind LockedChannelCollection::class
+                single { LoggingConfigCollection() } bind LoggingConfigCollection::class
+                single { MainMetaCollection() } bind MainMetaCollection::class
+                single { ModerationActionCollection() } bind ModerationActionCollection::class
+                single { ModerationConfigCollection() } bind ModerationConfigCollection::class
+                single { NewsChannelPublishingCollection() } bind NewsChannelPublishingCollection::class
+                single { ReminderCollection() } bind ReminderCollection::class
+                single { RoleMenuCollection() } bind RoleMenuCollection::class
+                single { RoleSubscriptionCollection() } bind RoleSubscriptionCollection::class
+                single { StatusCollection() } bind StatusCollection::class
+                single { TagsCollection() } bind TagsCollection::class
+                single { TemporaryBanCollection() } bind TemporaryBanCollection::class
+                single { ThreadsCollection() } bind ThreadsCollection::class
+                single { UptimeCollection() } bind UptimeCollection::class
+                single { UtilityConfigCollection() } bind UtilityConfigCollection::class
+                single { WarnCollection() } bind WarnCollection::class
+                single { WelcomeChannelCollection() } bind WelcomeChannelCollection::class
+            }
 
-			if (migrate) {
-				db.migrate()
-			}
-		}
-	}
+            if (migrate) {
+                db.migrate()
+            }
+        }
+    }
 }
 
 /**

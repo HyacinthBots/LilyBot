@@ -6,15 +6,15 @@ package org.hyacinthbots.lilybot.extensions.config
  * @since 4.0.0
  */
 enum class ConfigType {
-	/** The entry for the moderation config. */
-	MODERATION,
+    /** The entry for the moderation config. */
+    MODERATION,
 
-	/** The entry for the logging config. */
-	LOGGING,
+    /** The entry for the logging config. */
+    LOGGING,
 
-	/** The entry for the utility config. */
-	UTILITY,
+    /** The entry for the utility config. */
+    UTILITY,
 
-	/** The entry for all config types. */
-	ALL
+    /** The entry for all config types. */
+    ALL
 }

@@ -17,9 +17,9 @@ import kotlin.time.Instant
  */
 @Serializable
 data class TemporaryBanData(
-	val guildId: Snowflake,
-	val bannedUserId: Snowflake,
-	val moderatorUserId: Snowflake,
-	val startTime: Instant,
-	val endTime: Instant
+    val guildId: Snowflake,
+    val bannedUserId: Snowflake,
+    val moderatorUserId: Snowflake,
+    val startTime: Instant,
+    val endTime: Instant
 )

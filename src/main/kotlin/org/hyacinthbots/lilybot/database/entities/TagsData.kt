@@ -15,9 +15,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class TagsData(
-	val guildId: Snowflake,
-	val name: String,
-	val tagTitle: String,
-	val tagValue: String,
-	val tagAppearance: String
+    val guildId: Snowflake,
+    val name: String,
+    val tagTitle: String,
+    val tagValue: String,
+    val tagAppearance: String
 )

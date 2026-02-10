@@ -7,12 +7,14 @@ try our [development guide](https://github.com/HyacinthBots/LilyBot/blob/main/do
 If you have issues with this guide, please join [our discord](https://discord.gg/hy2329fcTZ) for support.
 
 # Step 1 - Obtain an invitation link
+
 Click on the official LilyBot instance, where you'll be able to use the `Add To Server` button
 
-Alternatively, use [this link](https://discord.com/api/oauth2/authorize?client_id=876278900836139008&permissions=1151990787078&scope=bot%20applications.commands) 
+Alternatively, use [this link](https://discord.com/api/oauth2/authorize?client_id=876278900836139008&permissions=1151990787078&scope=bot%20applications.commands)
 to invite LilyBot.
 
 # Step 2 - Using your invitation link
+
 The button will open new tab in your browser, where you can select the server you'd like to invite LilyBot too. You'll need to be an administrator in that server.
 Click `Authorize`.
 
@@ -20,6 +22,7 @@ If all has gone successfully so far, you should see LilyBot in the sidebar of yo
 You'll then need to run the `/config xxx` commands, inputting all the necessary values.
 
 # Step 3 - Profit!
+
 Congrats! You now have the official instance of LilyBot running in your server!
 
 For more information on all of Lily's commands,

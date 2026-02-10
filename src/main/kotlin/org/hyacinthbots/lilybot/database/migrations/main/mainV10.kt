@@ -6,10 +6,10 @@ import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
 suspend fun mainV10(db: CoroutineDatabase) {
-	with(db.getCollection<AutoThreadingData>()) {
-		updateMany(AutoThreadingData::extraRoleIds exists false, setValue(AutoThreadingData::extraRoleIds, emptyList()))
-	}
-	db.createCollection("lockedChannelData")
-	db.createCollection("temporaryBanData")
-	db.createCollection("moderationActionCacheData")
+    with(db.getCollection<AutoThreadingData>()) {
+        updateMany(AutoThreadingData::extraRoleIds exists false, setValue(AutoThreadingData::extraRoleIds, emptyList()))
+    }
+    db.createCollection("lockedChannelData")
+    db.createCollection("temporaryBanData")
+    db.createCollection("moderationActionCacheData")
 }

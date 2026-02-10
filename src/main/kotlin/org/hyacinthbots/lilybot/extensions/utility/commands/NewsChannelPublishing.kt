@@ -32,244 +32,245 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import kotlin.time.Clock
 
 class NewsChannelPublishing : Extension() {
-	override val name = "news-channel-publishing"
+    override val name = "news-channel-publishing"
 
-	override suspend fun setup() {
-		event<MessageCreateEvent> {
-			check {
-				anyGuild()
-				channelType(ChannelType.GuildNews)
-				failIf(event.message.author == null)
-			}
+    override suspend fun setup() {
+        event<MessageCreateEvent> {
+            check {
+                anyGuild()
+                channelType(ChannelType.GuildNews)
+                failIf(event.message.author == null)
+            }
 
-			action {
-				if (event.guildId == null) return@action
-				NewsChannelPublishingCollection().getAutoPublishingChannel(event.guildId!!, event.message.channelId)
-					?: return@action
+            action {
+                if (event.guildId == null) return@action
+                NewsChannelPublishingCollection().getAutoPublishingChannel(event.guildId!!, event.message.channelId)
+                    ?: return@action
 
-				val permissions =
-					event.message.channel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(kord.selfId)
+                val permissions =
+                    event.message.channel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(kord.selfId)
 
-				if (permissions?.contains(
-						Permissions(Permission.SendMessages, Permission.ManageChannels, Permission.ManageMessages)
-					) == false
-				) {
-					cannotPublishEmbed(event, Translations.Utility.NewsChannel.NewsPublishing.missingPerms)
-					return@action
-				}
+                if (permissions?.contains(
+                        Permissions(Permission.SendMessages, Permission.ManageChannels, Permission.ManageMessages)
+                    ) == false
+                ) {
+                    cannotPublishEmbed(event, Translations.Utility.NewsChannel.NewsPublishing.missingPerms)
+                    return@action
+                }
 
-				try {
-					event.message.publish()
-				} catch (_: KtorRequestException) {
-					cannotPublishEmbed(event, Translations.Utility.NewsChannel.NewsPublishing.publishError)
-				}
-			}
-		}
+                try {
+                    event.message.publish()
+                } catch (_: KtorRequestException) {
+                    cannotPublishEmbed(event, Translations.Utility.NewsChannel.NewsPublishing.publishError)
+                }
+            }
+        }
 
-		ephemeralSlashCommand {
-			name = Translations.Utility.NewsChannel.NewsPublishing.name
-			description = Translations.Utility.NewsChannel.NewsPublishing.description
+        ephemeralSlashCommand {
+            name = Translations.Utility.NewsChannel.NewsPublishing.name
+            description = Translations.Utility.NewsChannel.NewsPublishing.description
 
-			ephemeralSubCommand(::PublishingSetArgs) {
-				name = Translations.Utility.NewsChannel.NewsPublishing.Set.name
-				description = Translations.Utility.NewsChannel.NewsPublishing.Set.description
+            ephemeralSubCommand(::PublishingSetArgs) {
+                name = Translations.Utility.NewsChannel.NewsPublishing.Set.name
+                description = Translations.Utility.NewsChannel.NewsPublishing.Set.description
 
-				requirePermission(Permission.ManageGuild)
+                requirePermission(Permission.ManageGuild)
 
-				check {
-					anyGuild()
-					hasPermission(Permission.ManageGuild)
-				}
+                check {
+                    anyGuild()
+                    hasPermission(Permission.ManageGuild)
+                }
 
-				action {
-					val translations = Translations.Utility.NewsChannel.NewsPublishing.Set
-					if (channel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(event.kord.selfId)
-							?.contains(Permissions(Permission.SendMessages, Permission.ManageChannels)) == false
-					) {
-						respond {
-							content =
-								translations.noPerms.translate() + Translations.Utility.NewsChannel.NewsPublishing.missingPerms.translate()
-						}
-						return@action
-					}
+                action {
+                    val translations = Translations.Utility.NewsChannel.NewsPublishing.Set
+                    if (channel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(event.kord.selfId)
+                            ?.contains(Permissions(Permission.SendMessages, Permission.ManageChannels)) == false
+                    ) {
+                        respond {
+                            content = translations.noPerms.translate() +
+                                Translations.Utility.NewsChannel.NewsPublishing.missingPerms.translate()
+                        }
+                        return@action
+                    }
 
-					NewsChannelPublishingCollection().addAutoPublishingChannel(guild!!.id, arguments.channel.id)
+                    NewsChannelPublishingCollection().addAutoPublishingChannel(guild!!.id, arguments.channel.id)
 
-					respond {
-						content = translations.success.translate(arguments.channel.mention)
-					}
+                    respond {
+                        content = translations.success.translate(arguments.channel.mention)
+                    }
 
-					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
-						title = translations.embedTitle.translate()
-						field {
-							name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
-							value = arguments.channel.mention
-						}
-						footer {
-							text = translations.setBy.translate(user.asUserOrNull()?.username)
-							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-						}
-						timestamp = Clock.System.now()
-						color = DISCORD_YELLOW
-					}
-				}
-			}
+                    getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
+                        title = translations.embedTitle.translate()
+                        field {
+                            name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
+                            value = arguments.channel.mention
+                        }
+                        footer {
+                            text = translations.setBy.translate(user.asUserOrNull()?.username)
+                            icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+                        }
+                        timestamp = Clock.System.now()
+                        color = DISCORD_YELLOW
+                    }
+                }
+            }
 
-			ephemeralSubCommand(::PublishingRemoveArgs) {
-				name = Translations.Utility.NewsChannel.NewsPublishing.Remove.name
-				description = Translations.Utility.NewsChannel.NewsPublishing.Remove.description
+            ephemeralSubCommand(::PublishingRemoveArgs) {
+                name = Translations.Utility.NewsChannel.NewsPublishing.Remove.name
+                description = Translations.Utility.NewsChannel.NewsPublishing.Remove.description
 
-				requirePermission(Permission.ManageGuild)
+                requirePermission(Permission.ManageGuild)
 
-				check {
-					anyGuild()
-					hasPermission(Permission.ManageGuild)
-				}
+                check {
+                    anyGuild()
+                    hasPermission(Permission.ManageGuild)
+                }
 
-				action {
-					val translations = Translations.Utility.NewsChannel.NewsPublishing.Remove
-					if (NewsChannelPublishingCollection().getAutoPublishingChannel(
-							guild!!.id,
-							arguments.channel.id
-						) == null
-					) {
-						respond {
-							content = translations.noAuto.translate(arguments.channel.mention)
-						}
-						return@action
-					}
+                action {
+                    val translations = Translations.Utility.NewsChannel.NewsPublishing.Remove
+                    if (NewsChannelPublishingCollection().getAutoPublishingChannel(
+                            guild!!.id,
+                            arguments.channel.id
+                        ) == null
+                    ) {
+                        respond {
+                            content = translations.noAuto.translate(arguments.channel.mention)
+                        }
+                        return@action
+                    }
 
-					NewsChannelPublishingCollection().removeAutoPublishingChannel(guild!!.id, arguments.channel.id)
+                    NewsChannelPublishingCollection().removeAutoPublishingChannel(guild!!.id, arguments.channel.id)
 
-					respond {
-						content = translations.success.translate(arguments.channel.mention)
-					}
+                    respond {
+                        content = translations.success.translate(arguments.channel.mention)
+                    }
 
-					getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
-						title = translations.embedTitle.translate()
-						field {
-							name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
-							value = arguments.channel.mention
-						}
-						footer {
-							text = translations.removedBy.translate(user.asUserOrNull()?.username)
-								"Removed by ${user.asUserOrNull()?.username}"
-							icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-						}
-						timestamp = Clock.System.now()
-						color = DISCORD_YELLOW
-					}
-				}
-			}
+                    getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, getGuild()!!)?.createEmbed {
+                        title = translations.embedTitle.translate()
+                        field {
+                            name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
+                            value = arguments.channel.mention
+                        }
+                        footer {
+                            text = translations.removedBy.translate(user.asUserOrNull()?.username)
+                            "Removed by ${user.asUserOrNull()?.username}"
+                            icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+                        }
+                        timestamp = Clock.System.now()
+                        color = DISCORD_YELLOW
+                    }
+                }
+            }
 
-			ephemeralSubCommand {
-				name = Translations.Utility.NewsChannel.NewsPublishing.List.name
-				description = Translations.Utility.NewsChannel.NewsPublishing.List.description
+            ephemeralSubCommand {
+                name = Translations.Utility.NewsChannel.NewsPublishing.List.name
+                description = Translations.Utility.NewsChannel.NewsPublishing.List.description
 
-				requirePermission(Permission.ManageGuild)
+                requirePermission(Permission.ManageGuild)
 
-				check {
-					anyGuild()
-					hasPermission(Permission.ManageGuild)
-				}
+                check {
+                    anyGuild()
+                    hasPermission(Permission.ManageGuild)
+                }
 
-				action {
-					val pagesObj = Pages()
-					val channelsData = NewsChannelPublishingCollection().getAutoPublishingChannels(guild!!.id)
+                action {
+                    val pagesObj = Pages()
+                    val channelsData = NewsChannelPublishingCollection().getAutoPublishingChannels(guild!!.id)
 
-					val translations = Translations.Utility.NewsChannel.NewsPublishing.List
+                    val translations = Translations.Utility.NewsChannel.NewsPublishing.List
 
-					if (channelsData.isEmpty()) {
-						pagesObj.addPage(
-							Page {
-								description = translations.none.translate()
-							}
-						)
-					} else {
-						channelsData.chunked(10).forEach { channelDataChunk ->
-							var response = ""
-							channelDataChunk.forEach { data ->
-								val channel = guild!!.getChannelOrNull(data.channelId)
-								response +=
-									"${channel?.mention ?: Translations.Basic.UnableTo.channel.translate()} (${channel?.name ?: ""}"
-							}
-							pagesObj.addPage(
-								Page {
-									title = translations.title.translate()
-									description = translations.desc.translate()
-									field {
-										value = response
-									}
-								}
-							)
-						}
-					}
+                    if (channelsData.isEmpty()) {
+                        pagesObj.addPage(
+                            Page {
+                                description = translations.none.translate()
+                            }
+                        )
+                    } else {
+                        channelsData.chunked(10).forEach { channelDataChunk ->
+                            var response = ""
+                            channelDataChunk.forEach { data ->
+                                val channel = guild!!.getChannelOrNull(data.channelId)
+                                response +=
+                                    "${channel?.mention ?: Translations.Basic.UnableTo.channel.translate()} " +
+                                        "(${channel?.name ?: ""})"
+                            }
+                            pagesObj.addPage(
+                                Page {
+                                    title = translations.title.translate()
+                                    description = translations.desc.translate()
+                                    field {
+                                        value = response
+                                    }
+                                }
+                            )
+                        }
+                    }
 
-					EphemeralResponsePaginator(
-						pages = pagesObj,
-						owner = event.interaction.user,
-						timeoutSeconds = 500,
-						locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
-						interaction = interactionResponse
-					).send()
-				}
-			}
+                    EphemeralResponsePaginator(
+                        pages = pagesObj,
+                        owner = event.interaction.user,
+                        timeoutSeconds = 500,
+                        locale = Locale.ENGLISH_GREAT_BRITAIN.asJavaLocale(),
+                        interaction = interactionResponse
+                    ).send()
+                }
+            }
 
-			ephemeralSubCommand {
-				name = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.name
-				description = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.description
+            ephemeralSubCommand {
+                name = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.name
+                description = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.description
 
-				requirePermission(Permission.ManageGuild)
+                requirePermission(Permission.ManageGuild)
 
-				check {
-					anyGuild()
-					hasPermission(Permission.ManageGuild)
-				}
+                check {
+                    anyGuild()
+                    hasPermission(Permission.ManageGuild)
+                }
 
-				action {
-					if (NewsChannelPublishingCollection().getAutoPublishingChannels(guild!!.id).isEmpty()) {
-						respond {
-							content = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.noChannels.translate()
-						}
-					} else {
-						NewsChannelPublishingCollection().clearAutoPublishingForGuild(guild!!.id)
-						respond {
-							content = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.success.translate()
-						}
-					}
-				}
-			}
-		}
-	}
+                action {
+                    if (NewsChannelPublishingCollection().getAutoPublishingChannels(guild!!.id).isEmpty()) {
+                        respond {
+                            content = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.noChannels.translate()
+                        }
+                    } else {
+                        NewsChannelPublishingCollection().clearAutoPublishingForGuild(guild!!.id)
+                        respond {
+                            content = Translations.Utility.NewsChannel.NewsPublishing.RemoveAll.success.translate()
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	inner class PublishingSetArgs : Arguments() {
-		val channel by channel {
-			name = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.name
-			description = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.description
-			requiredChannelTypes = mutableSetOf(ChannelType.GuildNews)
-		}
-	}
+    inner class PublishingSetArgs : Arguments() {
+        val channel by channel {
+            name = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.name
+            description = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.description
+            requiredChannelTypes = mutableSetOf(ChannelType.GuildNews)
+        }
+    }
 
-	inner class PublishingRemoveArgs : Arguments() {
-		val channel by channel {
-			name = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.name
-			description = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.description
-			requiredChannelTypes = mutableSetOf(ChannelType.GuildNews)
-		}
-	}
+    inner class PublishingRemoveArgs : Arguments() {
+        val channel by channel {
+            name = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.name
+            description = Translations.Utility.NewsChannel.NewsPublishing.Arguments.Channel.description
+            requiredChannelTypes = mutableSetOf(ChannelType.GuildNews)
+        }
+    }
 
-	private suspend fun cannotPublishEmbed(event: MessageCreateEvent, reason: Key) {
-		val channel =
-			getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.getGuildOrNull()!!) ?: return
-		channel.createEmbed {
-			title = Translations.Utility.NewsChannel.NewsPublishing.errorTitle.translate()
-			description = reason.translate()
-			field {
-				name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
-				value = event.message.channel.mention
-			}
-			color = DISCORD_RED
-			timestamp = Clock.System.now()
-		}
-	}
+    private suspend fun cannotPublishEmbed(event: MessageCreateEvent, reason: Key) {
+        val channel =
+            getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, event.getGuildOrNull()!!) ?: return
+        channel.createEmbed {
+            title = Translations.Utility.NewsChannel.NewsPublishing.errorTitle.translate()
+            description = reason.translate()
+            field {
+                name = Translations.Utility.NewsChannel.NewsPublishing.embedChannelField.translate()
+                value = event.message.channel.mention
+            }
+            color = DISCORD_RED
+            timestamp = Clock.System.now()
+        }
+    }
 }

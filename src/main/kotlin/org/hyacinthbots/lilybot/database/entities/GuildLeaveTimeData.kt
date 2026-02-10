@@ -13,6 +13,6 @@ import kotlin.time.Instant
  */
 @Serializable
 data class GuildLeaveTimeData(
-	val guildId: Snowflake,
-	val guildLeaveTime: Instant
+    val guildId: Snowflake,
+    val guildLeaveTime: Instant
 )

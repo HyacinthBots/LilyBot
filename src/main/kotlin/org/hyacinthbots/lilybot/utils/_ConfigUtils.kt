@@ -18,131 +18,131 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
  * @since 3.2.0
  */
 suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigOptions) {
-	if (!passed) {
-		return
-	}
+    if (!passed) {
+        return
+    }
 
-	val translations = Translations.Checks.RequiredConfigs
+    val translations = Translations.Checks.RequiredConfigs
 
-	// Prevent commands being run in DMs, although [anyGuild] should still be used as backup
-	guildFor(event) ?: fail(translations.inServer)
+    // Prevent commands being run in DMs, although [anyGuild] should still be used as backup
+    guildFor(event) ?: fail(translations.inServer)
 
-	if (configOptions.isEmpty()) {
-		fail(translations.noConfigInCode)
-	}
+    if (configOptions.isEmpty()) {
+        fail(translations.noConfigInCode)
+    }
 
-	val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
-	if (moderationConfig == null) {
-		fail(translations.cantModConfig)
-		return
-	}
+    val moderationConfig = ModerationConfigCollection().getConfig(guildFor(event)!!.id)
+    if (moderationConfig == null) {
+        fail(translations.cantModConfig)
+        return
+    }
 
-	val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
-	if (loggingConfig == null) {
-		fail(translations.cantLoggingConfig)
-		return
-	}
+    val loggingConfig = LoggingConfigCollection().getConfig(guildFor(event)!!.id)
+    if (loggingConfig == null) {
+        fail(translations.cantLoggingConfig)
+        return
+    }
 
-	val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
-	if (utilityConfig == null) {
-		fail(translations.cantUtilityConfig)
-		return
-	}
+    val utilityConfig = UtilityConfigCollection().getConfig(guildFor(event)!!.id)
+    if (utilityConfig == null) {
+        fail(translations.cantUtilityConfig)
+        return
+    }
 
-	// Look at the config options and check the presence of the config in the database.
-	for (option in configOptions) {
-		when (option) {
-			ConfigOptions.MODERATION_ENABLED -> {
-				if (!moderationConfig.enabled) {
-					fail(translations.modDisabled)
-					break
-				} else {
-					pass()
-				}
-			}
+    // Look at the config options and check the presence of the config in the database.
+    for (option in configOptions) {
+        when (option) {
+            ConfigOptions.MODERATION_ENABLED -> {
+                if (!moderationConfig.enabled) {
+                    fail(translations.modDisabled)
+                    break
+                } else {
+                    pass()
+                }
+            }
 
-			ConfigOptions.MODERATOR_ROLE -> {
-				if (moderationConfig.role == null) {
-					fail(translations.noModRole)
-					break
-				} else {
-					pass()
-				}
-			}
+            ConfigOptions.MODERATOR_ROLE -> {
+                if (moderationConfig.role == null) {
+                    fail(translations.noModRole)
+                    break
+                } else {
+                    pass()
+                }
+            }
 
-			ConfigOptions.ACTION_LOG -> {
-				if (moderationConfig.channel == null) {
-					fail(translations.noModLog)
-					break
-				} else {
-					pass()
-				}
-			}
+            ConfigOptions.ACTION_LOG -> {
+                if (moderationConfig.channel == null) {
+                    fail(translations.noModLog)
+                    break
+                } else {
+                    pass()
+                }
+            }
 
-			ConfigOptions.LOG_PUBLICLY -> {
-				if (moderationConfig.publicLogging == null) {
-					fail(translations.logPubliclyOff)
-					break
-				} else {
-					pass()
-				}
-			}
+            ConfigOptions.LOG_PUBLICLY -> {
+                if (moderationConfig.publicLogging == null) {
+                    fail(translations.logPubliclyOff)
+                    break
+                } else {
+                    pass()
+                }
+            }
 
-			ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED -> {
-				if (!loggingConfig.enableMessageDeleteLogs) {
-					fail(translations.noDeleteLogging)
-					break
-				} else {
-					pass()
-				}
-			}
+            ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED -> {
+                if (!loggingConfig.enableMessageDeleteLogs) {
+                    fail(translations.noDeleteLogging)
+                    break
+                } else {
+                    pass()
+                }
+            }
 
-			ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED -> {
-				if (!loggingConfig.enableMessageEditLogs) {
-					fail(translations.noEditLogging)
-					break
-				} else {
-					pass()
-				}
-			}
+            ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED -> {
+                if (!loggingConfig.enableMessageEditLogs) {
+                    fail(translations.noEditLogging)
+                    break
+                } else {
+                    pass()
+                }
+            }
 
-			ConfigOptions.MESSAGE_LOG -> {
-				if (loggingConfig.messageChannel == null) {
-					fail(translations.noMessageLogging)
-					break
-				} else {
-					pass()
-				}
-			}
+            ConfigOptions.MESSAGE_LOG -> {
+                if (loggingConfig.messageChannel == null) {
+                    fail(translations.noMessageLogging)
+                    break
+                } else {
+                    pass()
+                }
+            }
 
-			ConfigOptions.MEMBER_LOGGING_ENABLED -> {
-				if (!loggingConfig.enableMemberLogs) {
-					fail(translations.noMemberLogging)
-					break
-				} else {
-					pass()
-				}
-			}
+            ConfigOptions.MEMBER_LOGGING_ENABLED -> {
+                if (!loggingConfig.enableMemberLogs) {
+                    fail(translations.noMemberLogging)
+                    break
+                } else {
+                    pass()
+                }
+            }
 
-			ConfigOptions.MEMBER_LOG -> {
-				if (loggingConfig.memberLog == null) {
-					fail(translations.noMemberLogSet)
-					break
-				} else {
-					pass()
-				}
-			}
+            ConfigOptions.MEMBER_LOG -> {
+                if (loggingConfig.memberLog == null) {
+                    fail(translations.noMemberLogSet)
+                    break
+                } else {
+                    pass()
+                }
+            }
 
-			ConfigOptions.UTILITY_LOG -> {
-				if (utilityConfig.utilityLogChannel == null) {
-					fail(translations.noUtilityLog)
-					break
-				} else {
-					pass()
-				}
-			}
-		}
-	}
+            ConfigOptions.UTILITY_LOG -> {
+                if (utilityConfig.utilityLogChannel == null) {
+                    fail(translations.noUtilityLog)
+                    break
+                } else {
+                    pass()
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -154,47 +154,48 @@ suspend inline fun CheckContext<*>.requiredConfigs(vararg configOptions: ConfigO
  * @since 3.2.0
  */
 suspend inline fun configIsUsable(guildId: Snowflake, option: ConfigOptions): Boolean {
-	when (option) {
-		ConfigOptions.MODERATION_ENABLED -> return ModerationConfigCollection().getConfig(guildId)?.enabled == true
+    when (option) {
+        ConfigOptions.MODERATION_ENABLED -> return ModerationConfigCollection().getConfig(guildId)?.enabled == true
 
-		ConfigOptions.MODERATOR_ROLE -> {
-			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
-			return moderationConfig.role != null
-		}
+        ConfigOptions.MODERATOR_ROLE -> {
+            val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
+            return moderationConfig.role != null
+        }
 
-		ConfigOptions.ACTION_LOG -> {
-			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
-			return moderationConfig.channel != null
-		}
+        ConfigOptions.ACTION_LOG -> {
+            val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
+            return moderationConfig.channel != null
+        }
 
-		ConfigOptions.LOG_PUBLICLY -> {
-			val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
-			return moderationConfig.publicLogging != null
-		}
+        ConfigOptions.LOG_PUBLICLY -> {
+            val moderationConfig = ModerationConfigCollection().getConfig(guildId) ?: return false
+            return moderationConfig.publicLogging != null
+        }
 
-		ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED ->
-			return LoggingConfigCollection().getConfig(guildId)?.enableMessageDeleteLogs == true
+        ConfigOptions.MESSAGE_DELETE_LOGGING_ENABLED ->
+            return LoggingConfigCollection().getConfig(guildId)?.enableMessageDeleteLogs == true
 
-		ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED ->
-			return LoggingConfigCollection().getConfig(guildId)?.enableMessageEditLogs == true
+        ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED ->
+            return LoggingConfigCollection().getConfig(guildId)?.enableMessageEditLogs == true
 
-		ConfigOptions.MESSAGE_LOG -> {
-			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
-			return loggingConfig.messageChannel != null
-		}
+        ConfigOptions.MESSAGE_LOG -> {
+            val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
+            return loggingConfig.messageChannel != null
+        }
 
-		ConfigOptions.MEMBER_LOGGING_ENABLED -> return LoggingConfigCollection().getConfig(guildId)?.enableMemberLogs == true
+        ConfigOptions.MEMBER_LOGGING_ENABLED ->
+            return LoggingConfigCollection().getConfig(guildId)?.enableMemberLogs == true
 
-		ConfigOptions.MEMBER_LOG -> {
-			val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
-			return loggingConfig.memberLog != null
-		}
+        ConfigOptions.MEMBER_LOG -> {
+            val loggingConfig = LoggingConfigCollection().getConfig(guildId) ?: return false
+            return loggingConfig.memberLog != null
+        }
 
-		ConfigOptions.UTILITY_LOG -> {
-			val utilityConfig = UtilityConfigCollection().getConfig(guildId) ?: return false
-			return utilityConfig.utilityLogChannel != null
-		}
-	}
+        ConfigOptions.UTILITY_LOG -> {
+            val utilityConfig = UtilityConfigCollection().getConfig(guildId) ?: return false
+            return utilityConfig.utilityLogChannel != null
+        }
+    }
 }
 
 /**
@@ -207,11 +208,11 @@ suspend inline fun configIsUsable(guildId: Snowflake, option: ConfigOptions): Bo
  * @since 4.8.1
  */
 suspend inline fun configsAreUsable(guildId: Snowflake, vararg configs: ConfigOptions): Map<ConfigOptions, Boolean> {
-	val results = mutableMapOf<ConfigOptions, Boolean>()
-	configs.forEach {
-		val result = configIsUsable(guildId, it)
-		results[it] = result
-	}
+    val results = mutableMapOf<ConfigOptions, Boolean>()
+    configs.forEach {
+        val result = configIsUsable(guildId, it)
+        results[it] = result
+    }
 
-	return results
+    return results
 }

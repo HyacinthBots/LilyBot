@@ -6,6 +6,7 @@ try our [usage guide](https://github.com/HyacinthBots/LilyBot/blob/main/docs/usa
 If you have issues with this guide, please join [our discord](https://discord.gg/hy2329fcTZ) for support.
 
 ## Step 1 - Install tools
+
 This tutorial utilizes IntelliJ IDEA due to it having full Kotlin support.
 If you don't already have it installed, you can download it [here](https://www.jetbrains.com/idea/download/).
 While by no means required, having ultimate edition will make debugging database related issues simpler.
@@ -18,11 +19,13 @@ Lily utilizes MongoDB. If you don't already have that installed,
 you can find a tutorial on how to install it [here](https://docs.mongodb.com/manual/administration/install-community/).
 
 ## Step 2 - Clone the Lily repository
+
 When you first open IntelliJ, select the `Get from VCS` button in the top right,
 enter `https://github.com/HyacinthBots/LilyBot.git`, and press clone.
 Wait for IntelliJ to finish setting up the project.
 
 ## Step 3 - Setting a `.env` file
+
 In the root directory your project, create a file named `.env`.
 You should fill your file using the format below with the relevant details filled in.
 
@@ -55,6 +58,7 @@ and clicking generate new token. You don't need to select any scopes. DO NOT SHA
 You can find out more about it [here]( https://sentry.io/welcome/).
 
 ## Step 4 - Starting your Mongo database
+
 Open a terminal window and start your Mongo database using the respective command for your OS.
 You can find information on this command in the
 [installation guide](https://docs.mongodb.com/manual/administration/install-community/) for your OS.
@@ -63,6 +67,7 @@ You'll want to use the command to stop the database whenever you finish a develo
 This command can be found in the same place as the one for starting the database.
 
 ## Step 5 - Profit!
+
 Congrats! You now have a development instance of Lily fully up and running.
 For more information on all of Lily's commands,
 check out the [command list](https://github.com/HyacinthBots/LilyBot/blob/main/docs/commands.md).

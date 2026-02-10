@@ -16,9 +16,9 @@ import kotlinx.serialization.Serializable
 @Suppress("DataClassShouldBeImmutable")
 @Serializable
 data class ThreadData(
-	val guildId: Snowflake?,
-	val threadId: Snowflake,
-	val ownerId: Snowflake,
-	val parentChannelId: Snowflake?,
-	var preventArchiving: Boolean = false
+    val guildId: Snowflake?,
+    val threadId: Snowflake,
+    val ownerId: Snowflake,
+    val parentChannelId: Snowflake?,
+    var preventArchiving: Boolean = false
 )

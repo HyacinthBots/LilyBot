@@ -20,14 +20,14 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class AutoThreadingData(
-	val guildId: Snowflake,
-	val channelId: Snowflake,
-	val roleId: Snowflake?,
-	val preventDuplicates: Boolean,
-	val archive: Boolean,
-	val contentAwareNaming: Boolean,
-	val mention: Boolean,
-	val creationMessage: String?,
-	val addModsAndRole: Boolean,
-	val extraRoleIds: MutableList<Snowflake>
+    val guildId: Snowflake,
+    val channelId: Snowflake,
+    val roleId: Snowflake?,
+    val preventDuplicates: Boolean,
+    val archive: Boolean,
+    val contentAwareNaming: Boolean,
+    val mention: Boolean,
+    val creationMessage: String?,
+    val addModsAndRole: Boolean,
+    val extraRoleIds: MutableList<Snowflake>
 )

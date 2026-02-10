@@ -26,9 +26,11 @@ Translations are hosted on [weblate](https://hosted.weblate.org)
 ---
 
 ## About
+
 LilyBot, or Lily, is a multipurpose Discord bot. Lily handles moderation, utility, link filtering, and much, much more. Lily is canonically transfem and uses she/her or it/its pronouns.
 
 ## Usage
+
 **If you're looking to add Lily to your server, you don't need any of this and can simply click [this link](https://discord.com/api/oauth2/authorize?client_id=876278900836139008&permissions=1151990787078&scope=bot%20applications.commands).**
 
 If you need additional instruction using up the public instance of Lily, try our
@@ -36,15 +38,17 @@ If you need additional instruction using up the public instance of Lily, try our
 
 If you're looking to set up a development environment for Lily, try our [development guide](https://github.com/HyacinthBots/LilyBot/blob/main/docs/development-guide.md).
 
-
 ## Links
+
 * Visit [our Buy Me a Coffee page](https://buymeacoffee.com/Hyacinthbots) to support the continued development of HyacinthBots projects!
 * Join [our Discord](https://discord.gg/hy2329fcTZ) to watch the development and get support for LilyBot and other HyacinthBots projects!
 * Follow us on Twitter [`@HyacinthBots`](https://twitter.com/hyacinthbots)
 * Email us at [`hyacinthbots@outlook.com`](mailto:hyacinthbots@outlook.com)
 
 ### Tooling
+
 Lily makes use of the following tools and frameworks.
+
 * [Kord](https://github.com/kordlib/kord), the Kotlin API for Discord.
 * [KordEx](https://github.com/Kord-Extensions/kord-extensions), an integrated commands and extensions framework for Kord.
 * KordEx's [Phishing](https://github.com/Kord-Extensions/kord-extensions/tree/root/extra-modules/extra-phishing), [PluralKit](https://github.com/Kord-Extensions/kord-extensions/tree/root/extra-modules/extra-pluralkit), [Unsafe](https://github.com/Kord-Extensions/kord-extensions/tree/develop/modules/unsafe) and [Welcome Channel](https://github.com/Kord-Extensions/kord-extensions/tree/root/extra-modules/extra-welcome) modules.
@@ -58,12 +62,14 @@ Lily makes use of the following tools and frameworks.
 * [Doc-generator](https://github.com/HyacinthBots/doc-generator), our in-house documentation generator for KordEx bots
 
 #### Contributing
+
 This repository is open to contributions by the community. If you plan on contributing, please check our
 [Contributor Guidelines](https://github.com/HyacinthBots/LilyBot/blob/main/CONTRIBUTING.md).
 
 These days, Lily is primarily developed by [NoComment](https://github.com/NoComment1105). To discuss development with them, join the Discord linked above.
 
 ### Contributors
+
 ![GitHub contributors](https://img.shields.io/github/contributors/HyacinthBots/LilyBot?label=Total%20Contributors)
 ![contributors](https://contrib.rocks/image?repo=HyacinthBots/LilyBot)
 

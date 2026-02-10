@@ -12,6 +12,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class WelcomeChannelData(
-	val channelId: Snowflake,
-	val url: String
+    val channelId: Snowflake,
+    val url: String
 )

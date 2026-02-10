@@ -23,115 +23,115 @@ import org.hyacinthbots.lilybot.database.migrations.main.*
 import org.koin.core.component.inject
 
 object Migrator : KordExKoinComponent {
-	private val logger = KotlinLogging.logger("Migrator Logger")
+    private val logger = KotlinLogging.logger("Migrator Logger")
 
-	val db: Database by inject()
-	private val mainMetaCollection: MainMetaCollection by inject()
-	private val configMetaCollection: ConfigMetaCollection by inject()
+    val db: Database by inject()
+    private val mainMetaCollection: MainMetaCollection by inject()
+    private val configMetaCollection: ConfigMetaCollection by inject()
 
-	suspend fun migrateMain() {
-		logger.info { "Starting main database migration" }
+    suspend fun migrateMain() {
+        logger.info { "Starting main database migration" }
 
-		var meta = mainMetaCollection.get()
+        var meta = mainMetaCollection.get()
 
-		if (meta == null) {
-			meta = MainMetaData(0)
+        if (meta == null) {
+            meta = MainMetaData(0)
 
-			mainMetaCollection.set(meta)
-		}
+            mainMetaCollection.set(meta)
+        }
 
-		var currentVersion = meta.version
+        var currentVersion = meta.version
 
-		logger.info { "Current main database version: v$currentVersion" }
+        logger.info { "Current main database version: v$currentVersion" }
 
-		while (true) {
-			val nextVersion = currentVersion + 1
+        while (true) {
+            val nextVersion = currentVersion + 1
 
-			@Suppress("TooGenericExceptionCaught")
-			try {
-				when (nextVersion) {
-					1 -> ::mainV1
-					2 -> ::mainV2
-					3 -> ::mainV3
-					4 -> ::mainV4
-					5 -> ::mainV5
-					6 -> ::mainV6
-					7 -> ::mainV7
-					8 -> ::mainV8
-					9 -> ::mainV9
-					10 -> ::mainV10
-					11 -> ::mainV11
-					12 -> ::mainV12
-					else -> break
-				}(db.mainDatabase)
+            @Suppress("TooGenericExceptionCaught")
+            try {
+                when (nextVersion) {
+                    1 -> ::mainV1
+                    2 -> ::mainV2
+                    3 -> ::mainV3
+                    4 -> ::mainV4
+                    5 -> ::mainV5
+                    6 -> ::mainV6
+                    7 -> ::mainV7
+                    8 -> ::mainV8
+                    9 -> ::mainV9
+                    10 -> ::mainV10
+                    11 -> ::mainV11
+                    12 -> ::mainV12
+                    else -> break
+                }(db.mainDatabase)
 
-				logger.info { "Migrated main database to version $nextVersion." }
-			} catch (t: Throwable) {
-				logger.error(t) { "Failed to migrate main database to version $nextVersion." }
+                logger.info { "Migrated main database to version $nextVersion." }
+            } catch (t: Throwable) {
+                logger.error(t) { "Failed to migrate main database to version $nextVersion." }
 
-				throw t
-			}
+                throw t
+            }
 
-			currentVersion = nextVersion
-		}
+            currentVersion = nextVersion
+        }
 
-		if (currentVersion != meta.version) {
-			meta = meta.copy(version = currentVersion)
+        if (currentVersion != meta.version) {
+            meta = meta.copy(version = currentVersion)
 
-			mainMetaCollection.update(meta)
+            mainMetaCollection.update(meta)
 
-			logger.info { "Finished main database migrations." }
-		}
-	}
+            logger.info { "Finished main database migrations." }
+        }
+    }
 
-	suspend fun migrateConfig() {
-		logger.info { "Starting config database migration" }
+    suspend fun migrateConfig() {
+        logger.info { "Starting config database migration" }
 
-		var meta = configMetaCollection.get()
+        var meta = configMetaCollection.get()
 
-		if (meta == null) {
-			meta = ConfigMetaData(0)
+        if (meta == null) {
+            meta = ConfigMetaData(0)
 
-			configMetaCollection.set(meta)
-		}
+            configMetaCollection.set(meta)
+        }
 
-		var currentVersion = meta.version
+        var currentVersion = meta.version
 
-		logger.info { "Current config database version: v$currentVersion" }
+        logger.info { "Current config database version: v$currentVersion" }
 
-		while (true) {
-			val nextVersion = currentVersion + 1
+        while (true) {
+            val nextVersion = currentVersion + 1
 
-			@Suppress("TooGenericExceptionCaught")
-			try {
-				when (nextVersion) {
-					1 -> ::configV1
-					2 -> ::configV2
-					3 -> ::configV3
-					4 -> ::configV4
-					5 -> ::configV5
-					6 -> ::configV6
-					7 -> ::configV7
-					8 -> ::configV8
-					else -> break
-				}(db.configDatabase)
+            @Suppress("TooGenericExceptionCaught")
+            try {
+                when (nextVersion) {
+                    1 -> ::configV1
+                    2 -> ::configV2
+                    3 -> ::configV3
+                    4 -> ::configV4
+                    5 -> ::configV5
+                    6 -> ::configV6
+                    7 -> ::configV7
+                    8 -> ::configV8
+                    else -> break
+                }(db.configDatabase)
 
-				logger.info { "Migrated config database to version $nextVersion" }
-			} catch (t: Throwable) {
-				logger.error(t) { "Failed to migrate config database to version $nextVersion." }
+                logger.info { "Migrated config database to version $nextVersion" }
+            } catch (t: Throwable) {
+                logger.error(t) { "Failed to migrate config database to version $nextVersion." }
 
-				throw t
-			}
+                throw t
+            }
 
-			currentVersion = nextVersion
-		}
+            currentVersion = nextVersion
+        }
 
-		if (currentVersion != meta.version) {
-			meta = meta.copy(version = currentVersion)
+        if (currentVersion != meta.version) {
+            meta = meta.copy(version = currentVersion)
 
-			configMetaCollection.update(meta)
+            configMetaCollection.update(meta)
 
-			logger.info { "Finished config database migrations." }
-		}
-	}
+            logger.info { "Finished config database migrations." }
+        }
+    }
 }

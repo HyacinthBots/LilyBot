@@ -6,7 +6,7 @@ import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
 suspend fun mainV2(db: CoroutineDatabase) {
-	with(db.getCollection<ThreadData>()) {
-		updateMany(ThreadData::guildId exists false, setValue(ThreadData::guildId, null))
-	}
+    with(db.getCollection<ThreadData>()) {
+        updateMany(ThreadData::guildId exists false, setValue(ThreadData::guildId, null))
+    }
 }

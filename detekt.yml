@@ -201,7 +201,7 @@ naming:
     classPattern: '[A-Z$][a-zA-Z0-9$]*'
   ForbiddenClassName:
     active: false
-    forbiddenName: []
+    forbiddenName: [ ]
   FunctionMaxLength:
     active: false
     maximumFunctionNameLength: 30
@@ -249,7 +249,7 @@ potential-bugs:
     allowExplicitReturnType: true
   LateinitUsage:
     active: false
-    ignoreAnnotated: []
+    ignoreAnnotated: [ ]
     ignoreOnClassesPattern: ''
   MapGetWithNotNullAssertionOperator:
     active: true
@@ -269,7 +269,7 @@ style:
     active: true
   DataClassContainsFunctions:
     active: true
-    conversionFunctionPrefix: ['to']
+    conversionFunctionPrefix: [ 'to' ]
   DataClassShouldBeImmutable:
     active: true
   EqualsOnSignatureLine:
@@ -283,15 +283,15 @@ style:
     includeLineWrapping: true
   ForbiddenComment:
     active: false
-    comments: ['TODO:', 'FIXME:', 'STOPSHIP:']
+    comments: [ 'TODO:', 'FIXME:', 'STOPSHIP:' ]
     allowedPatterns: ''
   ForbiddenImport:
     active: false
-    imports: []
+    imports: [ ]
     forbiddenPatterns: ''
   ForbiddenMethodCall:
     active: false
-    methods: []
+    methods: [ ]
   ForbiddenVoid:
     active: true
     ignoreOverridden: true
@@ -300,7 +300,7 @@ style:
     active: false
   MagicNumber:
     active: false
-    ignoreNumbers: ['-1', '0', '1', '2']
+    ignoreNumbers: [ '-1', '0', '1', '2' ]
     ignoreHashCodeFunction: true
     ignorePropertyDeclaration: false
     ignoreLocalVariableDeclaration: false
@@ -323,7 +323,7 @@ style:
   ReturnCount:
     active: false
     max: 2
-    excludedFunctions: ['equals']
+    excludedFunctions: [ 'equals' ]
     excludeLabeled: false
     excludeReturnFromLambda: true
     excludeGuardClauses: false
@@ -352,7 +352,7 @@ style:
     active: true
   UseDataClass:
     active: true
-    ignoreAnnotated: []
+    ignoreAnnotated: [ ]
     allowVars: false
   UseEmptyCounterpart:
     active: true

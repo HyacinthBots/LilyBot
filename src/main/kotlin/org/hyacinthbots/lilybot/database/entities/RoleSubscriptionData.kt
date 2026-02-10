@@ -12,6 +12,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class RoleSubscriptionData(
-	val guildId: Snowflake,
-	val subscribableRoles: MutableList<Snowflake>
+    val guildId: Snowflake,
+    val subscribableRoles: MutableList<Snowflake>
 )

@@ -28,47 +28,47 @@ import kotlin.time.Duration.Companion.days
  * @since 3.2.2
  */
 class StartupHooks : Extension() {
-	override val name = "startup-hooks"
+    override val name = "startup-hooks"
 
-	private val cleanupScheduler = Scheduler()
+    private val cleanupScheduler = Scheduler()
 
-	private lateinit var cleanupTask: Task
+    private lateinit var cleanupTask: Task
 
-	override suspend fun setup() {
-		cleanupTask = cleanupScheduler.schedule(1.days, repeat = true, callback = ::cleanup, name = "Cleanup task")
+    override suspend fun setup() {
+        cleanupTask = cleanupScheduler.schedule(1.days, repeat = true, callback = ::cleanup, name = "Cleanup task")
 
-		event<ReadyEvent> {
-			action {
-				val now = Clock.System.now()
+        event<ReadyEvent> {
+            action {
+                val now = Clock.System.now()
 
-				UptimeCollection().set(now)
+                UptimeCollection().set(now)
 
-				/**
-				 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
-				 * @author IMS212
-				 * @since v2.0
-				 */
-				// The channel specifically for sending online notifications to
-				val homeGuild = kord.getGuildOrNull(TEST_GUILD_ID) ?: return@action
-				val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
-				onlineLog.createEmbed {
-					title = Translations.Utility.StartupHooks.onlineTitle.translate()
-					description =
-						"${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
-					color = DISCORD_GREEN
-				}
-			}
-		}
-	}
+                /**
+                 * Online notification, that is printed to the official [TEST_GUILD_ID]'s [ONLINE_STATUS_CHANNEL].
+                 * @author IMS212
+                 * @since v2.0
+                 */
+                // The channel specifically for sending online notifications to
+                val homeGuild = kord.getGuildOrNull(TEST_GUILD_ID) ?: return@action
+                val onlineLog = homeGuild.getChannelOfOrNull<NewsChannel>(ONLINE_STATUS_CHANNEL) ?: return@action
+                onlineLog.createEmbed {
+                    title = Translations.Utility.StartupHooks.onlineTitle.translate()
+                    description =
+                        "${now.toDiscord(TimestampType.LongDateTime)} (${now.toDiscord(TimestampType.RelativeTime)})"
+                    color = DISCORD_GREEN
+                }
+            }
+        }
+    }
 
-	/**
-	 * This function is called to remove any threads in the database that haven't had a message sent in the last
-	 * week.
-	 * @author NoComment1105
-	 * @since 4.1.0
-	 */
-	private suspend fun cleanup() {
-		Cleanups.cleanupThreadData(kord)
-		Cleanups.cleanupGuildData(kord)
-	}
+    /**
+     * This function is called to remove any threads in the database that haven't had a message sent in the last
+     * week.
+     * @author NoComment1105
+     * @since 4.1.0
+     */
+    private suspend fun cleanup() {
+        Cleanups.cleanupThreadData(kord)
+        Cleanups.cleanupGuildData(kord)
+    }
 }

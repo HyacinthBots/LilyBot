@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class PublicMemberLogData(
-	val pingNewUsers: Boolean,
-	val joinMessage: String?,
-	val leaveMessage: String?
+    val pingNewUsers: Boolean,
+    val joinMessage: String?,
+    val leaveMessage: String?
 )

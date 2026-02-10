@@ -34,175 +34,175 @@ import org.hyacinthbots.lilybot.utils.requiredConfigs
 import kotlin.math.min
 
 class ClearCommands : Extension() {
-	override val name = "clear"
+    override val name = "clear"
 
-	override suspend fun setup() {
-		ephemeralSlashCommand {
-			name = Translations.Moderation.ClearCommands.Clear.name
-			description = Translations.Moderation.ClearCommands.Clear.description
+    override suspend fun setup() {
+        ephemeralSlashCommand {
+            name = Translations.Moderation.ClearCommands.Clear.name
+            description = Translations.Moderation.ClearCommands.Clear.description
 
-			ephemeralSubCommand(ClearCommandArgs::Count) {
-				name = Translations.Moderation.ClearCommands.Clear.Count.name
-				description = Translations.Moderation.ClearCommands.Clear.Count.description
+            ephemeralSubCommand(ClearCommandArgs::Count) {
+                name = Translations.Moderation.ClearCommands.Clear.Count.name
+                description = Translations.Moderation.ClearCommands.Clear.Count.description
 
-				requirePermission(Permission.ManageMessages)
+                requirePermission(Permission.ManageMessages)
 
-				check {
-					modCommandChecks(Permission.ManageMessages)
-					requireBotPermissions(Permission.ManageMessages)
-					botHasChannelPerms(Permissions(Permission.ManageMessages))
-				}
+                check {
+                    modCommandChecks(Permission.ManageMessages)
+                    requireBotPermissions(Permission.ManageMessages)
+                    botHasChannelPerms(Permissions(Permission.ManageMessages))
+                }
 
-				action {
-					clearMessages(arguments.count, null, null, arguments.author)
-				}
-			}
+                action {
+                    clearMessages(arguments.count, null, null, arguments.author)
+                }
+            }
 
-			ephemeralSubCommand(ClearCommandArgs::Before) {
-				name = Translations.Moderation.ClearCommands.Clear.Before.name
-				description = Translations.Moderation.ClearCommands.Clear.Before.description
+            ephemeralSubCommand(ClearCommandArgs::Before) {
+                name = Translations.Moderation.ClearCommands.Clear.Before.name
+                description = Translations.Moderation.ClearCommands.Clear.Before.description
 
-				requirePermission(Permission.ManageMessages)
+                requirePermission(Permission.ManageMessages)
 
-				check {
-					modCommandChecks(Permission.ManageMessages)
-					requireBotPermissions(Permission.ManageMessages)
-					botHasChannelPerms(Permissions(Permission.ManageMessages))
-				}
+                check {
+                    modCommandChecks(Permission.ManageMessages)
+                    requireBotPermissions(Permission.ManageMessages)
+                    botHasChannelPerms(Permissions(Permission.ManageMessages))
+                }
 
-				action {
-					clearMessages(arguments.count, Snowflake(arguments.before.value + 1u), null, arguments.author)
-				}
-			}
+                action {
+                    clearMessages(arguments.count, Snowflake(arguments.before.value + 1u), null, arguments.author)
+                }
+            }
 
-			ephemeralSubCommand(ClearCommandArgs::After) {
-				name = Translations.Moderation.ClearCommands.Clear.After.name
-				description = Translations.Moderation.ClearCommands.Clear.After.description
+            ephemeralSubCommand(ClearCommandArgs::After) {
+                name = Translations.Moderation.ClearCommands.Clear.After.name
+                description = Translations.Moderation.ClearCommands.Clear.After.description
 
-				requirePermission(Permission.ManageMessages)
+                requirePermission(Permission.ManageMessages)
 
-				check {
-					modCommandChecks(Permission.ManageMessages)
-					requireBotPermissions(Permission.ManageMessages)
-					botHasChannelPerms(Permissions(Permission.ManageMessages))
-				}
+                check {
+                    modCommandChecks(Permission.ManageMessages)
+                    requireBotPermissions(Permission.ManageMessages)
+                    botHasChannelPerms(Permissions(Permission.ManageMessages))
+                }
 
-				action {
-					clearMessages(arguments.count, null, Snowflake(arguments.after.value - 1u), arguments.author)
-				}
-			}
+                action {
+                    clearMessages(arguments.count, null, Snowflake(arguments.after.value - 1u), arguments.author)
+                }
+            }
 
-			ephemeralSubCommand(ClearCommandArgs::Between) {
-				name = Translations.Moderation.ClearCommands.Clear.Between.name
-				description = Translations.Moderation.ClearCommands.Clear.Between.description
+            ephemeralSubCommand(ClearCommandArgs::Between) {
+                name = Translations.Moderation.ClearCommands.Clear.Between.name
+                description = Translations.Moderation.ClearCommands.Clear.Between.description
 
-				requirePermission(Permission.ManageMessages)
+                requirePermission(Permission.ManageMessages)
 
-				check {
-					anyGuild()
-					requiredConfigs(ConfigOptions.MODERATION_ENABLED)
-					hasPermission(Permission.ManageMessages)
-					requireBotPermissions(Permission.ManageMessages)
-					botHasChannelPerms(Permissions(Permission.ManageMessages))
-				}
+                check {
+                    anyGuild()
+                    requiredConfigs(ConfigOptions.MODERATION_ENABLED)
+                    hasPermission(Permission.ManageMessages)
+                    requireBotPermissions(Permission.ManageMessages)
+                    botHasChannelPerms(Permissions(Permission.ManageMessages))
+                }
 
-				action {
-					clearMessages(
-						null,
-						Snowflake(arguments.before.value - 1u),
-						Snowflake(arguments.after.value + 1u),
-						arguments.author
-					)
-				}
-			}
-		}
-	}
+                action {
+                    clearMessages(
+                        null,
+                        Snowflake(arguments.before.value - 1u),
+                        Snowflake(arguments.after.value + 1u),
+                        arguments.author
+                    )
+                }
+            }
+        }
+    }
 
-	/**
-	 * An object containing the arguments for clear commands.
-	 *
-	 * @since 4.8.6
-	 */
-	@Suppress("MemberNameEqualsClassName") // Cope
-	internal object ClearCommandArgs {
-		/** Clear a specific count of messages. */
-		internal class Count : Arguments() {
-			/** The number of messages the user wants to remove. */
-			val count by int {
-				name = Translations.Moderation.ClearCommands.Arguments.Count.name
-				description = Translations.Moderation.ClearCommands.Arguments.Count.description
-			}
+    /**
+     * An object containing the arguments for clear commands.
+     *
+     * @since 4.8.6
+     */
+    @Suppress("MemberNameEqualsClassName") // Cope
+    internal object ClearCommandArgs {
+        /** Clear a specific count of messages. */
+        internal class Count : Arguments() {
+            /** The number of messages the user wants to remove. */
+            val count by int {
+                name = Translations.Moderation.ClearCommands.Arguments.Count.name
+                description = Translations.Moderation.ClearCommands.Arguments.Count.description
+            }
 
-			/** The author of the messages that need clearing. */
-			val author by optionalUser {
-				name = Translations.Moderation.ClearCommands.Arguments.Author.name
-				description = Translations.Moderation.ClearCommands.Arguments.Author.description
-			}
-		}
+            /** The author of the messages that need clearing. */
+            val author by optionalUser {
+                name = Translations.Moderation.ClearCommands.Arguments.Author.name
+                description = Translations.Moderation.ClearCommands.Arguments.Author.description
+            }
+        }
 
-		/** Clear messages after a specific one. */
-		internal class After : Arguments() {
-			/** The ID of the message to start clearing from. */
-			val after by snowflake {
-				name = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.name
-				description = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.description
-			}
+        /** Clear messages after a specific one. */
+        internal class After : Arguments() {
+            /** The ID of the message to start clearing from. */
+            val after by snowflake {
+                name = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.name
+                description = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.description
+            }
 
-			/** The number of messages the user wants to remove. */
-			val count by optionalInt {
-				name = Translations.Moderation.ClearCommands.Arguments.Count.name
-				description = Translations.Moderation.ClearCommands.Arguments.Count.description
-			}
+            /** The number of messages the user wants to remove. */
+            val count by optionalInt {
+                name = Translations.Moderation.ClearCommands.Arguments.Count.name
+                description = Translations.Moderation.ClearCommands.Arguments.Count.description
+            }
 
-			/** The author of the messages that need clearing. */
-			val author by optionalUser {
-				name = Translations.Moderation.ClearCommands.Arguments.Author.name
-				description = Translations.Moderation.ClearCommands.Arguments.Author.description
-			}
-		}
+            /** The author of the messages that need clearing. */
+            val author by optionalUser {
+                name = Translations.Moderation.ClearCommands.Arguments.Author.name
+                description = Translations.Moderation.ClearCommands.Arguments.Author.description
+            }
+        }
 
-		/** Clear messages before a specific one. */
-		internal class Before : Arguments() {
-			/** The ID of the message to start clearing before. */
-			val before by snowflake {
-				name = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.name
-				description = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.description
-			}
+        /** Clear messages before a specific one. */
+        internal class Before : Arguments() {
+            /** The ID of the message to start clearing before. */
+            val before by snowflake {
+                name = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.name
+                description = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.description
+            }
 
-			/** The number of messages the user wants to remove. */
-			val count by optionalInt {
-				name = Translations.Moderation.ClearCommands.Arguments.Count.name
-				description = Translations.Moderation.ClearCommands.Arguments.Count.description
-			}
+            /** The number of messages the user wants to remove. */
+            val count by optionalInt {
+                name = Translations.Moderation.ClearCommands.Arguments.Count.name
+                description = Translations.Moderation.ClearCommands.Arguments.Count.description
+            }
 
-			/** The author of the messages that need clearing. */
-			val author by optionalUser {
-				name = Translations.Moderation.ClearCommands.Arguments.Author.name
-				description = Translations.Moderation.ClearCommands.Arguments.Author.description
-			}
-		}
+            /** The author of the messages that need clearing. */
+            val author by optionalUser {
+                name = Translations.Moderation.ClearCommands.Arguments.Author.name
+                description = Translations.Moderation.ClearCommands.Arguments.Author.description
+            }
+        }
 
-		/** Clear messages between 2 specific ones. */
-		internal class Between : Arguments() {
-			/** The ID of the message to start clearing from. */
-			val after by snowflake {
-				name = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.name
-				description = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.description
-			}
+        /** Clear messages between 2 specific ones. */
+        internal class Between : Arguments() {
+            /** The ID of the message to start clearing from. */
+            val after by snowflake {
+                name = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.name
+                description = Translations.Moderation.ClearCommands.Clear.After.Arguments.After.description
+            }
 
-			/** The ID of the message to start clearing before. */
-			val before by snowflake {
-				name = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.name
-				description = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.description
-			}
+            /** The ID of the message to start clearing before. */
+            val before by snowflake {
+                name = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.name
+                description = Translations.Moderation.ClearCommands.Clear.Before.Arguments.Before.description
+            }
 
-			/** The author of the messages that need clearing. */
-			val author by optionalUser {
-				name = Translations.Moderation.ClearCommands.Arguments.Author.name
-				description = Translations.Moderation.ClearCommands.Arguments.Author.description
-			}
-		}
-	}
+            /** The author of the messages that need clearing. */
+            val author by optionalUser {
+                name = Translations.Moderation.ClearCommands.Arguments.Author.name
+                description = Translations.Moderation.ClearCommands.Arguments.Author.description
+            }
+        }
+    }
 }
 
 /**
@@ -216,72 +216,72 @@ class ClearCommands : Extension() {
  * @since 4.8.6
  */
 private suspend fun EphemeralSlashCommandContext<*, *>.clearMessages(
-	count: Int?,
-	before: Snowflake?,
-	after: Snowflake?,
-	author: User?
+    count: Int?,
+    before: Snowflake?,
+    after: Snowflake?,
+    author: User?
 ) {
-	val config = ModerationConfigCollection().getConfig(guild!!.id)!!
-	val textChannel = channel.asChannelOfOrNull<GuildMessageChannel>()
+    val config = ModerationConfigCollection().getConfig(guild!!.id)!!
+    val textChannel = channel.asChannelOfOrNull<GuildMessageChannel>()
 
-	if (textChannel == null) {
-		respond {
-			content = Translations.Moderation.ClearCommands.Error.noChannel.translate()
-		}
-		return
-	}
+    if (textChannel == null) {
+        respond {
+            content = Translations.Moderation.ClearCommands.Error.noChannel.translate()
+        }
+        return
+    }
 
-	if ((before != null && after != null) && (before < after)) {
-		respond {
-			content = Translations.Moderation.ClearCommands.Error.beforeAfter.translate()
-		}
-		return
-	}
+    if ((before != null && after != null) && (before < after)) {
+        respond {
+            content = Translations.Moderation.ClearCommands.Error.beforeAfter.translate()
+        }
+        return
+    }
 
-	// Get the specified amount of messages into an array list of Snowflakes and delete them
-	// Send help
-	val messageFlow = if (before == null && after == null) {
-		channel.withStrategy(EntitySupplyStrategy.rest)
-			.getMessagesBefore(Snowflake.max, count?.let { min(it, 100) })
-	} else if (after != null && before == null) {
-		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesAfter(after, count?.let { min(it, 100) })
-	} else if (after == null && before != null) {
-		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(before, count?.let { min(it, 100) })
-	} else if (after != null && before != null) {
-		channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(before, count?.let { min(it, 100) })
-			.filter { it.id > after }
-	} else {
-		flowOf()
-	}
+    // Get the specified amount of messages into an array list of Snowflakes and delete them
+    // Send help
+    val messageFlow = if (before == null && after == null) {
+        channel.withStrategy(EntitySupplyStrategy.rest)
+            .getMessagesBefore(Snowflake.max, count?.let { min(it, 100) })
+    } else if (after != null && before == null) {
+        channel.withStrategy(EntitySupplyStrategy.rest).getMessagesAfter(after, count?.let { min(it, 100) })
+    } else if (after == null && before != null) {
+        channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(before, count?.let { min(it, 100) })
+    } else if (after != null && before != null) {
+        channel.withStrategy(EntitySupplyStrategy.rest).getMessagesBefore(before, count?.let { min(it, 100) })
+            .filter { it.id > after }
+    } else {
+        flowOf()
+    }
 
-	val messages = if (author == null) {
-		messageFlow.map { it.id }.toSet()
-	} else {
-		messageFlow.filter { it.author == author }.map { it.id }.toSet()
-	}
+    val messages = if (author == null) {
+        messageFlow.map { it.id }.toSet()
+    } else {
+        messageFlow.filter { it.author == author }.map { it.id }.toSet()
+    }
 
-	textChannel.bulkDelete(messages)
+    textChannel.bulkDelete(messages)
 
-	respond {
-		content = Translations.Moderation.ClearCommands.cleared.translate()
-	}
+    respond {
+        content = Translations.Moderation.ClearCommands.cleared.translate()
+    }
 
-	if (config.publicLogging != null && config.publicLogging == true) {
-		channel.createEmbed {
-			title = Translations.Moderation.ClearCommands.numberCleared.translate(count)
-			color = DISCORD_BLACK
-		}
-	}
+    if (config.publicLogging != null && config.publicLogging == true) {
+        channel.createEmbed {
+            title = Translations.Moderation.ClearCommands.numberCleared.translate(count)
+            color = DISCORD_BLACK
+        }
+    }
 
-	val actionLog =
-		getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return
-	actionLog.createEmbed {
-		title = Translations.Moderation.ClearCommands.numberCleared.translate(count ?: messages.size)
-		description = Translations.Moderation.ClearCommands.occurredIn.translate()
-		footer {
-			text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
-			icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-		}
-		color = DISCORD_BLACK
-	}
+    val actionLog =
+        getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, this.getGuild()!!) ?: return
+    actionLog.createEmbed {
+        title = Translations.Moderation.ClearCommands.numberCleared.translate(count ?: messages.size)
+        description = Translations.Moderation.ClearCommands.occurredIn.translate()
+        footer {
+            text = user.asUserOrNull()?.username ?: Translations.Basic.UnableTo.tag.translate()
+            icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+        }
+        color = DISCORD_BLACK
+    }
 }

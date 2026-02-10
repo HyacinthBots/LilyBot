@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class WarnData(
-	val userId: Snowflake,
-	val guildId: Snowflake,
-	val strikes: Int
+    val userId: Snowflake,
+    val guildId: Snowflake,
+    val strikes: Int
 )

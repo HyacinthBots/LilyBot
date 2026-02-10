@@ -14,8 +14,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class LockedChannelData(
-	val guildId: Snowflake,
-	val channelId: Snowflake,
-	val allowed: String,
-	val denied: String,
+    val guildId: Snowflake,
+    val channelId: Snowflake,
+    val allowed: String,
+    val denied: String,
 )

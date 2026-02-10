@@ -6,15 +6,15 @@ import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
 suspend fun configV2(db: CoroutineDatabase) {
-	with(db.getCollection<ModerationConfigData>("moderationConfigData")) {
-		updateMany(
-			ModerationConfigData::quickTimeoutLength exists false,
-			setValue(ModerationConfigData::quickTimeoutLength, null)
-		)
+    with(db.getCollection<ModerationConfigData>("moderationConfigData")) {
+        updateMany(
+            ModerationConfigData::quickTimeoutLength exists false,
+            setValue(ModerationConfigData::quickTimeoutLength, null)
+        )
 
-		updateMany(
-			ModerationConfigData::autoPunishOnWarn exists false,
-			setValue(ModerationConfigData::autoPunishOnWarn, null)
-		)
-	}
+        updateMany(
+            ModerationConfigData::autoPunishOnWarn exists false,
+            setValue(ModerationConfigData::autoPunishOnWarn, null)
+        )
+    }
 }

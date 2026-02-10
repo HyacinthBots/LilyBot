@@ -17,31 +17,31 @@ import kotlin.time.Instant
  * @see removeLeaveTime
  */
 class GuildLeaveTimeCollection : KordExKoinComponent {
-	private val db: Database by inject()
+    private val db: Database by inject()
 
-	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<GuildLeaveTimeData>()
+    @PublishedApi
+    internal val collection = db.mainDatabase.getCollection<GuildLeaveTimeData>()
 
-	/**
-	 * Adds the time Lily bot left a guild with a config.
-	 *
-	 * @param inputGuildId The guild the event took place in
-	 * @param time The current time
-	 *
-	 * @author NoComment1105
-	 * @since 3.2.0
-	 */
-	suspend inline fun setLeaveTime(inputGuildId: Snowflake, time: Instant) =
-		collection.insertOne(GuildLeaveTimeData(inputGuildId, time))
+    /**
+     * Adds the time Lily bot left a guild with a config.
+     *
+     * @param inputGuildId The guild the event took place in
+     * @param time The current time
+     *
+     * @author NoComment1105
+     * @since 3.2.0
+     */
+    suspend inline fun setLeaveTime(inputGuildId: Snowflake, time: Instant) =
+        collection.insertOne(GuildLeaveTimeData(inputGuildId, time))
 
-	/**
-	 * This function deletes a [GuildLeaveTimeData] from the database.
-	 *
-	 * @param inputGuildId The guild to delete the [GuildLeaveTimeData] for
-	 *
-	 * @author tempest15
-	 * @since 3.2.0
-	 */
-	suspend inline fun removeLeaveTime(inputGuildId: Snowflake) =
-		collection.deleteOne(GuildLeaveTimeData::guildId eq inputGuildId)
+    /**
+     * This function deletes a [GuildLeaveTimeData] from the database.
+     *
+     * @param inputGuildId The guild to delete the [GuildLeaveTimeData] for
+     *
+     * @author tempest15
+     * @since 3.2.0
+     */
+    suspend inline fun removeLeaveTime(inputGuildId: Snowflake) =
+        collection.deleteOne(GuildLeaveTimeData::guildId eq inputGuildId)
 }

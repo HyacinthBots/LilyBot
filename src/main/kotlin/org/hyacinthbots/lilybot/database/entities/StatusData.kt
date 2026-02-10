@@ -10,6 +10,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class StatusData(
-	val statusType: String?,
-	val status: String?
+    val statusType: String?,
+    val status: String?
 )

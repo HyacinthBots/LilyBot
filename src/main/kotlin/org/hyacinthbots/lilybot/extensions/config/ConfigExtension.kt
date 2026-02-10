@@ -11,23 +11,23 @@ import org.hyacinthbots.lilybot.extensions.moderation.config.moderationCommand
 import org.hyacinthbots.lilybot.extensions.utility.config.utilityCommand
 
 class ConfigExtension : Extension() {
-	override val name: String = "config"
+    override val name: String = "config"
 
-	@OptIn(UnsafeAPI::class)
-	override suspend fun setup() {
-		ephemeralSlashCommand {
-			name = Translations.Config.name
-			description = Translations.Config.name
+    @OptIn(UnsafeAPI::class)
+    override suspend fun setup() {
+        ephemeralSlashCommand {
+            name = Translations.Config.name
+            description = Translations.Config.name
 
-			loggingCommand()
+            loggingCommand()
 
-			moderationCommand()
+            moderationCommand()
 
-			utilityCommand()
+            utilityCommand()
 
-			configClearCommand()
+            configClearCommand()
 
-			configViewCommand()
-		}
-	}
+            configViewCommand()
+        }
+    }
 }

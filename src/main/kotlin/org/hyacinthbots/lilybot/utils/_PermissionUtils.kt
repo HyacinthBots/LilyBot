@@ -39,40 +39,40 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
  * @since 4.1.0
  */
 suspend inline fun getLoggingChannelWithPerms(
-	channelType: ConfigOptions,
-	guild: GuildBehavior,
-	resetConfig: Boolean? = null
+    channelType: ConfigOptions,
+    guild: GuildBehavior,
+    resetConfig: Boolean? = null
 ): GuildMessageChannel? {
-	val guildId = guild.id
+    val guildId = guild.id
 
-	if (!configIsUsable(guildId, channelType)) return null
+    if (!configIsUsable(guildId, channelType)) return null
 
-	val channelId = when (channelType) {
-		ConfigOptions.ACTION_LOG -> ModerationConfigCollection().getConfig(guildId)?.channel ?: return null
-		ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().getConfig(guildId)?.utilityLogChannel ?: return null
-		ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().getConfig(guildId)?.messageChannel ?: return null
-		ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().getConfig(guildId)?.memberLog ?: return null
-		else -> throw IllegalArgumentException("$channelType does not point to a channel.")
-	}
-	val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return null
+    val channelId = when (channelType) {
+        ConfigOptions.ACTION_LOG -> ModerationConfigCollection().getConfig(guildId)?.channel ?: return null
+        ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().getConfig(guildId)?.utilityLogChannel ?: return null
+        ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().getConfig(guildId)?.messageChannel ?: return null
+        ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().getConfig(guildId)?.memberLog ?: return null
+        else -> throw IllegalArgumentException("$channelType does not point to a channel.")
+    }
+    val channel = guild.getChannelOfOrNull<GuildMessageChannel>(channelId) ?: return null
 
-	if (!channel.botHasPermissions(Permission.ViewChannel) || !channel.botHasPermissions(Permission.SendMessages)) {
-		if (resetConfig == true) {
-			when (channelType) {
-				ConfigOptions.ACTION_LOG -> ModerationConfigCollection().clearConfig(guildId)
-				ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().clearConfig(guildId)
-				ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().clearConfig(guildId)
-				ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().clearConfig(guildId)
-			}
-			val informChannel = getSystemChannelWithPerms(guild as Guild) ?: getFirstUsableChannel(guild)
-			informChannel?.createMessage(
-				Translations.Checks.LoggingChannelPerms.cannotGet.translate(channelType.toString().lowercase())
-			)
-		}
-		return null
-	}
+    if (!channel.botHasPermissions(Permission.ViewChannel) || !channel.botHasPermissions(Permission.SendMessages)) {
+        if (resetConfig == true) {
+            when (channelType) {
+                ConfigOptions.ACTION_LOG -> ModerationConfigCollection().clearConfig(guildId)
+                ConfigOptions.UTILITY_LOG -> UtilityConfigCollection().clearConfig(guildId)
+                ConfigOptions.MESSAGE_LOG -> LoggingConfigCollection().clearConfig(guildId)
+                ConfigOptions.MEMBER_LOG -> LoggingConfigCollection().clearConfig(guildId)
+            }
+            val informChannel = getSystemChannelWithPerms(guild as Guild) ?: getFirstUsableChannel(guild)
+            informChannel?.createMessage(
+                Translations.Checks.LoggingChannelPerms.cannotGet.translate(channelType.toString().lowercase())
+            )
+        }
+        return null
+    }
 
-	return channel
+    return channel
 }
 
 /**
@@ -84,14 +84,14 @@ suspend inline fun getLoggingChannelWithPerms(
  * @since 3.5.4
  */
 suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessageChannel? {
-	var firstUsable: GuildMessageChannel? = null
-	inputGuild.channels.toList().toSortedSet().forEach {
-		if (it.botHasPermissions(Permission.ViewChannel) && it.botHasPermissions(Permission.SendMessages)) {
-			firstUsable = it.asChannelOfOrNull()
-			return@forEach
-		}
-	}
-	return firstUsable
+    var firstUsable: GuildMessageChannel? = null
+    inputGuild.channels.toList().toSortedSet().forEach {
+        if (it.botHasPermissions(Permission.ViewChannel) && it.botHasPermissions(Permission.SendMessages)) {
+            firstUsable = it.asChannelOfOrNull()
+            return@forEach
+        }
+    }
+    return firstUsable
 }
 
 /**
@@ -103,13 +103,13 @@ suspend inline fun getFirstUsableChannel(inputGuild: GuildBehavior): GuildMessag
  * @since 4.1.0
  */
 suspend inline fun getSystemChannelWithPerms(inputGuild: Guild): GuildMessageChannel? {
-	val systemChannel = inputGuild.getSystemChannel() ?: return null
-	if (!systemChannel.botHasPermissions(Permission.ViewChannel) ||
-		!systemChannel.botHasPermissions(Permission.SendMessages)
-	) {
-		return null
-	}
-	return systemChannel
+    val systemChannel = inputGuild.getSystemChannel() ?: return null
+    if (!systemChannel.botHasPermissions(Permission.ViewChannel) ||
+        !systemChannel.botHasPermissions(Permission.SendMessages)
+    ) {
+        return null
+    }
+    return systemChannel
 }
 
 /**
@@ -121,42 +121,57 @@ suspend inline fun getSystemChannelWithPerms(inputGuild: Guild): GuildMessageCha
  * @since 3.4.0
  */
 suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) {
-	if (!passed) {
-		return
-	}
+    if (!passed) {
+        return
+    }
 
-	val eventChannel = channelFor(event)?.asChannelOrNull() ?: return
+    val eventChannel = channelFor(event)?.asChannelOrNull() ?: return
 
-	val permissionsSet: String = formatPermissionSet(permissions)
+    val permissionsSet: String = formatPermissionSet(permissions)
 
-	/* Use `TextChannel` when the channel is a Text channel */
-	if (eventChannel is TextChannel) {
-		if (eventChannel.asChannelOfOrNull<TextChannel>()?.getEffectivePermissions(event.kord.selfId)
-				?.contains(Permissions(permissions)) == true
-		) {
-			pass()
-		} else {
-			fail(Translations.Checks.ChannelPerms.incorrectPerms.withOrdinalPlaceholders(permissionsSet, eventChannel.mention))
-		}
-	} else if (eventChannel is NewsChannel) {
-		if (eventChannel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(event.kord.selfId)
-				?.contains(Permissions(permissions)) == true
-		) {
-			pass()
-		} else {
-			fail(Translations.Checks.ChannelPerms.incorrectPerms.withOrdinalPlaceholders(permissionsSet, eventChannel.mention))
-		}
-	} else if (eventChannel is ThreadChannel) {
-		if (eventChannel.asChannelOfOrNull<ThreadChannel>()?.getParent()?.getEffectivePermissions(event.kord.selfId)
-				?.contains(Permissions(permissions)) == true
-		) {
-			pass()
-		} else {
-			fail(Translations.Checks.ChannelPerms.incorrectPerms.withOrdinalPlaceholders(permissionsSet, eventChannel.mention))
-		}
-	} else {
-		fail(Translations.Checks.ChannelPerms.unableToPerms)
-	}
+    /* Use `TextChannel` when the channel is a Text channel */
+    if (eventChannel is TextChannel) {
+        if (eventChannel.asChannelOfOrNull<TextChannel>()?.getEffectivePermissions(event.kord.selfId)
+                ?.contains(Permissions(permissions)) == true
+        ) {
+            pass()
+        } else {
+            fail(
+                Translations.Checks.ChannelPerms.incorrectPerms.withOrdinalPlaceholders(
+                    permissionsSet,
+                    eventChannel.mention
+                )
+            )
+        }
+    } else if (eventChannel is NewsChannel) {
+        if (eventChannel.asChannelOfOrNull<NewsChannel>()?.getEffectivePermissions(event.kord.selfId)
+                ?.contains(Permissions(permissions)) == true
+        ) {
+            pass()
+        } else {
+            fail(
+                Translations.Checks.ChannelPerms.incorrectPerms.withOrdinalPlaceholders(
+                    permissionsSet,
+                    eventChannel.mention
+                )
+            )
+        }
+    } else if (eventChannel is ThreadChannel) {
+        if (eventChannel.asChannelOfOrNull<ThreadChannel>()?.getParent()?.getEffectivePermissions(event.kord.selfId)
+                ?.contains(Permissions(permissions)) == true
+        ) {
+            pass()
+        } else {
+            fail(
+                Translations.Checks.ChannelPerms.incorrectPerms.withOrdinalPlaceholders(
+                    permissionsSet,
+                    eventChannel.mention
+                )
+            )
+        }
+    } else {
+        fail(Translations.Checks.ChannelPerms.unableToPerms)
+    }
 }
 
 /**
@@ -175,51 +190,51 @@ suspend inline fun CheckContext<*>.botHasChannelPerms(permissions: Permissions) 
  * @since 2.1.0
  */
 suspend inline fun EphemeralInteractionContext.isBotOrModerator(
-	kord: Kord,
-	user: User,
-	guild: GuildBehavior?,
-	commandName: String
+    kord: Kord,
+    user: User,
+    guild: GuildBehavior?,
+    commandName: String
 ): String? {
-	val translations = Translations.Checks.BotOrMod
-	if (guild == null) {
-		respond { content = translations.noGuild.translate() }
-		return null
-	}
+    val translations = Translations.Checks.BotOrMod
+    if (guild == null) {
+        respond { content = translations.noGuild.translate() }
+        return null
+    }
 
-	val moderationConfig = ModerationConfigCollection().getConfig(guild.id)
+    val moderationConfig = ModerationConfigCollection().getConfig(guild.id)
 
-	moderationConfig ?: run {
-		respond { content = translations.unableToAccess.translate() }
-		return null
-	}
+    moderationConfig ?: run {
+        respond { content = translations.unableToAccess.translate() }
+        return null
+    }
 
-	val member = user.asMemberOrNull(guild.id) ?: run {
-		utilsLogger.debug { "isBotOrModerator skipped on $commandName due to this user not being a member" }
-		return "skip"
-	}
-	val self = kord.getSelf().asMemberOrNull(guild.id) ?: run {
-		respond { content = translations.lilyError.translate() }
-		return null
-	}
-	// Get the users roles into a List of Snowflakes
-	val roles = member.roles.toList().map { it.id }
-	// If the user is a bot, return
-	if (member.isBot) {
-		respond { content = translations.cantBot.translate(commandName) }
-		return null
-		// If the moderator ping role is in roles, return
-	} else if (moderationConfig.role in roles) {
-		respond { content = translations.cantMod.translate(commandName) }
-		return null
-	} else if (member.getTopRole()?.getPosition() != null && self.getTopRole()?.getPosition() == null) {
-		respond { content = translations.lilyNoRole.translate(commandName) }
-		return null
-	} else if ((member.getTopRole()?.getPosition() ?: 0) > (self.getTopRole()?.getPosition() ?: 0)) {
-		respond { content = translations.userHigher.translate(commandName) }
-		return null
-	}
+    val member = user.asMemberOrNull(guild.id) ?: run {
+        utilsLogger.debug { "isBotOrModerator skipped on $commandName due to this user not being a member" }
+        return "skip"
+    }
+    val self = kord.getSelf().asMemberOrNull(guild.id) ?: run {
+        respond { content = translations.lilyError.translate() }
+        return null
+    }
+    // Get the users roles into a List of Snowflakes
+    val roles = member.roles.toList().map { it.id }
+    // If the user is a bot, return
+    if (member.isBot) {
+        respond { content = translations.cantBot.translate(commandName) }
+        return null
+        // If the moderator ping role is in roles, return
+    } else if (moderationConfig.role in roles) {
+        respond { content = translations.cantMod.translate(commandName) }
+        return null
+    } else if (member.getTopRole()?.getPosition() != null && self.getTopRole()?.getPosition() == null) {
+        respond { content = translations.lilyNoRole.translate(commandName) }
+        return null
+    } else if ((member.getTopRole()?.getPosition() ?: 0) > (self.getTopRole()?.getPosition() ?: 0)) {
+        respond { content = translations.userHigher.translate(commandName) }
+        return null
+    }
 
-	return "success" // Nothing should be done with the success, checks should be based on if this function returns null
+    return "success" // Nothing should be done with the success, checks should be based on if this function returns null
 }
 
 /**
@@ -230,9 +245,9 @@ suspend inline fun EphemeralInteractionContext.isBotOrModerator(
  * @since 4.4.0
  */
 suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: Permission) {
-	anyGuild()
-	requiredConfigs(ConfigOptions.MODERATION_ENABLED)
-	hasPermission(actionPermission)
+    anyGuild()
+    requiredConfigs(ConfigOptions.MODERATION_ENABLED)
+    hasPermission(actionPermission)
 }
 
 /**
@@ -244,16 +259,16 @@ suspend fun CheckContextWithCache<*>.modCommandChecks(actionPermission: Permissi
  * @since 5.0.0
  */
 fun formatPermissionSet(permissions: Permissions): String {
-	val permissionsSet: MutableSet<String> = mutableSetOf()
-	var count = 0
-	permissions.values.forEach { _ ->
-		permissionsSet.add(
-			permissions.values.toString()
-				.split(",")[count]
-				.split(".")[1]
-				.replace("]", "")
-		)
-		count++
-	}
-	return permissionsSet.toString().replace("[", "").replace("]", "").ifEmpty { "None" }
+    val permissionsSet: MutableSet<String> = mutableSetOf()
+    var count = 0
+    permissions.values.forEach { _ ->
+        permissionsSet.add(
+            permissions.values.toString()
+                .split(",")[count]
+                .split(".")[1]
+                .replace("]", "")
+        )
+        count++
+    }
+    return permissionsSet.toString().replace("[", "").replace("]", "").ifEmpty { "None" }
 }

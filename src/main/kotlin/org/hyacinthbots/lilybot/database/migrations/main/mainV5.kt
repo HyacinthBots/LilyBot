@@ -6,16 +6,16 @@ import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
 suspend fun mainV5(db: CoroutineDatabase) {
-	// db.createCollection("autoThreadingData")
+    // db.createCollection("autoThreadingData")
 
-	with(db.getCollection<ThreadData>()) {
-		updateMany(ThreadData::parentChannelId exists false, setValue(ThreadData::parentChannelId, null))
-	}
+    with(db.getCollection<ThreadData>()) {
+        updateMany(ThreadData::parentChannelId exists false, setValue(ThreadData::parentChannelId, null))
+    }
 
 // 	with(configDb.getCollection<SupportConfigData>()) {
 // 		for (it in find().toList()) {
 // 			if (it.channel == null) continue
-	// THIS MIGRATION IS COMPLETE. AWAY WITH THIS CODE IS FINE
+    // THIS MIGRATION IS COMPLETE. AWAY WITH THIS CODE IS FINE
 // 			db.getCollection<AutoThreadingData>().insertOne(
 // 				AutoThreadingData(
 // 					it.guildId,

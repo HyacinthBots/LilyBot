@@ -16,58 +16,58 @@ import org.hyacinthbots.lilybot.database.entities.UtilityConfigData
 import org.hyacinthbots.lilybot.extensions.config.utils.utilityEmbed
 
 suspend fun SlashCommand<*, *, *>.utilityCommand() = ephemeralSubCommand(::UtilityArgs) {
-	name = Translations.Config.Utility.name
-	description = Translations.Config.Utility.description
+    name = Translations.Config.Utility.name
+    description = Translations.Config.Utility.description
 
-	requirePermission(Permission.ManageGuild)
+    requirePermission(Permission.ManageGuild)
 
-	check {
-		anyGuild()
-		hasPermission(Permission.ManageGuild)
-	}
+    check {
+        anyGuild()
+        hasPermission(Permission.ManageGuild)
+    }
 
-	action {
-		val utilityConfig = UtilityConfigCollection().getConfig(guild!!.id)
+    action {
+        val utilityConfig = UtilityConfigCollection().getConfig(guild!!.id)
 
-		if (utilityConfig != null) {
-			respond {
-				content = Translations.Config.configAlreadyExists.translate("utility")
-			}
-			return@action
-		}
+        if (utilityConfig != null) {
+            respond {
+                content = Translations.Config.configAlreadyExists.translate("utility")
+            }
+            return@action
+        }
 
-		var utilityLog: TextChannel? = null
-		if (arguments.utilityLogChannel != null) {
-			utilityLog = guild!!.getChannelOfOrNull(arguments.utilityLogChannel!!.id)
-			if (utilityLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
-				respond {
-					content = Translations.Config.invalidChannel.translate("utility")
-				}
-				return@action
-			}
-		}
+        var utilityLog: TextChannel? = null
+        if (arguments.utilityLogChannel != null) {
+            utilityLog = guild!!.getChannelOfOrNull(arguments.utilityLogChannel!!.id)
+            if (utilityLog?.botHasPermissions(Permission.ViewChannel, Permission.SendMessages) != true) {
+                respond {
+                    content = Translations.Config.invalidChannel.translate("utility")
+                }
+                return@action
+            }
+        }
 
-		respond {
-			embed {
-				utilityEmbed(arguments, user)
-			}
-		}
+        respond {
+            embed {
+                utilityEmbed(arguments, user)
+            }
+        }
 
-		UtilityConfigCollection().setConfig(
-			UtilityConfigData(
-				guild!!.id,
-				arguments.utilityLogChannel?.id,
-				arguments.logChannelUpdates,
-				arguments.logEventUpdates,
-				arguments.logInviteUpdates,
-				arguments.logRoleUpdates
-			)
-		)
+        UtilityConfigCollection().setConfig(
+            UtilityConfigData(
+                guild!!.id,
+                arguments.utilityLogChannel?.id,
+                arguments.logChannelUpdates,
+                arguments.logEventUpdates,
+                arguments.logInviteUpdates,
+                arguments.logRoleUpdates
+            )
+        )
 
-		utilityLog?.createMessage {
-			embed {
-				utilityEmbed(arguments, user)
-			}
-		}
-	}
+        utilityLog?.createMessage {
+            embed {
+                utilityEmbed(arguments, user)
+            }
+        }
+    }
 }

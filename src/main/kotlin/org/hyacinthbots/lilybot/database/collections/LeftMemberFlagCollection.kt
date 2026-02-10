@@ -17,41 +17,41 @@ import org.litote.kmongo.eq
  * @see removeMemberFromLeft
  */
 class LeftMemberFlagCollection : KordExKoinComponent {
-	private val db: Database by inject()
+    private val db: Database by inject()
 
-	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<LeftMemberFlagData>()
+    @PublishedApi
+    internal val collection = db.mainDatabase.getCollection<LeftMemberFlagData>()
 
-	/**
-	 * Adds a member that left to the table.
-	 *
-	 * @param guildId The ID of the guild the action occurred in
-	 * @param targetUserId The ID of the user that left
-	 * @author NoComment1105
-	 * @since 5.0.0
-	 */
-	suspend inline fun addMemberToLeft(guildId: Snowflake, targetUserId: Snowflake) =
-		collection.insertOne(LeftMemberFlagData(guildId, targetUserId))
+    /**
+     * Adds a member that left to the table.
+     *
+     * @param guildId The ID of the guild the action occurred in
+     * @param targetUserId The ID of the user that left
+     * @author NoComment1105
+     * @since 5.0.0
+     */
+    suspend inline fun addMemberToLeft(guildId: Snowflake, targetUserId: Snowflake) =
+        collection.insertOne(LeftMemberFlagData(guildId, targetUserId))
 
-	/**
-	 * Gets a member that left from the table.
-	 *
-	 * @param guildId The ID of the guild the action occurred in
-	 * @param targetUserId The ID of the user that left
-	 * @author NoComment1105
-	 * @since 5.0.0
-	 */
-	suspend inline fun getMemberFromTable(guildId: Snowflake, targetUserId: Snowflake) =
-		collection.findOne(LeftMemberFlagData::guildId eq guildId, LeftMemberFlagData::userId eq targetUserId)
+    /**
+     * Gets a member that left from the table.
+     *
+     * @param guildId The ID of the guild the action occurred in
+     * @param targetUserId The ID of the user that left
+     * @author NoComment1105
+     * @since 5.0.0
+     */
+    suspend inline fun getMemberFromTable(guildId: Snowflake, targetUserId: Snowflake) =
+        collection.findOne(LeftMemberFlagData::guildId eq guildId, LeftMemberFlagData::userId eq targetUserId)
 
-	/**
-	 * Removes a member that from the table.
-	 *
-	 * @param guildId The ID of the guild the action occurred in
-	 * @param targetUserId The ID of the user that left
-	 * @author NoComment1105
-	 * @since 5.0.0
-	 */
-	suspend inline fun removeMemberFromLeft(guildId: Snowflake, targetUserId: Snowflake) =
-		collection.deleteOne(LeftMemberFlagData::guildId eq guildId, LeftMemberFlagData::userId eq targetUserId)
+    /**
+     * Removes a member that from the table.
+     *
+     * @param guildId The ID of the guild the action occurred in
+     * @param targetUserId The ID of the user that left
+     * @author NoComment1105
+     * @since 5.0.0
+     */
+    suspend inline fun removeMemberFromLeft(guildId: Snowflake, targetUserId: Snowflake) =
+        collection.deleteOne(LeftMemberFlagData::guildId eq guildId, LeftMemberFlagData::userId eq targetUserId)
 }

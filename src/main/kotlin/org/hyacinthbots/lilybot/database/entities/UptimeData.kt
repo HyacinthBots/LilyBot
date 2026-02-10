@@ -11,5 +11,5 @@ import kotlin.time.Instant
  */
 @Serializable
 data class UptimeData(
-	val onTime: Instant
+    val onTime: Instant
 )

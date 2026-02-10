@@ -16,75 +16,75 @@ import org.hyacinthbots.lilybot.utils.HYACINTH_GITHUB
  * @since 3.3.0
  */
 class InfoCommands : Extension() {
-	override val name = "info-commands"
+    override val name = "info-commands"
 
-	override suspend fun setup() {
-		/**
-		 * A command that creates an embed providing help with using Lily
-		 *
-		 * @author NoComment1105
-		 * @author tempest15
-		 * @since 3.3.0
-		 */
-		publicSlashCommand {
-			name = Translations.Utility.InfoCommands.Help.name
-			description = Translations.Utility.InfoCommands.Help.description
+    override suspend fun setup() {
+        /**
+         * A command that creates an embed providing help with using Lily
+         *
+         * @author NoComment1105
+         * @author tempest15
+         * @since 3.3.0
+         */
+        publicSlashCommand {
+            name = Translations.Utility.InfoCommands.Help.name
+            description = Translations.Utility.InfoCommands.Help.description
 
-			action {
-				val translations = Translations.Utility.InfoCommands.Help
-				respond {
-					embed {
-						thumbnail {
-							url = event.kord.getSelf().avatar?.cdnUrl!!.toUrl()
-						}
-						title = translations.embedTitle.translate()
-						description = translations.embedDesc.translate()
+            action {
+                val translations = Translations.Utility.InfoCommands.Help
+                respond {
+                    embed {
+                        thumbnail {
+                            url = event.kord.getSelf().avatar?.cdnUrl!!.toUrl()
+                        }
+                        title = translations.embedTitle.translate()
+                        description = translations.embedDesc.translate()
 
-						field {
-							name = translations.configFieldName.translate()
-							value = translations.configFieldValue.translate()
-						}
+                        field {
+                            name = translations.configFieldName.translate()
+                            value = translations.configFieldValue.translate()
+                        }
 
-						field {
-							name = translations.whatFieldName.translate()
-							value =
-								translations.whatFieldValue.translate() + "($HYACINTH_GITHUB/LilyBot/blob/main/docs/commands.md)."
-						}
+                        field {
+                            name = translations.whatFieldName.translate()
+                            value = translations.whatFieldValue.translate() +
+                                "($HYACINTH_GITHUB/LilyBot/blob/main/docs/commands.md)."
+                        }
 
-						field {
-							name = translations.supportFieldName.translate()
-							value = translations.supportFieldValue.translate()
-						}
+                        field {
+                            name = translations.supportFieldName.translate()
+                            value = translations.supportFieldValue.translate()
+                        }
 
-						field {
-							name = translations.usefulFieldName.translate()
-							value = translations.usefulFieldValue.translate(HYACINTH_GITHUB)
-						}
-						color = DISCORD_BLURPLE
-					}
+                        field {
+                            name = translations.usefulFieldName.translate()
+                            value = translations.usefulFieldValue.translate(HYACINTH_GITHUB)
+                        }
+                        color = DISCORD_BLURPLE
+                    }
 
-					buttons()
-				}
-			}
-		}
+                    buttons()
+                }
+            }
+        }
 
-		/**
-		 * A command that responds to the user with a link to invite Lily to their server.
-		 *
-		 * @author tempest15
-		 * @since 4.4.0
-		 */
-		publicSlashCommand {
-			name = Translations.Utility.InfoCommands.Invite.name
-			description = Translations.Utility.InfoCommands.Invite.description
+        /**
+         * A command that responds to the user with a link to invite Lily to their server.
+         *
+         * @author tempest15
+         * @since 4.4.0
+         */
+        publicSlashCommand {
+            name = Translations.Utility.InfoCommands.Invite.name
+            description = Translations.Utility.InfoCommands.Invite.description
 
-			action {
-				respond {
-					content = Translations.Utility.InfoCommands.Invite.value.translate()
-				}
-			}
-		}
-	}
+            action {
+                respond {
+                    content = Translations.Utility.InfoCommands.Invite.value.translate()
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -94,21 +94,21 @@ class InfoCommands : Extension() {
  * @since 4.4.0
  */
 suspend fun MessageCreateBuilder.buttons() {
-	val translations = Translations.Utility.InfoCommands.Help.Button
-	components {
-		linkButton {
-			label = translations.invite
-			url =
-				"https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
-					"&permissions=1151990787078&scope=bot%20applications.commands"
-		}
-		linkButton {
-			label = translations.privacy
-			url = "$HYACINTH_GITHUB/LilyBot/blob/main/docs/privacy-policy.md"
-		}
-		linkButton {
-			label = translations.tos
-			url = "$HYACINTH_GITHUB/.github/blob/main/terms-of-service.md"
-		}
-	}
+    val translations = Translations.Utility.InfoCommands.Help.Button
+    components {
+        linkButton {
+            label = translations.invite
+            url =
+                "https://discord.com/api/oauth2/authorize?client_id=876278900836139008" +
+                    "&permissions=1151990787078&scope=bot%20applications.commands"
+        }
+        linkButton {
+            label = translations.privacy
+            url = "$HYACINTH_GITHUB/LilyBot/blob/main/docs/privacy-policy.md"
+        }
+        linkButton {
+            label = translations.tos
+            url = "$HYACINTH_GITHUB/.github/blob/main/terms-of-service.md"
+        }
+    }
 }

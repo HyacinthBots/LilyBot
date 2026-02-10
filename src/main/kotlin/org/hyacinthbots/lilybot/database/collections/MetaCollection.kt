@@ -17,41 +17,41 @@ import org.litote.kmongo.eq
  * @see update
  */
 class MainMetaCollection : KordExKoinComponent {
-	private val db: Database by inject()
+    private val db: Database by inject()
 
-	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<MainMetaData>()
+    @PublishedApi
+    internal val collection = db.mainDatabase.getCollection<MainMetaData>()
 
-	/**
-	 * Gets the main metadata from the database.
-	 *
-	 * @return the main metadata
-	 * @author NoComment1105
-	 * @since 4.0.0
-	 */
-	suspend fun get(): MainMetaData? =
-		collection.findOne()
+    /**
+     * Gets the main metadata from the database.
+     *
+     * @return the main metadata
+     * @author NoComment1105
+     * @since 4.0.0
+     */
+    suspend fun get(): MainMetaData? =
+        collection.findOne()
 
-	/**
-	 * Sets the metadata when the table is first created.
-	 *
-	 * @author NoComment1105
-	 * @since 4.0.0
-	 */
-	suspend fun set(meta: MainMetaData) =
-		collection.insertOne(meta)
+    /**
+     * Sets the metadata when the table is first created.
+     *
+     * @author NoComment1105
+     * @since 4.0.0
+     */
+    suspend fun set(meta: MainMetaData) =
+        collection.insertOne(meta)
 
-	/**
-	 * Updates the config metadata in the database with the new [meta][MainMetaData].
-	 *
-	 * @author NoComment1105
-	 * @since 4.0.0
-	 */
-	suspend fun update(meta: MainMetaData) =
-		collection.findOneAndReplace(
-			MainMetaData::id eq "mainMeta",
-			meta
-		)
+    /**
+     * Updates the config metadata in the database with the new [meta][MainMetaData].
+     *
+     * @author NoComment1105
+     * @since 4.0.0
+     */
+    suspend fun update(meta: MainMetaData) =
+        collection.findOneAndReplace(
+            MainMetaData::id eq "mainMeta",
+            meta
+        )
 }
 
 /**
@@ -64,39 +64,39 @@ class MainMetaCollection : KordExKoinComponent {
  * @see update
  */
 class ConfigMetaCollection : KordExKoinComponent {
-	private val db: Database by inject()
+    private val db: Database by inject()
 
-	@PublishedApi
-	internal val collection = db.configDatabase.getCollection<ConfigMetaData>()
+    @PublishedApi
+    internal val collection = db.configDatabase.getCollection<ConfigMetaData>()
 
-	/**
-	 * Gets the config metadata from the database.
-	 *
-	 * @return the config metadata
-	 * @author NoComment1105
-	 * @since 4.0.0
-	 */
-	suspend fun get(): ConfigMetaData? =
-		collection.findOne()
+    /**
+     * Gets the config metadata from the database.
+     *
+     * @return the config metadata
+     * @author NoComment1105
+     * @since 4.0.0
+     */
+    suspend fun get(): ConfigMetaData? =
+        collection.findOne()
 
-	/**
-	 * Sets the metadata when the table is first created.
-	 *
-	 * @author NoComment1105
-	 * @since 4.0.0
-	 */
-	suspend fun set(meta: ConfigMetaData) =
-		collection.insertOne(meta)
+    /**
+     * Sets the metadata when the table is first created.
+     *
+     * @author NoComment1105
+     * @since 4.0.0
+     */
+    suspend fun set(meta: ConfigMetaData) =
+        collection.insertOne(meta)
 
-	/**
-	 * Updates the config metadata in the database with the new [meta][ConfigMetaData].
-	 *
-	 * @author NoComment1105
-	 * @since 4.0.0
-	 */
-	suspend fun update(meta: ConfigMetaData) =
-		collection.findOneAndReplace(
-			ConfigMetaData::id eq "configMeta",
-			meta
-		)
+    /**
+     * Updates the config metadata in the database with the new [meta][ConfigMetaData].
+     *
+     * @author NoComment1105
+     * @since 4.0.0
+     */
+    suspend fun update(meta: ConfigMetaData) =
+        collection.findOneAndReplace(
+            ConfigMetaData::id eq "configMeta",
+            meta
+        )
 }

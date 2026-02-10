@@ -12,6 +12,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class LeftMemberFlagData(
-	val guildId: Snowflake,
-	val userId: Snowflake
+    val guildId: Snowflake,
+    val userId: Snowflake
 )

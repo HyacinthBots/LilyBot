@@ -1,4 +1,5 @@
 # LilyBot Release Checklist
+
 This is a list of everything that needs to happen to release a new version of LilyBot.
 
 * Merge all outstanding pull requests planned to be included in the release

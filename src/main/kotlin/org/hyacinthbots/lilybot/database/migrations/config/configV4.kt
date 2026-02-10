@@ -4,7 +4,7 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 
 @Suppress("UnusedPrivateMember", "UNUSED_PARAMETER", "RedundantSuspendModifier")
 suspend fun configV4(db: CoroutineDatabase) {
-	// Support config has been removed.
+    // Support config has been removed.
 // 	if (db.getCollection<SupportConfigData>().find().toList().isEmpty()) {
 // 		db.dropCollection("supportConfigData")
 // 	} else {

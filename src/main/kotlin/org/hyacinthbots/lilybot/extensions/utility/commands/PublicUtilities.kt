@@ -39,332 +39,333 @@ import kotlin.time.Clock
  * @since 3.1.0
  */
 class PublicUtilities : Extension() {
-	override val name = "public-utilities"
+    override val name = "public-utilities"
 
-	override suspend fun setup() {
-		/**
-		 * Ping Command.
-		 * @author IMS212
-		 * @since 2.0
-		 */
-		publicSlashCommand {
-			name = Translations.Utility.PublicUtilities.Ping.name
-			description = Translations.Utility.PublicUtilities.Ping.description
+    override suspend fun setup() {
+        /**
+         * Ping Command.
+         * @author IMS212
+         * @since 2.0
+         */
+        publicSlashCommand {
+            name = Translations.Utility.PublicUtilities.Ping.name
+            description = Translations.Utility.PublicUtilities.Ping.description
 
-			action {
-				val averagePing = this@PublicUtilities.kord.gateway.averagePing
+            action {
+                val averagePing = this@PublicUtilities.kord.gateway.averagePing
 
-				respond {
-					embed {
-						color = DISCORD_YELLOW
-						title = Translations.Utility.PublicUtilities.Ping.title.translate()
+                respond {
+                    embed {
+                        color = DISCORD_YELLOW
+                        title = Translations.Utility.PublicUtilities.Ping.title.translate()
 
-						timestamp = Clock.System.now()
+                        timestamp = Clock.System.now()
 
-						field {
-							name = Translations.Utility.PublicUtilities.Ping.pingValue.translate()
-							value = "**$averagePing**"
-							inline = true
-						}
-					}
-				}
-			}
-		}
+                        field {
+                            name = Translations.Utility.PublicUtilities.Ping.pingValue.translate()
+                            value = "**$averagePing**"
+                            inline = true
+                        }
+                    }
+                }
+            }
+        }
 
-		/**
-		 * Nickname request command
-		 * @author NoComment1105
-		 * @since 3.1.0
-		 */
-		ephemeralSlashCommand {
-			name = Translations.Utility.PublicUtilities.Nickname.name
-			description = Translations.Utility.PublicUtilities.Nickname.description
+        /**
+         * Nickname request command
+         * @author NoComment1105
+         * @since 3.1.0
+         */
+        ephemeralSlashCommand {
+            name = Translations.Utility.PublicUtilities.Nickname.name
+            description = Translations.Utility.PublicUtilities.Nickname.description
 
-			ephemeralSubCommand(::NickRequestArgs) {
-				name = Translations.Utility.PublicUtilities.Nickname.Request.name
-				description = Translations.Utility.PublicUtilities.Nickname.Request.description
+            ephemeralSubCommand(::NickRequestArgs) {
+                name = Translations.Utility.PublicUtilities.Nickname.Request.name
+                description = Translations.Utility.PublicUtilities.Nickname.Request.description
 
-				check {
-					anyGuild()
-					requiredConfigs(ConfigOptions.UTILITY_LOG)
-				}
+                check {
+                    anyGuild()
+                    requiredConfigs(ConfigOptions.UTILITY_LOG)
+                }
 
-				action {
-					val config = UtilityConfigCollection().getConfig(guildFor(event)!!.id)!!
-					val utilityLog = guild?.getChannelOfOrNull<GuildMessageChannel>(config.utilityLogChannel!!)
+                action {
+                    val config = UtilityConfigCollection().getConfig(guildFor(event)!!.id)!!
+                    val utilityLog = guild?.getChannelOfOrNull<GuildMessageChannel>(config.utilityLogChannel!!)
 
-					val requester = user.asUserOrNull()
-					val requesterAsMember = requester?.asMemberOrNull(guild!!.id)
-					val self = this@PublicUtilities.kord.getSelf().asMemberOrNull(guild!!.id)
+                    val requester = user.asUserOrNull()
+                    val requesterAsMember = requester?.asMemberOrNull(guild!!.id)
+                    val self = this@PublicUtilities.kord.getSelf().asMemberOrNull(guild!!.id)
 
-					val translations = Translations.Utility.PublicUtilities.Nickname.Request
-					val embedTranslations = Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed
+                    val translations = Translations.Utility.PublicUtilities.Nickname.Request
+                    val embedTranslations = Translations.Utility.PublicUtilities.Nickname.Request.LogEmbed
 
-					if (requesterAsMember?.getTopRole()?.getPosition() != null &&
-						self?.getTopRole()?.getPosition() == null
-					) {
-						respond {
-							content = translations.lilyNoRolePublic.translate()
-						}
-						return@action
-					} else if ((requesterAsMember?.getTopRole()?.getPosition() ?: 0) >
-						(self?.getTopRole()?.getPosition() ?: 0)
-					) {
-						respond {
-							content = translations.highestRolePublic.translate()
-						}
-						return@action
-					}
+                    if (requesterAsMember?.getTopRole()?.getPosition() != null &&
+                        self?.getTopRole()?.getPosition() == null
+                    ) {
+                        respond {
+                            content = translations.lilyNoRolePublic.translate()
+                        }
+                        return@action
+                    } else if ((requesterAsMember?.getTopRole()?.getPosition() ?: 0) >
+                        (self?.getTopRole()?.getPosition() ?: 0)
+                    ) {
+                        respond {
+                            content = translations.highestRolePublic.translate()
+                        }
+                        return@action
+                    }
 
-					if (requesterAsMember?.hasPermission(Permission.ChangeNickname) == true) {
-						requesterAsMember.edit { nickname = arguments.newNick }
-						respond {
-							content = translations.hasPermission.translate()
-						}
-						return@action
-					}
+                    if (requesterAsMember?.hasPermission(Permission.ChangeNickname) == true) {
+                        requesterAsMember.edit { nickname = arguments.newNick }
+                        respond {
+                            content = translations.hasPermission.translate()
+                        }
+                        return@action
+                    }
 
-					// Declare the embed outside the action to allow us to reference it inside the action
-					var actionLogEmbed: Message? = null
+                    // Declare the embed outside the action to allow us to reference it inside the action
+                    var actionLogEmbed: Message? = null
 
-					respond { content = translations.sent.translate() }
+                    respond { content = translations.sent.translate() }
 
-					try {
-						actionLogEmbed =
-							utilityLog?.createMessage {
-								embed {
-									color = DISCORD_YELLOW
-									title = translations.embedTitle.translate()
-									timestamp = Clock.System.now()
+                    try {
+                        actionLogEmbed =
+                            utilityLog?.createMessage {
+                                embed {
+                                    color = DISCORD_YELLOW
+                                    title = translations.embedTitle.translate()
+                                    timestamp = Clock.System.now()
 
-									field {
-										name = Translations.Utility.PublicUtilities.Nickname.userField.translate()
-										value =
-											"${requester?.mention}\n${requester?.asUserOrNull()?.username}\n${requester?.id}"
-										inline = false
-									}
+                                    field {
+                                        name = Translations.Utility.PublicUtilities.Nickname.userField.translate()
+                                        value =
+                                            "${requester?.mention}\n${requester?.asUserOrNull()?.username}\n" +
+                                                requester?.id
+                                        inline = false
+                                    }
 
-									field {
-										name = translations.embedCurrentNick.translate()
-										value = "`${requesterAsMember?.nickname}`"
-										inline = false
-									}
+                                    field {
+                                        name = translations.embedCurrentNick.translate()
+                                        value = "`${requesterAsMember?.nickname}`"
+                                        inline = false
+                                    }
 
-									field {
-										name = translations.embedRequestedNick.translate()
-										value = "`${arguments.newNick}`"
-										inline = false
-									}
-								}
-								components {
-									ephemeralButton(row = 0) {
-										label = Translations.Utility.PublicUtilities.Nickname.Request.Button.accept
-										style = ButtonStyle.Success
+                                    field {
+                                        name = translations.embedRequestedNick.translate()
+                                        value = "`${arguments.newNick}`"
+                                        inline = false
+                                    }
+                                }
+                                components {
+                                    ephemeralButton(row = 0) {
+                                        label = Translations.Utility.PublicUtilities.Nickname.Request.Button.accept
+                                        style = ButtonStyle.Success
 
-										action button@{
-											if (requesterAsMember?.getTopRole()?.getPosition() != null &&
-												self?.getTopRole()?.getPosition() == null
-											) {
-												respond {
-													content = translations.lilyNoRolePrivate.translate()
-												}
-												return@button
-											} else if ((requesterAsMember?.getTopRole()?.getPosition() ?: 0) >
-												(self?.getTopRole()?.getPosition() ?: 0)
-											) {
-												respond {
-													content = translations.highestRolePrivate.translate()
-												}
-												return@button
-											}
+                                        action button@{
+                                            if (requesterAsMember?.getTopRole()?.getPosition() != null &&
+                                                self?.getTopRole()?.getPosition() == null
+                                            ) {
+                                                respond {
+                                                    content = translations.lilyNoRolePrivate.translate()
+                                                }
+                                                return@button
+                                            } else if ((requesterAsMember?.getTopRole()?.getPosition() ?: 0) >
+                                                (self?.getTopRole()?.getPosition() ?: 0)
+                                            ) {
+                                                respond {
+                                                    content = translations.highestRolePrivate.translate()
+                                                }
+                                                return@button
+                                            }
 
-											requesterAsMember?.edit { nickname = arguments.newNick }
+                                            requesterAsMember?.edit { nickname = arguments.newNick }
 
-											requester?.dm {
-												embed {
-													title = translations.dmAcceptTitle.translate(
-														guild!!.asGuildOrNull()?.name
-													)
-													description = translations.dmAcceptDescription.translate(
-														requesterAsMember?.nickname,
-														arguments.newNick
-													)
-													color = DISCORD_GREEN
-												}
-											}
+                                            requester?.dm {
+                                                embed {
+                                                    title = translations.dmAcceptTitle.translate(
+                                                        guild!!.asGuildOrNull()?.name
+                                                    )
+                                                    description = translations.dmAcceptDescription.translate(
+                                                        requesterAsMember?.nickname,
+                                                        arguments.newNick
+                                                    )
+                                                    color = DISCORD_GREEN
+                                                }
+                                            }
 
-											actionLogEmbed!!.edit {
-												components { removeAll() }
+                                            actionLogEmbed!!.edit {
+                                                components { removeAll() }
 
-												embed {
-													color = DISCORD_GREEN
-													title = embedTranslations.acceptTitle.translate()
+                                                embed {
+                                                    color = DISCORD_GREEN
+                                                    title = embedTranslations.acceptTitle.translate()
 
-													field {
-														name =
-															Translations.Utility.PublicUtilities.Nickname.userField.translate()
-														value =
-															"${requester?.mention}\n${requester?.asUserOrNull()?.username}\n" +
-																"${requester?.id}"
-														inline = false
-													}
+                                                    field {
+                                                        name = Translations.Utility.PublicUtilities.Nickname.userField
+                                                            .translate()
+                                                        value = "${requester?.mention}\n" +
+                                                            "${requester?.asUserOrNull()?.username}\n${requester?.id}"
+                                                        inline = false
+                                                    }
 
-													// these two fields should be the same and exist as a sanity check
-													field {
-														name = embedTranslations.previousNick.translate()
-														value = "`${requesterAsMember?.nickname}`"
-														inline = false
-													}
+                                                    // these two fields should be the same and exist as a sanity check
+                                                    field {
+                                                        name = embedTranslations.previousNick.translate()
+                                                        value = "`${requesterAsMember?.nickname}`"
+                                                        inline = false
+                                                    }
 
-													field {
-														name = embedTranslations.acceptedNick.translate()
-														value = "`${arguments.newNick}`"
-														inline = false
-													}
+                                                    field {
+                                                        name = embedTranslations.acceptedNick.translate()
+                                                        value = "`${arguments.newNick}`"
+                                                        inline = false
+                                                    }
 
-													footer {
-														text = embedTranslations.acceptedBy.translate(
-															user.asUserOrNull()?.username
-														)
-														icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-													}
+                                                    footer {
+                                                        text = embedTranslations.acceptedBy.translate(
+                                                            user.asUserOrNull()?.username
+                                                        )
+                                                        icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+                                                    }
 
-													timestamp = Clock.System.now()
-												}
-											}
-										}
-									}
+                                                    timestamp = Clock.System.now()
+                                                }
+                                            }
+                                        }
+                                    }
 
-									ephemeralButton(row = 0) {
-										label = Translations.Utility.PublicUtilities.Nickname.Request.Button.deny
-										style = ButtonStyle.Danger
+                                    ephemeralButton(row = 0) {
+                                        label = Translations.Utility.PublicUtilities.Nickname.Request.Button.deny
+                                        style = ButtonStyle.Danger
 
-										action {
-											requester?.dm {
-												embed {
-													title = translations.dmDenyTitle.translate()
-													description = translations.dmDenyDescription.translate(
-														arguments.newNick
-													)
-												}
-											}
+                                        action {
+                                            requester?.dm {
+                                                embed {
+                                                    title = translations.dmDenyTitle.translate()
+                                                    description = translations.dmDenyDescription.translate(
+                                                        arguments.newNick
+                                                    )
+                                                }
+                                            }
 
-											actionLogEmbed!!.edit {
-												components { removeAll() }
-												embed {
-													title = embedTranslations.denyTitle.translate()
+                                            actionLogEmbed!!.edit {
+                                                components { removeAll() }
+                                                embed {
+                                                    title = embedTranslations.denyTitle.translate()
 
-													field {
-														name =
-															Translations.Utility.PublicUtilities.Nickname.userField.translate()
-														value = "${requester?.mention}\n" +
-															"${requester?.asUserOrNull()?.username}\n${requester?.id}"
-														inline = false
-													}
+                                                    field {
+                                                        name =
+                                                            Translations.Utility.PublicUtilities.Nickname.userField
+                                                                .translate()
+                                                        value = "${requester?.mention}\n" +
+                                                            "${requester?.asUserOrNull()?.username}\n${requester?.id}"
+                                                        inline = false
+                                                    }
 
-													field {
-														name = embedTranslations.currentNick.translate()
-														value = "`${requesterAsMember?.nickname}`"
-														inline = false
-													}
+                                                    field {
+                                                        name = embedTranslations.currentNick.translate()
+                                                        value = "`${requesterAsMember?.nickname}`"
+                                                        inline = false
+                                                    }
 
-													field {
-														name = embedTranslations.rejectedNick.translate()
-														value = "`${arguments.newNick}`"
-														inline = false
-													}
+                                                    field {
+                                                        name = embedTranslations.rejectedNick.translate()
+                                                        value = "`${arguments.newNick}`"
+                                                        inline = false
+                                                    }
 
-													footer {
-														text = embedTranslations.deniedBy.translate(
-															user.asUserOrNull()?.username
-														)
-														icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-													}
+                                                    footer {
+                                                        text = embedTranslations.deniedBy.translate(
+                                                            user.asUserOrNull()?.username
+                                                        )
+                                                        icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+                                                    }
 
-													timestamp = Clock.System.now()
-													color = DISCORD_RED
-												}
-											}
-										}
-									}
-								}
-							}
-					} catch (_: KtorRequestException) {
-						// Avoid hard failing on permission error, since the public won't know what it means
-						respond {
-							content = Translations.Utility.PublicUtilities.Nickname.failToSend.translate()
-						}
-						return@action
-					}
-				}
-			}
+                                                    timestamp = Clock.System.now()
+                                                    color = DISCORD_RED
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                    } catch (_: KtorRequestException) {
+                        // Avoid hard failing on permission error, since the public won't know what it means
+                        respond {
+                            content = Translations.Utility.PublicUtilities.Nickname.failToSend.translate()
+                        }
+                        return@action
+                    }
+                }
+            }
 
-			ephemeralSubCommand {
-				name = Translations.Utility.PublicUtilities.Nickname.Clear.name
-				description = Translations.Utility.PublicUtilities.Nickname.Clear.description
+            ephemeralSubCommand {
+                name = Translations.Utility.PublicUtilities.Nickname.Clear.name
+                description = Translations.Utility.PublicUtilities.Nickname.Clear.description
 
-				check {
-					anyGuild()
-					requiredConfigs(ConfigOptions.UTILITY_LOG)
-				}
+                check {
+                    anyGuild()
+                    requiredConfigs(ConfigOptions.UTILITY_LOG)
+                }
 
-				action {
-					val config = UtilityConfigCollection().getConfig(guild!!.id)!!
-					val utilityLog = guild?.getChannelOfOrNull<GuildMessageChannel>(config.utilityLogChannel!!)
-					val translations = Translations.Utility.PublicUtilities.Nickname.Clear
+                action {
+                    val config = UtilityConfigCollection().getConfig(guild!!.id)!!
+                    val utilityLog = guild?.getChannelOfOrNull<GuildMessageChannel>(config.utilityLogChannel!!)
+                    val translations = Translations.Utility.PublicUtilities.Nickname.Clear
 
-					// Check the user has a nickname to clear, avoiding errors and useless action-log notifications
-					if (user.fetchMember(guild!!.id).nickname == null) {
-						respond {
-							content = translations.nothingToClear.translate()
-						}
-						return@action
-					}
+                    // Check the user has a nickname to clear, avoiding errors and useless action-log notifications
+                    if (user.fetchMember(guild!!.id).nickname == null) {
+                        respond {
+                            content = translations.nothingToClear.translate()
+                        }
+                        return@action
+                    }
 
-					respond { content = translations.cleared.translate() }
+                    respond { content = translations.cleared.translate() }
 
-					try {
-						utilityLog?.createEmbed {
-							val embedTranslations = Translations.Utility.PublicUtilities.Nickname.Clear.LogEmbed
-							title = embedTranslations.title.translate()
-							color = DISCORD_YELLOW
-							timestamp = Clock.System.now()
+                    try {
+                        utilityLog?.createEmbed {
+                            val embedTranslations = Translations.Utility.PublicUtilities.Nickname.Clear.LogEmbed
+                            title = embedTranslations.title.translate()
+                            color = DISCORD_YELLOW
+                            timestamp = Clock.System.now()
 
-							field {
-								name = Translations.Utility.PublicUtilities.Nickname.userField.translate()
-								value = "${user.mention}\n${user.asUserOrNull()?.username}\n${user.id}"
-								inline = false
-							}
+                            field {
+                                name = Translations.Utility.PublicUtilities.Nickname.userField.translate()
+                                value = "${user.mention}\n${user.asUserOrNull()?.username}\n${user.id}"
+                                inline = false
+                            }
 
-							field {
-								name = embedTranslations.newNickTitle.translate()
-								value = embedTranslations.newNickValue.translate(
-									user.asMemberOrNull(guild!!.id)?.nickname
-								)
-								inline = false
-							}
-						}
-					} catch (_: KtorRequestException) {
-						// Avoid hard failing on permission error, since the public won't know what it means
-						respond {
-							content = Translations.Utility.PublicUtilities.Nickname.failToSend.translate()
-						}
-						return@action
-					}
-					user.asMemberOrNull(guild!!.id)?.edit { nickname = null }
-				}
-			}
-		}
-	}
+                            field {
+                                name = embedTranslations.newNickTitle.translate()
+                                value = embedTranslations.newNickValue.translate(
+                                    user.asMemberOrNull(guild!!.id)?.nickname
+                                )
+                                inline = false
+                            }
+                        }
+                    } catch (_: KtorRequestException) {
+                        // Avoid hard failing on permission error, since the public won't know what it means
+                        respond {
+                            content = Translations.Utility.PublicUtilities.Nickname.failToSend.translate()
+                        }
+                        return@action
+                    }
+                    user.asMemberOrNull(guild!!.id)?.edit { nickname = null }
+                }
+            }
+        }
+    }
 
-	inner class NickRequestArgs : Arguments() {
-		/** The new nickname that the command user requested. */
-		val newNick by string {
-			name = Translations.Utility.PublicUtilities.Nickname.Request.Args.NewNick.name
-			description = Translations.Utility.PublicUtilities.Nickname.Request.Args.NewNick.description
+    inner class NickRequestArgs : Arguments() {
+        /** The new nickname that the command user requested. */
+        val newNick by string {
+            name = Translations.Utility.PublicUtilities.Nickname.Request.Args.NewNick.name
+            description = Translations.Utility.PublicUtilities.Nickname.Request.Args.NewNick.description
 
-			minLength = 1
-			maxLength = 32
-		}
-	}
+            minLength = 1
+            maxLength = 32
+        }
+    }
 }

@@ -24,15 +24,15 @@ import kotlin.time.Instant
  */
 @Serializable
 data class ReminderData(
-	val guildId: Snowflake,
-	val remindTime: Instant,
-	val setTime: Instant,
-	val userId: Snowflake,
-	val channelId: Snowflake,
-	val messageId: Snowflake,
-	val dm: Boolean,
-	val customMessage: String?,
-	val repeating: Boolean,
-	val repeatingInterval: DateTimePeriod?,
-	val id: Long
+    val guildId: Snowflake,
+    val remindTime: Instant,
+    val setTime: Instant,
+    val userId: Snowflake,
+    val channelId: Snowflake,
+    val messageId: Snowflake,
+    val dm: Boolean,
+    val customMessage: String?,
+    val repeating: Boolean,
+    val repeatingInterval: DateTimePeriod?,
+    val id: Long
 )

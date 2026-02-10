@@ -62,7 +62,7 @@ suspend fun mainV1(db: CoroutineDatabase) {
 // 		reminders.bulkWrite(requests = nonRepeating, BulkWriteOptions().ordered(true))
 // 	}
 
-	db.dropCollection("statusData")
-	db.createCollection("statusData")
-	// db.getCollection<StatusData>("statusData").insertOne(StatusData(null))
+    db.dropCollection("statusData")
+    db.createCollection("statusData")
+    // db.getCollection<StatusData>("statusData").insertOne(StatusData(null))
 }

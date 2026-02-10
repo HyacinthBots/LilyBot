@@ -10,10 +10,12 @@ a pull request.
 Please remove this section before submitting your pull request. Doing so indicates that you have read and acknowledged it.
 
 ### Linked Issues
+
 Provide links to the issue(s) which will be closed upon merging this pull request. There must be an open issue for
 pull requests which fix bugs or other issues.
 
 ### Proposed Changes
+
 Provide a detailed description of what your pull request changes, before
 submitting any pull requests to this repository.
 

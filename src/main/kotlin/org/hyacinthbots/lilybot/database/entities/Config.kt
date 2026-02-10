@@ -21,15 +21,15 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class LoggingConfigData(
-	val guildId: Snowflake,
-	val enableMessageDeleteLogs: Boolean,
-	val enableMessageEditLogs: Boolean,
-	val messageChannel: Snowflake?,
-	val enableMemberLogs: Boolean,
-	val memberLog: Snowflake?,
-	val enablePublicMemberLogs: Boolean,
-	val publicMemberLog: Snowflake?,
-	val publicMemberLogData: PublicMemberLogData?
+    val guildId: Snowflake,
+    val enableMessageDeleteLogs: Boolean,
+    val enableMessageEditLogs: Boolean,
+    val messageChannel: Snowflake?,
+    val enableMemberLogs: Boolean,
+    val memberLog: Snowflake?,
+    val enablePublicMemberLogs: Boolean,
+    val publicMemberLog: Snowflake?,
+    val publicMemberLogData: PublicMemberLogData?
 )
 
 /**
@@ -50,17 +50,17 @@ data class LoggingConfigData(
  */
 @Serializable
 data class ModerationConfigData(
-	val guildId: Snowflake,
-	val enabled: Boolean,
-	val channel: Snowflake?,
-	val role: Snowflake?,
-	val quickTimeoutLength: DateTimePeriod?,
-	val autoPunishOnWarn: Boolean?,
-	val publicLogging: Boolean?,
-	val dmDefault: Boolean?,
-	val banDmMessage: String?,
-	val autoInviteModeratorRole: Boolean?,
-	val logMemberRoleChanges: Boolean?
+    val guildId: Snowflake,
+    val enabled: Boolean,
+    val channel: Snowflake?,
+    val role: Snowflake?,
+    val quickTimeoutLength: DateTimePeriod?,
+    val autoPunishOnWarn: Boolean?,
+    val publicLogging: Boolean?,
+    val dmDefault: Boolean?,
+    val banDmMessage: String?,
+    val autoInviteModeratorRole: Boolean?,
+    val logMemberRoleChanges: Boolean?
 )
 
 /**
@@ -73,10 +73,10 @@ data class ModerationConfigData(
  */
 @Serializable
 data class UtilityConfigData(
-	val guildId: Snowflake,
-	val utilityLogChannel: Snowflake?,
-	val logChannelUpdates: Boolean,
-	val logEventUpdates: Boolean,
-	val logInviteUpdates: Boolean,
-	val logRoleUpdates: Boolean
+    val guildId: Snowflake,
+    val utilityLogChannel: Snowflake?,
+    val logChannelUpdates: Boolean,
+    val logEventUpdates: Boolean,
+    val logInviteUpdates: Boolean,
+    val logRoleUpdates: Boolean
 )

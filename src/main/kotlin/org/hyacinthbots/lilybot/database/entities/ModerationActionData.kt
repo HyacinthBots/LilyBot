@@ -18,11 +18,11 @@ import kotlin.time.Instant
  */
 @Serializable
 data class ModerationActionData(
-	val actionType: ModerationAction,
-	val guildId: Snowflake,
-	val targetUserId: Snowflake,
-	val data: ActionData,
-	val ignore: Boolean = false
+    val actionType: ModerationAction,
+    val guildId: Snowflake,
+    val targetUserId: Snowflake,
+    val data: ActionData,
+    val ignore: Boolean = false
 )
 
 /**
@@ -39,13 +39,13 @@ data class ModerationActionData(
  */
 @Serializable
 data class ActionData(
-	val actioner: Snowflake?,
-	val deletedMessages: Int?,
-	val timeData: TimeData?,
-	val reason: String?,
-	val dmOutcome: Boolean?,
-	val dmOverride: Boolean?,
-	val imageUrl: String?
+    val actioner: Snowflake?,
+    val deletedMessages: Int?,
+    val timeData: TimeData?,
+    val reason: String?,
+    val dmOutcome: Boolean?,
+    val dmOverride: Boolean?,
+    val imageUrl: String?
 )
 
 /**
@@ -59,8 +59,8 @@ data class ActionData(
  */
 @Serializable
 data class TimeData(
-	val durationDtp: DateTimePeriod?,
-	val durationInst: Instant?,
-	val start: Instant? = null,
-	val end: Instant? = null,
+    val durationDtp: DateTimePeriod?,
+    val durationInst: Instant?,
+    val start: Instant? = null,
+    val end: Instant? = null,
 )

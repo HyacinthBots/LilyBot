@@ -18,11 +18,7 @@ import dev.kordex.modules.pluralkit.events.ProxiedMessageUpdateEvent
 import dev.kordex.modules.pluralkit.events.UnProxiedMessageUpdateEvent
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.utils.attachmentsAndProxiedMessageInfo
-import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
-import org.hyacinthbots.lilybot.utils.ifNullOrEmpty
-import org.hyacinthbots.lilybot.utils.requiredConfigs
-import org.hyacinthbots.lilybot.utils.trimmedContents
+import org.hyacinthbots.lilybot.utils.*
 import kotlin.time.Clock
 
 /**
@@ -30,91 +26,93 @@ import kotlin.time.Clock
  * @since 4.1.0
  */
 class MessageEdit : Extension() {
-	override val name = "message-edit"
+    override val name = "message-edit"
 
-	override suspend fun setup() {
-		/**
-		 * Logs edited messages to the message log channel.
-		 * @see onMessageEdit
-		 * @author trainb0y
-		 */
-		event<UnProxiedMessageUpdateEvent> {
-			check {
-				anyGuild()
-				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
-				failIf(event.message.asMessageOrNull()?.author.isNullOrBot())
-				failIf(event.old?.content == event.message.asMessageOrNull()?.content)
-				failIf(event.old.trimmedContents() == null)
-			}
-			action {
-				onMessageEdit(event.getMessageOrNull(), event.old, null)
-			}
-		}
+    override suspend fun setup() {
+        /**
+         * Logs edited messages to the message log channel.
+         * @see onMessageEdit
+         * @author trainb0y
+         */
+        event<UnProxiedMessageUpdateEvent> {
+            check {
+                anyGuild()
+                requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+                failIf(event.message.asMessageOrNull()?.author.isNullOrBot())
+                failIf(event.old?.content == event.message.asMessageOrNull()?.content)
+                failIf(event.old == null)
+            }
+            action {
+                onMessageEdit(event.getMessageOrNull(), event.old, null)
+            }
+        }
 
-		/**
-		 * Logs proxied edited messages to the message log channel.
-		 * @see onMessageEdit
-		 * @author trainb0y
-		 */
-		event<ProxiedMessageUpdateEvent> {
-			check {
-				anyGuild()
-				requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
-				failIf(event.old?.content == event.message.asMessageOrNull()?.content)
-				failIf(event.old.trimmedContents() == null)
-			}
-			action {
-				onMessageEdit(event.getMessageOrNull(), event.old, event.pkMessage)
-			}
-		}
-	}
+        /**
+         * Logs proxied edited messages to the message log channel.
+         * @see onMessageEdit
+         * @author trainb0y
+         */
+        event<ProxiedMessageUpdateEvent> {
+            check {
+                anyGuild()
+                requiredConfigs(ConfigOptions.MESSAGE_EDIT_LOGGING_ENABLED, ConfigOptions.MESSAGE_LOG)
+                failIf(event.old?.content == event.message.asMessageOrNull()?.content)
+                failIf(event.old == null)
+            }
+            action {
+                onMessageEdit(event.getMessageOrNull(), event.old, event.pkMessage)
+            }
+        }
+    }
 
-	/**
-	 * If message logging is enabled, sends an embed describing the message edit to the guild's message log channel.
-	 *
-	 * @param message The current message
-	 * @param old The original message
-	 * @param proxiedMessage Extra data for PluralKit proxied messages
-	 * @author trainb0y
-	 */
-	private suspend fun onMessageEdit(message: Message?, old: Message?, proxiedMessage: PKMessage?) {
-		message ?: return
-		val guild = message.getGuildOrNull() ?: return
+    /**
+     * If message logging is enabled, sends an embed describing the message edit to the guild's message log channel.
+     *
+     * @param message The current message
+     * @param old The original message
+     * @param proxiedMessage Extra data for PluralKit proxied messages
+     * @author trainb0y
+     */
+    private suspend fun onMessageEdit(message: Message?, old: Message?, proxiedMessage: PKMessage?) {
+        message ?: return
+        val guild = message.getGuildOrNull() ?: return
 
-		val messageLog = getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, guild) ?: return
+        val messageLog = getLoggingChannelWithPerms(ConfigOptions.MESSAGE_LOG, guild) ?: return
 
-		messageLog.createMessage {
-			embed {
-				color = DISCORD_YELLOW
-				author {
-					name = Translations.Events.MessageEdit.embedAuthor.translate()
-					icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.cdnUrl?.toUrl()
-				}
-				description = Translations.Events.MessageEvent.location.translate(
-					message.channel.mention,
-					message.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
-						?: Translations.Events.MessageDelete.noChannelName.translate()
-				)
-				timestamp = Clock.System.now()
+        messageLog.createMessage {
+            embed {
+                color = DISCORD_YELLOW
+                author {
+                    name = Translations.Events.MessageEdit.embedAuthor.translate()
+                    icon = proxiedMessage?.member?.avatarUrl ?: message.author?.avatar?.cdnUrl?.toUrl()
+                }
+                description = Translations.Events.MessageEvent.location.translate(
+                    message.channel.mention,
+                    message.channel.asChannelOfOrNull<GuildMessageChannel>()?.name
+                        ?: Translations.Events.MessageDelete.noChannelName.translate()
+                )
+                timestamp = Clock.System.now()
 
-				field {
-					name = Translations.Events.MessageEdit.embedPrevious.translate()
-					value = old?.trimmedContents().ifNullOrEmpty { Translations.Events.MessageEvent.failedContents.translate() }
-					inline = false
-				}
-				field {
-					name = Translations.Events.MessageEdit.embedNew.translate()
-					value = message.trimmedContents().ifNullOrEmpty { Translations.Events.MessageEdit.embedNewFail.translate() }
-					inline = false
-				}
-				attachmentsAndProxiedMessageInfo(guild, message, proxiedMessage)
-			}
-			components {
-				linkButton {
-					label = Translations.Events.MessageEdit.embedButton
-					url = message.getJumpUrl()
-				}
-			}
-		}
-	}
+                field {
+                    name = Translations.Events.MessageEdit.embedPrevious.translate()
+                    value = old?.trimmedContents()
+                        .ifNullOrEmpty { Translations.Events.MessageEvent.failedContents.translate() }
+                    inline = false
+                }
+                field {
+                    name = Translations.Events.MessageEdit.embedNew.translate()
+                    value = message.trimmedContents()
+                        .ifNullOrEmpty { Translations.Events.MessageEdit.embedNewFail.translate() }
+                    inline = false
+                }
+                attachmentsAndProxiedMessageInfo(guild, message, proxiedMessage)
+            }
+            components {
+                linkButton {
+                    label = Translations.Events.MessageEdit.embedButton
+                    url = message.getJumpUrl()
+                }
+            }
+        }
+    }
 }

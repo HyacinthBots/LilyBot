@@ -23,9 +23,9 @@ ktor = "3.3.3"
 [libraries]
 kord-extensions-core = { module = "dev.kordex:kord-extensions", version.ref = "kord-extensions" }
 kord-extensions-phishing = { module = "dev.kordex.modules:func-phishing", version.ref = "kord-extensions" }
-kord-extensions-pluralkit = { module = "dev.kordex.modules:pluralkit", version.ref = "kord-extensions"}
-kord-extensions-unsafe = { module = "dev.kordex.modules:dev-unsafe", version.ref = "kord-extensions"}
-kord-extensions-welcome = { module = "dev.kordex.modules:func-welcome", version.ref = "kord-extensions"}
+kord-extensions-pluralkit = { module = "dev.kordex.modules:pluralkit", version.ref = "kord-extensions" }
+kord-extensions-unsafe = { module = "dev.kordex.modules:dev-unsafe", version.ref = "kord-extensions" }
+kord-extensions-welcome = { module = "dev.kordex.modules:func-welcome", version.ref = "kord-extensions" }
 
 groovy = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 jansi = { module = "org.fusesource.jansi:jansi", version.ref = "jansi" }
@@ -35,7 +35,7 @@ logback-groovy = { module = "io.github.virtualdogbert:logback-groovy-config", ve
 logging = { module = "io.github.oshai:kotlin-logging", version.ref = "logging" }
 github-api = { module = "org.kohsuke:github-api", version.ref = "github-api" }
 kmongo = { module = "org.litote.kmongo:kmongo-coroutine-serialization", version.ref = "kmongo" }
-detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt"}
+detekt = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 docgenerator = { module = "org.hyacinthbots:doc-generator", version.ref = "docgenerator" }
 ktor-java = { module = "io.ktor:ktor-client-java", version.ref = "ktor" }
 

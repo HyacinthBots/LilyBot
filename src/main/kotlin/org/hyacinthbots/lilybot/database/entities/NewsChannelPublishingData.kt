@@ -13,6 +13,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class NewsChannelPublishingData(
-	val guildId: Snowflake,
-	val channelId: Snowflake
+    val guildId: Snowflake,
+    val channelId: Snowflake
 )

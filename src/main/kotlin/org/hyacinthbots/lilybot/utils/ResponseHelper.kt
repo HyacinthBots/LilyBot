@@ -19,22 +19,22 @@ import lilybot.i18n.Translations
  * @since 3.0.0
  */
 suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser: User?, commandUser: UserBehavior?) {
-	field {
-		name = Translations.Basic.userField.translate()
-		value = "${targetUser?.username ?: Translations.Basic.UnableTo.findUser}\n${targetUser?.id ?: ""}"
-		inline = false
-	}
-	field {
-		name = Translations.Moderation.ModCommands.Arguments.Reason.name.translate()
-		value = reason ?: Translations.Basic.noReason.translate()
-		inline = false
-	}
-	if (commandUser != null) {
-		footer {
-			text = Translations.Basic.requestedBy.translate(commandUser.asUserOrNull()?.username)
-			icon = commandUser.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-		}
-	}
+    field {
+        name = Translations.Basic.userField.translate()
+        value = "${targetUser?.username ?: Translations.Basic.UnableTo.findUser}\n${targetUser?.id ?: ""}"
+        inline = false
+    }
+    field {
+        name = Translations.Moderation.ModCommands.Arguments.Reason.name.translate()
+        value = reason ?: Translations.Basic.noReason.translate()
+        inline = false
+    }
+    if (commandUser != null) {
+        footer {
+            text = Translations.Basic.requestedBy.translate(commandUser.asUserOrNull()?.username)
+            icon = commandUser.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+        }
+    }
 }
 
 /**
@@ -47,17 +47,17 @@ suspend inline fun EmbedBuilder.baseModerationEmbed(reason: String?, targetUser:
  * @since 3.0.0
  */
 fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?, override: Boolean) {
-	field {
-		name = Translations.Utils.DmField.userNotif.translate()
-		value = if (dm != null) {
-			Translations.Utils.DmField.success.translate()
-		} else if (!override) {
-			Translations.Utils.DmField.disabled.translate()
-		} else {
-			Translations.Utils.DmField.failure.translate()
-		}
-		inline = false
-	}
+    field {
+        name = Translations.Utils.DmField.userNotif.translate()
+        value = if (dm != null) {
+            Translations.Utils.DmField.success.translate()
+        } else if (!override) {
+            Translations.Utils.DmField.disabled.translate()
+        } else {
+            Translations.Utils.DmField.failure.translate()
+        }
+        inline = false
+    }
 }
 
 /**
@@ -69,17 +69,17 @@ fun EmbedBuilder.dmNotificationStatusEmbedField(dm: Message?, override: Boolean)
  * @since 5.0.0
  */
 fun EmbedBuilder.dmNotificationStatusEmbedField(success: Boolean?, override: Boolean?) {
-	field {
-		name = Translations.Utils.DmField.userNotif.translate()
-		value = if (success != null && success) {
-			Translations.Utils.DmField.success.translate()
-		} else if (override != null && !override) {
-			Translations.Utils.DmField.disabled.translate()
-		} else {
-			Translations.Utils.DmField.failure.translate()
-		}
-		inline = false
-	}
+    field {
+        name = Translations.Utils.DmField.userNotif.translate()
+        value = if (success != null && success) {
+            Translations.Utils.DmField.success.translate()
+        } else if (override != null && !override) {
+            Translations.Utils.DmField.disabled.translate()
+        } else {
+            Translations.Utils.DmField.failure.translate()
+        }
+        inline = false
+    }
 }
 
 /**
@@ -89,44 +89,44 @@ fun EmbedBuilder.dmNotificationStatusEmbedField(success: Boolean?, override: Boo
  * @since 4.1.0
  */
 suspend inline fun EmbedBuilder.attachmentsAndProxiedMessageInfo(
-	guild: Guild,
-	message: Message,
-	proxiedMessage: PKMessage?
+    guild: Guild,
+    message: Message,
+    proxiedMessage: PKMessage?
 ) {
-	if (message.attachments.isNotEmpty()) {
-		field {
-			name = Translations.Utils.Attachments.attachments.translate()
-			value = message.attachments.joinToString(separator = "\n") { it.url }
-			inline = false
-		}
-	}
-	if (proxiedMessage != null) {
-		field {
-			name = Translations.Moderation.Report.Confirmation.embedAuthorField.translate()
-			value = "${Translations.Utils.Attachments.systemMember.translate()}: ${proxiedMessage.member?.name}\n" +
-				"${Translations.Utils.Attachments.account.translate()}: ${
-					guild.getMemberOrNull(proxiedMessage.sender)?.username
-					    ?: Translations.Utils.Attachments.unableToAccount.translate()
-				} " +
-				guild.getMemberOrNull(proxiedMessage.sender)?.mention
-			inline = true
-		}
+    if (message.attachments.isNotEmpty()) {
+        field {
+            name = Translations.Utils.Attachments.attachments.translate()
+            value = message.attachments.joinToString(separator = "\n") { it.url }
+            inline = false
+        }
+    }
+    if (proxiedMessage != null) {
+        field {
+            name = Translations.Moderation.Report.Confirmation.embedAuthorField.translate()
+            value = "${Translations.Utils.Attachments.systemMember.translate()}: ${proxiedMessage.member?.name}\n" +
+                "${Translations.Utils.Attachments.account.translate()}: ${
+                    guild.getMemberOrNull(proxiedMessage.sender)?.username
+                        ?: Translations.Utils.Attachments.unableToAccount.translate()
+                } " +
+                guild.getMemberOrNull(proxiedMessage.sender)?.mention
+            inline = true
+        }
 
-		field {
-			name = Translations.Utils.Attachments.authorId.translate()
-			value = proxiedMessage.sender.toString()
-		}
-	} else {
-		field {
-			name = Translations.Moderation.Report.Confirmation.embedAuthorField.translate()
-			value =
-				"${message.author?.username ?: Translations.Basic.UnableTo.findUser.translate()} ${message.author?.mention ?: ""}"
-			inline = true
-		}
+        field {
+            name = Translations.Utils.Attachments.authorId.translate()
+            value = proxiedMessage.sender.toString()
+        }
+    } else {
+        field {
+            name = Translations.Moderation.Report.Confirmation.embedAuthorField.translate()
+            value = "${message.author?.username ?: Translations.Basic.UnableTo.findUser.translate()} " +
+                (message.author?.mention ?: "")
+            inline = true
+        }
 
-		field {
-			name = Translations.Utils.Attachments.authorId.translate()
-			value = message.author?.id.toString()
-		}
-	}
+        field {
+            name = Translations.Utils.Attachments.authorId.translate()
+            value = message.author?.id.toString()
+        }
+    }
 }

@@ -12,6 +12,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class GalleryChannelData(
-	val guildId: Snowflake,
-	val channelId: Snowflake
+    val guildId: Snowflake,
+    val channelId: Snowflake
 )

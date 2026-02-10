@@ -14,8 +14,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class RoleMenuData(
-	val messageId: Snowflake,
-	val channelId: Snowflake,
-	val guildId: Snowflake,
-	val roles: MutableList<Snowflake>
+    val messageId: Snowflake,
+    val channelId: Snowflake,
+    val guildId: Snowflake,
+    val roles: MutableList<Snowflake>
 )

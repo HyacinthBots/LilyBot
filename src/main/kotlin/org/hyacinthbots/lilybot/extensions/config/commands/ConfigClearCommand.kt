@@ -19,41 +19,41 @@ import org.hyacinthbots.lilybot.extensions.config.ConfigType
 import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 
 suspend fun SlashCommand<*, *, *>.configClearCommand() = ephemeralSubCommand(::ClearArgs) {
-	name = Translations.Config.Clear.name
-	description = Translations.Config.Clear.description
+    name = Translations.Config.Clear.name
+    description = Translations.Config.Clear.description
 
-	requirePermission(Permission.ManageGuild)
+    requirePermission(Permission.ManageGuild)
 
-	check {
-		anyGuild()
-		hasPermission(Permission.ManageGuild)
-	}
+    check {
+        anyGuild()
+        hasPermission(Permission.ManageGuild)
+    }
 
-	action {
-		when (arguments.config) {
-			ConfigType.MODERATION.name -> clearConfig(ConfigType.MODERATION, arguments)
+    action {
+        when (arguments.config) {
+            ConfigType.MODERATION.name -> clearConfig(ConfigType.MODERATION, arguments)
 
-			ConfigType.LOGGING.name -> clearConfig(ConfigType.LOGGING, arguments)
+            ConfigType.LOGGING.name -> clearConfig(ConfigType.LOGGING, arguments)
 
-			ConfigType.UTILITY.name -> clearConfig(ConfigType.UTILITY, arguments)
+            ConfigType.UTILITY.name -> clearConfig(ConfigType.UTILITY, arguments)
 
-			ConfigType.ALL.name -> clearConfig(ConfigType.ALL, arguments)
-		}
+            ConfigType.ALL.name -> clearConfig(ConfigType.ALL, arguments)
+        }
 
-		respond {
-			embed {
-				title = if (arguments.config == ConfigType.ALL.name) {
-					Translations.Config.Clear.all.translate()
-				} else {
-					Translations.Config.Clear.Embed.title.translate(arguments.config)
-				}
-				footer {
-					text = Translations.Config.configuredBy.translate(user.asUserOrNull()?.username)
-					icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-				}
-			}
-		}
-	}
+        respond {
+            embed {
+                title = if (arguments.config == ConfigType.ALL.name) {
+                    Translations.Config.Clear.all.translate()
+                } else {
+                    Translations.Config.Clear.Embed.title.translate(arguments.config)
+                }
+                footer {
+                    text = Translations.Config.configuredBy.translate(user.asUserOrNull()?.username)
+                    icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -65,45 +65,45 @@ suspend fun SlashCommand<*, *, *>.configClearCommand() = ephemeralSubCommand(::C
  * @since 5.0.0
  */
 private suspend fun EphemeralSlashCommandContext<*, *>.clearConfig(type: ConfigType, args: ClearArgs) {
-	val obj = Translations.Config.Clear
-	when (type) {
-		ConfigType.MODERATION -> {
-			ModerationConfigCollection().getConfig(guild!!.id) ?: run {
-				respond {
-					content = obj.noConfigMod.translate()
-				}
-				return
-			}
-			logClear(args)
-			ModerationConfigCollection().clearConfig(guild!!.id)
-		}
+    val obj = Translations.Config.Clear
+    when (type) {
+        ConfigType.MODERATION -> {
+            ModerationConfigCollection().getConfig(guild!!.id) ?: run {
+                respond {
+                    content = obj.noConfigMod.translate()
+                }
+                return
+            }
+            logClear(args)
+            ModerationConfigCollection().clearConfig(guild!!.id)
+        }
 
-		ConfigType.LOGGING -> {
-			LoggingConfigCollection().getConfig(guild!!.id) ?: run {
-				respond {
-					content = obj.noConfigLogging.translate()
-				}
-			}
-			logClear(args)
-			LoggingConfigCollection().clearConfig(guild!!.id)
-		}
+        ConfigType.LOGGING -> {
+            LoggingConfigCollection().getConfig(guild!!.id) ?: run {
+                respond {
+                    content = obj.noConfigLogging.translate()
+                }
+            }
+            logClear(args)
+            LoggingConfigCollection().clearConfig(guild!!.id)
+        }
 
-		ConfigType.UTILITY -> {
-			UtilityConfigCollection().getConfig(guild!!.id) ?: run {
-				respond {
-					content = obj.noConfigUtility.translate()
-				}
-			}
-			logClear(args)
-			UtilityConfigCollection().clearConfig(guild!!.id)
-		}
+        ConfigType.UTILITY -> {
+            UtilityConfigCollection().getConfig(guild!!.id) ?: run {
+                respond {
+                    content = obj.noConfigUtility.translate()
+                }
+            }
+            logClear(args)
+            UtilityConfigCollection().clearConfig(guild!!.id)
+        }
 
-		ConfigType.ALL -> {
-			ModerationConfigCollection().clearConfig(guild!!.id)
-			LoggingConfigCollection().clearConfig(guild!!.id)
-			UtilityConfigCollection().clearConfig(guild!!.id)
-		}
-	}
+        ConfigType.ALL -> {
+            ModerationConfigCollection().clearConfig(guild!!.id)
+            LoggingConfigCollection().clearConfig(guild!!.id)
+            UtilityConfigCollection().clearConfig(guild!!.id)
+        }
+    }
 }
 
 /**
@@ -114,41 +114,41 @@ private suspend fun EphemeralSlashCommandContext<*, *>.clearConfig(type: ConfigT
  * @since 5.0.0
  */
 suspend fun EphemeralSlashCommandContext<*, *>.logClear(arguments: ClearArgs) {
-	// Skip this if the utility config is cleared or all configs are cleared
-	if (arguments.config == ConfigType.UTILITY.name || arguments.config == ConfigType.ALL.name) return
-	val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
+    // Skip this if the utility config is cleared or all configs are cleared
+    if (arguments.config == ConfigType.UTILITY.name || arguments.config == ConfigType.ALL.name) return
+    val utilityLog = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, this.getGuild()!!)
 
-	if (utilityLog == null) {
-		respond {
-			content = Translations.Config.considerUtility.translate()
-		}
-		return
-	}
+    if (utilityLog == null) {
+        respond {
+            content = Translations.Config.considerUtility.translate()
+        }
+        return
+    }
 
-	utilityLog.createMessage {
-		embed {
-			title = Translations.Config.Clear.Embed.title.translate(
-			    arguments.config[0] +
-				arguments.config.substring(1, arguments.config.length).lowercase()
-			)
-			footer {
-				text = Translations.Config.Clear.footer.translate(user.asUserOrNull()?.username)
-				icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
-			}
-		}
-	}
+    utilityLog.createMessage {
+        embed {
+            title = Translations.Config.Clear.Embed.title.translate(
+                arguments.config[0] +
+                    arguments.config.substring(1, arguments.config.length).lowercase()
+            )
+            footer {
+                text = Translations.Config.Clear.footer.translate(user.asUserOrNull()?.username)
+                icon = user.asUserOrNull()?.avatar?.cdnUrl?.toUrl()
+            }
+        }
+    }
 }
 
 class ClearArgs : Arguments() {
-	private val choiceObj = Translations.Config.Arguments.Clear.Choice
-	val config by stringChoice {
-		name = Translations.Config.Arguments.Clear.name
-		description = Translations.Config.Arguments.Clear.description
-		choices = mutableMapOf(
-			choiceObj.moderation to ConfigType.MODERATION.name,
-			choiceObj.logging to ConfigType.LOGGING.name,
-			choiceObj.utility to ConfigType.UTILITY.name,
-			choiceObj.all to ConfigType.ALL.name
-		)
-	}
+    private val choiceObj = Translations.Config.Arguments.Clear.Choice
+    val config by stringChoice {
+        name = Translations.Config.Arguments.Clear.name
+        description = Translations.Config.Arguments.Clear.description
+        choices = mutableMapOf(
+            choiceObj.moderation to ConfigType.MODERATION.name,
+            choiceObj.logging to ConfigType.LOGGING.name,
+            choiceObj.utility to ConfigType.UTILITY.name,
+            choiceObj.all to ConfigType.ALL.name
+        )
+    }
 }

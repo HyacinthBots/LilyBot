@@ -24,133 +24,134 @@ import org.hyacinthbots.lilybot.utils.getLoggingChannelWithPerms
 import org.hyacinthbots.lilybot.utils.getSystemChannelWithPerms
 
 class GuildAnnouncements : Extension() {
-	override val name = "guild-announcements"
+    override val name = "guild-announcements"
 
-	override suspend fun setup() {
-		ephemeralSlashCommand(::GuildAnnouncementArgs, ::GuildAnnouncementModal) {
-			name = Translations.Utility.GuildAnnouncements.name
-			description = Translations.Utility.GuildAnnouncements.description
+    override suspend fun setup() {
+        ephemeralSlashCommand(::GuildAnnouncementArgs, ::GuildAnnouncementModal) {
+            name = Translations.Utility.GuildAnnouncements.name
+            description = Translations.Utility.GuildAnnouncements.description
 
-			guild(TEST_GUILD_ID)
-			requirePermission(Permission.Administrator)
+            guild(TEST_GUILD_ID)
+            requirePermission(Permission.Administrator)
 
-			check {
-				hasPermission(Permission.Administrator)
-			}
+            check {
+                hasPermission(Permission.Administrator)
+            }
 
-			action { modal ->
-				val translations = Translations.Utility.GuildAnnouncements
-				var response: EphemeralFollowupMessage? = null
-				response = respond {
-					content = translations.sendConfirm.translate() +
-							if (arguments.targetGuild == null) {
-								translations.deliverAll
-							} else {
-								translations.deliverSpecific
-							}.translate(arguments.targetGuild)
-					components {
-						ephemeralButton {
-							label = Translations.Basic.yes
-							style = ButtonStyle.Success
+            action { modal ->
+                val translations = Translations.Utility.GuildAnnouncements
+                var response: EphemeralFollowupMessage? = null
+                response = respond {
+                    content = translations.sendConfirm.translate() +
+                        if (arguments.targetGuild == null) {
+                            translations.deliverAll
+                        } else {
+                            translations.deliverSpecific
+                        }.translate(arguments.targetGuild)
+                    components {
+                        ephemeralButton {
+                            label = Translations.Basic.yes
+                            style = ButtonStyle.Success
 
-							action ButtonAction@{
-								response?.edit {
-									content = translations.sent.translate()
-									components { removeAll() }
-								}
+                            action ButtonAction@{
+                                response?.edit {
+                                    content = translations.sent.translate()
+                                    components { removeAll() }
+                                }
 
-								if (arguments.targetGuild != null) {
-									val guild = event.kord.getGuildOrNull(arguments.targetGuild!!)
-									if (guild == null) {
-										respond { content = translations.targetNotFound.translate() }
-										return@ButtonAction
-									}
+                                if (arguments.targetGuild != null) {
+                                    val guild = event.kord.getGuildOrNull(arguments.targetGuild!!)
+                                    if (guild == null) {
+                                        respond { content = translations.targetNotFound.translate() }
+                                        return@ButtonAction
+                                    }
 
-									val channel = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
-										?: getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild)
-										?: getSystemChannelWithPerms(guild)
-										?: getFirstUsableChannel(guild)
+                                    val channel = getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+                                        ?: getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, guild)
+                                        ?: getSystemChannelWithPerms(guild)
+                                        ?: getFirstUsableChannel(guild)
 
-									if (channel == null) {
-										respond { content = translations.noAvailableChannel.translate() }
-										return@ButtonAction
-									}
+                                    if (channel == null) {
+                                        respond { content = translations.noAvailableChannel.translate() }
+                                        return@ButtonAction
+                                    }
 
-									channel.createEmbed {
-										title = modal?.header?.value
-										description = modal?.body?.value
-										color = Color(0x7B52AE)
-										footer {
-											text = translations.deliveredToOne.translate()
-										}
-									}
-								} else {
-								    event.kord.guilds.toList().chunked(15).forEach { chunk ->
-										for (i in chunk) {
-											val channel =
-												getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, i)
-													?: getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, i)
-													?: getSystemChannelWithPerms(i)
-													?: getFirstUsableChannel(i)
-													?: continue
+                                    channel.createEmbed {
+                                        title = modal?.header?.value
+                                        description = modal?.body?.value
+                                        color = Color(0x7B52AE)
+                                        footer {
+                                            text = translations.deliveredToOne.translate()
+                                        }
+                                    }
+                                } else {
+                                    event.kord.guilds.toList().chunked(15).forEach { chunk ->
+                                        for (i in chunk) {
+                                            val channel =
+                                                getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, i)
+                                                    ?: getLoggingChannelWithPerms(ConfigOptions.ACTION_LOG, i)
+                                                    ?: getSystemChannelWithPerms(i)
+                                                    ?: getFirstUsableChannel(i)
+                                                    ?: continue
 
-											try {
-												channel.createEmbed {
-													title = modal?.header?.value
-													description = modal?.body?.value
-													color = Color(0x7B52AE)
-													footer {
-														text = translations.sentBy.translate(user.asUserOrNull()?.username)
-													}
-												}
-											} catch (_: KtorRequestException) {
-												continue
-											}
-										}
-									}
-								}
-							}
-						}
+                                            try {
+                                                channel.createEmbed {
+                                                    title = modal?.header?.value
+                                                    description = modal?.body?.value
+                                                    color = Color(0x7B52AE)
+                                                    footer {
+                                                        text =
+                                                            translations.sentBy.translate(user.asUserOrNull()?.username)
+                                                    }
+                                                }
+                                            } catch (_: KtorRequestException) {
+                                                continue
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
-						ephemeralButton {
-							label = Translations.Basic.no
-							style = ButtonStyle.Danger
+                        ephemeralButton {
+                            label = Translations.Basic.no
+                            style = ButtonStyle.Danger
 
-							action {
-								response?.edit {
-									content = translations.notSent.translate()
-									components { removeAll() }
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+                            action {
+                                response?.edit {
+                                    content = translations.notSent.translate()
+                                    components { removeAll() }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	inner class GuildAnnouncementArgs : Arguments() {
-		val targetGuild by optionalSnowflake {
-			name = Translations.Utility.GuildAnnouncements.Arguments.Target.name
-			description = Translations.Utility.GuildAnnouncements.Arguments.Target.description
-		}
-	}
+    inner class GuildAnnouncementArgs : Arguments() {
+        val targetGuild by optionalSnowflake {
+            name = Translations.Utility.GuildAnnouncements.Arguments.Target.name
+            description = Translations.Utility.GuildAnnouncements.Arguments.Target.description
+        }
+    }
 
-	inner class GuildAnnouncementModal : ModalForm() {
-		override var title = Translations.Utility.GuildAnnouncements.Modal.title
+    inner class GuildAnnouncementModal : ModalForm() {
+        override var title = Translations.Utility.GuildAnnouncements.Modal.title
 
-		val header = lineText {
-			label = Translations.Utility.GuildAnnouncements.Modal.Header.label
-			placeholder = Translations.Utility.GuildAnnouncements.Modal.Header.placeholder
-			maxLength = 250
-			required = false
-		}
+        val header = lineText {
+            label = Translations.Utility.GuildAnnouncements.Modal.Header.label
+            placeholder = Translations.Utility.GuildAnnouncements.Modal.Header.placeholder
+            maxLength = 250
+            required = false
+        }
 
-		val body = paragraphText {
-			label = Translations.Utility.GuildAnnouncements.Modal.Body.label
-			placeholder = Translations.Utility.GuildAnnouncements.Modal.Body.placeholder
-			maxLength = 1750
-			required = true
-		}
-	}
+        val body = paragraphText {
+            label = Translations.Utility.GuildAnnouncements.Modal.Body.label
+            placeholder = Translations.Utility.GuildAnnouncements.Modal.Body.placeholder
+            maxLength = 1750
+            required = true
+        }
+    }
 }

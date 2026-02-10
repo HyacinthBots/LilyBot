@@ -12,8 +12,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class MainMetaData(
-	val version: Int,
-	val id: String = "mainMeta"
+    val version: Int,
+    val id: String = "mainMeta"
 )
 
 /**
@@ -26,6 +26,6 @@ data class MainMetaData(
  */
 @Serializable
 data class ConfigMetaData(
-	val version: Int,
-	val id: String = "configMeta"
+    val version: Int,
+    val id: String = "configMeta"
 )

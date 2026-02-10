@@ -6,18 +6,18 @@ import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
 suspend fun configV3(db: CoroutineDatabase) {
-	with(db.getCollection<LoggingConfigData>("loggingConfigData")) {
-		updateMany(
-			LoggingConfigData::enablePublicMemberLogs exists false,
-			setValue(LoggingConfigData::enablePublicMemberLogs, false)
-		)
-		updateMany(
-			LoggingConfigData::publicMemberLog exists false,
-			setValue(LoggingConfigData::publicMemberLog, null)
-		)
-		updateMany(
-			LoggingConfigData::publicMemberLogData exists false,
-			setValue(LoggingConfigData::publicMemberLogData, null)
-		)
-	}
+    with(db.getCollection<LoggingConfigData>("loggingConfigData")) {
+        updateMany(
+            LoggingConfigData::enablePublicMemberLogs exists false,
+            setValue(LoggingConfigData::enablePublicMemberLogs, false)
+        )
+        updateMany(
+            LoggingConfigData::publicMemberLog exists false,
+            setValue(LoggingConfigData::publicMemberLog, null)
+        )
+        updateMany(
+            LoggingConfigData::publicMemberLogData exists false,
+            setValue(LoggingConfigData::publicMemberLogData, null)
+        )
+    }
 }

@@ -13,6 +13,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class GithubData(
-	val guildId: Snowflake,
-	val defaultRepo: String
+    val guildId: Snowflake,
+    val defaultRepo: String
 )

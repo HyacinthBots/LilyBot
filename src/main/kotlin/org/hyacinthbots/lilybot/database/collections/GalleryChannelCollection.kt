@@ -19,54 +19,54 @@ import org.litote.kmongo.eq
  * @see removeAll
  */
 class GalleryChannelCollection : KordExKoinComponent {
-	private val db: Database by inject()
+    private val db: Database by inject()
 
-	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<GalleryChannelData>()
+    @PublishedApi
+    internal val collection = db.mainDatabase.getCollection<GalleryChannelData>()
 
-	/**
-	 * Collects every gallery channel in the database into a [List].
-	 *
-	 * @return The [CoroutineCollection] of [GalleryChannelData] for all the gallery channels in the database
-	 * @author NoComment1105
-	 * @since 3.3.0
-	 */
-	suspend inline fun getChannels(inputGuildId: Snowflake): List<GalleryChannelData> =
-		collection.find(GalleryChannelData::guildId eq inputGuildId).toList()
+    /**
+     * Collects every gallery channel in the database into a [List].
+     *
+     * @return The [CoroutineCollection] of [GalleryChannelData] for all the gallery channels in the database
+     * @author NoComment1105
+     * @since 3.3.0
+     */
+    suspend inline fun getChannels(inputGuildId: Snowflake): List<GalleryChannelData> =
+        collection.find(GalleryChannelData::guildId eq inputGuildId).toList()
 
-	/**
-	 * Stores a channel ID as input by the user, in the database, with it's corresponding guild, allowing us to find
-	 * the channel later.
-	 *
-	 * @param inputGuildId The guild the channel is in
-	 * @param inputChannelId The channel that is being set as a gallery channel
-	 * @author NoComment1105
-	 * @since 3.3.0
-	 */
-	suspend inline fun setChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) =
-		collection.insertOne(GalleryChannelData(inputGuildId, inputChannelId))
+    /**
+     * Stores a channel ID as input by the user, in the database, with it's corresponding guild, allowing us to find
+     * the channel later.
+     *
+     * @param inputGuildId The guild the channel is in
+     * @param inputChannelId The channel that is being set as a gallery channel
+     * @author NoComment1105
+     * @since 3.3.0
+     */
+    suspend inline fun setChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) =
+        collection.insertOne(GalleryChannelData(inputGuildId, inputChannelId))
 
-	/**
-	 * Removes a channel ID from the gallery channel database.
-	 *
-	 * @param inputGuildId The guild the channel is in
-	 * @param inputChannelId The channel being removed
-	 * @author NoComment1105
-	 * @since 3.3.0
-	 */
-	suspend inline fun removeChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) =
-		collection.deleteOne(
-			GalleryChannelData::channelId eq inputChannelId,
-			GalleryChannelData::guildId eq inputGuildId
-		)
+    /**
+     * Removes a channel ID from the gallery channel database.
+     *
+     * @param inputGuildId The guild the channel is in
+     * @param inputChannelId The channel being removed
+     * @author NoComment1105
+     * @since 3.3.0
+     */
+    suspend inline fun removeChannel(inputGuildId: Snowflake, inputChannelId: Snowflake) =
+        collection.deleteOne(
+            GalleryChannelData::channelId eq inputChannelId,
+            GalleryChannelData::guildId eq inputGuildId
+        )
 
-	/**
-	 * Removes all gallery channels from this guild.
-	 *
-	 * @param inputGuildId The guild to clear the gallery channels from
-	 * @author NoComment1105
-	 * @since 4.1.0
-	 */
-	suspend inline fun removeAll(inputGuildId: Snowflake) =
-		collection.deleteMany(GalleryChannelData::guildId eq inputGuildId)
+    /**
+     * Removes all gallery channels from this guild.
+     *
+     * @param inputGuildId The guild to clear the gallery channels from
+     * @author NoComment1105
+     * @since 4.1.0
+     */
+    suspend inline fun removeAll(inputGuildId: Snowflake) =
+        collection.deleteMany(GalleryChannelData::guildId eq inputGuildId)
 }

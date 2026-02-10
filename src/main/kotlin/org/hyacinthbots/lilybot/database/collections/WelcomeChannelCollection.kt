@@ -27,36 +27,36 @@ import dev.kordex.modules.func.welcome.data.WelcomeChannelData as KordExWelcomeC
  * @see removeChannel
  */
 class WelcomeChannelCollection : KordExKoinComponent, KordExWelcomeChannelData {
-	private val db: Database by inject()
+    private val db: Database by inject()
 
-	@PublishedApi
-	internal val collection = db.mainDatabase.getCollection<WelcomeChannelData>()
+    @PublishedApi
+    internal val collection = db.mainDatabase.getCollection<WelcomeChannelData>()
 
-	override suspend fun getChannelURLs(): Map<Snowflake, String> =
-		collection.find()
-			.toList().associate { it.channelId to it.url }
+    override suspend fun getChannelURLs(): Map<Snowflake, String> =
+        collection.find()
+            .toList().associate { it.channelId to it.url }
 
-	override suspend fun getUrlForChannel(channelId: Snowflake): String? =
-		collection.findOne(WelcomeChannelData::channelId eq channelId)
-			?.url
+    override suspend fun getUrlForChannel(channelId: Snowflake): String? =
+        collection.findOne(WelcomeChannelData::channelId eq channelId)
+            ?.url
 
-	override suspend fun setUrlForChannel(channelId: Snowflake, url: String) {
-		collection.save(WelcomeChannelData(channelId, url))
-	}
+    override suspend fun setUrlForChannel(channelId: Snowflake, url: String) {
+        collection.save(WelcomeChannelData(channelId, url))
+    }
 
-	override suspend fun removeChannel(channelId: Snowflake): String? {
-		val url = getUrlForChannel(channelId)
-			?: return null
+    override suspend fun removeChannel(channelId: Snowflake): String? {
+        val url = getUrlForChannel(channelId)
+            ?: return null
 
-		collection.deleteOne(WelcomeChannelData::channelId eq channelId)
+        collection.deleteOne(WelcomeChannelData::channelId eq channelId)
 
-		return url
-	}
+        return url
+    }
 
-	suspend fun removeWelcomeChannelsForGuild(guildId: Snowflake, kord: Kord) {
-		val guild = kord.getGuildOrNull(guildId) ?: return
-		guild.channels.collect {
-			collection.deleteOne(WelcomeChannelData::channelId eq it.id)
-		}
-	}
+    suspend fun removeWelcomeChannelsForGuild(guildId: Snowflake, kord: Kord) {
+        val guild = kord.getGuildOrNull(guildId) ?: return
+        guild.channels.collect {
+            collection.deleteOne(WelcomeChannelData::channelId eq it.id)
+        }
+    }
 }

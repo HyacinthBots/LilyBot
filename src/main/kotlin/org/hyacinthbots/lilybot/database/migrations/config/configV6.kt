@@ -6,10 +6,10 @@ import org.litote.kmongo.exists
 import org.litote.kmongo.setValue
 
 suspend fun configV6(db: CoroutineDatabase) {
-	with(db.getCollection<ModerationConfigData>("moderationConfigData")) {
-		updateMany(
-			ModerationConfigData::banDmMessage exists false,
-			setValue(ModerationConfigData::banDmMessage, null)
-		)
-	}
+    with(db.getCollection<ModerationConfigData>("moderationConfigData")) {
+        updateMany(
+            ModerationConfigData::banDmMessage exists false,
+            setValue(ModerationConfigData::banDmMessage, null)
+        )
+    }
 }
