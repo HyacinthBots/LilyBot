@@ -5,8 +5,9 @@
 */
 
 // I'd love to optimise imports but these are actually used, shush idea
-
+import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.core.joran.spi.ConsoleTarget
+import java.util.ArrayList
 import org.hyacinthbots.lilybot.utils.DiscordLogAppender
 
 def environment = System.getenv().getOrDefault("ENVIRONMENT", "production")
