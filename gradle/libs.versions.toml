@@ -4,7 +4,7 @@ kotlin = "2.3.0"
 detekt = "1.23.8"
 git-hooks = "0.0.2"
 grgit = "5.3.0"
-blossom = "2.1.0"
+blossom = "2.2.0"
 
 # Libraries
 kord-extensions = "2.4.1-20251224.130127-1"
