@@ -23,6 +23,7 @@ import kotlin.time.Clock
  * @see cleanupGuildData
  * @see cleanupThreadData
  */
+// TODO Rewrite for the new mongo system
 object Cleanups : KordExKoinComponent {
     private val db: Database by inject()
 

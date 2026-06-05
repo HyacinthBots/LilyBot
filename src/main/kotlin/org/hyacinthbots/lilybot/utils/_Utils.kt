@@ -1,7 +1,6 @@
 package org.hyacinthbots.lilybot.utils
 
 import dev.kord.common.entity.Permission
-import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
@@ -20,7 +19,6 @@ import kotlinx.datetime.toLocalDateTime
 import lilybot.i18n.Translations
 import org.hyacinthbots.lilybot.database.Database
 import org.hyacinthbots.lilybot.database.collections.*
-import org.hyacinthbots.lilybot.extensions.moderation.commands.ModUtilities.PresenceType
 import org.koin.dsl.bind
 
 @PublishedApi
@@ -164,32 +162,33 @@ fun String?.trimmedContents(desiredLength: Int): String? {
     }
 }
 
-/**
- * Update the presence to reflect the new number of guilds, if the presence is set to "default".
- * @author NoComment1105
- * @since 3.4.5
- */
-suspend inline fun Extension.updateDefaultPresence() {
-    val dbStatus = StatusCollection().getStatus()
-    if (dbStatus?.status != null) {
-        kord.editPresence {
-            status = PresenceStatus.Online
-            when (dbStatus.statusType) {
-                PresenceType.Nothing.readableName.key -> state = dbStatus.status
-                PresenceType.Playing.readableName.key -> playing(dbStatus.status)
-                PresenceType.Listening.readableName.key -> listening(dbStatus.status)
-                PresenceType.Streaming.readableName.key -> streaming(dbStatus.status, "")
-                PresenceType.Watching.readableName.key -> watching(dbStatus.status)
-                PresenceType.Competing.readableName.key -> competing(dbStatus.status)
-            }
-        }
-        return
-    }
-
-    kord.editPresence {
-        watching("${getGuildCount()} servers")
-    }
-}
+// TODO Surely kord(ex) has a built in way to do this
+// /**
+// * Update the presence to reflect the new number of guilds, if the presence is set to "default".
+// * @author NoComment1105
+// * @since 3.4.5
+// */
+// suspend inline fun Extension.updateDefaultPresence() {
+//    val dbStatus = StatusCollection().getStatus()
+//    if (dbStatus?.status != null) {
+//        kord.editPresence {
+//            status = PresenceStatus.Online
+//            when (dbStatus.statusType) {
+//                PresenceType.Nothing.readableName.key -> state = dbStatus.status
+//                PresenceType.Playing.readableName.key -> playing(dbStatus.status)
+//                PresenceType.Listening.readableName.key -> listening(dbStatus.status)
+//                PresenceType.Streaming.readableName.key -> streaming(dbStatus.status, "")
+//                PresenceType.Watching.readableName.key -> watching(dbStatus.status)
+//                PresenceType.Competing.readableName.key -> competing(dbStatus.status)
+//            }
+//        }
+//        return
+//    }
+//
+//    kord.editPresence {
+//        watching("${getGuildCount()} servers")
+//    }
+// }
 
 /**
  * A quick function to generate the contents of the bulk delete file.

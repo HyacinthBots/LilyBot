@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "org.hyacinthbots.lilybot"
-version = "5.0.0"
+version = "6.0.0"
 
 val className = "org.hyacinthbots.lilybot.LilyBotKt"
 val javaVersion = "21"
@@ -60,6 +60,11 @@ repositories {
         name = "JitPack"
         url = uri("https://jitpack.io")
     }
+
+    maven {
+        name = "Jenkins"
+        url = uri("https://repo.jenkins-ci.org/public/")
+    }
 }
 
 dependencies {
@@ -84,7 +89,9 @@ dependencies {
     implementation(libs.github.api)
 
     // KMongo
-    implementation(libs.kmongo)
+    implementation(libs.mongodb)
+    implementation(libs.mongodb.driverkx)
+    implementation(libs.mongodb.bsonkx)
 
     implementation(libs.docgenerator)
 

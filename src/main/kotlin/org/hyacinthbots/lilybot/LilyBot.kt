@@ -7,7 +7,8 @@ import dev.kord.gateway.DefaultGateway
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.ratelimit.IdentifyRateLimiter
-import dev.kord.rest.builder.message.actionRow
+import dev.kord.rest.builder.component.actionRow
+import dev.kord.rest.builder.message.container
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.ExtensibleBot
 import dev.kordex.core.checks.hasPermission
@@ -30,19 +31,6 @@ import org.hyacinthbots.docgenerator.enums.SupportedFileFormat
 import org.hyacinthbots.lilybot.database.collections.UptimeCollection
 import org.hyacinthbots.lilybot.database.collections.WelcomeChannelCollection
 import org.hyacinthbots.lilybot.database.storage.MongoDBDataAdapter
-import org.hyacinthbots.lilybot.extensions.config.ConfigExtension
-import org.hyacinthbots.lilybot.extensions.config.ConfigOptions
-import org.hyacinthbots.lilybot.extensions.logging.events.GuildLogging
-import org.hyacinthbots.lilybot.extensions.logging.events.MemberLogging
-import org.hyacinthbots.lilybot.extensions.logging.events.MessageDelete
-import org.hyacinthbots.lilybot.extensions.logging.events.MessageEdit
-import org.hyacinthbots.lilybot.extensions.moderation.commands.*
-import org.hyacinthbots.lilybot.extensions.moderation.events.ModerationEvents
-import org.hyacinthbots.lilybot.extensions.threads.AutoThreading
-import org.hyacinthbots.lilybot.extensions.threads.ModThreadInviting
-import org.hyacinthbots.lilybot.extensions.threads.ThreadControl
-import org.hyacinthbots.lilybot.extensions.utility.commands.*
-import org.hyacinthbots.lilybot.extensions.utility.events.UtilityEvents
 import org.hyacinthbots.lilybot.internal.BuildInfo
 import org.hyacinthbots.lilybot.utils.*
 import org.kohsuke.github.GitHub
@@ -143,20 +131,22 @@ suspend fun main() {
                         }
                     }
 
-                    actionRow {
-                        linkButton(
-                            "https://discord.com/api/oauth2/authorize?client_id=876278900836139008&" +
-                                "permissions=1151990787078&scope=bot%20applications.commands"
-                        ) {
-                            label = Translations.Utility.InfoCommands.Help.Button.invite.translate()
-                        }
+                    container {
+                        actionRow {
+                            linkButton(
+                                "https://discord.com/api/oauth2/authorize?client_id=876278900836139008&" +
+                                    "permissions=1151990787078&scope=bot%20applications.commands"
+                            ) {
+                                label = Translations.Utility.InfoCommands.Help.Button.invite.translate()
+                            }
 
-                        linkButton("$HYACINTH_GITHUB/LilyBot/blob/main/docs/privacy-policy.md") {
-                            label = Translations.Utility.InfoCommands.Help.Button.privacy.translate()
-                        }
+                            linkButton("$HYACINTH_GITHUB/LilyBot/blob/main/docs/privacy-policy.md") {
+                                label = Translations.Utility.InfoCommands.Help.Button.privacy.translate()
+                            }
 
-                        linkButton("$HYACINTH_GITHUB/.github/blob/main/terms-of-service.md") {
-                            label = Translations.Utility.InfoCommands.Help.Button.tos.translate()
+                            linkButton("$HYACINTH_GITHUB/.github/blob/main/terms-of-service.md") {
+                                label = Translations.Utility.InfoCommands.Help.Button.tos.translate()
+                            }
                         }
                     }
                 }
@@ -165,32 +155,6 @@ suspend fun main() {
 
         // Add the extensions to the bot
         extensions {
-            add(::AutoThreading)
-            add(::ClearCommands)
-            add(::ConfigExtension)
-            add(::GalleryChannel)
-            add(::Github)
-            add(::GuildAnnouncements)
-            add(::GuildLogging)
-            add(::InfoCommands)
-            add(::LockingCommands)
-            add(::MemberLogging)
-            add(::MessageDelete)
-            add(::MessageEdit)
-            add(::ModerationEvents)
-            add(::ModThreadInviting)
-            add(::ModUtilities)
-            add(::ModerationCommands)
-            add(::NewsChannelPublishing)
-            add(::PublicUtilities)
-            add(::Reminders)
-            add(::Report)
-            add(::RoleMenu)
-            add(::StartupHooks)
-            add(::Tags)
-            add(::ThreadControl)
-            add(::UtilityEvents)
-
             /*
             The welcome channel extension allows users to designate a YAML file to create a channel with
             a variety of pre-built blocks.
@@ -200,9 +164,10 @@ suspend fun main() {
                     hasPermission(Permission.BanMembers)
                 }
 
-                getLogChannel { _, guild ->
-                    getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
-                }
+                // FIXME implement this again
+//                getLogChannel { _, guild ->
+//                    getLoggingChannelWithPerms(ConfigOptions.UTILITY_LOG, guild)
+//                }
 
                 refreshDuration = 5.minutes
             }
@@ -236,6 +201,7 @@ suspend fun main() {
             applicationCommandLocale(SupportedLocales.ENGLISH)
         }
 
+        // TODO This probably blows up
         docsGenerator {
             enabled = true
             fileFormat = SupportedFileFormat.MARKDOWN
